@@ -14,6 +14,11 @@ const router = createRouter({
       component: () => import('../views/pei/PeiViewList.vue'),
     },
     {
+      path: '/pei/nuevo',
+      name: 'peiNuevo',
+      component: () => import('../views/pei/PeiNuevoView.vue'),
+    },
+    {
       path: '/proyecto',
       name: 'proyecto',
       component: () => import('../views/proyecto/ProyectoListView.vue'),
@@ -30,7 +35,7 @@ const router = createRouter({
     },
     {
       path: '/proyecto/nuevo',
-      name: 'nuevo',
+      name: 'proyectoNuevo',
       component: () => import('@/views/proyecto/ProyectoNuevoView.vue'),
     },
     {
