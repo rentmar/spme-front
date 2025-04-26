@@ -29,7 +29,12 @@ const router = createRouter({
       component: () => import('@/views/proyecto/ProyectoDetalleView.vue'),
     },
     {
-      path: '/proyecto/:id/marcologico',
+      path: '/proyecto/:id/editar',
+      name: 'editarProyecto',
+      component: () => import('@/views/proyecto/ProyectoEditView.vue'),
+    },
+    {
+      path: '/proyecto/:id/marco-logico',
       name: 'marcologico',
       component: () => import('@/views/proyecto/ProyectoMLView.vue'),
     },

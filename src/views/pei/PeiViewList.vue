@@ -132,7 +132,7 @@ const deleteDialog = ref(false)
 const selectedPei = ref(null)
 
 //Propiedades computadas
-const peis = computed(() => peiStore.peis) //Calcula la cantidad de PEIs registrados
+const peis = computed(() => peiStore.peis) //Lista de PEIs
 
 onMounted(async () => {
   await cargarPeis()
