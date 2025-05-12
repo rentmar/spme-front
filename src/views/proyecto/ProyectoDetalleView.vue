@@ -9,6 +9,7 @@
     <v-row v-if="!cargandoGeneral">
       <!-- Columna principal -->
       <v-col cols="12" md="8" lg="9">
+        <PaginaTituloIcono :titulo="'Detalles'" :icon="'mdi-eye-outline'"></PaginaTituloIcono>
         <!-- Información básica del proyecto -->
         <v-card variant="outlined" elevation="1" class="mb-4">
           <v-card-title class="d-flex align-center">
@@ -303,7 +304,7 @@ import { getStatusColor, getEstadoTexto } from '@/utility/formatters'
 import IndicadoresLista from '@/modules/proyecto/components/partials/IndicadoresLista.vue'
 //import ResultadosLista from '@/modules/proyecto/components/partials/ResultadosLista.vue'
 import ProductosLista from '@/modules/proyecto/components/partials/ProductosLista.vue'
-
+import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 //Inicializar las rutas y obtener el id de proyecto
 const ruta = useRoute()
 const idproyecto = ruta.params.id

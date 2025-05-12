@@ -2,19 +2,21 @@
   <v-card class="my-card">
     <v-card-item>
       <v-card-title class="d-flex justify-space-between align-center mb-4">
-        <span>Resultados del Proyecto: {{ nuevoProyecto.titulo }}</span>
+        <span>Resultados del Proyecto: {{ nuevoProyectoStore.nuevoProyecto.proyecto.titulo }}</span>
         <v-btn icon @click="addResultado" color="primary" size="small" :disabled="editing">
           <v-icon>mdi-plus</v-icon>
           <v-tooltip activator="parent" location="top">Agregar resultado</v-tooltip>
         </v-btn>
       </v-card-title>
-      <v-card-subtitle> Código: {{ nuevoProyecto.codigo }} </v-card-subtitle>
+      <v-card-subtitle>
+        Código: {{ nuevoProyectoStore.nuevoProyecto.proyecto.codigo }}
+      </v-card-subtitle>
     </v-card-item>
 
     <v-card-text>
       <v-tabs v-model="activeTab">
         <v-tab
-          v-for="(res, index) in nuevoProyecto.resultados"
+          v-for="(res, index) in nuevoProyectoStore.nuevoProyecto.resultados"
           :key="'res-' + index"
           :value="'result-' + index"
           :disabled="editing"
@@ -34,7 +36,7 @@
 
       <v-window v-model="activeTab">
         <v-window-item
-          v-for="(res, index) in nuevoProyecto.resultados"
+          v-for="(res, index) in nuevoProyectoStore.nuevoProyecto.resultados"
           :key="'res-content-' + index"
           :value="'result-' + index"
         >
@@ -75,19 +77,25 @@
 </template>
 
 <script setup>
-import { ref, inject, watch } from 'vue'
+import { ref } from 'vue'
+import { useNuevoProyectoStore } from '../store/nuevoProyectoStore'
 
-const nuevoProyecto = inject('nuevoProyecto')
+//Inicializar el store
+const nuevoProyectoStore = useNuevoProyectoStore()
+
 const activeTab = ref(0)
 const editing = ref(false)
 
-// Función para generar el código en formato R01, R02, etc.
-const generateResultCode = (index) => {
-  return `R${String(index + 1).padStart(2, '0')}`
+const addResultado = () => {
+  nuevoProyectoStore.addResultado()
+}
+
+const removeResultado = (index) => {
+  nuevoProyectoStore.removeResultado(index)
 }
 
 // Inicializar códigos automáticos R01, R02, etc.
-watch(
+/*watch(
   () => nuevoProyecto.resultados,
   (resultados) => {
     resultados.forEach((res, index) => {
@@ -97,9 +105,9 @@ watch(
     })
   },
   { immediate: true, deep: true },
-)
+)*/
 
-const addResultado = () => {
+/*const addResultado = () => {
   nuevoProyecto.resultados.push({
     codigo: generateResultCode(nuevoProyecto.resultados.length),
     descripcion: '',
@@ -107,9 +115,9 @@ const addResultado = () => {
     riesgos: '',
   })
   activeTab.value = 'result-' + (nuevoProyecto.resultados.length - 1)
-}
+}*/
 
-const removeResultado = (index) => {
+/*const removeResultado = (index) => {
   // Permitir eliminar todos los resultados
   nuevoProyecto.resultados.splice(index, 1)
 
@@ -123,7 +131,7 @@ const removeResultado = (index) => {
     activeTab.value =
       nuevoProyecto.resultados.length > 0 ? `result-${Math.max(0, index - 1)}` : null
   }
-}
+}*/
 </script>
 
 <style scoped>

@@ -11,6 +11,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
   /**** Estados activos del Store ****/
   const proyectos = ref([]) //Lista de proyectos
   const proyectoActual = ref(null) //Almacena el proyecto seleccionado
+  const proyecto_objgeneral_info = ref(null) //Proyecto - objetivo-general-info adicional
   const objetivosIndicadores = ref([])
   const cargando = ref(false) //Indicador de carga
   const error = ref(null) //Mensaje de error
@@ -21,7 +22,8 @@ export const useProyectoStore = defineStore('proyecto', () => {
     error.value = null
     //Peticion htttp y almacena en los estados
     try {
-      proyectos.value = await proyectoServicios.obtenerTodos()
+      const response = await proyectoServicios.obtenerTodos()
+      proyectos.value = Array.isArray(response) ? response : []
     } catch (err) {
       error.value = err
     } finally {
@@ -55,17 +57,30 @@ export const useProyectoStore = defineStore('proyecto', () => {
       cargando.value = false
     }
   }
+  const proyectoObjGeneralInfo = async (idproyecto) => {
+    cargando.value = true
+    error.value = null
+    try {
+      proyecto_objgeneral_info.value = await proyectoServicios.proyecto_objgral_info(idproyecto)
+    } catch (err) {
+      error.value = err
+    } finally {
+      cargando.value = false
+    }
+  }
 
   return {
     proyectos, //ref
     proyectoActual, //ref
     proyectoObjetivos, //ref
     objetivosIndicadores, //ref
+    proyecto_objgeneral_info, //ref
     cargando, //ref
     error, //ref
     obtenerProyectos, //accion
     obtenerProyectoPorId, //accion
     objetivosIndPorIdProyecto, //accion
+    proyectoObjGeneralInfo, //accion
   }
 })
 
@@ -189,6 +204,7 @@ export const useProyObjetivoEspStore = defineStore('proyObjetivoEspecifico', () 
 export const useResultProductStore = defineStore('ResultProduc', () => {
   /* Estados */
   const resulProductIndicadoresIdProyecto = ref([])
+  const resultProdActividadesIdProyecto = ref([])
   const cargando = ref(false)
   const error = ref(null)
 
@@ -196,7 +212,7 @@ export const useResultProductStore = defineStore('ResultProduc', () => {
   /* Obtener resultados productos con sus indicadores filtrado por Id de proyecto */
   const proyResultProdIndPorIdProyecto = async (idproyecto) => {
     cargando.value = true
-    error.value = true
+    error.value = null
     try {
       resulProductIndicadoresIdProyecto.value =
         await proyectoResultadoProducto.resultadoProdIndicadoresPorIdProyecto(idproyecto)
@@ -206,11 +222,26 @@ export const useResultProductStore = defineStore('ResultProduc', () => {
       cargando.value = false
     }
   }
+  /* Obtener resultados productos con actividades filtrado por id de proyecto */
+  const proyResultProdActividadesPorIdProyecto = async (idproyecto) => {
+    cargando.value = true
+    error.value = null
+    try {
+      resultProdActividadesIdProyecto.value =
+        await proyectoResultadoProducto.resultadoProdActividadesPorIdProyecto(idproyecto)
+    } catch (err) {
+      error.value = err
+    } finally {
+      cargando.value = false
+    }
+  }
   /* Retorno de estados, acciones y getters */
   return {
     resulProductIndicadoresIdProyecto, //ref
+    resultProdActividadesIdProyecto, //ref
     cargando, //ref
     error, //ref
     proyResultProdIndPorIdProyecto, //Accion
+    proyResultProdActividadesPorIdProyecto, //Accion
   }
 })

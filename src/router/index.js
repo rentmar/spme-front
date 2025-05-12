@@ -19,6 +19,26 @@ const router = createRouter({
       component: () => import('../views/pei/PeiNuevoView.vue'),
     },
     {
+      path: '/pei/:id/detalle',
+      name: 'detallePei',
+      component: () => import('../views/pei/PeiDetalleView.vue'),
+    },
+    {
+      path: '/pei/:id/editar',
+      name: 'editarPei',
+      component: () => import('../views/pei/PeiEditView.vue'),
+    },
+    {
+      path: '/pei/:id/objetivos',
+      name: 'editarObjetivos',
+      component: () => import('../views/pei/PeiObjetivoView.vue'),
+    },
+    {
+      path: '/pei/:id/indicadores',
+      name: 'editarIndicadores',
+      component: () => import('../views/pei/PeiIndicadoresView.vue'),
+    },
+    {
       path: '/proyecto',
       name: 'proyecto',
       component: () => import('../views/proyecto/ProyectoListView.vue'),
@@ -34,6 +54,11 @@ const router = createRouter({
       component: () => import('@/views/proyecto/ProyectoEditView.vue'),
     },
     {
+      path: '/proyecto/:id/estructura',
+      name: 'estructuraProyecto',
+      component: () => import('@/views/proyecto/ProyectoEstructuraView.vue'),
+    },
+    {
       path: '/proyecto/:id/marco-logico',
       name: 'marcologico',
       component: () => import('@/views/proyecto/ProyectoMLView.vue'),
@@ -42,6 +67,31 @@ const router = createRouter({
       path: '/proyecto/nuevo',
       name: 'proyectoNuevo',
       component: () => import('@/views/proyecto/ProyectoNuevoView.vue'),
+    },
+    {
+      path: '/planificacion',
+      name: 'planificacionHome',
+      component: () => import('@/views/HomeView.vue'),
+    },
+    {
+      path: '/planificacion/actividades',
+      name: 'listaProyectosActividades',
+      component: () => import('@/views/planeamiento/ProyectosActividadesListaView.vue'),
+    },
+    {
+      path: '/planificacion/pei/:id/actividad',
+      name: 'addActividadesPei',
+      component: () => import('@/views/planeamiento/PeiAddActividadView.vue'),
+    },
+    {
+      path: '/planificacion/proyecto/:id/actividad',
+      name: 'addActividadesProyecto',
+      component: () => import('@/views/planeamiento/ProyectoAddActividadView.vue'),
+    },
+    {
+      path: '/planificacion/cronogramas',
+      name: 'cronogramas',
+      component: () => import('../views/AboutView.vue'),
     },
     {
       path: '/about',

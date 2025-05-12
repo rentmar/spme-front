@@ -9,7 +9,7 @@
       color="primary"
     ></v-list-item>
 
-    <v-list-group value="Planning">
+    <v-list-group value="Estructuracion">
       <template v-slot:activator="{ props }">
         <v-list-item
           v-bind="props"
@@ -30,6 +30,30 @@
         title="Proyectos"
         value="projects"
         to="/proyecto"
+      ></v-list-item>
+    </v-list-group>
+
+    <v-list-group value="Planning">
+      <template v-slot:activator="{ props }">
+        <v-list-item
+          v-bind="props"
+          prepend-icon="mdi-calendar-multiple"
+          title="Planificacion"
+        ></v-list-item>
+      </template>
+
+      <v-list-item
+        prepend-icon="mdi-calendar-check"
+        title="Actividades"
+        value="actividades"
+        to="/planificacion/actividades"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-chart-gantt"
+        title="Cronogramas"
+        value="schedules"
+        to="/planificacion/cronogramas"
       ></v-list-item>
     </v-list-group>
 

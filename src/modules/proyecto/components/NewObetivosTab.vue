@@ -3,13 +3,15 @@
     <!-- Header con título y subtítulo -->
     <v-card-item>
       <v-card-title class="d-flex justify-space-between align-center mb-4">
-        <span>{{ nuevoProyecto.titulo }}</span>
+        <span>{{ nuevoProyectoStore.nuevoProyecto.proyecto.titulo }}</span>
         <v-btn icon @click="addObjetivoEspecifico" color="primary" size="small" :disabled="editing">
           <v-icon>mdi-plus</v-icon>
           <v-tooltip activator="parent" location="top">Agregar objetivo específico</v-tooltip>
         </v-btn>
       </v-card-title>
-      <v-card-subtitle> Código: {{ nuevoProyecto.codigo }} </v-card-subtitle>
+      <v-card-subtitle>
+        Código: {{ nuevoProyectoStore.nuevoProyecto.proyecto.codigo }}
+      </v-card-subtitle>
     </v-card-item>
 
     <!-- Contenido principal -->
@@ -26,7 +28,7 @@
 
         <!-- Tabs de Objetivos Específicos -->
         <v-tab
-          v-for="(obj, index) in nuevoProyecto.objetivoEspecifico"
+          v-for="(obj, index) in nuevoProyectoStore.nuevoProyecto.objetivoEspecifico"
           :key="'obj-' + index"
           :value="'specific-' + index"
           :disabled="editing"
@@ -34,12 +36,11 @@
           <v-icon start>mdi-target</v-icon>
           Obj Espec {{ index + 1 }}
           <v-btn
-            v-if="index > 0"
             icon="mdi-close"
             size="x-small"
             variant="text"
-            @click.stop="removeObjective(index)"
             class="ml-2"
+            @click.stop="removeObjetivo(index)"
             :disabled="editing"
           ></v-btn>
         </v-tab>
@@ -55,26 +56,25 @@
               variant="outlined"
               :model-value="'POO'"
               readonly
-              disabled
             ></v-text-field>
             <v-textarea
               label="Descripción"
               variant="outlined"
-              v-model="nuevoProyecto.objetivoGeneral.descripcion"
+              v-model="nuevoProyectoStore.nuevoProyecto.objetivoGeneral[0].descripcion"
               :readonly="editing"
               rows="3"
             ></v-textarea>
             <v-textarea
               label="Supuestos"
               variant="outlined"
-              v-model="nuevoProyecto.objetivoGeneral.supuestos"
+              v-model="nuevoProyectoStore.nuevoProyecto.objetivoGeneral[0].supuestos"
               :readonly="editing"
               rows="2"
             ></v-textarea>
             <v-textarea
               label="Riesgos"
               variant="outlined"
-              v-model="nuevoProyecto.objetivoGeneral.riesgos"
+              v-model="nuevoProyectoStore.nuevoProyecto.objetivoGeneral[0].riesgos"
               :readonly="editing"
               rows="2"
             ></v-textarea>
@@ -83,7 +83,7 @@
 
         <!-- Objetivos Específicos -->
         <v-window-item
-          v-for="(obj, index) in nuevoProyecto.objetivoEspecifico"
+          v-for="(obj, index) in nuevoProyectoStore.nuevoProyecto.objetivoEspecifico"
           :key="'obj-content-' + index"
           :value="'specific-' + index"
         >
@@ -124,19 +124,35 @@
 </template>
 
 <script setup>
-import { ref, inject, watch } from 'vue'
+import { ref } from 'vue'
+import { useNuevoProyectoStore } from '../store/nuevoProyectoStore'
+
+//Inicializar el store
+const nuevoProyectoStore = useNuevoProyectoStore()
 
 // Injectamos la estructura reactiva y funciones del padre
-const nuevoProyecto = inject('nuevoProyecto')
-const addObjetivoEspecifico = inject('addObjetivoEspecifico')
+//const nuevoProyecto = inject('nuevoProyecto')
+//const addObjetivoEspecifico = inject('addObjetivoEspecifico')
+
+const addObjetivoEspecifico = nuevoProyectoStore.addObjetivoEspecifico
+
+// Métodos
+const removeObjetivo = (index) => {
+  nuevoProyectoStore.removeObjetivoEspecifico(index)
+  //store.removeObjetivoEspecifico(index)
+  // Si estamos viendo el tab que se eliminó, volver al general
+  if (activeTab.value === `specific-${index}`) {
+    activeTab.value = 'general'
+  }
+}
 
 // Estado reactivo para control de tabs
 const activeTab = ref('general')
 const editing = ref(false)
 
 // Inicializar códigos automáticos
-watch(
-  () => nuevoProyecto.objetivoEspecifico,
+/*watch(
+  () => nuevoProyectoStore.nuevoProyecto.objetivoEspecifico,
   (objetivos) => {
     objetivos.forEach((obj, index) => {
       if (!obj.codigo || !obj.codigo.startsWith('PSO')) {
@@ -145,22 +161,25 @@ watch(
     })
 
     // Asegurar que el objetivo general tenga POO
-    if (!nuevoProyecto.objetivoGeneral.codigo || nuevoProyecto.objetivoGeneral.codigo !== 'POO') {
-      nuevoProyecto.objetivoGeneral.codigo = 'POO'
+    if (
+      !nuevoProyectoStore.nuevoProyecto.objetivoGeneral[0].codigo ||
+      nuevoProyectoStore.nuevoProyecto.objetivoGeneral[0].codigo !== 'POO'
+    ) {
+      nuevoProyectoStore.nuevoProyecto.objetivoGeneral[0].codigo = 'POO'
     }
   },
   { immediate: true, deep: true },
-)
+)*/
 
 // Eliminar objetivo específico (excepto el primero)
-const removeObjective = (index) => {
-  if (index > 0 && nuevoProyecto.objetivoEspecifico.length > 1) {
+/* const removeObjective = (index) => {
+  if (index > 0 && nuevoProyectoStore.nuevoProyecto.objetivoEspecifico.length > 1) {
     const wasActive = activeTab.value === 'specific-' + index
 
-    nuevoProyecto.objetivoEspecifico.splice(index, 1)
+    nuevoProyectoStore.nuevoProyecto.objetivoEspecifico.splice(index, 1)
 
     // Reindexar los códigos
-    nuevoProyecto.objetivoEspecifico.forEach((obj, idx) => {
+    nuevoProyectoStore.nuevoProyecto.objetivoEspecifico.forEach((obj, idx) => {
       obj.codigo = `PSO${idx + 1}`
     })
 
@@ -169,12 +188,12 @@ const removeObjective = (index) => {
     }
   }
 }
-
+ */
 // Función para verificar cambios
-const hasChanges = () => {
+/* const hasChanges = () => {
   return (
-    nuevoProyecto.objetivoGeneral.descripcion.trim() !== '' ||
-    nuevoProyecto.objetivoEspecifico.some(
+    nuevoProyectoStore.nuevoProyecto.objetivoGeneral.descripcion.trim() !== '' ||
+    nuevoProyectoStore.nuevoProyecto.objetivoEspecifico.some(
       (obj) =>
         obj.descripcion.trim() !== '' || obj.supuestos.trim() !== '' || obj.riesgos.trim() !== '',
     )
@@ -184,7 +203,7 @@ const hasChanges = () => {
 // Exponemos funciones al padre si es necesario
 defineExpose({
   hasChanges,
-})
+}) */
 </script>
 
 <style scoped>

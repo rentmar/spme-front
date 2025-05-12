@@ -2,19 +2,21 @@
   <v-card class="my-card">
     <v-card-item>
       <v-card-title class="d-flex justify-space-between align-center mb-4">
-        <span>Productos del Proyecto: {{ nuevoProyecto.titulo }}</span>
+        <span>Productos del Proyecto: {{ nuevoProyectoStore.nuevoProyecto.proyecto.titulo }}</span>
         <v-btn icon @click="addProducto" color="primary" size="small" :disabled="editing">
           <v-icon>mdi-plus</v-icon>
           <v-tooltip activator="parent" location="top">Agregar producto</v-tooltip>
         </v-btn>
       </v-card-title>
-      <v-card-subtitle> Código: {{ nuevoProyecto.codigo }} </v-card-subtitle>
+      <v-card-subtitle>
+        Código: {{ nuevoProyectoStore.nuevoProyecto.proyecto.codigo }}
+      </v-card-subtitle>
     </v-card-item>
 
     <v-card-text>
       <v-tabs v-model="activeTab">
         <v-tab
-          v-for="(prod, index) in nuevoProyecto.productos"
+          v-for="(prod, index) in nuevoProyectoStore.nuevoProyecto.productos"
           :key="'prod-' + index"
           :value="'product-' + index"
           :disabled="editing"
@@ -34,7 +36,7 @@
 
       <v-window v-model="activeTab">
         <v-window-item
-          v-for="(prod, index) in nuevoProyecto.productos"
+          v-for="(prod, index) in nuevoProyectoStore.nuevoProyecto.productos"
           :key="'prod-content-' + index"
           :value="'product-' + index"
         >
@@ -75,19 +77,24 @@
 </template>
 
 <script setup>
-import { ref, inject, watch } from 'vue'
+import { ref } from 'vue'
+import { useNuevoProyectoStore } from '../store/nuevoProyectoStore'
 
-const nuevoProyecto = inject('nuevoProyecto')
+//Inicializar el store
+const nuevoProyectoStore = useNuevoProyectoStore()
+
 const activeTab = ref(0)
 const editing = ref(false)
 
-// Función para formatear el número con ceros a la izquierda
-const formatProductNumber = (num) => {
-  return num < 10 ? `P0${num}` : `P${num}`
+const addProducto = () => {
+  nuevoProyectoStore.addProducto()
+}
+const removeProducto = (index) => {
+  nuevoProyectoStore.removeProducto(index)
 }
 
 // Inicializar códigos automáticos P01, P02, etc.
-watch(
+/* watch(
   () => nuevoProyecto.productos,
   (productos) => {
     productos.forEach((prod, index) => {
@@ -98,8 +105,8 @@ watch(
   },
   { immediate: true, deep: true },
 )
-
-const addProducto = () => {
+ */
+/* const addProducto = () => {
   const newIndex = nuevoProyecto.productos.length + 1
   nuevoProyecto.productos.push({
     codigo: formatProductNumber(newIndex),
@@ -108,9 +115,9 @@ const addProducto = () => {
     riesgos: '',
   })
   activeTab.value = 'product-' + (nuevoProyecto.productos.length - 1)
-}
+} */
 
-const removeProducto = (index) => {
+/* const removeProducto = (index) => {
   nuevoProyecto.productos.splice(index, 1)
 
   // Reindexar los códigos
@@ -123,7 +130,7 @@ const removeProducto = (index) => {
     activeTab.value =
       nuevoProyecto.productos.length > 0 ? `product-${Math.max(0, index - 1)}` : null
   }
-}
+} */
 </script>
 
 <style scoped>

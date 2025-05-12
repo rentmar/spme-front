@@ -9,15 +9,20 @@
       label="Pertenece a"
       readonly
     ></v-select>
-    <v-text-field variant="outlined" v-model="nuevoProyecto.codigo" label="Código" />
     <v-text-field
       variant="outlined"
-      v-model="nuevoProyecto.titulo"
+      v-model="nuevoProyectoStore.nuevoProyecto.proyecto.codigo"
+      label="Código"
+      required
+    />
+    <v-text-field
+      variant="outlined"
+      v-model="nuevoProyectoStore.nuevoProyecto.proyecto.titulo"
       label="Titulo del proyecto"
     ></v-text-field>
     <v-textarea
       variant="outlined"
-      v-model="nuevoProyecto.descripcion"
+      v-model="nuevoProyectoStore.nuevoProyecto.proyecto.descripcion"
       label="Descripcion"
     ></v-textarea>
 
@@ -25,21 +30,21 @@
 
     <v-text-field
       label="Fecha de creacion"
-      v-model="nuevoProyecto.fecha_creacion"
+      v-model="nuevoProyectoStore.nuevoProyecto.proyecto.fecha_creacion"
       type="date"
       variant="outlined"
     ></v-text-field>
 
     <v-text-field
       label="Fecha de inicio"
-      v-model="nuevoProyecto.fecha_inicio"
+      v-model="nuevoProyectoStore.nuevoProyecto.proyecto.fecha_inicio"
       type="date"
       variant="outlined"
     ></v-text-field>
 
     <v-text-field
       label="Fecha de finalizacion"
-      v-model="nuevoProyecto.fecha_finalizacion"
+      v-model="nuevoProyectoStore.nuevoProyecto.proyecto.fecha_finalizacion"
       type="date"
       variant="outlined"
     ></v-text-field>
@@ -48,13 +53,13 @@
 
     <v-text-field
       label="Responsable"
-      v-model="nuevoProyecto.registrado"
+      v-model="nuevoProyectoStore.nuevoProyecto.proyecto.registrado"
       variant="outlined"
     ></v-text-field>
 
     <v-select
       variant="outlined"
-      v-model="nuevoProyecto.instancia_gestora"
+      v-model="nuevoProyectoStore.nuevoProyecto.proyecto.instancia_gestora"
       label="Instacia gestora"
       :items="instanciaOpciones"
     >
@@ -63,12 +68,13 @@
 </template>
 
 <script setup>
-import { inject, ref } from 'vue'
+import { ref } from 'vue'
+import { useNuevoProyectoStore } from '../store/nuevoProyectoStore'
+
+const nuevoProyectoStore = useNuevoProyectoStore()
 
 const peiOpciones = [{ idpei: 1, pei: 'PEI 2024 - 2027' }]
 const seleccionPei = ref(1)
-
-const nuevoProyecto = inject('nuevoProyecto')
 
 const instanciaOpciones = [
   'Direccion ejecutiva',
