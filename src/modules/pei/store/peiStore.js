@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { peiServicios } from '../services/peiService'
+import { indicadorPeiServicios, peiServicios } from '../services/peiService'
 import { objetivoPeiServicios } from '../services/peiService'
 
 export const usePeiStore = defineStore('pei', () => {
@@ -76,6 +76,65 @@ export const usePeiStore = defineStore('pei', () => {
       cargando.value = false
     }
   }
+  //Funcion auxiliar para actualizar el store despues de agregar un indicadpr
+  const agregarIndicadorLocalmente = (objetivoId, nuevoIndicador, tipo) => {
+    //Si los objetivos son null no se procede
+    //Esta es la comprobacion de q la peticion ha sido exitosa
+    if (!peiObjIndPorId.value?.objetivos) return
+    //Comprobar si el objetivo existe
+    const objetivoIndex = peiObjIndPorId.value.objetivos.findIndex((obj) => obj.id === objetivoId)
+    if (objetivoIndex !== -1) {
+      if (!peiObjIndPorId.value.objetivos[objetivoIndex].indicadores) {
+        peiObjIndPorId.value.objetivos[objetivoIndex].indicadores = []
+      }
+      // Agregar el nuevo indicador al objetivo correspondiente
+      peiObjIndPorId.value.objetivos[objetivoIndex].indicadores.push({
+        ...nuevoIndicador,
+        tipo, // 'cualitativo' o 'cuantitativo'
+      })
+    }
+  }
+
+  //Agregar indicador cualitativo
+  const agregarIndicadorCualitativo = async (objetivoId, datosIndicador) => {
+    cargando.value = true
+    error.value = null
+    try {
+      // 1. Hacer la petición al API
+      //const nuevoIndicador = await indicadorCualitativoServicios.crear(datosIndicador)
+      const nuevoIndicador = await indicadorPeiServicios.crearIndCualitativo(datosIndicador)
+
+      // 2. Actualizar el store localmente si la petición fue exitosa
+      agregarIndicadorLocalmente(objetivoId, nuevoIndicador, 'cualitativo')
+
+      return nuevoIndicador // Devolver el indicador creado
+    } catch (err) {
+      error.value = err.message
+      throw err // Relanzar el error para manejarlo en el componente
+    } finally {
+      cargando.value = false
+    }
+  }
+  // Agregar indicador cuantitativo
+  const agregarIndicadorCuantitativo = async (objetivoId, datosIndicador) => {
+    cargando.value = true
+    error.value = null
+    try {
+      // 1. Hacer la petición al API
+      //const nuevoIndicador = await indicadorCuantitativoServicios.crear(datosIndicador)
+      const nuevoIndicador = await indicadorPeiServicios.crearIndCuantitativo(datosIndicador)
+
+      // 2. Actualizar el store localmente si la petición fue exitosa
+      agregarIndicadorLocalmente(objetivoId, nuevoIndicador, 'cuantitativo')
+
+      return nuevoIndicador // Devolver el indicador creado
+    } catch (err) {
+      error.value = err.message
+      throw err // Relanzar el error para manejarlo en el componente
+    } finally {
+      cargando.value = false
+    }
+  }
 
   return {
     peis, //Estado: Lista de PEIs
@@ -88,5 +147,7 @@ export const usePeiStore = defineStore('pei', () => {
     obtenerPeiObjInd, //Accion
     removerObjetivoLocalmente,
     eliminarObjetivo,
+    agregarIndicadorCualitativo, // Accion
+    agregarIndicadorCuantitativo, // Accion
   }
 })

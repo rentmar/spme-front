@@ -430,7 +430,12 @@ const {
   peiObjIndPorId: peiObjetivosIndicadores,
   error: errorPei,
 } = storeToRefs(peiStore)
-const { obtenerPeiPorId, obtenerPeiObjInd } = peiStore
+const {
+  obtenerPeiPorId,
+  obtenerPeiObjInd,
+  agregarIndicadorCualitativo,
+  agregarIndicadorCuantitativo,
+} = peiStore
 
 // Formularios
 const nuevoObjetivo = ref({
@@ -551,7 +556,10 @@ const handleCrearIndicadorCualitativo = async () => {
   console.log('Indicador cualitativo creado')
   try {
     cargandoAccion.value = true
-    await indicadorPeiServicios.crearIndCualitativo(nuevoIndicadorCualitativo.value)
+    //await indicadorPeiServicios.crearIndCualitativo(nuevoIndicadorCualitativo.value)
+    const objId = nuevoIndicadorCualitativo.value.objetivo
+    await agregarIndicadorCualitativo(objId, nuevoIndicadorCualitativo.value)
+
     successMsg('Indicador cualitativo PEI creado')
   } catch (error) {
     console.log('ERROR, crear indicador cualitativo', error)
@@ -564,13 +572,57 @@ const handleCrearIndicadorCualitativo = async () => {
 const handleCrearIndicadorCuantitativo = async () => {
   try {
     cargandoAccion.value = true
-    await indicadorPeiServicios.crearIndCuantitativo(nuevoIndicadorCuantitativo.value)
+    //await indicadorPeiServicios.crearIndCuantitativo(nuevoIndicadorCuantitativo.value)
+    const objid = nuevoIndicadorCuantitativo.value.objetivo
+    await agregarIndicadorCuantitativo(objid, nuevoIndicadorCuantitativo.value)
+    successMsg('Indicador cuantitativo PEI creado')
   } catch (error) {
     console.log('ERROR: no se creo el indicador cuantitativo correctamente', error)
     errorMsg('ERROR: no se creo el indicador cuantitativo correctamente')
   } finally {
+    limpiarNuevosIndicadores()
     cargandoAccion.value = false
     dialogNuevoIndicador.value = false
+  }
+}
+const limpiarNuevosIndicadores = () => {
+  nuevoIndicador.value = {
+    tipo: 'Proporcion',
+    codigo: '',
+    descripcion: '',
+    numerador: '',
+    denominador: '',
+    umbral_des_literal_um1: '',
+    umbral_des_literal_um2: '',
+    frecuencia_recopilacion: '',
+    objetivo_id: null,
+  }
+  nuevoIndicadorCuantitativo.value = {
+    codigo: '',
+    descripcion: '',
+    numerador: '',
+    denominador: '',
+    umbral_des_numeral: '',
+    umbral_des_literal_um1: '',
+    umbral_des_literal_um2: '',
+    umbral_des_literal_um3: '',
+    frecuencia_recopilacion: '',
+    tipo: 'Proporcion',
+    uso_informacion: '',
+    objetivo: '',
+  }
+  nuevoIndicadorCualitativo.value = {
+    codigo: '',
+    descripcion: '',
+    captura_informacion: '',
+    responsabilidad: '',
+    frecuencia_recopilacion: '',
+    uso_informacion: '',
+    umbral_des_literal_um1: '',
+    umbral_des_literal_um2: '',
+    umbral_des_literal_um3: '',
+    tipo: 'Avance',
+    objetivo: '',
   }
 }
 
@@ -644,12 +696,21 @@ const eliminarObjetivo = async () => {
   }
 }
 
-const confirmarEliminarIndicador = (objetivoId, indicadorId, codigo) => {
+const confirmarEliminarIndicador = async (objetivoId, indicadorId, codigo) => {
   indicadorAEliminar.value = { objetivoId, indicadorId, codigo }
-  dialogConfirmarEliminacion.value = true
+  const confirmed = await openConfirmDialog({
+    title: 'Eliminar Indicador',
+    message: 'Desea eliminar el indicador, CODIGO: ' + indicadorAEliminar.value.codigo,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    type: 'delete',
+  })
+  if (confirmed) {
+    handleEliminarIndicador()
+  }
 }
 
-const eliminarIndicador = async () => {
+const handleEliminarIndicador = async () => {
   try {
     cargandoEliminacionIndicador.value = true
     await indicadorPeiServicios.eliminar(indicadorAEliminar.value.indicadorId)
