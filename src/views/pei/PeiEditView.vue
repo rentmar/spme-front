@@ -547,13 +547,31 @@ const agregarIndicador = async () => {
     }
   }
 }
-const handleCrearIndicadorCualitativo = () => {
+const handleCrearIndicadorCualitativo = async () => {
   console.log('Indicador cualitativo creado')
-  dialogNuevoIndicador.value = false
+  try {
+    cargandoAccion.value = true
+    await indicadorPeiServicios.crearIndCualitativo(nuevoIndicadorCualitativo.value)
+    successMsg('Indicador cualitativo PEI creado')
+  } catch (error) {
+    console.log('ERROR, crear indicador cualitativo', error)
+    errorMsg('ERROR: no se creo el indicador cualitativo correctamente')
+  } finally {
+    cargandoAccion.value = false
+    dialogNuevoIndicador.value = false
+  }
 }
-const handleCrearIndicadorCuantitativo = () => {
-  console.log('Indicador cuantitativo creado')
-  dialogNuevoIndicador.value = false
+const handleCrearIndicadorCuantitativo = async () => {
+  try {
+    cargandoAccion.value = true
+    await indicadorPeiServicios.crearIndCuantitativo(nuevoIndicadorCuantitativo.value)
+  } catch (error) {
+    console.log('ERROR: no se creo el indicador cuantitativo correctamente', error)
+    errorMsg('ERROR: no se creo el indicador cuantitativo correctamente')
+  } finally {
+    cargandoAccion.value = false
+    dialogNuevoIndicador.value = false
+  }
 }
 
 //Agregar Objetivo PEI

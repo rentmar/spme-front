@@ -86,4 +86,24 @@ export const indicadorPeiServicios = {
       throw error
     }
   },
+  /* Crear indicador cuantitativo  */
+  crearIndCuantitativo: async (indData) => {
+    try {
+      const respuesta = await api.post('/indicadores-cuantitativos/', indData)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo crear el indicador cualitativo', error)
+      throw error
+    }
+  },
+  /* Crear indicador cualitativo */
+  crearIndCualitativo: async (indData) => {
+    try {
+      const respuesta = await api.post('/indicadores-cualitativos/', indData)
+      return respuesta.data
+    } catch (error) {
+      console.log('Axios: Error al crear el indicador cualitativo', error)
+      throw error
+    }
+  },
 }
