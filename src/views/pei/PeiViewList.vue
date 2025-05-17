@@ -283,7 +283,7 @@
 
           <v-list density="comfortable">
             <v-list-item
-              to="/pei/nuevo"
+              @click="openNewPeiDialog"
               title="Nuevo PEI"
               prepend-icon="mdi-plus-circle"
               class="text-primary"
@@ -339,7 +339,86 @@
       </v-col>
     </v-row>
 
-    <!-- Diálogo de confirmación -->
+    <!-- Modal para crear nuevo PEI -->
+    <v-dialog v-model="newPeiDialog" max-width="600" persistent>
+      <v-card>
+        <v-toolbar color="primary" title="Nuevo PEI"></v-toolbar>
+
+        <v-card-text class="pt-4">
+          <v-form ref="peiForm" v-model="validForm">
+            <v-text-field
+              v-model="newPei.titulo"
+              label="Título*"
+              :rules="titleRules"
+              required
+              variant="outlined"
+              class="mb-4"
+            ></v-text-field>
+
+            <v-textarea
+              v-model="newPei.descripcion"
+              label="Descripción*"
+              :rules="descriptionRules"
+              required
+              variant="outlined"
+              rows="3"
+              class="mb-4"
+            ></v-textarea>
+
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="newPei.fecha_inicio"
+                  label="Fecha de inicio*"
+                  type="date"
+                  :max="newPei.fecha_fin"
+                  required
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="newPei.fecha_fin"
+                  label="Fecha de fin*"
+                  type="date"
+                  :min="newPei.fecha_inicio"
+                  required
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </v-form>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="grey" @click="closeNewPeiDialog">Cancelar</v-btn>
+          <v-btn
+            color="primary"
+            @click="confirmCreatePei"
+            :loading="savingPei"
+            :disabled="!validForm"
+          >
+            Guardar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Diálogo de confirmación para crear -->
+    <v-dialog v-model="confirmCreateDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h5">Confirmar creación</v-card-title>
+        <v-card-text> ¿Estás seguro de que deseas crear este nuevo PEI? </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="grey" @click="confirmCreateDialog = false">Cancelar</v-btn>
+          <v-btn color="primary" @click="createPei">Sí, crear</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Diálogo de confirmación para borrar -->
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
         <v-card-title class="text-h5">Confirmar eliminación</v-card-title>
@@ -354,17 +433,33 @@
       </v-card>
     </v-dialog>
   </v-container>
+  <!--Mensaje de confirmacion-->
+  <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
+    {{ snackbar.text }}
+
+    <template v-slot:actions>
+      <v-btn variant="text" @click="snackbar.show = false"> Cerrar </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePeiStore } from '@/modules/pei/store/peiStore'
 import { formatDate } from '@/utility/formatters'
+import { peiServicios } from '@/modules/pei/services/peiService'
+import { getVigenciaColor } from '@/utility/formatters'
 
-// Router y store
 const router = useRouter()
 const peiStore = usePeiStore()
+
+//Estado del snackbar
+const snackbar = ref({
+  show: false,
+  text: '',
+  color: 'success', // 'success' o 'error'
+})
 
 // Estados
 const loading = ref(false)
@@ -374,6 +469,94 @@ const peiToDelete = ref(null)
 const expandedPeiId = ref(null)
 const searchQuery = ref('')
 const activeTab = ref('datos')
+
+// Estados para el formulario
+const newPeiDialog = ref(false)
+const confirmCreateDialog = ref(false)
+const validForm = ref(false)
+const savingPei = ref(false)
+const peiForm = ref(null)
+
+// Datos del nuevo PEI
+const newPei = reactive({
+  titulo: '',
+  descripcion: '',
+  fecha_inicio: null,
+  fecha_fin: null,
+  esta_vigente: false,
+})
+
+// Reglas de validación
+const titleRules = [
+  (v) => !!v || 'El título es requerido',
+  (v) => (v && v.length >= 1) || 'El título debe tener al menos 5 caracteres',
+  (v) => (v && v.length <= 100) || 'El título no puede exceder 100 caracteres',
+]
+
+const descriptionRules = [
+  (v) => !!v || 'La descripción es requerida',
+  (v) => (v && v.length >= 1) || 'La descripción debe tener al menos 10 caracteres',
+  (v) => (v && v.length <= 500) || 'La descripción no puede exceder 500 caracteres',
+]
+
+// Métodos para el formulario
+const openNewPeiDialog = () => {
+  resetPeiForm()
+  newPeiDialog.value = true
+}
+
+const closeNewPeiDialog = () => {
+  newPeiDialog.value = false
+}
+
+const resetPeiForm = () => {
+  newPei.value = {
+    titulo: '',
+    descripcion: '',
+    fecha_inicio: '',
+    fecha_fin: '',
+    esta_vigente: false,
+  }
+  peiForm.value?.resetValidation()
+}
+
+const confirmCreatePei = async () => {
+  const { valid } = await peiForm.value.validate()
+  if (valid) {
+    confirmCreateDialog.value = true
+  }
+}
+
+const createPei = async () => {
+  try {
+    savingPei.value = true
+    const response = await peiServicios.crear(newPei)
+    const peiID = response.id
+    console.log('resouesta')
+    console.log(peiID)
+    // Mostrar mensaje de éxito
+    snackbar.value = {
+      show: true,
+      text: 'PEI creado exitosamente',
+      color: 'success',
+    }
+    setTimeout(() => {
+      router.push(`/pei/${peiID}/editar/`)
+    }, 1500)
+
+    confirmCreateDialog.value = false
+    newPeiDialog.value = false
+  } catch (error) {
+    console.error('Error al crear el PEI', error)
+    snackbar.value = {
+      show: true,
+      text: error.response?.data?.message || 'Error al crear el PEI',
+      color: 'error',
+    }
+  } finally {
+    savingPei.value = false
+  }
+}
 
 // Paginación
 const currentPage = ref(1)
@@ -448,11 +631,6 @@ const countByVigencia = (vigente) => {
   return filteredPeis.value.filter((p) => p.esta_vigente === vigente).length
 }
 
-// Color por vigencia
-const getVigenciaColor = (vigente) => {
-  return vigente ? 'success' : 'grey'
-}
-
 const confirmDelete = (pei) => {
   peiToDelete.value = pei
   deleteDialog.value = true
@@ -461,11 +639,15 @@ const confirmDelete = (pei) => {
 const deletePei = async () => {
   try {
     loading.value = true
-    await peiStore.eliminarPei(peiToDelete.value.id)
+    await peiServicios.eliminar(peiToDelete.value.id)
+    snackbar.value = {
+      show: true,
+      text: 'PEI eliminado exitosamente',
+      color: 'success',
+    }
     await cargarPeis()
   } catch (err) {
-    error.value = 'Error al eliminar el PEI: ' + (err.message || 'Intente nuevamente más tarde')
-    console.error('Error al eliminar PEI', err)
+    console.error('Error al eliminar el PEI', err)
   } finally {
     loading.value = false
     deleteDialog.value = false

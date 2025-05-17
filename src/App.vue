@@ -8,6 +8,7 @@
     <v-main>
       <v-container fluid>
         <RouterView></RouterView>
+        <AppSnackBar></AppSnackBar>
       </v-container>
     </v-main>
     <!--Componente Footer-->
@@ -20,6 +21,7 @@ import AppHeader from './components/layout/AppHeader.vue'
 import AppDrawer from './components/layout/AppDrawer.vue'
 import AppFooter from './components/layout/AppFooter.vue'
 import { RouterView } from 'vue-router'
+import AppSnackBar from './components/layout/AppSnackBar.vue'
 
 //Estado del drawer
 const isDrawerOpen = ref(false)

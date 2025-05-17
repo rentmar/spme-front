@@ -16,7 +16,7 @@
         <!-- Tarjeta principal con tabla - Aumentada en altura -->
         <v-card class="mb-4" min-height="600">
           <v-toolbar color="info" density="compact">
-            <v-toolbar-title>Objetivos</v-toolbar-title>
+            <v-toolbar-title>MARCO LOGICO</v-toolbar-title>
             <v-spacer></v-spacer>
 
             <!-- Botones de acción -->
@@ -58,6 +58,11 @@
                       <p class="text-caption">{{ objetivo.descripcion }}</p>
                       <v-chip v-if="objetivo.relacionPei" color="primary" small>
                         {{ objetivo.peiRelacionado }}
+                      </v-chip>
+                      <v-chip v-if="objetivo.relacionPei" color="primary" small>
+                        {{ objetivo.indicador_pei }} </v-chip
+                      ><v-chip v-if="objetivo.relacionPei" color="primary" small>
+                        {{ objetivo.objetivo_pei }}
                       </v-chip>
                     </td>
 
@@ -223,47 +228,74 @@
     <!-- MODALES -->
     <!-- Modal Objetivo General -->
     <v-dialog v-model="dialogNuevoObjetivo" max-width="800">
-      <v-card>
-        <v-stepper v-model="pasoActual">
-          <v-stepper-header>
-            <v-stepper-item value="1" title="Datos básicos"></v-stepper-item>
-            <v-stepper-item value="2" title="Relación con PEI"></v-stepper-item>
-          </v-stepper-header>
+      <v-card style="max-height: 90vh; display: flex; flex-direction: column">
+        <v-card-title>Agregar Objetivo General</v-card-title>
+        <v-stepper :items="['Datos', 'Relacion Pei']" editable style="flex: 1; overflow-y: auto">
+          <template v-slot:item.1>
+            <v-card-text>
+              <v-text-field
+                variant="outlined"
+                v-model="nuevoObjetivo.codigo"
+                label="Codigo"
+                required
+              ></v-text-field>
+              <v-textarea
+                variant="outlined"
+                v-model="nuevoObjetivo.descripcion"
+                label="Descripción"
+                rows="2"
+              ></v-textarea>
+              <v-textarea
+                variant="outlined"
+                v-model="nuevoObjetivo.supuestos"
+                label="Supuestos"
+                rows="2"
+              >
+              </v-textarea>
+              <v-textarea
+                variant="outlined"
+                v-model="nuevoObjetivo.riesgos"
+                label="Riesgos"
+                rows="2"
+              ></v-textarea>
+            </v-card-text>
+          </template>
 
-          <v-stepper-window>
-            <v-stepper-window-item value="1">
-              <v-card-text>
-                <v-text-field v-model="nuevoObjetivo.nombre" label="Nombre" required></v-text-field>
-                <v-textarea
-                  v-model="nuevoObjetivo.descripcion"
-                  label="Descripción"
-                  rows="3"
-                ></v-textarea>
-              </v-card-text>
-            </v-stepper-window-item>
-
-            <v-stepper-window-item value="2">
-              <v-card-text>
-                <v-switch
-                  v-model="nuevoObjetivo.relacionPei"
-                  label="¿Relación con PEI?"
-                  color="primary"
-                ></v-switch>
-                <v-select
-                  v-if="nuevoObjetivo.relacionPei"
-                  v-model="nuevoObjetivo.peiRelacionado"
-                  :items="itemsPei"
-                  label="PEI relacionado"
-                ></v-select>
-              </v-card-text>
-            </v-stepper-window-item>
-          </v-stepper-window>
-
-          <v-card-actions class="justify-end">
-            <v-btn v-if="pasoActual > 1" variant="text" @click="pasoActual--">Atrás</v-btn>
-            <v-btn v-if="pasoActual < 2" color="primary" @click="pasoActual++">Siguiente</v-btn>
-            <v-btn v-if="pasoActual === 2" color="primary" @click="agregarObjetivo">Guardar</v-btn>
-          </v-card-actions>
+          <template v-slot:item.2>
+            <v-card-text>
+              <v-switch
+                v-model="nuevoObjetivo.relacionPei"
+                label="¿Relación con PEI?"
+                color="primary"
+                variant="outlined"
+              ></v-switch>
+              <v-select
+                v-if="nuevoObjetivo.relacionPei"
+                v-model="nuevoObjetivo.peiRelacionado"
+                :items="itemsPei"
+                label="PEI relacionado"
+                variant="outlined"
+              ></v-select>
+              <v-select
+                v-if="nuevoObjetivo.relacionPei"
+                v-model="nuevoObjetivo.indicador_pei"
+                :items="itemsIndicadoresPei"
+                label="Indicador Pei"
+                variant="outlined"
+              >
+              </v-select>
+              <v-select
+                v-if="nuevoObjetivo.relacionPei"
+                v-model="nuevoObjetivo.objetivo_pei"
+                :items="itemsobjEspPei"
+                label="Objetivo Especifico Pei"
+                variant="outlined"
+              ></v-select>
+            </v-card-text>
+            <v-card-actions class="justify-end">
+              <v-btn color="primary" @click="agregarObjetivo">Guardar</v-btn>
+            </v-card-actions>
+          </template>
         </v-stepper>
       </v-card>
     </v-dialog>
@@ -350,6 +382,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    {{ nuevoObjetivo }}
   </v-container>
 </template>
 
@@ -364,13 +397,35 @@ import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeade
 // Store y rutas
 const proyectoStore = useProyectoStore()
 const route = useRoute()
+const idproyecto = route.params.id
+
 const { proyectoActual: proyecto, cargando: cargandoProyecto } = storeToRefs(proyectoStore)
 const { obtenerProyectoPorId } = proyectoStore
+
+onMounted(async () => {
+  await cargarDatos()
+})
+
+//Funcion de carga de stores
+const cargarDatos = async () => {
+  try {
+    await obtenerProyectoPorId(idproyecto)
+  } catch (err) {
+    console.log('Error al cargar la informacion stores', err)
+  }
+}
 
 // Estado
 const cargandoGeneral = computed(() => cargandoProyecto.value)
 const pasoActual = ref(1)
 const itemsPei = ['PEI 2023-2025', 'PEI 2025-2027', 'PEI Estratégico']
+const itemsIndicadoresPei = [
+  'Indicador Pei 1',
+  'Indicador Pei 2',
+  'Indicador Pei 3',
+  'Indicador Pei 4',
+]
+const itemsobjEspPei = ['Obj pei 1', 'Obj pei 2', 'Obj pei 3']
 
 // Datos del marco lógico
 const objetivosGenerales = ref([
@@ -402,14 +457,7 @@ const objetivosGenerales = ref([
         descripcion: 'Reducción del tiempo de ciclo de producción',
       },
     ],
-    kpis: [
-      {
-        id: 1,
-        nombre: 'KPI Eficiencia',
-        meta: 120,
-        actual: 95,
-      },
-    ],
+    kpis: [{ id: 1, nombre: 'KPI Eficiencia', meta: 120, actual: 95 }],
   },
 ])
 
@@ -422,14 +470,14 @@ const dialogNuevoResultado = ref(false)
 
 // Formularios
 const nuevoObjetivo = ref({
-  nombre: '',
+  codigo: '',
   descripcion: '',
+  supuestos: '',
+  riesgos: '',
   relacionPei: false,
   peiRelacionado: null,
-  objetivosEspecificos: [],
-  resultados: [],
-  indicadores: [],
-  kpis: [],
+  indicador_pei: null,
+  objetivo_pei: null,
 })
 
 const nuevoObjetivoEspecifico = ref({
@@ -457,7 +505,7 @@ const nuevoResultado = ref({
   objetivoRelacionado: null,
 })
 
-// Configuración de UI
+// Configuración
 const tableHeaders = [
   'OBJETIVO GENERAL',
   'OBJETIVOS ESPECÍFICOS',
@@ -523,42 +571,46 @@ const quickActions = [
 
 // Métodos
 const agregarObjetivo = () => {
-  const nuevo = {
+  objetivosGenerales.value.push({
     id: Date.now(),
     ...nuevoObjetivo.value,
     objetivosEspecificos: [],
     resultados: [],
     indicadores: [],
     kpis: [],
-  }
-  objetivosGenerales.value.push(nuevo)
+  })
   dialogNuevoObjetivo.value = false
   resetearFormularioObjetivo()
 }
 
+const resetearFormularioObjetivo = () => {
+  nuevoObjetivo.value = {
+    codigo: '',
+    descripcion: '',
+    supuestos: '',
+    riesgos: '',
+    relacionPei: false,
+    peiRelacionado: null,
+    indicador_pei: null,
+    objetivo_pei: null,
+  }
+  pasoActual.value = 1
+}
+
 const agregarObjetivoEspecifico = () => {
-  if (nuevoObjetivoEspecifico.value.objetivoGeneralRelacionado) {
-    const objetivo = nuevoObjetivoEspecifico.value.objetivoGeneralRelacionado
-    const index = objetivosGenerales.value.findIndex((og) => og.id === objetivo.id)
-
-    if (index !== -1) {
-      const nuevo = {
-        id: Date.now(),
-        nombre: nuevoObjetivoEspecifico.value.nombre,
-        descripcion: nuevoObjetivoEspecifico.value.descripcion,
-      }
-
-      if (!objetivosGenerales.value[index].objetivosEspecificos) {
-        objetivosGenerales.value[index].objetivosEspecificos = []
-      }
-
-      objetivosGenerales.value[index].objetivosEspecificos.push(nuevo)
-      dialogNuevoObjetivoEspecifico.value = false
-      nuevoObjetivoEspecifico.value = {
-        nombre: '',
-        descripcion: '',
-        objetivoGeneralRelacionado: null,
-      }
+  const objetivo = nuevoObjetivoEspecifico.value.objetivoGeneralRelacionado
+  const index = objetivosGenerales.value.findIndex((og) => og.id === objetivo.id)
+  if (index !== -1) {
+    objetivosGenerales.value[index].objetivosEspecificos.push({
+      id: Date.now(),
+      nombre: nuevoObjetivoEspecifico.value.nombre,
+      descripcion: nuevoObjetivoEspecifico.value.descripcion,
+    })
+    dialogNuevoObjetivoEspecifico.value = false
+    nuevoObjetivoEspecifico.value = {
+      nombre: '',
+      descripcion: '',
+      objetivoGeneralRelacionado: null,
     }
   }
 }
@@ -583,12 +635,11 @@ const abrirModalIndicador = (index) => {
 
 const agregarIndicador = () => {
   if (nuevoIndicador.value.objetivoIndex !== null) {
-    const indicador = {
+    objetivosGenerales.value[nuevoIndicador.value.objetivoIndex].indicadores.push({
       id: Date.now(),
       nombre: nuevoIndicador.value.nombre,
       descripcion: nuevoIndicador.value.descripcion,
-    }
-    objetivosGenerales.value[nuevoIndicador.value.objetivoIndex].indicadores.push(indicador)
+    })
     dialogNuevoIndicador.value = false
   }
 }
@@ -603,122 +654,79 @@ const abrirModalResultado = (index) => {
 }
 
 const agregarResultado = () => {
-  if (nuevoResultado.value.objetivoRelacionado) {
-    const resultado = {
+  const objetivo = nuevoResultado.value.objetivoRelacionado
+  const index = objetivosGenerales.value.findIndex((og) => og.id === objetivo.id)
+  if (index !== -1) {
+    objetivosGenerales.value[index].resultados.push({
       id: Date.now(),
       nombre: nuevoResultado.value.nombre,
       descripcion: nuevoResultado.value.descripcion,
-    }
+    })
+    dialogNuevoResultado.value = false
+  }
+}
 
-    const index = objetivosGenerales.value.findIndex(
-      (og) => og.id === nuevoResultado.value.objetivoRelacionado.id,
-    )
-    if (index !== -1) {
-      if (!objetivosGenerales.value[index].resultados) {
-        objetivosGenerales.value[index].resultados = []
-      }
-      objetivosGenerales.value[index].resultados.push(resultado)
-      dialogNuevoResultado.value = false
-    }
+const abrirModalKPI = (index) => {
+  nuevoKPI.value = {
+    nombre: '',
+    meta: 0,
+    actual: 0,
+    objetivoIndex: index,
+  }
+  dialogNuevoKPI.value = true
+}
+
+const agregarKPI = () => {
+  if (nuevoKPI.value.objetivoIndex !== null) {
+    objetivosGenerales.value[nuevoKPI.value.objetivoIndex].kpis.push({
+      id: Date.now(),
+      nombre: nuevoKPI.value.nombre,
+      meta: nuevoKPI.value.meta,
+      actual: nuevoKPI.value.actual,
+    })
+    dialogNuevoKPI.value = false
   }
 }
 
 const eliminarObjetivo = (index) => {
-  if (confirm('¿Está seguro de eliminar este objetivo y todos sus elementos relacionados?')) {
-    objetivosGenerales.value.splice(index, 1)
-  }
+  objetivosGenerales.value.splice(index, 1)
 }
 
-const eliminarObjetivoEspecifico = (ogIndex, oeIndex) => {
-  if (confirm('¿Está seguro de eliminar este objetivo específico?')) {
-    objetivosGenerales.value[ogIndex].objetivosEspecificos.splice(oeIndex, 1)
-  }
+const editarObjetivo = (index) => {
+  // Aquí podrías implementar una lógica de edición si es necesario
+  console.log('Editar objetivo', index)
 }
 
-const eliminarResultado = (ogIndex, resIndex) => {
-  if (confirm('¿Está seguro de eliminar este resultado?')) {
-    objetivosGenerales.value[ogIndex].resultados.splice(resIndex, 1)
-  }
+const eliminarObjetivoEspecifico = (objIndex, espIndex) => {
+  objetivosGenerales.value[objIndex].objetivosEspecificos.splice(espIndex, 1)
 }
 
-const resetearFormularioObjetivo = () => {
-  nuevoObjetivo.value = {
-    nombre: '',
-    descripcion: '',
-    relacionPei: false,
-    peiRelacionado: null,
-  }
-  pasoActual.value = 1
+const eliminarResultado = (objIndex, resIndex) => {
+  objetivosGenerales.value[objIndex].resultados.splice(resIndex, 1)
 }
 
-// Inicialización
-onMounted(async () => {
-  try {
-    await obtenerProyectoPorId(route.params.id)
-  } catch (error) {
-    console.log('Error en carga del proyecto', error)
-  }
-})
+const editarIndicador = (objIndex, indIndex) => {
+  abrirModalIndicador(objIndex)
+  const indicador = objetivosGenerales.value[objIndex].indicadores[indIndex]
+  nuevoIndicador.value.nombre = indicador.nombre
+  nuevoIndicador.value.descripcion = indicador.descripcion
+}
+
+const editarKPI = (objIndex, kpiIndex) => {
+  abrirModalKPI(objIndex)
+  const kpi = objetivosGenerales.value[objIndex].kpis[kpiIndex]
+  nuevoKPI.value.nombre = kpi.nombre
+  nuevoKPI.value.meta = kpi.meta
+  nuevoKPI.value.actual = kpi.actual
+}
 </script>
 
 <style scoped>
 .table-responsive {
   overflow-x: auto;
-  width: 100%;
 }
-
 .sticky-card {
   position: sticky;
   top: 20px;
-  border-radius: 12px;
-  max-height: calc(100vh - 40px);
-  overflow-y: auto;
-}
-
-.v-list-item {
-  min-height: 48px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.v-list-item:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-.text-wrap {
-  white-space: normal;
-  line-height: 1.4;
-}
-
-.v-chip {
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.v-chip:hover {
-  transform: scale(1.05);
-}
-
-.v-btn--icon {
-  transition: transform 0.2s;
-}
-
-.v-btn--icon:hover {
-  transform: scale(1.2);
-}
-
-.text-caption {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.v-table tbody tr:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-@media (max-width: 960px) {
-  .sticky-card {
-    position: static;
-    margin-bottom: 20px;
-  }
 }
 </style>

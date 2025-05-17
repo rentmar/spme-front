@@ -990,7 +990,7 @@ const submitProyecto = async () => {
 }
 
 const resetForm = () => {
-  proyecto.value = {
+  proyecto.reactive = {
     codigo: '',
     titulo: '',
     descripcion: '',

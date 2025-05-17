@@ -43,3 +43,24 @@ export const formatCurrency = (amount) => {
     currency: 'USD',
   }).format(amount)
 }
+
+//Codificacion de colores para la seleccion
+export const colorAccion = (accion) => {
+  const colors = {
+    seleccion: 'BLUE',
+    insercion: 'ASIGNACION',
+    asignacion: 'INSERCION',
+  }
+  return colors[accion] || 'primary'
+}
+
+// Color por vigencia
+export const getVigenciaColor = (vigente) => {
+  return vigente ? 'success' : 'grey'
+}
+
+// Funciones de utilidad
+export const calcularPeriodo = (inicio, fin) => {
+  const diff = new Date(fin) - new Date(inicio)
+  return Math.floor(diff / (1000 * 60 * 60 * 24 * 365))
+}
