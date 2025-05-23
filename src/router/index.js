@@ -9,6 +9,11 @@ const router = createRouter({
       component: HomeView,
     },
     {
+      path: '/profile',
+      name: 'perfil',
+      component: HomeView,
+    },
+    {
       path: '/pei',
       name: 'pei',
       component: () => import('../views/pei/PeiViewList.vue'),

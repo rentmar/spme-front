@@ -16,12 +16,18 @@
   </v-app>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, provide } from 'vue'
 import AppHeader from './components/layout/AppHeader.vue'
 import AppDrawer from './components/layout/AppDrawer.vue'
 import AppFooter from './components/layout/AppFooter.vue'
 import { RouterView } from 'vue-router'
 import AppSnackBar from './components/layout/AppSnackBar.vue'
+//Store del PEI Vigente
+import { usePeiVigenteStore } from './modules/pei/store/usePeiVigenteStore'
+
+// El PEI vigente
+const peiVigenteStore = usePeiVigenteStore()
+const peiVigente = ref(null)
 
 //Estado del drawer
 const isDrawerOpen = ref(false)
@@ -31,12 +37,27 @@ const usuarioActivo = ref({
   nombre: 'Admin',
   email: 'admin@admin.com',
   role: 'administrador',
-  isActive: false,
+  isActive: true,
 })
+
+//Inyeccion de dependencias - PEI VIGENTE
+provide('peiVigente', peiVigente)
 
 //Activar/Desactivar el drawer
 const toogleDrawer = () => {
   isDrawerOpen.value = !isDrawerOpen.value
+}
+
+onMounted(async () => {
+  cargarPEI()
+})
+const cargarPEI = async () => {
+  try {
+    await peiVigenteStore.obtenerPeiVigente()
+    peiVigente.value = peiVigenteStore.peiVigente
+  } catch (error) {
+    console.error('Error al cargar PEI vigente:', error)
+  }
 }
 </script>
 

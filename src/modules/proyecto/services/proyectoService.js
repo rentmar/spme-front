@@ -50,6 +50,8 @@ export const proyectoServicios = {
       throw error
     }
   },
+  /* Obtener todos los proyectos del PEI vigente */
+  porIdPeiVigente: async () => {},
 }
 
 export const proyectoObjetivos = {

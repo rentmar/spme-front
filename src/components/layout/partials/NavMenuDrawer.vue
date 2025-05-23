@@ -1,13 +1,7 @@
 <!-- NavMenu.vue -->
 <template>
   <v-list density="compact" nav>
-    <v-list-item
-      prepend-icon="mdi-home"
-      title="Inicio"
-      value="home"
-      to="/"
-      color="primary"
-    ></v-list-item>
+    <v-list-item prepend-icon="mdi-home" title="Inicio" value="home" to="/"></v-list-item>
 
     <v-list-group value="Estructuracion">
       <template v-slot:activator="{ props }">
