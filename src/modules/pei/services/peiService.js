@@ -50,6 +50,16 @@ export const peiServicios = {
       throw error
     }
   },
+  /* Actualizar el PEi */
+  update: async (id, data) => {
+    try {
+      const respuesta = await api.put('/pei/' + id + '/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo actualizar el pei con ID: ' + id, error)
+      throw error
+    }
+  },
 }
 
 export const objetivoPeiServicios = {

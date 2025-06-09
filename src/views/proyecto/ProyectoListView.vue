@@ -508,22 +508,27 @@
               <!-- Segunda fila: PEI e Instancia Gestora -->
               <v-row>
                 <v-col cols="12" md="6">
-                  <v-select
+                  <v-text-field
                     variant="outlined"
-                    v-model="seleccionPei"
-                    :items="peiOpciones"
-                    item-title="pei"
-                    item-value="idpei"
+                    v-model="peiVigente.titulo"
                     label="Pertenece a"
-                  ></v-select>
+                    readonly
+                  >
+                  </v-text-field>
                 </v-col>
 
                 <v-col cols="12" md="6">
+                  <div>Instancia seleccionada ID:</div>
                   <v-select
                     variant="outlined"
                     v-model="proyecto.instancia_gestora"
                     label="Instancia gestora*"
-                    :items="instanciaOpciones"
+                    :items="instancias"
+                    item-title="instancia"
+                    item-value="id"
+                    multiple
+                    chips
+                    :return-object="false"
                     :rules="[(v) => !!v || 'La instancia gestora es requerida']"
                   ></v-select>
                 </v-col>
@@ -628,11 +633,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive } from 'vue'
+import { ref, onMounted, computed, reactive, inject } from 'vue'
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { formatDate, getStatusColor, getEstadoTexto } from '@/utility/formatters'
 import { useRouter } from 'vue-router'
 import { proyectoServicios } from '@/modules/proyecto/services/proyectoService'
+//Instancias Gestoras
+import { useInstanciaGestora } from '@/modules/instanciaGestora/composables/useInstanciaGestora'
+
+//Instancias gestoras, des
+const { instancias, cargarInstancias } = useInstanciaGestora()
 
 //Enrutador
 const router = useRouter()
@@ -649,28 +659,17 @@ const dialogNuevoProyecto = ref(false)
 const confirmDialog = ref(false)
 const form = ref(null)
 const formValid = ref(false)
-const seleccionPei = ref(1)
-const peiOpciones = [{ idpei: 1, pei: 'PEI 2024 - 2027' }]
-
-const instanciaOpciones = [
-  'Direccion ejecutiva',
-  'Comunicacion',
-  'Planificacion, monitoreo y evaluacion',
-  'Desarrollo de redes',
-  'Programa urbano',
-  'Programa Nina',
-  'Programa defensores',
-  'Administracion',
-]
+//Pei vigente
+const peiVigente = inject('peiVigente')
 
 // Datos del proyecto
 const proyecto = reactive({
   codigo: '',
   titulo: '',
   descripcion: '',
-  pei: 1,
+  pei: peiVigente.value.id,
   estado: 'ES',
-  instancia_gestora: '',
+  instancia_gestora: [],
   creado_por: 'Admin',
   fecha_inicio: null,
   fecha_finalizacion: null,
@@ -746,6 +745,7 @@ const cargarProyectos = async () => {
     error.value = null
     emptyResponse.value = false
     await proyectoStore.obtenerProyectos()
+    cargarInstancias()
     if (proyectoStore.proyectos.length === 0) {
       emptyResponse.value = true
     }
@@ -809,9 +809,7 @@ const toggleExpanded = (id) => {
 const statusFilters = ref([])
 const availableStatuses = [
   { text: 'En Estructuración', value: 'ES' },
-  { text: 'En Ejecución', value: 'EJ' },
-  { text: 'Completado', value: 'CO' },
-  { text: 'Suspendido', value: 'SU' },
+  { text: 'En Planificacion', value: 'EP' },
 ]
 
 //Estados adicionales
@@ -871,39 +869,12 @@ const uploadFiles = async () => {
         }, 500)
       }
     }, 300)
-
-    // En una implementación real:
-    // const formData = new FormData()
-    // filesToUpload.value.forEach(file => {
-    //   formData.append('files', file)
-    // })
-    // await proyectoStore.subirDocumentos(proyectoSeleccionado.value.id, formData, {
-    //   onUploadProgress: (progressEvent) => {
-    //     uploadProgress.value = Math.round(
-    //       (progressEvent.loaded * 100) / progressEvent.total
-    //     )
-    //   }
-    // })
   } catch (error) {
     uploadError.value = 'Error al subir los documentos: ' + (error.message || 'Intente nuevamente')
     console.error('Error al subir documentos', error)
   }
 }
 
-/*
-const resetForm = () => {
-  proyecto.value = {
-    codigo: '',
-    titulo: '',
-    descripcion: '',
-    pei: null,
-    estado: 'ES',
-    instancia_gestora: '',
-    creado_por: '',
-    fecha_inicio: null,
-    fecha_finalizacion: null
-  }
-}*/
 //Metodos de los dialog
 // Opciones para selects
 
@@ -934,6 +905,7 @@ const submitProyecto = async () => {
   //Rutina de creacion
   try {
     const response = await proyectoServicios.crear(proyecto)
+    console.log(response)
     if (!response?.data?.id) {
       throw new Error('No se recibió un ID válido')
     }
@@ -959,56 +931,27 @@ const submitProyecto = async () => {
       color: 'error',
     }
   }
-
-  /* try {
-    const payload = {
-      ...proyecto.value,
-      pei: proyecto.value.pei,
-    }
-
-    // Limpiar campos no requeridos si están vacíos
-    Object.keys(payload).forEach((key) => {
-      if (payload[key] === '' || payload[key] === null) {
-        delete payload[key]
-      }
-    })
-
-    //const response = await axios.post('/api/proyectos/', payload)
-    //const proyectoId = response.data.id
-
-    // Redirigir a la vista de edición
-    //router.push(`/proyecto/${proyectoId}/editar`)
-
-    // Cerrar y resetear
-    confirmDialog.value = false
-    dialogNuevoProyecto.value = false
-    resetForm()
-  } catch (error) {
-    console.error('Error al crear proyecto:', error)
-    // Aquí podrías mostrar un snackbar/alert con el error
-  } */
 }
 
 const resetForm = () => {
-  proyecto.reactive = {
+  Object.assign(proyecto, {
     codigo: '',
     titulo: '',
     descripcion: '',
-    pei: 1,
+    pei: peiVigente.value.id, // Mantiene el valor actualizado
     estado: 'ES',
-    instancia_gestora: '',
+    instancia_gestora: [],
     creado_por: 'Admin',
-    fecha_creacion: null,
     fecha_inicio: null,
     fecha_finalizacion: null,
     presupuesto: null,
-  }
+  })
 }
 
 const closeDialog = () => {
   //dialog.value = false
-  dialogNuevoProyecto.value = false
   resetForm()
+  dialogNuevoProyecto.value = false
 }
 </script>
 

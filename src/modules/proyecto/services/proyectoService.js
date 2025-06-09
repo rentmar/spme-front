@@ -11,10 +11,29 @@ export const proyectoServicios = {
       return []
     }
   },
+  /* Obtener todos los proyectos en estado de PLANIFICACION */
+  obtenerTodosPlanificacion: async (idPei) => {
+    try {
+      const respuesta = await api.get('proyectos/planificacion/' + idPei + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo obtener la lista de proyectos en planificacion', error)
+      return []
+    }
+  },
   /* Proyecto por identificador */
   obtenertPorId: async (id) => {
     try {
       const respuesta = await api.get('/proyectos/' + id)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo obtener el proyecto con el ID: ' + id, error)
+    }
+  },
+  /* Proyecto por identificador */
+  estructuraPorId: async (id) => {
+    try {
+      const respuesta = await api.get('/proyecto-estructura/' + id + '/')
       return respuesta.data
     } catch (error) {
       console.error('Axios: No se pudo obtener el proyecto con el ID: ' + id, error)
@@ -37,6 +56,16 @@ export const proyectoServicios = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: No se pudo eliminar el proyecto con ID: ' + id, error)
+      throw error
+    }
+  },
+  /* Actualizar proyecto  */
+  actualizar: async (id, data) => {
+    try {
+      const respuesta = await api.put('/proyectos/' + id + '/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo actualizar el proyecto con ID: ' + id, error)
       throw error
     }
   },
@@ -74,10 +103,37 @@ export const proyectoObjetivos = {
   },
   generalesPorIdProyecto: async (id) => {
     try {
-      const respuesta = await api.get('/proy_obj_general/por-proyecto/' + id)
+      const respuesta = await api.get('/proyectos/' + id + '/objetivo-general/')
       return respuesta.data
     } catch (error) {
       console.error('Axios: No se puede obtener el objetivo generale ID: ' + id, error)
+    }
+  },
+  generalesCrear: async (objGralData) => {
+    try {
+      const respuesta = await api.post('/proy-obj-gral/', objGralData)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al crear el objetigo general', error)
+      throw error
+    }
+  },
+  generalesModificar: async (id, data) => {
+    try {
+      const respuesta = await api.put('/proy-obj-gral/' + id + '/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo actualizar la el objetivo general con ID: ' + id, error)
+      throw error
+    }
+  },
+  generalesEliminar: async (id) => {
+    try {
+      const respuesta = await api.delete('/proy-obj-gral/' + id + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo eliminar el objetivo general con ID: ' + id, error)
+      throw error
     }
   },
   especificosAll: async () => {

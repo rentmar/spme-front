@@ -3,32 +3,32 @@
     <!-- Overlay de carga -->
     <v-overlay :model-value="cargandoGeneral" class="align-center justify-center">
       <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
-      <p class="mt-4 text-h6">Cargando proyecto...</p>
+      <p class="mt-4 text-h6">Cargando Planificacion...</p>
     </v-overlay>
 
     <!-- CONTENIDO -->
     <v-row v-if="!cargandoGeneral">
       <!-- Columna principal (100% ancho) -->
       <v-col cols="12" md="12">
-        <PaginaTituloIcono :titulo="'Estructura'" :icon="'mdi-file-cog'" />
+        <PaginaTituloIcono :titulo="'planificacion'" :icon="'mdi-calendar'" />
         <ProyectoHeader v-if="proyecto" :proyecto="proyecto" />
-
         <!-- Tarjeta principal con diagrama Vue Flow -->
-        <v-card class="mb-4" min-height="2000">
+        <v-card class="mb-4" min-height="800">
           <v-toolbar color="info" density="compact">
-            <v-toolbar-title>ESTRUCTURA DEL PROYECTO</v-toolbar-title>
+            <v-toolbar-title>PLANIFICACION</v-toolbar-title>
             <v-spacer></v-spacer>
           </v-toolbar>
 
           <!-- Contenedor del diagrama -->
-          <v-card-text style="height: 900px; position: relative">
+          <v-card-text class="contenedor-planificacion">
+            <!-- <v-card-text style="height: 750px; position: relative"> -->
             <template v-if="!cargandoGeneral && proyecto">
-              <EditorEstructuraMain></EditorEstructuraMain>
+              <PlanificacionXls></PlanificacionXls>
             </template>
             <template v-else>
               <div class="d-flex flex-column align-center justify-center" style="height: 100%">
                 <v-progress-circular indeterminate color="primary" />
-                <p class="mt-2">Cargando estructura...</p>
+                <p class="mt-2">Cargando Proyecto...</p>
               </div>
             </template>
           </v-card-text>
@@ -39,28 +39,22 @@
 </template>
 
 <script setup>
-import { onMounted, computed, provide, readonly } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
-import EditorEstructuraMain from '@/modules/editorEstructura/components/EditorEstructuraMain.vue'
+import PlanificacionXls from '@/modules/planificacionxls/components/PlanificacionXls.vue'
+//Estilos de Vue Flow
 
 // Store y rutas
 const proyectoStore = useProyectoStore()
 const route = useRoute()
 const idproyecto = route.params.id
 
-// Estado
-const cargandoGeneral = computed(() => cargandoProyecto.value)
-
-//Desestructurar store
-const { proyectoEstructura: proyecto, cargando: cargandoProyecto } = storeToRefs(proyectoStore)
-const { obtenerProyectoEstructuraPorId } = proyectoStore
-
-//Inyectar el proyecto y su estructura
-provide('proyectoEstructura', readonly(proyecto))
+const { proyectoActual: proyecto, cargando: cargandoProyecto } = storeToRefs(proyectoStore)
+const { obtenerProyectoPorId } = proyectoStore
 
 onMounted(async () => {
   await cargarDatos()
@@ -68,11 +62,14 @@ onMounted(async () => {
 
 const cargarDatos = async () => {
   try {
-    await obtenerProyectoEstructuraPorId(idproyecto)
+    await obtenerProyectoPorId(idproyecto)
   } catch (err) {
-    console.error(err)
+    console.log('Error al cargar la informacion stores', err)
   }
 }
+
+// Estado
+const cargandoGeneral = computed(() => cargandoProyecto.value)
 </script>
 
 <style scoped>
@@ -163,5 +160,13 @@ const cargarDatos = async () => {
   min-height: 500px;
   background-color: #f8fafc;
   border-radius: 4px;
+}
+
+.contenedor-planificacion {
+  width: 100%;
+  height: 100%;
+  min-height: 750px;
+  position: relative;
+  padding: 0;
 }
 </style>

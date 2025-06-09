@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer v-model="drawer">
+  <v-navigation-drawer v-model="drawer" width="300">
     <!--Perfil de usuario-->
     <user-profile :usuario="usuario"></user-profile>
     <v-divider></v-divider>

@@ -64,3 +64,35 @@ export const calcularPeriodo = (inicio, fin) => {
   const diff = new Date(fin) - new Date(inicio)
   return Math.floor(diff / (1000 * 60 * 60 * 24 * 365))
 }
+
+// Asignar colores por código de instancia
+export const getChipColor = (codigo) => {
+  const colorMap = {
+    URBANO: 'deep-purple-lighten-2',
+    UG: 'blue-lighten-2',
+    REDES: 'green-lighten-2',
+    'PM&E': 'orange-lighten-2',
+    NINA: 'pink-lighten-2',
+    'DIR EJEC': 'red-lighten-2',
+    DEFENSORES: 'indigo-lighten-2',
+    COM: 'cyan-lighten-2',
+    ADM: 'teal-lighten-2',
+  }
+  return colorMap[codigo] || 'grey-lighten-2'
+}
+
+// Asignar iconos por código de instancia
+export const getInstanciaIcon = (codigo) => {
+  const iconMap = {
+    URBANO: 'mdi-city',
+    UG: 'mdi-office-building',
+    REDES: 'mdi-vector-link',
+    'PM&E': 'mdi-chart-bar',
+    NINA: 'mdi-human-child',
+    'DIR EJEC': 'mdi-account-tie',
+    DEFENSORES: 'mdi-shield-account',
+    COM: 'mdi-message-text',
+    ADM: 'mdi-file-document-multiple',
+  }
+  return iconMap[codigo] || 'mdi-domain'
+}

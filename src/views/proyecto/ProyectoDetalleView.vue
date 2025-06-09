@@ -251,23 +251,6 @@
               </div>
             </div>
 
-            <!-- Indicadores clave -->
-            <!--
-            <v-divider class="my-3"></v-divider>
-            <h3 class="mb-2">Indicadores:</h3>
-
-            <v-row dense>
-              <v-col cols="6" v-for="(item, i) in cantidadesResumen" :key="i">
-                <v-card variant="outlined">
-                  <v-card-text class="text-center">
-                    <div class="text-h6">{{ i }}</div>
-                    <div class="text-caption text-grey">{{ item }}</div>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-            -->
-
             <!-- Presupuesto -->
             <v-divider class="my-3"></v-divider>
             <h3 class="mb-2">Presupuesto</h3>

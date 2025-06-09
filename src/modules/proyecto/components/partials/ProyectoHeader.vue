@@ -8,7 +8,14 @@
             {{ proyecto.titulo }}
           </h2>
           <div class="text-subtitle-1 text-medium-emphasis project-subtitle">
-            {{ proyecto.codigo }}
+            CODIGO: {{ proyecto.codigo }}
+          </div>
+          <div
+            v-if="pei && pei.titulo"
+            class="text-caption text-medium-emphasis mt-1 font-italic"
+            style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
+          >
+            PEI: {{ pei.titulo }}
           </div>
         </div>
         <v-spacer></v-spacer>
@@ -19,6 +26,24 @@
           class="status-chip"
         >
           {{ getEstadoTexto(proyecto.estado) }}
+        </v-chip>
+      </div>
+
+      <!-- Chips de instancias gestoras -->
+      <div v-if="instanciasProyecto.length" class="mt-2 d-flex flex-wrap">
+        <v-chip
+          v-for="instancia in instanciasProyecto"
+          :key="instancia.id"
+          class="ma-1"
+          :color="getChipColor(instancia.codigo)"
+          label
+          size="small"
+        >
+          <v-icon start :icon="getInstanciaIcon(instancia.codigo)" size="small"></v-icon>
+          {{ instancia.text }}
+          <v-tooltip activator="parent" location="top">
+            Código: {{ instancia.codigo }} | Clasificador: {{ instancia.clasificador || 'N/A' }}
+          </v-tooltip>
         </v-chip>
       </div>
     </v-card-title>
@@ -73,79 +98,45 @@
 </template>
 
 <script setup>
-import { getStatusColor, getEstadoTexto, formatDate } from '@/utility/formatters'
+import {
+  getStatusColor,
+  getEstadoTexto,
+  formatDate,
+  getChipColor,
+  getInstanciaIcon,
+} from '@/utility/formatters'
+import { useInstanciaGestora } from '@/modules/instanciaGestora/composables/useInstanciaGestora'
+import { usePeiCrud } from '@/modules/pei/composables/usePeiCrud'
+import { computed, ref, onMounted } from 'vue'
 
-defineProps({
+const props = defineProps({
   proyecto: { type: Object, required: true },
   activarDetalles: { type: Boolean, default: false },
   activarEditar: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['click', 'view', 'edit'])
+
+const { instanciasParaChips, getInstanciasByIds, cargarInstancias } = useInstanciaGestora()
+const { obtenerPeiPorId } = usePeiCrud()
+
+const pei = ref(null)
+
+onMounted(async () => {
+  if (props.proyecto?.pei) {
+    try {
+      pei.value = await obtenerPeiPorId(props.proyecto.pei)
+    } catch (e) {
+      console.warn('No se pudo cargar el PEI:', e)
+    }
+  }
+
+  if (instanciasParaChips.value.length === 0) {
+    await cargarInstancias()
+  }
+})
+
+const instanciasProyecto = computed(() => {
+  return getInstanciasByIds(props.proyecto.instancia_gestora)
+})
 </script>
-
-<style scoped>
-.v-card {
-  margin-bottom: 24px; /* Aumenta el margen inferior */
-}
-
-/* Opcional: ajusta el espaciado específico para la última tarjeta si es necesario */
-.v-card:last-child {
-  margin-bottom: 0;
-}
-/* Estilos para hacer la tarjeta de resumen pegajosa */
-.sticky-card {
-  position: sticky;
-  top: 20px;
-}
-
-/* Estilos generales para las tarjetas */
-.v-card {
-  border-radius: 8px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-/* Efecto hover para las tarjetas */
-.v-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
-}
-
-/* Estilos para los paneles del acordeón */
-.v-expansion-panel {
-  border-radius: 6px !important;
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-.project-title-container {
-  min-width: 0; /* Permite que el texto se trunque correctamente */
-  margin-right: 12px;
-}
-
-.project-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 2px;
-}
-
-.project-subtitle {
-  font-size: 0.875rem;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-/* Chip de estado mejorado */
-.status-chip {
-  min-width: 100px; /* Ancho mínimo garantizado */
-  padding: 0 10px;
-  font-weight: 500;
-  height: 28px;
-  font-size: 0.8125rem;
-  letter-spacing: 0.5px;
-  margin-left: 8px;
-  flex-shrink: 0; /* Evita que se encoja */
-}
-</style>

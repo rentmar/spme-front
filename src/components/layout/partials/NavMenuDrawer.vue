@@ -38,8 +38,8 @@
 
       <v-list-item
         prepend-icon="mdi-calendar-check"
-        title="Actividades"
-        value="actividades"
+        title="Proyectos/Actividades"
+        value="proyectosActividades"
         to="/planificacion/actividades"
       ></v-list-item>
 

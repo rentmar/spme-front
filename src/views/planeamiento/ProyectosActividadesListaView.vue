@@ -1,94 +1,62 @@
 <template>
   <v-container>
-    <!-- Encabezado principal -->
-    <v-row class="mb-4">
-      <v-col cols="12">
-        <h1 class="text-h4 font-weight-bold primary--text">
-          <v-icon large color="primary" class="mr-2">mdi-calendar-multiple</v-icon>
-          Planificación de Actividades
-        </h1>
-        <!-- <v-breadcrumbs :items="breadcrumbs" class="px-0"></v-breadcrumbs> -->
-        <p class="text-subtitle-1 text-grey-darken-1">
-          Gestión y seguimiento de actividades asociadas a proyectos y PEI
-        </p>
-      </v-col>
-    </v-row>
-    <!-- Indicador de carga lineal -->
-    <v-progress-linear
-      v-if="loading"
-      indeterminate
-      color="primary"
-      height="4"
-      class="mb-4"
-    ></v-progress-linear>
+    <!--overlay de carga-->
+    <v-overlay :model-value="cargandoGeneral" class="align-center justify-center">
+      <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+      <p class="mt-4 text-h6">Cargando proyecto...</p>
+    </v-overlay>
 
-    <v-row>
-      <!-- Columna principal -->
-      <v-col cols="12" md="9" lg="9">
+    <!--CONTENIDO-->
+    <v-row v-if="!cargandoGeneral">
+      <!-- Columna principal - Proyectos y Actividades -->
+      <v-col cols="12" md="8" lg="9">
         <v-card class="pa-4" elevation="2">
           <v-card-title class="d-flex justify-space-between align-center">
-            <div class="d-flex align-center">
-              <span>Planificacion de {{ getListTitle() }}</span>
-              <v-select
-                v-model="listType"
-                :items="listTypes"
-                density="compact"
-                variant="outlined"
-                class="ml-4"
-                style="max-width: 200px"
-                @update:modelValue="handleListTypeChange"
-              ></v-select>
-            </div>
+            <span>Proyectos y Actividades</span>
             <span class="text-caption text-grey">Total: {{ filteredItems.length }}</span>
           </v-card-title>
 
-          <!-- Buscador -->
+          <!-- Filtros -->
           <v-card-text class="pt-0 pb-4">
-            <v-text-field
-              v-model="searchQuery"
-              :label="`Buscar ${getSearchLabel()} (por código o título)`"
-              prepend-inner-icon="mdi-magnify"
-              variant="outlined"
-              clearable
-              density="comfortable"
-              @input="currentPage = 1"
-            ></v-text-field>
-
-            <!-- Filtros por estado (solo para proyectos) -->
-            <v-chip-group
-              v-model="statusFilters"
-              multiple
-              column
-              class="mt-2"
-              v-if="showStatusFilters"
-            >
-              <v-chip
-                v-for="status in availableStatuses"
-                :key="status.value"
-                :value="status.value"
-                filter
-                :color="getStatusColor(status.value)"
-                variant="outlined"
-              >
-                {{ status.text }}
-              </v-chip>
-            </v-chip-group>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="searchQuery"
+                  label="Buscar (por código o título)"
+                  prepend-inner-icon="mdi-magnify"
+                  variant="outlined"
+                  clearable
+                  density="comfortable"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="tipoFiltro"
+                  :items="tiposFiltro"
+                  label="Mostrar"
+                  variant="outlined"
+                  density="comfortable"
+                ></v-select>
+              </v-col>
+            </v-row>
           </v-card-text>
 
-          <v-list v-if="!loading" class="py-0">
-            <template v-for="item in paginatedItems" :key="item.id">
-              <v-list-item :value="item" class="mb-2">
+          <!-- Lista de proyectos y actividades -->
+          <v-list class="py-0">
+            <template v-for="item in filteredItems" :key="item.id">
+              <!-- Item de Proyecto -->
+              <v-list-item v-if="item.tipo === 'proyecto'" :value="item" class="mb-2">
                 <template v-slot:prepend>
-                  <v-avatar :color="getItemColor(item)" class="mr-4">
-                    <v-icon dark>{{ getItemIcon(item) }}</v-icon>
+                  <v-avatar color="primary" class="mr-4">
+                    <v-icon dark>mdi-folder-text-outline</v-icon>
                   </v-avatar>
                 </template>
 
                 <v-list-item-title class="font-weight-bold">{{ item.titulo }}</v-list-item-title>
                 <v-list-item-subtitle class="mt-1">
                   <div class="d-flex align-center">
-                    <v-chip small :color="getItemColor(item)" text-color="white" class="mr-2">
-                      {{ getItemStatus(item) }}
+                    <v-chip small color="primary" text-color="white" class="mr-2">
+                      En Planificación
                     </v-chip>
                     <span>Código: {{ item.codigo }}</span>
                   </div>
@@ -97,45 +65,6 @@
 
                 <template v-slot:append>
                   <div class="d-flex">
-                    <!-- Botón de Gantt (para todos los items) -->
-                    <v-tooltip text="Diagrama de Gantt" location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-btn
-                          v-bind="props"
-                          icon="mdi-chart-gantt"
-                          variant="text"
-                          color="indigo"
-                          @click="openGantt(item)"
-                        ></v-btn>
-                      </template>
-                    </v-tooltip>
-
-                    <!-- Botón de Agregar Actividad (solo para proyectos) -->
-                    <v-tooltip v-if="isProyecto(item)" text="Agregar actividad" location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-btn
-                          v-bind="props"
-                          icon="mdi-plus-box"
-                          variant="text"
-                          color="teal"
-                          @click="addActivity(item)"
-                        ></v-btn>
-                      </template>
-                    </v-tooltip>
-
-                    <!-- Botón de Editar (para actividades PEI) -->
-                    <v-tooltip v-if="!isProyecto(item)" text="Editar" location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-btn
-                          v-bind="props"
-                          icon="mdi-pencil"
-                          variant="text"
-                          color="warning"
-                          @click="editActivity(item)"
-                        ></v-btn>
-                      </template>
-                    </v-tooltip>
-
                     <v-tooltip text="Ver detalles" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
@@ -143,611 +72,325 @@
                           icon="mdi-eye-outline"
                           variant="text"
                           color="primary"
-                          :to="getDetailRoute(item)"
                         ></v-btn>
                       </template>
                     </v-tooltip>
 
-                    <v-tooltip text="Vista rápida" location="top">
+                    <v-tooltip text="Proceso de planificación" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
                           v-bind="props"
-                          icon="mdi-chevron-down"
+                          icon="mdi-calendar-text"
                           variant="text"
-                          color="info"
-                          @click="toggleExpanded(item.id)"
-                          :class="{ 'rotate-180': expandedItemId === item.id }"
+                          color="secondary"
+                          :to="`/proyecto/${item.id}/planificar`"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
+                    <div class="d-flex">
+                      <v-tooltip text="Solicitud" location="top">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            icon="mdi-file-document-edit"
+                            variant="text"
+                            color="info"
+                            :to="`/proyecto/${item.id}/planificar`"
+                          ></v-btn>
+                        </template>
+                      </v-tooltip>
+                      <v-tooltip text="Rendición de cuentas" location="top">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            icon="mdi-clipboard-check-outline"
+                            variant="text"
+                            color="success"
+                            :to="`/proyecto/${item.id}/planificar`"
+                          ></v-btn>
+                        </template>
+                      </v-tooltip>
+                      <v-tooltip text="Informe de actividad" location="top">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            icon="mdi-file-chart"
+                            variant="text"
+                            color="warning"
+                            :to="`/proyecto/${item.id}/planificar`"
+                          ></v-btn>
+                        </template>
+                      </v-tooltip>
+                    </div>
+                  </div>
+                </template>
+              </v-list-item>
+
+              <!-- Item de Actividad -->
+              <v-list-item v-else :value="item" class="mb-2">
+                <template v-slot:prepend>
+                  <v-avatar color="orange" class="mr-4">
+                    <v-icon dark>mdi-checkbox-marked-circle-outline</v-icon>
+                  </v-avatar>
+                </template>
+
+                <v-list-item-title class="font-weight-bold">{{ item.titulo }}</v-list-item-title>
+                <v-list-item-subtitle class="mt-1">
+                  <div class="d-flex align-center">
+                    <v-chip small color="orange" text-color="white" class="mr-2">
+                      {{ item.estado }}
+                    </v-chip>
+                    <span>Código: {{ item.codigo }}</span>
+                  </div>
+                  <div class="text-caption mt-1">{{ item.responsable }}</div>
+                  <v-progress-linear
+                    :model-value="item.avance"
+                    height="8"
+                    color="light-green"
+                    class="mt-2"
+                  ></v-progress-linear>
+                  <div class="d-flex justify-space-between mt-1">
+                    <span class="text-caption">Avance: {{ item.avance }}%</span>
+                    <span class="text-caption">{{ item.fecha }}</span>
+                  </div>
+                </v-list-item-subtitle>
+
+                <template v-slot:append>
+                  <div class="d-flex">
+                    <v-tooltip text="Ver detalle" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          icon="mdi-eye"
+                          variant="text"
+                          color="primary"
+                          @click="verDetalleActividad(item)"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
+                    <v-tooltip text="Generar solicitud" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          icon="mdi-file-document-edit"
+                          variant="text"
+                          color="secondary"
+                          @click="generarSolicitud(item)"
                         ></v-btn>
                       </template>
                     </v-tooltip>
                   </div>
                 </template>
               </v-list-item>
-
-              <!-- Tarjeta de detalles desplegable -->
-              <v-expand-transition>
-                <div v-if="expandedItemId === item.id">
-                  <v-card elevation="0" class="ml-10 mr-4 mb-4 bg-grey-lighten-4">
-                    <v-card-text class="pt-4">
-                      <v-row>
-                        <v-col cols="12" md="6">
-                          <p><strong>Descripción:</strong> {{ item.descripcion }}</p>
-                          <p><strong>Estado:</strong> {{ getItemStatus(item) }}</p>
-                          <p><strong>Código:</strong> {{ item.codigo }}</p>
-                          <p v-if="isProyecto(item)">
-                            <strong>Instancia gestora:</strong> {{ item.instancia_gestora }}
-                          </p>
-                        </v-col>
-                        <v-col cols="12" md="6">
-                          <p>
-                            <strong>Fecha de creación:</strong>
-                            {{ formatDate(item.fecha_creacion) }}
-                          </p>
-                          <p><strong>Creado por:</strong> {{ item.creado_por }}</p>
-                          <p v-if="item.fecha_inicio">
-                            <strong>Fecha inicio:</strong> {{ formatDate(item.fecha_inicio) }}
-                          </p>
-                          <p v-if="item.fecha_finalizacion">
-                            <strong>Fecha finalización:</strong>
-                            {{ formatDate(item.fecha_finalizacion) }}
-                          </p>
-                        </v-col>
-                      </v-row>
-
-                      <div class="d-flex justify-end mt-4">
-                        <v-btn
-                          color="primary"
-                          variant="text"
-                          size="small"
-                          :to="getDetailRoute(item)"
-                        >
-                          Ver detalles completos
-                        </v-btn>
-                      </div>
-                    </v-card-text>
-                  </v-card>
-                </div>
-              </v-expand-transition>
+              <v-divider></v-divider>
             </template>
 
-            <v-list-item v-if="filteredItems.length === 0 && !loading">
-              <v-list-item-title class="text-grey">No se encontraron items</v-list-item-title>
+            <v-list-item v-if="filteredItems.length === 0">
+              <v-list-item-title class="text-grey">No se encontraron elementos</v-list-item-title>
             </v-list-item>
           </v-list>
-
-          <!-- Paginación -->
-          <v-pagination
-            v-if="totalPages > 1"
-            v-model="currentPage"
-            :length="totalPages"
-            :total-visible="7"
-            class="mt-4"
-          ></v-pagination>
-
-          <div
-            v-if="filteredItems.length > 0"
-            class="d-flex align-center justify-space-between mt-2"
-          >
-            <span class="text-caption text-grey">
-              Mostrando {{ startItem }}-{{ endItem }} de {{ filteredItems.length }}
-            </span>
-            <v-select
-              v-model="itemsPerPage"
-              :items="[5, 10, 20, 50]"
-              label="Items por página"
-              density="compact"
-              style="max-width: 150px"
-              variant="outlined"
-            ></v-select>
-          </div>
         </v-card>
       </v-col>
 
-      <!-- Columna lateral -->
-      <v-col cols="12" md="3" lg="3">
-        <!-- Tarjeta de acciones -->
-        <v-card class="mb-4" elevation="2">
-          <v-card-title class="primary white--text">
-            <v-icon left>mdi-cog</v-icon>
-            PEI
-          </v-card-title>
-
-          <v-list density="comfortable">
-            <v-list-item
-              v-if="showProyectoActions"
-              to="/planificacion/pei/1/actividad"
-              title="Agregar Actividad PEI"
-              prepend-icon="mdi-plus-circle"
-              class="text-primary"
-            ></v-list-item>
-
-            <!-- <v-list-item
-              title="Exportar lista"
-              prepend-icon="mdi-file-export"
-              @click="exportToExcel"
-            ></v-list-item> -->
-          </v-list>
-        </v-card>
-
-        <!-- Tarjeta de estadísticas -->
+      <!-- Columna lateral - Resumen -->
+      <v-col cols="12" md="4" lg="3">
+        <!-- Tarjeta de resumen -->
         <v-card elevation="2">
           <v-card-title class="primary white--text">
             <v-icon left>mdi-chart-box</v-icon>
-            Estadísticas
+            Resumen
           </v-card-title>
 
           <v-list density="comfortable">
             <v-list-item>
               <template v-slot:prepend>
-                <v-icon color="primary">mdi-file-document-multiple</v-icon>
+                <v-icon color="primary">mdi-folder</v-icon>
               </template>
-              <v-list-item-title>Total items</v-list-item-title>
+              <v-list-item-title>Proyectos en planificación</v-list-item-title>
+              <v-list-item-subtitle class="text-right">{{ proyectos.length }}</v-list-item-subtitle>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon color="orange">mdi-checkbox-marked-circle-outline</v-icon>
+              </template>
+              <v-list-item-title>Actividades PEI</v-list-item-title>
               <v-list-item-subtitle class="text-right">{{
-                filteredItems.length
+                actividades.length
               }}</v-list-item-subtitle>
             </v-list-item>
 
-            <template v-if="showProyectoStats">
-              <v-list-item>
-                <template v-slot:prepend>
-                  <v-icon color="warning">mdi-cog-box</v-icon>
-                </template>
-                <v-list-item-title>En Estructuración</v-list-item-title>
-                <v-list-item-subtitle class="text-right">
-                  {{ countByStatus('ES') }}
-                </v-list-item-subtitle>
-              </v-list-item>
-
-              <v-list-item>
-                <template v-slot:prepend>
-                  <v-icon color="success">mdi-play-circle</v-icon>
-                </template>
-                <v-list-item-title>En ejecución</v-list-item-title>
-                <v-list-item-subtitle class="text-right">
-                  {{ countByStatus('EJ') }}
-                </v-list-item-subtitle>
-              </v-list-item>
-
-              <v-list-item>
-                <template v-slot:prepend>
-                  <v-icon color="info">mdi-check-circle</v-icon>
-                </template>
-                <v-list-item-title>Completados</v-list-item-title>
-                <v-list-item-subtitle class="text-right">
-                  {{ countByStatus('CO') }}
-                </v-list-item-subtitle>
-              </v-list-item>
-            </template>
-
-            <v-list-item v-if="showActividadStats">
+            <v-list-item>
               <template v-slot:prepend>
-                <v-icon color="teal">mdi-checkbox-marked-circle</v-icon>
+                <v-icon color="green">mdi-check-all</v-icon>
               </template>
               <v-list-item-title>Actividades completadas</v-list-item-title>
               <v-list-item-subtitle class="text-right">
-                {{ countActividadesByStatus('completada') }}
+                {{ actividadesCompletadas }}
+              </v-list-item-subtitle>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon color="blue">mdi-progress-check</v-icon>
+              </template>
+              <v-list-item-title>Avance promedio</v-list-item-title>
+              <v-list-item-subtitle class="text-right">
+                {{ avancePromedio }}%
               </v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-card>
       </v-col>
     </v-row>
-
-    <!-- Diálogo de Gantt -->
-    <v-dialog v-model="ganttDialog" max-width="900">
-      <v-card>
-        <v-card-title class="text-h5">
-          <v-icon left>mdi-chart-gantt</v-icon>
-          Diagrama de Gantt - {{ selectedItem?.titulo }}
-        </v-card-title>
-        <v-card-text>
-          <!-- Aquí iría el componente de Gantt -->
-          <div class="gantt-placeholder pa-10 text-center">
-            <v-icon size="100" color="grey-lighten-2">mdi-chart-gantt</v-icon>
-            <p class="text-grey">Visualización del diagrama de Gantt</p>
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" @click="ganttDialog = false">Cerrar</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Diálogo de confirmación -->
-    <v-dialog v-model="deleteDialog" max-width="400">
-      <v-card>
-        <v-card-title class="text-h5">Confirmar eliminación</v-card-title>
-        <v-card-text>
-          ¿Estás seguro de que deseas eliminar "{{ itemToDelete?.titulo }}"?
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="grey" @click="deleteDialog = false">Cancelar</v-btn>
-          <v-btn color="error" @click="deleteItem">Eliminar</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-container>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { formatDate } from '@/utility/formatters'
-import { useRouter } from 'vue-router'
+import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
+import { storeToRefs } from 'pinia'
+import { computed, onMounted, ref } from 'vue'
 
-const router = useRouter()
+// Estados
+const cargandoGeneral = computed(() => cargandoProyecto.value)
+const searchQuery = ref('')
+const tipoFiltro = ref('ambos')
+const tiposFiltro = ref([
+  { value: 'proyectos', title: 'Solo Proyectos' },
+  { value: 'actividades', title: 'Solo Actividades' },
+  { value: 'ambos', title: 'Proyectos y Actividades' },
+])
 
-// Datos dummy
-const proyectos = ref([
+// Inicializar el store
+const proyectosStore = useProyectoStore()
+
+/* DESESTRUCTURACION  */
+// Referencias
+const { proyectosPlanificacion: proyectosRaw, cargando: cargandoProyecto } =
+  storeToRefs(proyectosStore)
+// Funciones
+const { obtenerProyectosPlanificacion } = proyectosStore
+
+// Procesar proyectos para agregar tipo
+const proyectos = computed(() => {
+  return (
+    proyectosRaw.value?.map((p) => ({
+      ...p,
+      tipo: 'proyecto',
+    })) || []
+  )
+})
+
+// Hook
+onMounted(async () => {
+  await cargarDatos()
+})
+
+// Funcion de carga de store
+const cargarDatos = async () => {
+  try {
+    await obtenerProyectosPlanificacion(1)
+  } catch (err) {
+    console.log('Error al cargar la informacion stores', err)
+  }
+}
+
+// Datos dummy para actividades PEI
+const actividades = ref([
   {
     id: 1,
-    tipo: 'proyecto',
-    codigo: 'PROY-2023-001',
-    titulo: 'Implementación de Sistema de Gestión',
-    descripcion: 'Proyecto para implementar un nuevo sistema de gestión empresarial',
-    estado: 'EJ',
-    instancia_gestora: 'Departamento de TI',
-    fecha_creacion: '2023-01-15',
-    creado_por: 'Admin',
-    fecha_inicio: '2023-02-01',
-    fecha_finalizacion: '2023-12-31',
+    codigo: 'PEI-ACT-001',
+    titulo: 'Elaboración del plan estratégico institucional',
+    descripcion: 'Actualización del plan estratégico para el próximo periodo',
+    avance: 75,
+    fecha: '15/06/2024',
+    responsable: 'Unidad de Planeamiento',
+    estado: 'En progreso',
+    tipo: 'actividad',
   },
   {
     id: 2,
-    tipo: 'proyecto',
-    codigo: 'PROY-2023-002',
-    titulo: 'Capacitación de Personal',
-    descripcion: 'Programa de capacitación para empleados',
-    estado: 'ES',
-    instancia_gestora: 'RRHH',
-    fecha_creacion: '2023-02-10',
-    creado_por: 'Admin',
-    fecha_inicio: null,
-    fecha_finalizacion: null,
+    codigo: 'PEI-ACT-002',
+    titulo: 'Capacitación en gestión por resultados',
+    descripcion: 'Capacitación al personal en metodologías de gestión',
+    avance: 30,
+    fecha: '22/07/2024',
+    responsable: 'Unidad de Recursos Humanos',
+    estado: 'En progreso',
+    tipo: 'actividad',
   },
   {
     id: 3,
-    tipo: 'proyecto',
-    codigo: 'PROY-2023-003',
-    titulo: 'Renovación de Infraestructura',
-    descripcion: 'Actualización de equipos y mobiliario',
-    estado: 'CO',
-    instancia_gestora: 'Logística',
-    fecha_creacion: '2022-11-05',
-    creado_por: 'Admin',
-    fecha_inicio: '2022-12-01',
-    fecha_finalizacion: '2023-05-30',
+    codigo: 'PEI-ACT-003',
+    titulo: 'Actualización del sistema de monitoreo',
+    descripcion: 'Implementación de nuevas funcionalidades en el sistema',
+    avance: 100,
+    fecha: '10/05/2024',
+    responsable: 'Unidad de Tecnología',
+    estado: 'Completado',
+    tipo: 'actividad',
+  },
+  {
+    id: 4,
+    codigo: 'PEI-ACT-004',
+    titulo: 'Evaluación de desempeño institucional',
+    descripcion: 'Evaluación anual del desempeño institucional',
+    avance: 0,
+    fecha: '01/08/2024',
+    responsable: 'Unidad de Calidad',
+    estado: 'Pendiente',
+    tipo: 'actividad',
   },
 ])
 
-const actividadesPEI = ref([
-  {
-    id: 101,
-    tipo: 'actividad',
-    codigo: 'ACT-2023-001',
-    titulo: 'Reunión de planificación estratégica',
-    descripcion: 'Reunión para definir objetivos anuales',
-    estado: 'completada',
-    fecha_creacion: '2023-01-05',
-    creado_por: 'Jefe de Planeación',
-    fecha_inicio: '2023-01-10',
-    fecha_finalizacion: '2023-01-10',
-    proyecto_id: null,
-  },
-  {
-    id: 102,
-    tipo: 'actividad',
-    codigo: 'ACT-2023-002',
-    titulo: 'Elaboración de informe anual',
-    descripcion: 'Preparación del informe de gestión anual',
-    estado: 'en_progreso',
-    fecha_creacion: '2023-11-15',
-    creado_por: 'Analista',
-    fecha_inicio: '2023-11-20',
-    fecha_finalizacion: '2023-12-15',
-    proyecto_id: null,
-  },
-  {
-    id: 103,
-    tipo: 'actividad',
-    codigo: 'ACT-2023-003',
-    titulo: 'Evaluación de proveedores',
-    descripcion: 'Análisis y evaluación de proveedores estratégicos',
-    estado: 'pendiente',
-    fecha_creacion: '2023-02-20',
-    creado_por: 'Compras',
-    fecha_inicio: '2023-03-01',
-    fecha_finalizacion: '2023-03-15',
-    proyecto_id: 1,
-  },
-])
-
-// Estados
-const loading = ref(false)
-const error = ref(null)
-const deleteDialog = ref(false)
-const itemToDelete = ref(null)
-const expandedItemId = ref(null)
-const searchQuery = ref('')
-const ganttDialog = ref(false)
-const selectedItem = ref(null)
-
-// Configuración de listado
-const listType = ref('proyectos') // 'proyectos', 'actividades', 'ambos'
-const listTypes = ref([
-  { title: 'Proyectos', value: 'proyectos' },
-  { title: 'Actividades PEI', value: 'actividades' },
-  { title: 'Todos', value: 'ambos' },
-])
-
-// Paginación
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-
-// Filtros
-const statusFilters = ref([])
-const availableStatuses = [
-  { text: 'En Estructuración', value: 'ES' },
-  { text: 'En Ejecución', value: 'EJ' },
-  { text: 'Completado', value: 'CO' },
-  { text: 'Suspendido', value: 'SU' },
-]
-
-// Computed
-const showStatusFilters = computed(() => {
-  return listType.value === 'proyectos' || listType.value === 'ambos'
-})
-
-const showProyectoActions = computed(() => {
-  return listType.value === 'proyectos' || listType.value === 'ambos'
-})
-
-/*
-const showActividadActions = computed(() => {
-  return listType.value === 'actividades' || listType.value === 'ambos'
-})*/
-
-const showProyectoStats = computed(() => {
-  return listType.value === 'proyectos' || listType.value === 'ambos'
-})
-
-const showActividadStats = computed(() => {
-  return listType.value === 'actividades' || listType.value === 'ambos'
-})
-
-const combinedItems = computed(() => {
+// Items combinados y filtrados
+const filteredItems = computed(() => {
   let items = []
 
-  if (listType.value === 'proyectos') {
-    items = [...proyectos.value]
-  } else if (listType.value === 'actividades') {
-    items = [...actividadesPEI.value]
-  } else {
-    items = [...proyectos.value, ...actividadesPEI.value]
+  // Agregar proyectos si corresponde
+  if (tipoFiltro.value === 'proyectos' || tipoFiltro.value === 'ambos') {
+    items = [...items, ...proyectos.value]
   }
 
-  return items
-})
+  // Agregar actividades si corresponde
+  if (tipoFiltro.value === 'actividades' || tipoFiltro.value === 'ambos') {
+    items = [...items, ...actividades.value]
+  }
 
-const filteredItems = computed(() => {
-  let filtered = combinedItems.value
-
-  // Filtro por búsqueda
+  // Aplicar filtro de búsqueda
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(
+    items = items.filter(
       (item) =>
         item.codigo.toLowerCase().includes(query) || item.titulo.toLowerCase().includes(query),
     )
   }
 
-  // Filtro por estado (solo para proyectos)
-  if (statusFilters.value.length > 0 && showStatusFilters.value) {
-    filtered = filtered.filter((item) => {
-      if (item.tipo === 'proyecto') {
-        return statusFilters.value.includes(item.estado)
-      }
-      return true // Mantener actividades si no es filtro de proyectos
-    })
-  }
-
-  return filtered
+  return items
 })
 
-// Paginación
-const paginatedItems = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredItems.value.slice(start, end)
+// Actividades completadas
+const actividadesCompletadas = computed(() => {
+  return actividades.value.filter((a) => a.avance === 100).length
 })
 
-const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage.value))
-const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
-const endItem = computed(() => {
-  const end = currentPage.value * itemsPerPage.value
-  return end > filteredItems.value.length ? filteredItems.value.length : end
+// Avance promedio
+const avancePromedio = computed(() => {
+  if (actividades.value.length === 0) return 0
+  const total = actividades.value.reduce((sum, a) => sum + a.avance, 0)
+  return Math.round(total / actividades.value.length)
 })
 
-// Métodos
-
-const getListTitle = () => {
-  switch (listType.value) {
-    case 'proyectos':
-      return 'Proyectos y sus Actividades'
-    case 'actividades':
-      return 'Actividades PEI'
-    default:
-      return 'Proyectos y Actividades PEI'
-  }
+// Métodos para actividades
+const verDetalleActividad = (actividad) => {
+  console.log('Ver detalle de:', actividad)
 }
 
-const getSearchLabel = () => {
-  switch (listType.value) {
-    case 'proyectos':
-      return 'proyectos'
-    case 'actividades':
-      return 'actividades'
-    default:
-      return 'items'
-  }
+const generarSolicitud = (actividad) => {
+  console.log('Generar solicitud para:', actividad)
 }
-
-const isProyecto = (item) => {
-  return item.tipo === 'proyecto'
-}
-
-const getItemColor = (item) => {
-  if (isProyecto(item)) {
-    return getStatusColor(item.estado)
-  } else {
-    switch (item.estado) {
-      case 'completada':
-        return 'success'
-      case 'en_progreso':
-        return 'warning'
-      default:
-        return 'grey'
-    }
-  }
-}
-
-const getItemIcon = (item) => {
-  return isProyecto(item) ? 'mdi-notebook' : 'mdi-checkbox-marked-circle-outline'
-}
-
-const getItemStatus = (item) => {
-  if (isProyecto(item)) {
-    switch (item.estado) {
-      case 'ES':
-        return 'En Estructuración'
-      case 'EJ':
-        return 'En Ejecución'
-      case 'CO':
-        return 'Completado'
-      case 'SU':
-        return 'Suspendido'
-      default:
-        return item.estado
-    }
-  } else {
-    switch (item.estado) {
-      case 'completada':
-        return 'Completada'
-      case 'en_progreso':
-        return 'En progreso'
-      case 'pendiente':
-        return 'Pendiente'
-      default:
-        return item.estado
-    }
-  }
-}
-
-const getDetailRoute = (item) => {
-  return isProyecto(item) ? `/proyecto/${item.id}/detalle` : `/actividad/${item.id}/detalle`
-}
-
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'ES':
-      return 'warning'
-    case 'EJ':
-      return 'success'
-    case 'CO':
-      return 'info'
-    case 'SU':
-      return 'error'
-    default:
-      return 'grey'
-  }
-}
-
-const handleListTypeChange = () => {
-  currentPage.value = 1
-  statusFilters.value = []
-}
-
-const countByStatus = (status) => {
-  return filteredItems.value.filter((item) => isProyecto(item) && item.estado === status).length
-}
-
-const countActividadesByStatus = (status) => {
-  return filteredItems.value.filter((item) => !isProyecto(item) && item.estado === status).length
-}
-
-const toggleExpanded = (id) => {
-  expandedItemId.value = expandedItemId.value === id ? null : id
-}
-
-const openGantt = (item) => {
-  selectedItem.value = item
-  ganttDialog.value = true
-}
-
-const addActivity = (proyecto) => {
-  //alert(`Agregar actividad al proyecto: ${proyecto.titulo}`)
-  //Navegar a formulario de nueva actividad
-  //router.push(`/planificacion/proyecto/${proyecto.id}/actividad`)
-  router.push('/planificacion/proyecto/' + proyecto.id + '/actividad')
-}
-
-const editActivity = (actividad) => {
-  alert(`Editar actividad: ${actividad.titulo}`)
-  // En implementación real: navegar a formulario de edición
-  // router.push(`/actividad/${actividad.id}/editar`)
-}
-
-/*
-const confirmDelete = (item) => {
-  itemToDelete.value = item
-  deleteDialog.value = true
-}*/
-
-const deleteItem = async () => {
-  try {
-    loading.value = true
-    // Simular eliminación
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    if (isProyecto(itemToDelete.value)) {
-      proyectos.value = proyectos.value.filter((p) => p.id !== itemToDelete.value.id)
-    } else {
-      actividadesPEI.value = actividadesPEI.value.filter((a) => a.id !== itemToDelete.value.id)
-    }
-
-    deleteDialog.value = false
-  } catch (err) {
-    error.value = 'Error al eliminar: ' + (err.message || 'Intente nuevamente más tarde')
-    console.error('Error al eliminar', err)
-  } finally {
-    loading.value = false
-  }
-}
-
-/*
-const exportToExcel = () => {
-  alert('Exportar a Excel')
-}*/
-
-// Agregar en la sección de estados (ref)
-/*const breadcrumbs = ref([
-  {
-    title: 'Inicio',
-    disabled: false,
-    to: '/',
-  },
-  {
-    title: 'Planificación',
-    disabled: false,
-    to: '/planificacion',
-  },
-  {
-    title: 'Actividades',
-    disabled: true,
-    to: '/planificacion/actividades',
-  },
-])*/
 </script>
 
 <style scoped>
@@ -760,10 +403,6 @@ const exportToExcel = () => {
   background-color: rgba(0, 0, 0, 0.02);
 }
 
-.v-list-item:last-child {
-  border-bottom: none;
-}
-
 .v-card-title {
   font-size: 1.25rem;
   font-weight: 500;
@@ -773,21 +412,11 @@ const exportToExcel = () => {
   text-align: right;
 }
 
-.v-pagination {
-  justify-content: center;
-}
-
-.rotate-180 {
-  transform: rotate(180deg);
-  transition: transform 0.3s ease;
-}
-
-.bg-grey-lighten-4 {
-  background-color: #f5f5f5;
-}
-
-.gantt-placeholder {
-  background-color: #f9f9f9;
+.v-progress-linear {
   border-radius: 4px;
+}
+
+.v-avatar {
+  flex-shrink: 0;
 }
 </style>

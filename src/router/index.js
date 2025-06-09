@@ -89,6 +89,12 @@ const router = createRouter({
       component: () => import('@/views/planeamiento/PeiAddActividadView.vue'),
     },
     {
+      /* A la vista de planificacion del proyecto */
+      path: '/proyecto/:id/planificar',
+      name: 'planificarProyecto',
+      component: () => import('@/views/proyecto/ProyectoPlanificarView.vue'),
+    },
+    {
       path: '/planificacion/proyecto/:id/actividad',
       name: 'addActividadesProyecto',
       component: () => import('@/views/planeamiento/ProyectoAddActividadView.vue'),

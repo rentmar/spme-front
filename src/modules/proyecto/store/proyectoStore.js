@@ -11,6 +11,8 @@ export const useProyectoStore = defineStore('proyecto', () => {
   /**** Estados activos del Store ****/
   const proyectos = ref([]) //Lista de proyectos
   const proyectoActual = ref(null) //Almacena el proyecto seleccionado
+  const proyectoEstructura = ref(null) //Proyecto estrucutra
+  const proyectosPlanificacion = ref([]) //Almacena los proyectos en estado de Planificacion
   const proyecto_objgeneral_info = ref(null) //Proyecto - objetivo-general-info adicional
   const objetivosIndicadores = ref([])
   const cargando = ref(false) //Indicador de carga
@@ -43,6 +45,34 @@ export const useProyectoStore = defineStore('proyecto', () => {
       cargando.value = false
     }
   }
+
+  //Estructura del proyecto
+  const obtenerProyectoEstructuraPorId = async (id) => {
+    cargando.value = true
+    error.value = null
+    try {
+      proyectoEstructura.value = await proyectoServicios.estructuraPorId(id)
+    } catch (err) {
+      error.value = err
+    } finally {
+      cargando.value = false
+    }
+  }
+
+  //Obtener una lista de proyectos en estado de planificacion del PEI vigente
+  const obtenerProyectosPlanificacion = async (idpei) => {
+    cargando.value = true
+    error.value = null
+    //Peticion http y almacenamiento de datos
+    try {
+      proyectosPlanificacion.value = await proyectoServicios.obtenerTodosPlanificacion(idpei)
+    } catch (err) {
+      error.value = err
+    } finally {
+      cargando.value = false
+    }
+  }
+
   /* Objetivos generales y especificos, con indicadores asociados */
   /* Separar esta funcion en dos PENDIENTE */
   const objetivosIndPorIdProyecto = async (idproyecto) => {
@@ -72,13 +102,17 @@ export const useProyectoStore = defineStore('proyecto', () => {
   return {
     proyectos, //ref
     proyectoActual, //ref
+    proyectoEstructura, //ref
+    proyectosPlanificacion, //ref Todos los proyectos en estado de PLANIFICACION
     proyectoObjetivos, //ref
     objetivosIndicadores, //ref
     proyecto_objgeneral_info, //ref
     cargando, //ref
     error, //ref
     obtenerProyectos, //accion
+    obtenerProyectosPlanificacion, //accion, todos los proyectos en estado de planificacion
     obtenerProyectoPorId, //accion
+    obtenerProyectoEstructuraPorId, //accion
     objetivosIndPorIdProyecto, //accion
     proyectoObjGeneralInfo, //accion
   }
