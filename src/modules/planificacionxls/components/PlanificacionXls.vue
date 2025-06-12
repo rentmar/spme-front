@@ -309,7 +309,7 @@ const proyectoObjGral = computed(() => {
     descripcion: og.descripcion,
   }
 })
-console.log(proyectoObjGral.value)
+//console.log(proyectoObjGral.value)
 
 const getIndicadoresForObjetivo = (objetivoIndex) => {
   if (objetivoIndex === null || objetivoIndex === undefined) return []

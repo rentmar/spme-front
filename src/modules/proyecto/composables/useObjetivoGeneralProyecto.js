@@ -45,11 +45,13 @@ export function useObjetivoGeneralProyecto() {
     }
   }
 
-  //Agregar un objeto general
+  //Agregar un objetivo general
   async function addObjetivoGeneral(data) {
     loading.value = true
     try {
-      objetivoGeneral.value = await proyectoObjetivos.generalesCrear(data)
+      const respuesta = await proyectoObjetivos.generalesCrear(data)
+      objetivoGeneral.value = respuesta
+      return respuesta
     } catch (err) {
       error.value = err
     } finally {

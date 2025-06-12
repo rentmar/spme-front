@@ -1,4 +1,14 @@
 <template>
+  <!-- Banner superior -->
+  <transition name="fade-slide-down">
+    <div v-if="mostrarMensaje" class="banner-superior">
+      <v-icon left small color="white">mdi-information</v-icon>
+      <span class="ml-2">{{ mensajeRecibido }}</span>
+      <v-btn icon variant="text" @click="mostrarMensaje = false" size="x-small">
+        <v-icon small>mdi-close</v-icon>
+      </v-btn>
+    </div>
+  </transition>
   <VueFlow :nodes="nodos" :edges="conectores" :minZoom="0.1" :maxZoom="2">
     <div class="project-overlay">
       <div class="project-metadata">
@@ -61,6 +71,10 @@
         @addProductoOE="(payload) => ejecutarAccion('addProductoOE', payload)"
       ></ObjetivoespecificoNodo>
     </template>
+    <!-- Nodo Objetivo Especifico relacionado al Objetivo General-->
+    <template #node-objetivoespecificoog="nodeProps">
+      <ObjetivoespecificoOGNodo v-bind="nodeProps"></ObjetivoespecificoOGNodo>
+    </template>
     <!--Nodo KPI-->
     <template #node-kpi="nodeProps">
       <KpiNodo v-bind="nodeProps"></KpiNodo>
@@ -75,7 +89,11 @@
     </template>
     <!--Resultado de Objetivo especifico-->
     <template #node-resultadoog="nodeProps">
-      <ResultadoObjgeneralNodo v-bind="nodeProps"></ResultadoObjgeneralNodo>
+      <ResultadoObjgeneralNodo
+        v-bind="nodeProps"
+        @addIndicadorResultadoOg="(payload) => ejecutarAccion('addIndicadorResultadoOg', payload)"
+        @addProcesosResultadoOg="(payload) => ejecutarAccion('addProcesosResultadoOg', payload)"
+      ></ResultadoObjgeneralNodo>
     </template>
     <!-- Resultado de Objetivo Especifico -->
     <template #node-resultadooe="nodeProps">
@@ -115,11 +133,11 @@
     <MiniMap pannable zoomable mask-color="rgb(0, 0, 0, 0.7)"></MiniMap>
     <Controls position="left"> </Controls>
   </VueFlow>
-  {{ mensajeRecibido }}
+  {{ proyecto }}<br /><br />{{ getNodes }}<br /><br />{{ getEdges }}
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue'
+import { ref, onMounted, inject, watch } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 //Background
 import { Background } from '@vue-flow/background'
@@ -138,6 +156,7 @@ import { layoutGraph } from '../utils/dagreLayout'
 import ProyectoNodo from './nodos/ProyectoNodo.vue'
 import ObjetivogeneralNodo from './nodos/ObjetivogeneralNodo.vue'
 import ObjetivoespecificoNodo from './nodos/ObjetivoespecificoNodo.vue'
+import ObjetivoespecificoOGNodo from './nodos/ObjetivoespecificoOGNodo.vue'
 import KpiNodo from './nodos/KpiNodo.vue'
 import IndicadorObjgeneralNodo from './nodos/IndicadorObjgeneralNodo.vue'
 import IndicadorObjespecifico from './nodos/IndicadorObjespecifico.vue'
@@ -165,7 +184,7 @@ const nodos = ref([])
 const conectores = ref([])
 
 //Inicializar el composable
-const { fitView, onNodeDoubleClick } = useVueFlow()
+const { fitView, onNodeDoubleClick, getNodes, getEdges } = useVueFlow()
 
 //Captura del click sobre el nodo
 onNodeDoubleClick((event) => {
@@ -193,6 +212,13 @@ onMounted(() => {
 
 /****  PANEL DE INFORMACION  ****/
 const nodoSeleccionado = ref(null)
+
+/**** MENSAJES ****/
+const mostrarMensaje = ref(false)
+
+watch(mensajeRecibido, (nuevo) => {
+  mostrarMensaje.value = !!nuevo
+})
 </script>
 <style scoped>
 .project-overlay {
@@ -267,5 +293,42 @@ const nodoSeleccionado = ref(null)
 /* Estilos para nodos seleccionados */
 .vue-flow__node.selected {
   box-shadow: 0 0 0 2px #1976d2;
+}
+/* MENSAJES */
+.banner-superior {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #91d219;
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  z-index: 10000;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Transición para el banner */
+.fade-slide-down-enter-active,
+.fade-slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+.fade-slide-down-enter-from {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+.fade-slide-down-enter-to {
+  transform: translateY(0);
+  opacity: 1;
+}
+.fade-slide-down-leave-from {
+  transform: translateY(0);
+  opacity: 1;
+}
+.fade-slide-down-leave-to {
+  transform: translateY(-100%);
+  opacity: 0;
 }
 </style>

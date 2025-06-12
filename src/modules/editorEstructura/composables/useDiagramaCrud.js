@@ -33,6 +33,36 @@ export function useDiagramaCrud() {
     }
   }
 
+  //Actualizar un diagrama
+  const actualizarDiagrama = async (id, data) => {
+    loading.value = true
+    try {
+      const respuesta = await diagramaEstructuraCrud.update(id, data)
+      return respuesta.data
+    } catch (err) {
+      console.error('COMPOSABLE: No se pudo actualizar el diagrama con id: ' + id, err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Actualizar Nodos y edges
+  const actualizarNodosEdges = async (id, nodo, edge) => {
+    const diagrama = {
+      nodos: nodo,
+      conexiones: edge,
+    }
+    loading.value = true
+    try {
+      const respuesta = await diagramaEstructuraCrud.updateNodosEdges(id, diagrama)
+      return respuesta.data
+    } catch (err) {
+      console.error('COMPOSABLE: No de pudo actualizar los nodos y edges con id: ' + id, err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     diagramasProyecto,
     diagramaProyecto,
@@ -40,5 +70,7 @@ export function useDiagramaCrud() {
     error,
     obtenerDiagramas,
     obtenerDiagrama,
+    actualizarDiagrama,
+    actualizarNodosEdges,
   }
 }

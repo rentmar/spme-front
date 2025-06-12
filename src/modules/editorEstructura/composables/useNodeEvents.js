@@ -2,17 +2,20 @@
 
 import { ref } from 'vue'
 import { useVueFlow } from '@vue-flow/core'
+import { useDiagramaCrud } from './useDiagramaCrud'
+import { useIdGenerator } from './useIdGenerator'
 
 export default function useNodeEvents() {
   //Iniciar el composable
-  const { addNodes, addEdges } = useVueFlow()
+  const { addNodes, addEdges, getNodes, getEdges } = useVueFlow()
+  const { getNextNodeId, getNextEdgeId } = useIdGenerator()
+  const { actualizarNodosEdges } = useDiagramaCrud()
   const mensaje = ref('No se ha recibido señal')
-  let idContador = ref(2)
 
   //Manejador generico para creacion de nodos
-  const handleNodeCreation = (type, label, sourceId, customData = {}) => {
-    const nuevoNodoId = idContador.value.toString()
-
+  const handleNodeCreation = async (type, label, sourceId, customData = {}) => {
+    const nuevoNodoId = getNextNodeId()
+    const nuevaEdgeId = getNextEdgeId()
     const nuevoNodo = {
       id: nuevoNodoId,
       data: { label, type, ...customData },
@@ -20,17 +23,24 @@ export default function useNodeEvents() {
       type,
     }
     const nuevaEdge = {
-      id: 'edge-' + sourceId + '-' + nuevoNodoId,
+      id: nuevaEdgeId,
       source: sourceId.toString(),
       target: nuevoNodoId,
       animated: true,
       label: 'Conexion',
     }
-
-    idContador.value++
-
     addNodes([nuevoNodo])
     addEdges([nuevaEdge])
+
+    //Actualizar diagramas y nodos en la rest api
+    try {
+      await actualizarNodosEdges(customData.mapaNodoId, getNodes.value, getEdges.value)
+    } catch (err) {
+      console.log(
+        'NODE EVENTS: No se pudo actualizaar el diagrama id: ' + customData.mapaNodoId,
+        err,
+      )
+    }
 
     return nuevoNodo, nuevaEdge
   }
@@ -39,6 +49,13 @@ export default function useNodeEvents() {
   const nodeEventoHandlers = {
     /* Agregar Objetivo General */
     addObjetivoGeneral: (payload) => {
+      //Verificar si ya existe un objetivo general
+      const nodosActuales = getNodes.value
+      const existeObjetivoGeneral = nodosActuales.some((nodo) => nodo.type === 'objetivogeneral')
+      if (existeObjetivoGeneral) {
+        mensaje.value = 'Ya existe un objetivo General'
+        return null
+      }
       const result = handleNodeCreation(
         'objetivogeneral',
         'Objetivo General',
@@ -76,7 +93,7 @@ export default function useNodeEvents() {
       mensaje.value = 'Indicador Obj Gral creado'
       return result
     },
-    /* Agregar Indicador Objetivo General*/
+    /* Agregar Resultado Objetivo General*/
     addResultadoObjGeneral: (payload) => {
       const result = handleNodeCreation(
         'resultadoog',
@@ -85,6 +102,19 @@ export default function useNodeEvents() {
         payload.meta,
       )
       mensaje.value = 'Resultado Obj Gral creado'
+      return result
+    },
+    /* Agregar Indicador Resultado OG  */
+    addIndicadorResultadoOg: (payload) => {
+      console.log('Agregar Indicador Resultado OG ')
+      console.log(payload)
+      const result = handleNodeCreation(
+        'indicadorrog',
+        'Indicador Res OG',
+        payload.sourceId,
+        payload.meta,
+      )
+      mensaje.value = 'Indicador Resultado OG'
       return result
     },
     /* Agregar Indicador Objetivo Especifico */
@@ -115,7 +145,7 @@ export default function useNodeEvents() {
       mensaje.value = 'Producto OE creado'
       return result
     },
-    /* */
+    /* Agregar Resultado OE */
     addIndicadorResultadoOE: (payload) => {
       const result = handleNodeCreation(
         'indicadorroe',
@@ -126,7 +156,7 @@ export default function useNodeEvents() {
       mensaje.value = 'Indicador de Resultado OE creado'
       return result
     },
-    /* */
+    /* Agregar Producto Resultado OE */
     addProductoResultadoOE: (payload) => {
       const result = handleNodeCreation(
         'productoroe',
@@ -137,7 +167,7 @@ export default function useNodeEvents() {
       mensaje.value = 'Indicador de Resultado OE creado'
       return result
     },
-    /* */
+    /* Agregar Procesos Resultado OE */
     addProcesosResultadoOE: (payload) => {
       const result = handleNodeCreation(
         'procesoroe',

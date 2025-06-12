@@ -38,9 +38,6 @@ const currentNode = findNode(props.id)
 
 /* Funciones */
 //Editar el nodo
-const editarNodo = () => {
-  console.log('Editar nodo', props.id)
-}
 </script>
 <style scoped>
 .custom-menu-item {

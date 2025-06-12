@@ -3,30 +3,33 @@
     <!-- Contenido del nodo -->
     <template #default>
       <div class="text-body-2">
-        <div class="mb-1"><strong>Código:</strong> {{ data.codigo }}</div>
-        <div class="mb-1"><strong>Título:</strong> {{ data.titulo }}</div>
+        <div class="mb-1"><strong>Codigo:</strong> {{ data.nodoProyecto.codigo }}</div>
+        <div class="mb-1"><strong>Descripcion:</strong> {{ data.nodoProyecto.descripcion }}</div>
+        <div class="mb-1"><strong>Supuestos:</strong> {{ data.nodoProyecto.supuestos }}</div>
+        <div class="mb-1"><strong>Riesgos:</strong> {{ data.nodoProyecto.riesgos }}</div>
+        {{ data }}
       </div>
     </template>
 
     <!-- Menú contextual -->
     <template #menu>
-      <!-- Agregar KPI -->
-      <v-list-item class="custom-menu-item" @click="editarNodo">
-        <v-list-item-title>Agregar KPI</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-chart-line-variant'"></v-icon>
-        </template>
-      </v-list-item>
       <!-- Agregar Indicador Objetivo General -->
-      <v-list-item class="custom-menu-item" @click="editarNodo">
-        <v-list-item-title>Agregar Indicador Objetivo General</v-list-item-title>
+      <v-list-item class="custom-menu-item" @click="agregarIndicadorResultadoOg">
+        <v-list-item-title>Agregar Indicador Resultado OG</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-chart-line'"></v-icon>
         </template>
       </v-list-item>
-      <!-- Agregar Resultado Objetivo General -->
-      <v-list-item class="custom-menu-item" @click="editarNodo">
-        <v-list-item-title>Agregar Resultado Objetivo General</v-list-item-title>
+      <!-- Agregar Proceso Objetivo General -->
+      <v-list-item class="custom-menu-item" @click="agregarProcesos">
+        <v-list-item-title>Agregar Procesos</v-list-item-title>
+        <template v-slot:prepend>
+          <v-icon :icon="'mdi-flag-checkered'"></v-icon>
+        </template>
+      </v-list-item>
+      <!-- Agregar Proceso Objetivo General -->
+      <v-list-item class="custom-menu-item">
+        <v-list-item-title>Agregar Actividad</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-flag-checkered'"></v-icon>
         </template>
@@ -40,13 +43,31 @@
 </template>
 
 <script setup>
+import { inject } from 'vue'
 import BaseNodo from './BaseNodo.vue'
-import { Handle } from '@vue-flow/core'
+import { Handle, useVueFlow } from '@vue-flow/core'
+import { useIndicadores } from '@/modules/proyecto/composables/useIndicadores'
 
 const props = defineProps({
   id: { type: String, required: true },
   data: { type: Object, required: true },
 })
+
+//Iniciar composables
+const { error, indicadorResultadoObjGeneral, crearIndicadorResultadoObjetivoGeneral } =
+  useIndicadores()
+
+//Id mapa de estructura
+const proyectoEstructura = inject('proyectoEstructura')
+const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
+// console.log('Id del diagrama Ind Res OG')
+// console.log(mapaNodoId)
+
+//Datos del nodo
+const { findNode } = useVueFlow()
+const currentNode = findNode(props.id)
+const idCurrentNode = currentNode.data.nodoProyecto.id
+// console.log(idCurrentNode)
 
 const handleStyle = {
   width: '12px',
@@ -56,10 +77,60 @@ const handleStyle = {
 }
 
 /* Funciones */
-//Editar el nodo
-const editarNodo = () => {
-  console.log('Editar nodo', props.id)
+//Emitir señales
+const emit = defineEmits(['addIndicadorResultadoOg', 'addProcesosResultadoOg'])
+
+//AGregar Indicador Obj General
+const agregarIndicadorResultadoOg = async () => {
+  const indicadorResultadoOg = {
+    codigo: 'IND00-R0-OG',
+    redaccion: 'GUIA',
+    fuente_verificacion: 'Fuente Verificacion',
+    target_poblacion: '',
+    tipo: 'A-Z',
+    baseline: '',
+    target_q1: '',
+    target_q2: '',
+    target_q3: '',
+    target_q4: '',
+    resultado_og: idCurrentNode,
+  }
+  //Crear el indicador resultado og
+  try {
+    await crearIndicadorResultadoObjetivoGeneral(indicadorResultadoOg)
+    console.log('Indicador Resultado OG')
+    console.log(indicadorResultadoObjGeneral)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Indicador Res. OG',
+        type: 'indicadorog',
+        estado: 'ES',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: indicadorResultadoObjGeneral.value.id,
+          codigo: indicadorResultadoObjGeneral.value.codigo,
+          redaccion: indicadorResultadoObjGeneral.value.redaccion,
+          fuente_verificacion: indicadorResultadoObjGeneral.value.fuente_verificacion,
+          target_poblacion: indicadorResultadoObjGeneral.value.target_poblacion,
+          tipo: indicadorResultadoObjGeneral.value.tipo,
+          baseline: indicadorResultadoObjGeneral.value.baseline,
+          target_q1: indicadorResultadoObjGeneral.value.target_q1,
+          target_q2: indicadorResultadoObjGeneral.value.target_q2,
+          target_q3: indicadorResultadoObjGeneral.value.target_q3,
+          target_q4: indicadorResultadoObjGeneral.value.target_q4,
+          resultado_og: indicadorResultadoObjGeneral.value.resultado_og,
+        },
+      },
+    }
+    emit('addIndicadorResultadoOg', payload)
+  } catch (err) {
+    console.log('Error al crear el Indicador Res OG' + err + ' - ' + error)
+  }
 }
+
+//Agregar
+const agregarProcesos = async () => {}
 </script>
 <style scoped>
 .custom-menu-item {

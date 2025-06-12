@@ -1,30 +1,24 @@
 <template>
-  <BaseNodo :id="id" :data="data" :show-delete="false" v-bind="$attrs">
+  <BaseNodo :id="id" :data="data" :show-delete="false" :show-estado="true" v-bind="$attrs">
     <!-- Contenido del nodo -->
     <template #default>
       <div class="text-body-2">
-        <div class="mb-1"><strong>Código:</strong> {{ data.codigo }}</div>
-        <div class="mb-1"><strong>Título:</strong> {{ data.titulo }}</div>
-        <div class="mb-1"><strong>Descripción:</strong> {{ data.descripcion }}</div>
-        <div class="mb-1"><strong>Fecha de Inicio:</strong> {{}}</div>
-        <div class="mb-1"><strong>Fecha de Finalización:</strong> {{}}</div>
-        <div class="mb-1"><strong>Presupuesto:</strong> {{}}</div>
-        <div class="mb-1"><strong>Estado:</strong> {{ data.estado }}</div>
-        <div class="mb-1"><strong>Creado por:</strong> {{ data.creado_por }}</div>
-        <h1>Datos</h1>
-        <p>{{ nodoProyecto }}</p>
+        <div class="mb-1"><strong>Código:</strong> {{ datosNodoProyecto.codigo }}</div>
+        <div class="mb-1"><strong>Título:</strong> {{ datosNodoProyecto.titulo }}</div>
+        <div class="mb-1"><strong>Descripción:</strong> {{ datosNodoProyecto.descripcion }}</div>
+        <div class="mb-1">
+          <strong>Fecha de Inicio:</strong> {{ datosNodoProyecto.fecha_inicio }}
+        </div>
+        <div class="mb-1">
+          <strong>Fecha de Finalización:</strong> {{ datosNodoProyecto.fecha_finalizacion }}
+        </div>
+        <div class="mb-1"><strong>Presupuesto:</strong> {{ datosNodoProyecto.presupuesto }}</div>
+        <div class="mb-1"><strong>Estado:</strong> {{ datosNodoProyecto.estado }}</div>
       </div>
     </template>
 
     <!-- Menú contextual -->
     <template #menu>
-      <!-- Editar el Nodo -->
-      <v-list-item class="custom-menu-item">
-        <v-list-item-title>Editar</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-pencil-outline'"></v-icon>
-        </template>
-      </v-list-item>
       <!-- Agregar objetivo General -->
       <v-list-item class="custom-menu-item" @click="agregarObjetivoGeneral">
         <v-list-item-title>Agregar Objetivo General</v-list-item-title>
@@ -48,39 +42,67 @@
 
 <script setup>
 import BaseNodo from './BaseNodo.vue'
-import { Handle, useVueFlow } from '@vue-flow/core'
+import { Handle } from '@vue-flow/core'
+import { reactive, inject } from 'vue'
+//COmposables CRUD
+import { useObjetivoGeneralProyecto } from '@/modules/proyecto/composables/useObjetivoGeneralProyecto'
 
 const props = defineProps({
   id: { type: String, required: true },
   data: { type: Object, required: true },
 })
 
-const { findNode } = useVueFlow()
+//Estado de datos
+const datosNodoProyecto = reactive(props.data.datosNodo || {})
+//console.log(datosNodoProyecto.id.toString())
 
-const handleStyle = {
-  width: '12px',
-  height: '12px',
-  background: '#555',
-  borderRadius: '50%',
-}
+//Composable del diagram
+//const { findNode } = useVueFlow()
+//Composable de objetivos especificos
+const { objetivoGeneral, error, addObjetivoGeneral } = useObjetivoGeneralProyecto()
 
-const nodoProyecto = findNode(props.id)
+const proyectoEstructura = inject('proyectoEstructura')
+
+const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
+// console.log('ID DEL MAPA')
+// console.log(mapaNodoId)
 
 //Eventos que el ProyectoNodo puede emitir
 const emit = defineEmits(['addObjetivoGeneral', 'addObjetivoEspecifico'])
 
 //Agregar Objetivo General
-const agregarObjetivoGeneral = () => {
-  const payload = {
-    label: 'Mi objetivo',
-    sourceId: '1',
-    meta: {
-      prioridad: 'alta',
-      fechaLimite: '2023-12-31',
-    },
+const agregarObjetivoGeneral = async () => {
+  const objGral = {
+    codigo: 'OO',
+    descripcion: 'desc og',
+    supuestos: 'sup og',
+    riesgos: 'ries og',
+    proyecto: datosNodoProyecto.id.toString(),
   }
-  //Emitir el evento
-  emit('addObjetivoGeneral', payload)
+  try {
+    await addObjetivoGeneral(objGral)
+    const payload = {
+      sourceId: '1',
+      meta: {
+        label: 'Objetivo General',
+        type: 'objetivogeneral',
+        estado: 'ES',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: objetivoGeneral.value.id,
+          codigo: objetivoGeneral.value.codigo,
+          descripcion: objetivoGeneral.value.descripcion,
+          supuestos: objetivoGeneral.value.supuestos,
+          riesgos: objetivoGeneral.value.riesgos,
+          proyecto: objetivoGeneral.value.proyecto,
+        },
+      },
+    }
+    emit('addObjetivoGeneral', payload)
+  } catch (err) {
+    error.value = err
+    console.log('Error al crear el objetivo', error)
+  }
 }
 
 //Agregar Objetivo Especifico
@@ -95,6 +117,15 @@ const agregarObjetivoEspecifico = () => {
   }
   //Emitir el evento
   emit('addObjetivoEspecifico', payload)
+}
+
+/* Estilos */
+//Estilos
+const handleStyle = {
+  width: '12px',
+  height: '12px',
+  background: '#555',
+  borderRadius: '50%',
 }
 </script>
 <style scoped>

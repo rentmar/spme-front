@@ -44,7 +44,12 @@
           {{ tipoNodo }}
         </v-chip>
         <!-- Chip del estado -->
-        <v-chip size="small" :color="getStatusColor(data.estado)" variant="elevated">
+        <v-chip
+          v-if="showEstado"
+          size="small"
+          :color="getStatusColor(data.estado)"
+          variant="elevated"
+        >
           {{ getEstadoTexto(data.estado) || 'Sin estado' }}
         </v-chip>
         <v-chip size="small" :color="colorNodo" text-color="white" variant="flat">
@@ -72,6 +77,7 @@ const props = defineProps({
   data: { type: Object, required: true },
   showMenu: { type: Boolean, default: true },
   showDelete: { type: Boolean, default: true },
+  showEstado: { type: Boolean, default: false },
 })
 
 const { removeNodes, findNode } = useVueFlow()

@@ -40,4 +40,13 @@ export const diagramaEstructuraCrud = {
       throw error
     }
   },
+  updateNodosEdges: async (id, data) => {
+    try {
+      const respuesta = await api.put('diagramas/' + id + '/actualizar/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo actualizar el diagrama con ID: ' + id, error)
+      throw error
+    }
+  },
 }
