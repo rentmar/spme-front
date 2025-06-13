@@ -65,6 +65,17 @@ export default function useNodeEvents() {
       mensaje.value = 'Objetivo General Creado'
       return result
     },
+    /* Agregar Objetivo Especifico OG */
+    addObjetivoEspecificoOg: (payload) => {
+      const result = handleNodeCreation(
+        'objetivoespecificoog',
+        'Objetivo Especifico OG',
+        payload.sourceId,
+        payload.meta,
+      )
+      mensaje.value = 'Objetivo Especifico OG Creado'
+      return result
+    },
     /* Agregar Objetivo Especifico */
     addObjetivoEspecifico: (payload) => {
       const result = handleNodeCreation(
@@ -106,8 +117,6 @@ export default function useNodeEvents() {
     },
     /* Agregar Indicador Resultado OG  */
     addIndicadorResultadoOg: (payload) => {
-      console.log('Agregar Indicador Resultado OG ')
-      console.log(payload)
       const result = handleNodeCreation(
         'indicadorrog',
         'Indicador Res OG',

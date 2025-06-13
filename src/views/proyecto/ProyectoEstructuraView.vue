@@ -14,7 +14,7 @@
         <ProyectoHeader v-if="proyecto" :proyecto="proyecto" />
 
         <!-- Tarjeta principal con diagrama Vue Flow -->
-        <v-card class="mb-4" min-height="2000">
+        <v-card class="mb-4" min-height="800">
           <v-toolbar color="info" density="compact">
             <v-toolbar-title>ESTRUCTURA DEL PROYECTO</v-toolbar-title>
             <v-spacer></v-spacer>

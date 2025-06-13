@@ -46,6 +46,7 @@ import { Handle } from '@vue-flow/core'
 import { reactive, inject } from 'vue'
 //COmposables CRUD
 import { useObjetivoGeneralProyecto } from '@/modules/proyecto/composables/useObjetivoGeneralProyecto'
+import { useObjetivoEspecifico } from '@/modules/proyecto/composables/useObjetivoEspecifico'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -60,6 +61,7 @@ const datosNodoProyecto = reactive(props.data.datosNodo || {})
 //const { findNode } = useVueFlow()
 //Composable de objetivos especificos
 const { objetivoGeneral, error, addObjetivoGeneral } = useObjetivoGeneralProyecto()
+const { objetivoEspecifico, crearObjetivoEspecifico } = useObjetivoEspecifico()
 
 const proyectoEstructura = inject('proyectoEstructura')
 
@@ -106,17 +108,43 @@ const agregarObjetivoGeneral = async () => {
 }
 
 //Agregar Objetivo Especifico
-const agregarObjetivoEspecifico = () => {
-  const payload = {
-    label: 'Mi objetivo especifico',
-    sourceId: '1',
-    meta: {
-      prioridad: 'alta',
-      fechaLimite: '2023-12-31',
-    },
+const agregarObjetivoEspecifico = async () => {
+  const objEspOg = {
+    codigo: 'SPO',
+    descripcion: '',
+    supuestos: '',
+    riesgos: '',
+    proyecto: datosNodoProyecto.id.toString(),
+    objetivo_general: null,
   }
+
+  try {
+    await crearObjetivoEspecifico(objEspOg)
+    // console.log(objetivoEspecifico)
+    const payload = {
+      sourceId: '1',
+      meta: {
+        label: 'Objetivo Especifico',
+        type: 'objetivoespecifico',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: objetivoEspecifico.value.id,
+          codigo: objetivoEspecifico.value.codigo,
+          descripcion: objetivoEspecifico.value.descripcion,
+          supuestos: objetivoEspecifico.value.supuestos,
+          riesgos: objetivoEspecifico.value.riesgos,
+          proyecto: null,
+          objetivo_general: objetivoEspecifico.value.objetivo_general,
+        },
+      },
+    }
+    emit('addObjetivoEspecifico', payload)
+  } catch (err) {
+    console.log('Error ' + err)
+  }
+
   //Emitir el evento
-  emit('addObjetivoEspecifico', payload)
+  //emit('addObjetivoEspecifico', payload)
 }
 
 /* Estilos */

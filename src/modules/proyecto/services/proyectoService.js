@@ -138,7 +138,7 @@ export const proyectoObjetivos = {
   },
   especificosAll: async () => {
     try {
-      const respuesta = await api.get('/proy_obj_especifico/')
+      const respuesta = await api.get('/proy-obj-esp/')
       return respuesta.data
     } catch (error) {
       console.error('Axios: No se puede obtener los objetivos especificos', error)
@@ -146,7 +146,7 @@ export const proyectoObjetivos = {
   },
   especificosPorId: async (id) => {
     try {
-      const respuesta = await api.get('/proy_obj_especifico/' + id)
+      const respuesta = await api.get('/proy-obj-esp/' + id)
       return respuesta.data
     } catch (error) {
       console.error('Axios: No se puede obtener objetivos especifico ID: ' + id, error)
@@ -154,15 +154,42 @@ export const proyectoObjetivos = {
   },
   especificosPorIdProyecto: async (id) => {
     try {
-      const respuesta = await api.get('/proy_obj_especifico/por-proyecto/' + id)
+      const respuesta = await api.get('/proy-obj-esp/por-proyecto/' + id + '/')
       return respuesta.data
     } catch (error) {
       console.error('Axios: No se puede obtener objetivos especifico ID: ' + id, error)
     }
   },
+  especificoCrear: async (data) => {
+    try {
+      const respuesta = await api.post('/proy-obj-esp/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al crear el objetigo especifico', error)
+      throw error
+    }
+  },
+  especificoUpdate: async (id, data) => {
+    try {
+      const respuesta = await api.put('/proy-obj-esp/' + id + '/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo actualizar la el objetivo general con ID: ' + id, error)
+      throw error
+    }
+  },
+  especificoDel: async (id) => {
+    try {
+      const respuesta = await api.delete('/proy-obj-esp/' + id + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo eliminar el objetivo especifico con ID: ' + id, error)
+      throw error
+    }
+  },
   objetivosIndicadoresPorIdProyecto: async (idproyecto) => {
     try {
-      const respuesta = await api.get('/proyectos_obj/' + idproyecto + '/objetivos/')
+      const respuesta = await api.get('/proy-obj-esp/' + idproyecto + '/objetivos/')
       return respuesta.data
     } catch (error) {
       console.error('Axios: Fallo de objetivos con indicadores', error)

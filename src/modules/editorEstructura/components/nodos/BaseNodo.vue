@@ -103,6 +103,7 @@ const iconoNodo = computed(() => {
       proyecto: 'mdi-briefcase-outline',
       objetivogeneral: 'mdi-bullseye-arrow',
       objetivoespecifico: 'mdi-target-variant',
+      objetivoespecificoog: 'mdi-target-variant',
       Kpi: 'mdi-chart-line',
       indicadores: 'mdi-speedometer',
       indicadorog: 'mdi-speedometer',
@@ -130,6 +131,7 @@ const colorNodo = computed(() => {
       proyecto: '#3F51B5',
       objetivogeneral: '#1976D2',
       objetivoespecifico: '#03A9F4',
+      objetivoespecificoog: '#03A9F4',
       kpi: '#673AB7',
       indicadorog: '#009688',
       indicadorrog: '#009688',
@@ -151,7 +153,7 @@ const colorNodo = computed(() => {
 
 <style scoped>
 .nodo-base {
-  width: 500px;
+  width: 600px;
   min-height: 200px;
   border-radius: 12px;
   overflow: hidden;

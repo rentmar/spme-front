@@ -93,4 +93,106 @@ export const indicadoresServicios = {
       console.error('Axios: no se pudo elimir indicador res og con id ' + id, error)
     }
   },
+  /******************* Indicadores de Objetivo Especifico *************************/
+  /* Todos los indicadores */
+  indicadorObjEspec: async () => {
+    try {
+      const respuesta = await api.get('/indicador-oe/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: fecth Indicador OE error', error)
+      throw error
+    }
+  },
+  /* Indicador OE por ID */
+  indicadorObjEspecPorId: async (id) => {
+    try {
+      const respuesta = await api.get('/indicador-oe/' + id + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: fecth Indicador OE error con ID ' + id, error)
+      throw error
+    }
+  },
+  /* Crear Indicador OE */
+  crearIndicadorObjEspc: async (data) => {
+    try {
+      const respuesta = await api.post('/indicador-oe/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios, error al crear Indicador OE', error)
+      throw error
+    }
+  },
+  /* Actualizar INdicador OE */
+  updateIndicadorObjEspc: async (id, data) => {
+    try {
+      const respuesta = await api.put('/indicador-oe/' + id + '/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al actualizar el Indicador OE', error)
+      throw error
+    }
+  },
+  /* Eliminar Indicador OE */
+  deleteIndicadorObjEspec: async (id) => {
+    try {
+      const respuesta = await api.delete('/indicador-oe/' + id + '/')
+      return respuesta
+    } catch (error) {
+      console.error('Axios: Error al eliminar el Indicador OE con ID ' + id, error)
+      throw error
+    }
+  },
+  /******************* Indicadores de Resultado Objetivo Especifico *************************/
+  /* Todos los indicadores */
+  indicadorResultadoObjEspec: async () => {
+    try {
+      const respuesta = await api.get('/indicador-resultado-oe/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: fecth Indicador Resultado OE error', error)
+      throw error
+    }
+  },
+  /* Indicador OE por ID */
+  indicadorResultadoObjEspecPorId: async (id) => {
+    try {
+      const respuesta = await api.get('/indicador-resultado-oe/' + id + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: fecth Indicador Resultado OE error con ID ' + id, error)
+      throw error
+    }
+  },
+  /* Crear Indicador OE */
+  crearIndicadorResultadoObjEspc: async (data) => {
+    try {
+      const respuesta = await api.post('/indicador-resultado-oe/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios, error al crear Indicador Resultado OE', error)
+      throw error
+    }
+  },
+  /* Actualizar INdicador OE */
+  updateIndicadorResultadoObjEspc: async (id, data) => {
+    try {
+      const respuesta = await api.put('/indicador-resultado-oe/' + id + '/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al actualizar el Indicador Resultado OE', error)
+      throw error
+    }
+  },
+  /* Eliminar Indicador OE */
+  deleteIndicadorResultadoObjEspec: async (id) => {
+    try {
+      const respuesta = await api.delete('/indicador-resultado-oe/' + id + '/')
+      return respuesta
+    } catch (error) {
+      console.error('Axios: Error al eliminar el Indicador Resultado OE con ID ' + id, error)
+      throw error
+    }
+  },
 }

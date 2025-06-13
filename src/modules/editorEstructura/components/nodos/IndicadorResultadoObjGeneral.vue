@@ -1,5 +1,5 @@
 <template>
-  <BaseNodo :id="id" :data="data" :show-delete="true" v-bind="$attrs">
+  <BaseNodo :id="id" :data="data" :show-delete="true" :show-menu="false" v-bind="$attrs">
     <!-- Contenido del nodo -->
     <template #default>
       <div class="text-body-2">

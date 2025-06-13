@@ -6,7 +6,9 @@ import { indicadoresServicios } from '../services/indicadoresService'
 
 //Estados
 const indicadorObjGeneral = ref(null)
+const indicadorObjetivoEspecifico = ref(null)
 const indicadorResultadoObjGeneral = ref(null)
+const indicadorResultadoObjEspecifico = ref(null)
 const loading = ref(null)
 const error = ref(null)
 
@@ -103,17 +105,134 @@ export function useIndicadores() {
     }
   }
 
+  /*********** Indicadores Resultado Objetivo General *************/
+  //cargar por id
+  async function cargarIndicadorObjEspecifico(id) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.indicadorObjEspecPorId(id)
+      indicadorObjetivoEspecifico.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //crear
+  async function crearIndicadorObjEspecifico(data) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.crearIndicadorObjEspc(data)
+      indicadorObjetivoEspecifico.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //update
+  async function updateIndicadorObjEspecifico(id, data) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.updateIndicadorObjEspc(id, data)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+  //Del
+  async function delIndicadorObjEspecifico(id) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.deleteIndicadorObjEspec(id)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /*********** Indicadores Resultado Objetivo Especifico *************/
+  //cargar por id
+  async function cargarIndicadorResultadoObjEspecifico(id) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.indicadorResultadoObjEspecPorId(id)
+      indicadorResultadoObjEspecifico.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //crear
+  async function crearIndicadorResultadoObjEspecifico(data) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.crearIndicadorResultadoObjEspc(data)
+      indicadorResultadoObjEspecifico.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //update
+  async function updateIndicadorResultadoObjEspecifico(id, data) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.updateIndicadorResultadoObjEspc(id, data)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+  //Del
+  async function delIndicadorResultadoObjEspecifico(id) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.deleteIndicadorResultadoObjEspec(id)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
   return {
     indicadorObjGeneral, //ref
+    indicadorObjetivoEspecifico, //ref
     indicadorResultadoObjGeneral, //ref
+    indicadorResultadoObjEspecifico, //ref
     loading, //ref
     error, //ref
+    // Ind Objj General
     cargarIndicadorObjGeneralPorId, //func
     crearIndicadorObjetivoGeneral, //func
     updateIndicadorObjetivoGeneral, //func
+    // Ind Res Obj Gral
     cargarIndicadorResultadoObjGeneralPorId, //func
     crearIndicadorResultadoObjetivoGeneral, //func
     updateIndicadorResultadoObjetivoGeneral, //func
     delIndicadorResultadoObjetivoGeneral, //func
+    //Ind Obj Espec
+    cargarIndicadorObjEspecifico, //func
+    crearIndicadorObjEspecifico, //func
+    updateIndicadorObjEspecifico, //func
+    delIndicadorObjEspecifico, //func
+    //Indicador Resultado obj esp
+    cargarIndicadorResultadoObjEspecifico,
+    crearIndicadorResultadoObjEspecifico,
+    updateIndicadorResultadoObjEspecifico,
+    delIndicadorResultadoObjEspecifico,
   }
 }

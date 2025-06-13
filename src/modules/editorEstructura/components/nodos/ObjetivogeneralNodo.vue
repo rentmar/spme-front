@@ -7,6 +7,7 @@
         <div class="mb-1"><strong>Descripcion:</strong> {{ data.nodoProyecto.descripcion }}</div>
         <div class="mb-1"><strong>Supuestos:</strong> {{ data.nodoProyecto.supuestos }}</div>
         <div class="mb-1"><strong>Riesgos:</strong> {{ data.nodoProyecto.riesgos }}</div>
+        {{ data }}
       </div>
     </template>
 
@@ -34,7 +35,7 @@
         </template>
       </v-list-item>
       <!-- Agregar Resultado Objetivo General -->
-      <v-list-item class="custom-menu-item" @click="agregarObjetivoEspecifico">
+      <v-list-item class="custom-menu-item" @click="agregarObjetivoEspecificoOg">
         <v-list-item-title>Agregar Objetivo Especifico</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-flag-checkered'"></v-icon>
@@ -55,6 +56,8 @@ import { useVueFlow } from '@vue-flow/core'
 import { reactive, inject } from 'vue'
 import { useIndicadores } from '@/modules/proyecto/composables/useIndicadores'
 import { useResultados } from '@/modules/proyecto/composables/useResultados'
+import { useObjetivoEspecifico } from '@/modules/proyecto/composables/useObjetivoEspecifico'
+import { useKpis } from '@/modules/proyecto/composables/useKpis'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -64,6 +67,8 @@ const props = defineProps({
 //Composables
 const { crearIndicadorObjetivoGeneral, indicadorObjGeneral, error } = useIndicadores() //indicadores
 const { resultadoOg, crearResultadoOg } = useResultados() //Resultados
+const { objetivoEspecifico, crearObjetivoEspecifico, error: errrorOe } = useObjetivoEspecifico()
+const { kpi, crearKpi } = useKpis()
 
 // eslint-disable-next-line no-unused-vars
 const datosNodoProyecto = reactive(props.data.datosNodo || {})
@@ -84,21 +89,40 @@ const emit = defineEmits([
   'addKpi',
   'addIndicadorObjGeneral',
   'addResultadoObjGeneral',
-  'addObjetivoEspecifico',
+  'addObjetivoEspecificoOg',
 ])
 
 //Agregar KPI
-const agregarKpi = () => {
-  const payload = {
-    label: 'KPI',
-    sourceId: currentNode.id.toString(),
-    meta: {
-      prioridad: 'alta',
-      fechaLimite: '2023-12-31',
-    },
+const agregarKpi = async () => {
+  const kpiOg = {
+    codigo: 'KPI-',
+    descripcion: '',
+    objetivo_general: idObjetivoGeneral.toString(),
+  }
+  try {
+    await crearKpi(kpiOg)
+    console.log(kpi)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Kpi',
+        type: 'kpi',
+        mapaNodoId: mapaNodoId.toString(),
+        //Datos backend del nodo
+        nodoProyecto: {
+          id: kpi.value.id,
+          codigo: kpi.value.id,
+          descripcion: kpi.value.descripcion,
+          objetivo_general: kpi.value.objetivo_general,
+        },
+      },
+    }
+    emit('addKpi', payload)
+  } catch (err) {
+    console.error('Error al crear datos Nodo Kpi', err)
   }
   //Emitir el evento
-  emit('addKpi', payload)
+  //emit('addKpi', payload)
 }
 
 //Agregar indicador
@@ -148,8 +172,6 @@ const agregarIndicadorObjGeneral = async () => {
     error.value = err
     console.log('Error al crear el objetivo', error)
   }
-  //Emitir el evento
-  //emit('addIndicadorObjGeneral', payload)
 }
 
 //Agregar Resultado Objetivo General
@@ -189,17 +211,40 @@ const agregarResultadoObjGeneral = async () => {
 }
 
 //Agregar Objetivo Especifico
-const agregarObjetivoEspecifico = () => {
-  const payload = {
-    label: 'Objetivo Especifico',
-    sourceId: currentNode.id.toString(),
-    meta: {
-      prioridad: 'alta',
-      fechaLimite: '2023-12-31',
-    },
+const agregarObjetivoEspecificoOg = async () => {
+  const objEspOg = {
+    codigo: 'SPO',
+    descripcion: '',
+    supuestos: '',
+    riesgos: '',
+    proyecto: null,
+    objetivo_general: idObjetivoGeneral,
   }
-  //Emitir el evento
-  emit('addObjetivoEspecifico', payload)
+
+  try {
+    await crearObjetivoEspecifico(objEspOg)
+    // console.log(objetivoEspecifico)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Objetivo Especifico OG',
+        type: 'objetivoespecificoog',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: objetivoEspecifico.value.id,
+          codigo: objetivoEspecifico.value.codigo,
+          descripcion: objetivoEspecifico.value.descripcion,
+          supuestos: objetivoEspecifico.value.supuestos,
+          riesgos: objetivoEspecifico.value.riesgos,
+          proyecto: null,
+          objetivo_general: objetivoEspecifico.value.objetivo_general,
+        },
+      },
+    }
+    emit('addObjetivoEspecificoOg', payload)
+  } catch (err) {
+    console.log('Error ' + err + 'Error: ' + errrorOe)
+  }
 }
 
 const handleStyle = {

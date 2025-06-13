@@ -3,40 +3,27 @@
     <!-- Contenido del nodo -->
     <template #default>
       <div class="text-body-2">
-        <div class="mb-1"><strong>Código:</strong> {{ data.codigo }}</div>
-        <div class="mb-1"><strong>Título:</strong> {{ data.titulo }}</div>
-        {{ currentNode }}
+        <div class="mb-1"><strong>Codigo:</strong> {{ data.nodoProyecto.codigo }}</div>
+        <div class="mb-1"><strong>Supuestos:</strong> {{ data.nodoProyecto.supuestos }}</div>
+        <div class="mb-1"><strong>Riesgos:</strong> {{ data.nodoProyecto.riesgos }}</div>
+        <div class="mb-1"><strong>entregado:</strong> {{ data.nodoProyecto.entregado }}</div>
       </div>
     </template>
 
     <!-- Menú contextual -->
     <template #menu>
-      <!-- Editar el Nodo -->
+      <!-- Agregar Procesos -->
       <v-list-item class="custom-menu-item" @click="editarNodo">
-        <v-list-item-title>Editar</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-pencil-outline'"></v-icon>
-        </template>
-      </v-list-item>
-      <!-- Agregar KPI -->
-      <v-list-item class="custom-menu-item" @click="editarNodo">
-        <v-list-item-title>Agregar KPI</v-list-item-title>
+        <v-list-item-title>Agregar Procesos</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-chart-line-variant'"></v-icon>
         </template>
       </v-list-item>
-      <!-- Agregar Indicador Objetivo General -->
+      <!-- Agregar Actividades -->
       <v-list-item class="custom-menu-item" @click="editarNodo">
-        <v-list-item-title>Agregar Indicador Objetivo General</v-list-item-title>
+        <v-list-item-title>Agregar Actividades</v-list-item-title>
         <template v-slot:prepend>
-          <v-icon :icon="'mdi-chart-line'"></v-icon>
-        </template>
-      </v-list-item>
-      <!-- Agregar Resultado Objetivo General -->
-      <v-list-item class="custom-menu-item" @click="editarNodo">
-        <v-list-item-title>Agregar Resultado Objetivo General</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-flag-checkered'"></v-icon>
+          <v-icon :icon="'mdi-chart-line-variant'"></v-icon>
         </template>
       </v-list-item>
     </template>
@@ -57,6 +44,7 @@ const props = defineProps({
 })
 
 const { findNode } = useVueFlow()
+// eslint-disable-next-line no-unused-vars
 const currentNode = findNode(props.id)
 
 const handleStyle = {

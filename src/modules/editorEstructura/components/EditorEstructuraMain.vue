@@ -59,7 +59,7 @@
         @addKpi="(payload) => ejecutarAccion('addKpi', payload)"
         @addIndicadorObjGeneral="(payload) => ejecutarAccion('addIndicadorObjGeneral', payload)"
         @addResultadoObjGeneral="(payload) => ejecutarAccion('addResultadoObjGeneral', payload)"
-        @addObjetivoEspecifico="(payload) => ejecutarAccion('addObjetivoEspecifico', payload)"
+        @addObjetivoEspecificoOg="(payload) => ejecutarAccion('addObjetivoEspecificoOg', payload)"
       ></ObjetivogeneralNodo>
     </template>
     <!--Nodo Objetivo Especifico-->
@@ -73,7 +73,12 @@
     </template>
     <!-- Nodo Objetivo Especifico relacionado al Objetivo General-->
     <template #node-objetivoespecificoog="nodeProps">
-      <ObjetivoespecificoOGNodo v-bind="nodeProps"></ObjetivoespecificoOGNodo>
+      <ObjetivoespecificoOGNodo
+        v-bind="nodeProps"
+        @addIndicadorOE="(payload) => ejecutarAccion('addIndicadorOE', payload)"
+        @addResultadoOE="(payload) => ejecutarAccion('addResultadoOE', payload)"
+        @addProductoOE="(payload) => ejecutarAccion('addProductoOE', payload)"
+      ></ObjetivoespecificoOGNodo>
     </template>
     <!--Nodo KPI-->
     <template #node-kpi="nodeProps">
@@ -101,7 +106,6 @@
         v-bind="nodeProps"
         @addIndicadorResultadoOE="(payload) => ejecutarAccion('addIndicadorResultadoOE', payload)"
         @addProductoResultadoOE="(payload) => ejecutarAccion('addProductoResultadoOE', payload)"
-        @addProcesosResultadoOE="(payload) => ejecutarAccion('addProcesosResultadoOE', payload)"
       ></ResultadoObjetivoEspecifico>
     </template>
     <!-- Resultado de Objetivo Especifico -->
@@ -133,7 +137,7 @@
     <MiniMap pannable zoomable mask-color="rgb(0, 0, 0, 0.7)"></MiniMap>
     <Controls position="left"> </Controls>
   </VueFlow>
-  {{ proyecto }}<br /><br />{{ getNodes }}<br /><br />{{ getEdges }}
+  <!-- {{ proyecto }}<br /><br />{{ getNodes }}<br /><br />{{ getEdges }} -->
 </template>
 
 <script setup>
@@ -184,6 +188,7 @@ const nodos = ref([])
 const conectores = ref([])
 
 //Inicializar el composable
+// eslint-disable-next-line no-unused-vars
 const { fitView, onNodeDoubleClick, getNodes, getEdges } = useVueFlow()
 
 //Captura del click sobre el nodo
