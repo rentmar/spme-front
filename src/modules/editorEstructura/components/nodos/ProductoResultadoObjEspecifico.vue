@@ -3,9 +3,10 @@
     <!-- Contenido del nodo -->
     <template #default>
       <div class="text-body-2">
-        <div class="mb-1"><strong>Código:</strong> {{ data.codigo }}</div>
-        <div class="mb-1"><strong>Título:</strong> {{ data.titulo }}</div>
-        {{ currentNode }}
+        <div class="mb-1"><strong>Codigo:</strong> {{ data.nodoProyecto.codigo }}</div>
+        <div class="mb-1"><strong>Supuestos:</strong> {{ data.nodoProyecto.supuestos }}</div>
+        <div class="mb-1"><strong>Riesgos:</strong> {{ data.nodoProyecto.riesgos }}</div>
+        <div class="mb-1"><strong>Entregado:</strong> {{ data.nodoProyecto.entregado }}</div>
       </div>
     </template>
 
@@ -34,6 +35,7 @@ const handleStyle = {
 }
 
 const { findNode } = useVueFlow()
+// eslint-disable-next-line no-unused-vars
 const currentNode = findNode(props.id)
 </script>
 <style scoped>

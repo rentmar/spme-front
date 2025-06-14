@@ -3,8 +3,11 @@
     <!-- Contenido del nodo -->
     <template #default>
       <div class="text-body-2">
-        <div class="mb-1"><strong>Código:</strong> {{ data.codigo }}</div>
-        <div class="mb-1"><strong>Título:</strong> {{ data.titulo }}</div>
+        <div class="mb-1"><strong>Codigo:</strong> {{ data.nodoProyecto.codigo }}</div>
+        <div class="mb-1"><strong>Descripcion:</strong> {{ data.nodoProyecto.descripcion }}</div>
+        <div class="mb-1"><strong>Supuestos:</strong> {{ data.nodoProyecto.supuestos }}</div>
+        <div class="mb-1"><strong>Riesgos:</strong> {{ data.nodoProyecto.riesgos }}</div>
+        {{ data }}
       </div>
     </template>
 
@@ -42,14 +45,30 @@
 <script setup>
 import BaseNodo from './BaseNodo.vue'
 import { Handle, useVueFlow } from '@vue-flow/core'
+import { inject } from 'vue'
+//Composables
+import { useIndicadores } from '@/modules/proyecto/composables/useIndicadores'
+import { useResultados } from '@/modules/proyecto/composables/useResultados'
+import { useProductos } from '@/modules/proyecto/composables/useProductos'
 
 const props = defineProps({
   id: { type: String, required: true },
   data: { type: Object, required: true },
 })
 
+//Iniciar los composables
+const { indicadorObjetivoEspecifico, crearIndicadorObjEspecifico } = useIndicadores()
+const { crearResultadoOe, resultadoOe, error } = useResultados()
+const { crearProductoOe, productoOe } = useProductos()
+
+//Datos del nodo
 const { findNode } = useVueFlow()
 const currentNode = findNode(props.id)
+const idCurrenNode = currentNode.data.nodoProyecto.id
+
+//Id mapa de estructura
+const proyectoEstructura = inject('proyectoEstructura')
+const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
 
 const handleStyle = {
   width: '12px',
@@ -61,43 +80,141 @@ const handleStyle = {
 const emit = defineEmits(['addIndicadorOE', 'addResultadoOE', 'addProductoOE'])
 
 /* Funciones */
-const agregarIndicadorOE = () => {
-  const payload = {
-    label: 'Indicador OE',
-    sourceId: currentNode.id.toString(),
-    meta: {
-      prioridad: 'alta',
-      fechaLimite: '2023-12-31',
-    },
+const agregarIndicadorOE = async () => {
+  const indicadorOe = {
+    codigo: 'IND001-OESP01',
+    redaccion: 'GUIA',
+    fuente_verificacion: '',
+    target_poblacion: '',
+    tipo: 'A-Z',
+    baseline: '',
+    target_q1: '',
+    target_q2: '',
+    target_q3: '',
+    target_q4: '',
+    objetivo_especifico: idCurrenNode.toString(),
   }
-  //Emitir el evento
-  emit('addIndicadorOE', payload)
+  try {
+    await crearIndicadorObjEspecifico(indicadorOe)
+    // console.log(indicadorObjetivoEspecifico)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Indicador OE',
+        type: 'indicadoroe',
+        estado: 'ES',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: indicadorObjetivoEspecifico.value.id,
+          codigo: indicadorObjetivoEspecifico.value.codigo,
+          redaccion: indicadorObjetivoEspecifico.value.redaccion,
+          fuente_verificacion: indicadorObjetivoEspecifico.value.fuente_verificacion,
+          target_poblacion: indicadorObjetivoEspecifico.value.target_poblacion,
+          tipo: indicadorObjetivoEspecifico.value.tipo,
+          baseline: indicadorObjetivoEspecifico.value.baseline,
+          target_q1: indicadorObjetivoEspecifico.value.target_q1,
+          target_q2: indicadorObjetivoEspecifico.value.target_q2,
+          target_q3: indicadorObjetivoEspecifico.value.target_q3,
+          target_q4: indicadorObjetivoEspecifico.value.target_q4,
+          objetivo_especifico: indicadorObjetivoEspecifico.value.objetivo_especifico,
+        },
+      },
+    }
+    emit('addIndicadorOE', payload)
+  } catch (err) {
+    console.log('Error al crear el Indicador OE', err)
+  }
 }
 
-const agregarResultadoOE = () => {
-  const payload = {
-    label: 'Resultado OE',
-    sourceId: currentNode.id.toString(),
-    meta: {
-      prioridad: 'alta',
-      fechaLimite: '2023-12-31',
-    },
+const agregarResultadoOE = async () => {
+  const resOe = {
+    codigo: 'RES',
+    descripcion: 'Des Res OE',
+    supuestos: 'SUp Res OE',
+    riesgos: 'Riesg Res OE',
+    proceso: null,
+    objetivo_especifico: idCurrenNode.toString(),
   }
-  //Emitir el evento
-  emit('addResultadoOE', payload)
+  try {
+    await crearResultadoOe(resOe)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Resultado OE',
+        type: 'resultadooe',
+        estado: 'ES',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: resultadoOe.value.id,
+          codigo: resultadoOe.value.codigo,
+          descripcion: resultadoOe.value.descripcion,
+          supuestos: resultadoOe.value.supuestos,
+          riesgos: resultadoOe.value.riesgos,
+          proceso: null,
+          objetivo_especifico: resultadoOe.value.objetivo_especifico,
+        },
+      },
+    }
+    emit('addResultadoOE', payload)
+  } catch (err) {
+    console.error('Error al crear ' + error, err)
+  }
+  // const payload = {
+  //   label: 'Resultado OE',
+  //   sourceId: currentNode.id.toString(),
+  //   meta: {
+  //     prioridad: 'alta',
+  //     fechaLimite: '2023-12-31',
+  //   },
+  // }
+  // //Emitir el evento
+  // emit('addResultadoOE', payload)
 }
 
-const agregarProductoOE = () => {
-  const payload = {
-    label: 'Producto OE',
-    sourceId: currentNode.id.toString(),
-    meta: {
-      prioridad: 'alta',
-      fechaLimite: '2023-12-31',
-    },
+const agregarProductoOE = async () => {
+  const prodOe = {
+    codigo: 'P00 -SO',
+    supuestos: 'sup prod oe',
+    riesgos: 'risk oe',
+    entregado: false,
+    proceso: null,
+    objetivo_especifico: idCurrenNode.toString(),
   }
-  //Emitir el evento
-  emit('addProductoOE', payload)
+  try {
+    await crearProductoOe(prodOe)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Producto OE',
+        type: 'productooe',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: productoOe.value.id,
+          codigo: productoOe.value.codigo,
+          descripcion: productoOe.value.descripcion,
+          supuestos: productoOe.value.supuestos,
+          riesgos: productoOe.value.riesgos,
+          entregado: productoOe.value.entregado,
+          proceso: null,
+          objetivo_especifico: productoOe.value.objetivo_especifico,
+        },
+      },
+    }
+    emit('addProductoOE', payload)
+  } catch (err) {
+    console.error('Error al crear Producto OE', err)
+  }
+
+  // const payload = {
+  //   label: 'Producto OE',
+  //   sourceId: currentNode.id.toString(),
+  //   meta: {
+  //     prioridad: 'alta',
+  //     fechaLimite: '2023-12-31',
+  //   },
+  // }
+  // //Emitir el evento
+  // emit('addProductoOE', payload)
 }
 </script>
 <style scoped>

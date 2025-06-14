@@ -7,6 +7,7 @@
         <div class="mb-1"><strong>Descripcion:</strong> {{ data.nodoProyecto.descripcion }}</div>
         <div class="mb-1"><strong>Supuestos:</strong> {{ data.nodoProyecto.supuestos }}</div>
         <div class="mb-1"><strong>Riesgos:</strong> {{ data.nodoProyecto.riesgos }}</div>
+        {{ data }}
       </div>
     </template>
 
@@ -44,14 +45,29 @@
 <script setup>
 import BaseNodo from './BaseNodo.vue'
 import { Handle, useVueFlow } from '@vue-flow/core'
+import { inject } from 'vue'
+import { useIndicadores } from '@/modules/proyecto/composables/useIndicadores'
+import { useProductos } from '@/modules/proyecto/composables/useProductos'
 
 const props = defineProps({
   id: { type: String, required: true },
   data: { type: Object, required: true },
 })
 
+//Inicar composables
+const { indicadorResultadoObjEspecifico, crearIndicadorResultadoObjEspecifico } = useIndicadores()
+const { productoResultadoOe, crearProductoResultadoOe } = useProductos()
+
+//Datos del nodo
 const { findNode } = useVueFlow()
 const currentNode = findNode(props.id)
+const idCurrenNode = currentNode.data.nodoProyecto.id
+// console.log('Id del nodo backend')
+// console.log(idCurretNode)
+
+//Id mapa de estructura
+const proyectoEstructura = inject('proyectoEstructura')
+const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
 
 const handleStyle = {
   width: '12px',
@@ -68,30 +84,82 @@ const emit = defineEmits([
   'addProcesosResultadoOE',
 ])
 
-const agregarIndicadorResultadoOE = () => {
-  const payload = {
-    label: 'Indicador Resultado OE',
-    sourceId: currentNode.id.toString(),
-    meta: {
-      prioridad: 'alta',
-      fechaLimite: '2023-12-31',
-    },
+const agregarIndicadorResultadoOE = async () => {
+  const indicadorREsOe = {
+    codigo: 'IND-RES-OE',
+    redaccion: 'GUIA',
+    fuente_verificacion: 'verificacion',
+    target_poblacion: '1',
+    tipo: 'A-Z',
+    baseline: '12',
+    target_q1: '12',
+    target_q2: '21',
+    target_q3: '212',
+    target_q4: null,
+    resultado_obj_especifico: idCurrenNode.toString(),
   }
-  //Emitir el evento
-  emit('addIndicadorResultadoOE', payload)
+  try {
+    await crearIndicadorResultadoObjEspecifico(indicadorREsOe)
+    // console.log(indicadorObjetivoEspecifico)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Indicador Resultado OE',
+        type: 'indicadorroe',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: indicadorResultadoObjEspecifico.value.id,
+          codigo: indicadorResultadoObjEspecifico.value.codigo,
+          redaccion: indicadorResultadoObjEspecifico.value.redaccion,
+          fuente_verificacion: indicadorResultadoObjEspecifico.value.fuente_verificacion,
+          target_poblacion: indicadorResultadoObjEspecifico.value.target_poblacion,
+          tipo: indicadorResultadoObjEspecifico.value.tipo,
+          baseline: indicadorResultadoObjEspecifico.value.baseline,
+          target_q1: indicadorResultadoObjEspecifico.value.target_q1,
+          target_q2: indicadorResultadoObjEspecifico.value.target_q2,
+          target_q3: indicadorResultadoObjEspecifico.value.target_q3,
+          target_q4: indicadorResultadoObjEspecifico.value.target_q4,
+          resultado_obj_especifico: indicadorResultadoObjEspecifico.resultado_obj_especifico,
+        },
+      },
+    }
+    emit('addIndicadorResultadoOE', payload)
+  } catch (err) {
+    console.log('Error al crear el Indicador OE', err)
+  }
 }
 
-const agregarProductoResultadoOE = () => {
-  const payload = {
-    label: 'Producto de Resultado OE',
-    sourceId: currentNode.id.toString(),
-    meta: {
-      prioridad: 'alta',
-      fechaLimite: '2023-12-31',
-    },
+const agregarProductoResultadoOE = async () => {
+  const productoREsOe = {
+    codigo: 'PROD-RES-OE',
+    supuestos: 'sup prod',
+    riesgos: 'risk prod',
+    entregado: false,
+    resultado_oe: idCurrenNode.toString(),
   }
-  //Emitir el evento
-  emit('addProductoResultadoOE', payload)
+  try {
+    await crearProductoResultadoOe(productoREsOe)
+    console.log(productoResultadoOe)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Producto Resultado OE',
+        type: 'productoroe',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: productoResultadoOe.value.id,
+          codigo: productoResultadoOe.value.codigo,
+          supuestos: productoResultadoOe.value.supuestos,
+          riesgos: productoResultadoOe.value.riesgos,
+          entregado: productoResultadoOe.value.entregado,
+          resultado_oe: productoResultadoOe.value.resultado_oe,
+        },
+      },
+    }
+    emit('addProductoResultadoOE', payload)
+  } catch (err) {
+    console.log('Error al crear el Indicador OE', err)
+  }
 }
 
 const agregarProcesosResultadoOE = () => {

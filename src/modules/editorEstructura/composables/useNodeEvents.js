@@ -173,7 +173,7 @@ export default function useNodeEvents() {
         payload.sourceId,
         payload.meta,
       )
-      mensaje.value = 'Indicador de Resultado OE creado'
+      mensaje.value = 'Producto de Resultado OE creado'
       return result
     },
     /* Agregar Procesos Resultado OE */
