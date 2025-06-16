@@ -3,51 +3,34 @@
     <!-- Contenido del nodo -->
     <template #default>
       <div class="text-body-2">
-        <div class="mb-1"><strong>Código:</strong> {{ data.codigo }}</div>
-        <div class="mb-1"><strong>Título:</strong> {{ data.titulo }}</div>
+        <div class="mb-1"><strong>Código:</strong> {{ data.nodoProyecto.codigo }}</div>
+        <div class="mb-1"><strong>Título:</strong> {{ data.nodoProyecto.titulo }}</div>
+        {{ data }}
       </div>
     </template>
 
     <!-- Menú contextual -->
     <template #menu>
-      <!-- Editar el Nodo -->
-      <v-list-item class="custom-menu-item" @click="editarNodo">
-        <v-list-item-title>Editar</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-pencil-outline'"></v-icon>
-        </template>
-      </v-list-item>
-      <!-- Agregar Indicador Objetivo General -->
-      <v-list-item class="custom-menu-item" @click="editarNodo">
-        <v-list-item-title>Agregar Indicador Objetivo Especifico</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-chart-line'"></v-icon>
-        </template>
-      </v-list-item>
-      <!-- Agregar Resultado Objetivo General -->
-      <v-list-item class="custom-menu-item" @click="editarNodo">
-        <v-list-item-title>Agregar Resultado Objetivo Especifico</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-flag-checkered'"></v-icon>
-        </template>
-      </v-list-item>
       <!-- Agregar Producto Objetivo General -->
-      <v-list-item class="custom-menu-item" @click="editarNodo">
-        <v-list-item-title>Agregar Producto Objetivo Especifico</v-list-item-title>
+      <v-list-item class="custom-menu-item" @click="agregarActividad">
+        <v-list-item-title>Agregar Actividad</v-list-item-title>
         <template v-slot:prepend>
-          <v-icon :icon="'mdi-package-variant-closed'"></v-icon>
+          <v-icon :icon="'mdi-clock-outline'"></v-icon>
         </template>
       </v-list-item>
     </template>
     <template #handles>
       <Handle type="target" position="top" :id="`source-${id}`" :style="handleStyle" />
+      <Handle type="source" position="bottom" :id="`source-${id}`" :style="handleStyle" />
     </template>
   </BaseNodo>
 </template>
 
 <script setup>
 import BaseNodo from './BaseNodo.vue'
-import { Handle } from '@vue-flow/core'
+import { Handle, useVueFlow } from '@vue-flow/core'
+import { inject } from 'vue'
+import { useActividad } from '@/modules/proyecto/composables/useActividad'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -61,10 +44,85 @@ const handleStyle = {
   borderRadius: '50%',
 }
 
+//Composables
+const { actividad, crearActividad } = useActividad()
+
+//Id mapa de estructura
+const proyectoEstructura = inject('proyectoEstructura')
+const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
+
+//Datos del nodo
+const { findNode } = useVueFlow()
+const currentNode = findNode(props.id)
+const idCurrentNode = currentNode.data.nodoProyecto.id
+
+const emit = defineEmits(['addActividadProcesoResOG'])
+
 /* Funciones */
 //Editar el nodo
-const editarNodo = () => {
-  console.log('Editar nodo', props.id)
+const agregarActividad = async () => {
+  const act = {
+    codigo: 'ACT001',
+    descripcion: 'dedede create',
+    tipo: 'CSNS',
+    fecha_programada: null,
+    duracion: 4,
+    fecha_inicio: null,
+    fecha_cierre: null,
+    presupuesto: null,
+    presupuesto_pei: null,
+    estado: 'SPLAN',
+    procedencia_fondos: 'PROY',
+    objetivo_de_actividad: '',
+    descripcion_evaluacion: '',
+    justificacion_modificacion: '',
+    datos_actividad: null,
+    proceso: idCurrentNode,
+    resultado_og: null,
+    resultado_oe: null,
+    producto_oe: null,
+  }
+  try {
+    await crearActividad(act)
+    console.log(actividad)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Actividad Proc. Res. OE',
+        type: 'actividad',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: actividad.value.id,
+          codigo: actividad.value.codigo,
+          descripcion: actividad.value.descripcion,
+          tipo: actividad.value.tipo,
+          fecha_programada: actividad.value.fecha_programada,
+          duracion: actividad.value.duracion,
+          fecha_inicio: actividad.value.fecha_inicio,
+          fecha_cierre: actividad.value.fecha_cierre,
+          presupuesto: actividad.value.presupuesto,
+          presupuesto_pei: actividad.value.presupuesto_pei,
+          estado: actividad.value.estado,
+          procedencia_fondos: actividad.value.procedencia_fondos,
+          objetivo_de_actividad: actividad.value.objetivo_de_actividad,
+          descripcion_evaluacion: actividad.value.descripcion_evaluacion,
+          justificacion_modificacion: actividad.value.justificacion_modificacion,
+          datos_actividad: actividad.value.datos_actividad,
+          proceso: actividad.value.proceso,
+          resultado_og: actividad.value.resultado_og,
+          resultado_oe: actividad.value.resultado_oe,
+          producto_oe: actividad.value.producto_oe,
+        },
+      },
+    }
+    emit('addActividadProcesoResOG', payload)
+  } catch (err) {
+    console.error('Eror al crear', err)
+  }
+
+  // console.log('Editar nodo', props.id)
+  //const payload = 'Mensaje Proceso Resultado OG'
+  //emit('addActividadProcesoResOG', payload)
 }
 </script>
 <style scoped>

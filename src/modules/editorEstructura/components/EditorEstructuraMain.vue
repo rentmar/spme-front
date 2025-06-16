@@ -98,6 +98,7 @@
         v-bind="nodeProps"
         @addIndicadorResultadoOg="(payload) => ejecutarAccion('addIndicadorResultadoOg', payload)"
         @addProcesosResultadoOg="(payload) => ejecutarAccion('addProcesosResultadoOg', payload)"
+        @addActividadResOG="(payload) => ejecutarAccion('addActividadResOG', payload)"
       ></ResultadoObjgeneralNodo>
     </template>
     <!-- Resultado de Objetivo Especifico -->
@@ -106,11 +107,17 @@
         v-bind="nodeProps"
         @addIndicadorResultadoOE="(payload) => ejecutarAccion('addIndicadorResultadoOE', payload)"
         @addProductoResultadoOE="(payload) => ejecutarAccion('addProductoResultadoOE', payload)"
+        @addProcesosResultadoOE="(payload) => ejecutarAccion('addProcesosResultadoOE', payload)"
+        @addActividadResOE="(payload) => ejecutarAccion('addActividadResOE', payload)"
       ></ResultadoObjetivoEspecifico>
     </template>
     <!-- Resultado de Objetivo Especifico -->
     <template #node-productooe="nodeProps">
-      <ProductoObjEspecifico v-bind="nodeProps"></ProductoObjEspecifico>
+      <ProductoObjEspecifico
+        v-bind="nodeProps"
+        @addProcesoProductoOE="(payload) => ejecutarAccion('addProcesoProductoOE', payload)"
+        @addActividadProdOE="(payload) => ejecutarAccion('addActividadProdOE', payload)"
+      ></ProductoObjEspecifico>
     </template>
     <!-- Producto del Resultado Objetivo Especifico-->
     <template #node-productoroe="nodeProps">
@@ -124,14 +131,40 @@
       <IndicadorResultadoObjEspecifico v-bind="nodeProps"></IndicadorResultadoObjEspecifico>
     </template>
     <template #node-procesorog="nodeProps">
-      <ProcesoResultadoObjGeneral v-bind="nodeProps"></ProcesoResultadoObjGeneral>
+      <ProcesoResultadoObjGeneral
+        @addActividadProcesoResOG="(payload) => ejecutarAccion('addActividadProcesoResOG', payload)"
+        v-bind="nodeProps"
+      ></ProcesoResultadoObjGeneral>
     </template>
     <template #node-procesoroe="nodeProps">
-      <ProcesoResultadoObjEspec v-bind="nodeProps"></ProcesoResultadoObjEspec>
+      <ProcesoResultadoObjEspec
+        v-bind="nodeProps"
+        @addActividadProcResOE="(payload) => ejecutarAccion('addActividadProcResOE', payload)"
+      ></ProcesoResultadoObjEspec>
     </template>
     <template #node-procesopoe="nodeProps">
-      <ProcesoProductoObjEspec v-bind="nodeProps"></ProcesoProductoObjEspec>
+      <ProcesoProductoObjEspec
+        v-bind="nodeProps"
+        @addActividadProcProdOE="(payload) => ejecutarAccion('addActividadProcProdOE', payload)"
+      ></ProcesoProductoObjEspec>
     </template>
+    <!--Nodo Actividad Resultado OG-->
+    <template #node-actividadrog="nodeProps">
+      <ActividadRogNodo v-bind="nodeProps"></ActividadRogNodo>
+    </template>
+    <!--Nodo Actividad Producto OE-->
+    <template #node-actividadpoe="nodeProps">
+      <ActividadPoeNodo v-bind="nodeProps"></ActividadPoeNodo>
+    </template>
+    <!--Nodo Actividad Resultado OE-->
+    <template #node-actividadroe="nodeProps">
+      <ActividadRoeNodo v-bind="nodeProps"></ActividadRoeNodo>
+    </template>
+    <!--Nodo Actividad -->
+    <template #node-actividad="nodeProps">
+      <ActividadNodo v-bind="nodeProps"></ActividadNodo>
+    </template>
+
     <ControlMenuDiagrama></ControlMenuDiagrama>
     <Background variant="lines"></Background>
     <MiniMap pannable zoomable mask-color="rgb(0, 0, 0, 0.7)"></MiniMap>
@@ -173,6 +206,10 @@ import IndicadorResultadoObjEspecifico from './nodos/IndicadorResultadoObjEspeci
 import ProcesoResultadoObjGeneral from './nodos/ProcesoResultadoObjGeneral.vue'
 import ProcesoResultadoObjEspec from './nodos/ProcesoResultadoObjEspec.vue'
 import ProcesoProductoObjEspec from './nodos/ProcesoProductoObjEspec.vue'
+import ActividadNodo from './nodos/ActividadNodo.vue'
+import ActividadRogNodo from './nodos/ActividadRogNodo.vue'
+import ActividadPoeNodo from './nodos/ActividadPoeNodo.vue'
+import ActividadRoeNodo from './nodos/ActividadRoeNodo.vue'
 //Manjeador de eventos
 import useNodeEvents from '../composables/useNodeEvents'
 

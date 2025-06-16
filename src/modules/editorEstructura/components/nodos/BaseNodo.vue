@@ -121,6 +121,10 @@ const iconoNodo = computed(() => {
       procesorog: 'mdi-cogs',
       procesoroe: 'mdi-cogs',
       procesopoe: 'mdi-cogs',
+      actividad: 'mdi-clock-outline',
+      actividadrog: 'mdi-clock-outline',
+      actividadpoe: 'mdi-clock-outline',
+      actividadroe: 'mdi-clock-outline',
     }[tipoNodo.value] || 'mdi-help-circle-outline'
   )
 })
@@ -146,6 +150,10 @@ const colorNodo = computed(() => {
       procesorog: '#FF5722',
       procesoroe: '#FF5722',
       procesopoe: '#FF5722',
+      actividad: '#9C27B0',
+      actividadrog: '#9C27B0',
+      actividadpoe: '#9C27B0',
+      actividadroe: '#9C27B0',
     }[tipoNodo.value] || '#BDBDBD'
   )
 })

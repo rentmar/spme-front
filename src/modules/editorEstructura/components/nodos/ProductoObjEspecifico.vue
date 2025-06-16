@@ -13,14 +13,14 @@
     <!-- Menú contextual -->
     <template #menu>
       <!-- Agregar Procesos -->
-      <v-list-item class="custom-menu-item" @click="editarNodo">
+      <v-list-item class="custom-menu-item" @click="agregarProcesos">
         <v-list-item-title>Agregar Procesos</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-chart-line-variant'"></v-icon>
         </template>
       </v-list-item>
       <!-- Agregar Actividades -->
-      <v-list-item class="custom-menu-item" @click="editarNodo">
+      <v-list-item class="custom-menu-item" @click="agregarActividades">
         <v-list-item-title>Agregar Actividades</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-chart-line-variant'"></v-icon>
@@ -37,15 +37,27 @@
 <script setup>
 import BaseNodo from './BaseNodo.vue'
 import { Handle, useVueFlow } from '@vue-flow/core'
+import { inject } from 'vue'
+import { useProcesos } from '@/modules/proyecto/composables/useProcesos'
+import { useActividad } from '@/modules/proyecto/composables/useActividad'
 
 const props = defineProps({
   id: { type: String, required: true },
   data: { type: Object, required: true },
 })
 
+//Composables
+const { procesos, crearProceso } = useProcesos()
+const { actividad, crearActividad } = useActividad()
+
+//Id mapa de estructura
+const proyectoEstructura = inject('proyectoEstructura')
+const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
+
+//Datos del nodo
 const { findNode } = useVueFlow()
-// eslint-disable-next-line no-unused-vars
 const currentNode = findNode(props.id)
+const idCurrentNode = currentNode.data.nodoProyecto.id
 
 const handleStyle = {
   width: '12px',
@@ -54,10 +66,105 @@ const handleStyle = {
   borderRadius: '50%',
 }
 
+//Señales del nodo
+const emit = defineEmits(['addProcesoProductoOE', 'addActividadProdOE'])
+
 /* Funciones */
-//Editar el nodo
-const editarNodo = () => {
-  console.log('Editar nodo', props.id)
+const agregarProcesos = async () => {
+  const processProdOe = {
+    codigo: 'PROC',
+    titulo: 'Proceso Producto OE',
+    descripcion: '',
+    resultado_og: null,
+    resultado_oe: null,
+    producto_oe: idCurrentNode,
+  }
+  // console.log(processResOg)
+  try {
+    await crearProceso(processProdOe)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Procesos Producto OE',
+        type: 'procesopoe',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: procesos.value.id,
+          codigo: procesos.value.codigo,
+          titulo: procesos.value.titulo,
+          descripcion: procesos.value.descripcion,
+          resultado_og: procesos.value.resultado_og,
+          resultado_oe: procesos.value.resultado_oe,
+          producto_oe: procesos.producto_oe,
+        },
+      },
+    }
+    emit('addProcesoProductoOE', payload)
+  } catch (err) {
+    console.log('Error al crear el Indicador Res OG' + err)
+  }
+}
+
+//Agregar actividades
+const agregarActividades = async () => {
+  const act = {
+    codigo: 'ACT001',
+    descripcion: 'dedede create',
+    tipo: 'CSNS',
+    fecha_programada: null,
+    duracion: 4,
+    fecha_inicio: null,
+    fecha_cierre: null,
+    presupuesto: null,
+    presupuesto_pei: null,
+    estado: 'SPLAN',
+    procedencia_fondos: 'PROY',
+    objetivo_de_actividad: '',
+    descripcion_evaluacion: '',
+    justificacion_modificacion: '',
+    datos_actividad: null,
+    proceso: null,
+    resultado_og: null,
+    resultado_oe: null,
+    producto_oe: idCurrentNode,
+  }
+  try {
+    await crearActividad(act)
+    console.log(actividad)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Actividad Prod. OE',
+        type: 'actividadpoe',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: actividad.value.id,
+          codigo: actividad.value.codigo,
+          descripcion: actividad.value.descripcion,
+          tipo: actividad.value.tipo,
+          fecha_programada: actividad.value.fecha_programada,
+          duracion: actividad.value.duracion,
+          fecha_inicio: actividad.value.fecha_inicio,
+          fecha_cierre: actividad.value.fecha_cierre,
+          presupuesto: actividad.value.presupuesto,
+          presupuesto_pei: actividad.value.presupuesto_pei,
+          estado: actividad.value.estado,
+          procedencia_fondos: actividad.value.procedencia_fondos,
+          objetivo_de_actividad: actividad.value.objetivo_de_actividad,
+          descripcion_evaluacion: actividad.value.descripcion_evaluacion,
+          justificacion_modificacion: actividad.value.justificacion_modificacion,
+          datos_actividad: actividad.value.datos_actividad,
+          proceso: actividad.value.proceso,
+          resultado_og: actividad.value.resultado_og,
+          resultado_oe: actividad.value.resultado_oe,
+          producto_oe: actividad.value.producto_oe,
+        },
+      },
+    }
+    emit('addActividadProdOE', payload)
+  } catch (err) {
+    console.error('Eror al crear', err)
+  }
 }
 </script>
 <style scoped>

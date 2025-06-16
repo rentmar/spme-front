@@ -1,21 +1,21 @@
-//Composable kpi
-//CRUD de kpis
+//Composable useProcesos
+//CRUD de Procesos
 import { ref } from 'vue'
-import { kpiServicios } from '../services/kpiService'
+import { procesosServicios } from '../services/procesosService'
 
 //Estados
 const loading = ref(null)
 const error = ref(null)
-const kpis = ref([])
-const kpi = ref(null)
+const procesosTodos = ref([])
+const procesos = ref(null)
 
-export function useKpis() {
+export function useProcesos() {
   //fecth kpis
-  async function cargarKpis() {
+  async function cargarProcesoTodos() {
     loading.value = true
     try {
-      const respuesta = await kpiServicios.cargarKpis()
-      kpis.value = respuesta
+      const respuesta = await procesosServicios.cargarTodos()
+      procesosTodos.value = respuesta
       return respuesta
     } catch (err) {
       error.value = err
@@ -25,11 +25,11 @@ export function useKpis() {
   }
 
   //fetch kpi por id
-  async function cargarKpiPorId(id) {
+  async function cargarProcesoPorId(id) {
     loading.value = true
     try {
-      const respuesta = await kpiServicios.porId(id)
-      kpi.value = respuesta
+      const respuesta = await procesosServicios.porId(id)
+      procesos.value = respuesta
       return respuesta
     } catch (err) {
       error.value = err
@@ -39,11 +39,11 @@ export function useKpis() {
   }
 
   //crear
-  async function crearKpi(data) {
+  async function crearProceso(data) {
     loading.value = true
     try {
-      const respuesta = await kpiServicios.crear(data)
-      kpi.value = respuesta
+      const respuesta = await procesosServicios.crear(data)
+      procesos.value = respuesta
       return respuesta
     } catch (err) {
       error.value = err
@@ -53,10 +53,10 @@ export function useKpis() {
   }
 
   //Update
-  async function updateKpi(id, data) {
+  async function updateProceso(id, data) {
     loading.value = true
     try {
-      const respuesta = await kpiServicios.update(id, data)
+      const respuesta = await procesosServicios.update(id, data)
       return respuesta
     } catch (err) {
       error.value = err
@@ -66,10 +66,10 @@ export function useKpis() {
   }
 
   //Eliminar
-  async function delKpi(id) {
+  async function delProceso(id) {
     loading.value = true
     try {
-      const respuesta = await kpiServicios.del(id)
+      const respuesta = await procesosServicios.delete(id)
       return respuesta
     } catch (err) {
       error.value = err
@@ -81,12 +81,12 @@ export function useKpis() {
   return {
     loading, //ref
     error, //ref
-    kpis, //ref lista de kpis
-    kpi, //ref un kpi por id
-    cargarKpis,
-    cargarKpiPorId,
-    crearKpi,
-    updateKpi,
-    delKpi,
+    procesosTodos, //ref lista de procesos
+    procesos, //ref un procesos por id
+    cargarProcesoTodos,
+    cargarProcesoPorId,
+    crearProceso,
+    updateProceso,
+    delProceso,
   }
 }

@@ -1,21 +1,21 @@
-//Composable kpi
-//CRUD de kpis
+//Composable useActividad
+//CRUD de Actividades
 import { ref } from 'vue'
-import { kpiServicios } from '../services/kpiService'
+import { actividadServicios } from '../services/actividadService'
 
 //Estados
 const loading = ref(null)
 const error = ref(null)
-const kpis = ref([])
-const kpi = ref(null)
+const actividades = ref([])
+const actividad = ref(null)
 
-export function useKpis() {
+export function useActividad() {
   //fecth kpis
-  async function cargarKpis() {
+  async function cargarActividades() {
     loading.value = true
     try {
-      const respuesta = await kpiServicios.cargarKpis()
-      kpis.value = respuesta
+      const respuesta = await actividadServicios.all()
+      actividades.value = respuesta
       return respuesta
     } catch (err) {
       error.value = err
@@ -25,11 +25,11 @@ export function useKpis() {
   }
 
   //fetch kpi por id
-  async function cargarKpiPorId(id) {
+  async function cargarActividadPorId(id) {
     loading.value = true
     try {
-      const respuesta = await kpiServicios.porId(id)
-      kpi.value = respuesta
+      const respuesta = await actividadServicios.porId(id)
+      actividad.value = respuesta
       return respuesta
     } catch (err) {
       error.value = err
@@ -39,11 +39,11 @@ export function useKpis() {
   }
 
   //crear
-  async function crearKpi(data) {
+  async function crearActividad(data) {
     loading.value = true
     try {
-      const respuesta = await kpiServicios.crear(data)
-      kpi.value = respuesta
+      const respuesta = await actividadServicios.crear(data)
+      actividad.value = respuesta
       return respuesta
     } catch (err) {
       error.value = err
@@ -53,10 +53,10 @@ export function useKpis() {
   }
 
   //Update
-  async function updateKpi(id, data) {
+  async function updateActividad(id, data) {
     loading.value = true
     try {
-      const respuesta = await kpiServicios.update(id, data)
+      const respuesta = await actividadServicios.update(id, data)
       return respuesta
     } catch (err) {
       error.value = err
@@ -66,10 +66,10 @@ export function useKpis() {
   }
 
   //Eliminar
-  async function delKpi(id) {
+  async function delActividad(id) {
     loading.value = true
     try {
-      const respuesta = await kpiServicios.del(id)
+      const respuesta = await actividadServicios.delete(id)
       return respuesta
     } catch (err) {
       error.value = err
@@ -81,12 +81,12 @@ export function useKpis() {
   return {
     loading, //ref
     error, //ref
-    kpis, //ref lista de kpis
-    kpi, //ref un kpi por id
-    cargarKpis,
-    cargarKpiPorId,
-    crearKpi,
-    updateKpi,
-    delKpi,
+    actividades, //ref lista de kpis
+    actividad, //ref un kpi por id
+    cargarActividades,
+    cargarActividadPorId,
+    crearActividad,
+    updateActividad,
+    delActividad,
   }
 }

@@ -180,11 +180,99 @@ export default function useNodeEvents() {
     addProcesosResultadoOE: (payload) => {
       const result = handleNodeCreation(
         'procesoroe',
-        'Procesos Res. OE',
+        'Procesos Resultado OE',
         payload.sourceId,
         payload.meta,
       )
-      mensaje.value = 'Indicador de Resultado OE creado'
+      mensaje.value = 'Procesos para Resultado OE creado'
+      return result
+    },
+    /* Agregar Procesos Resultado OE */
+    addProcesosResultadoOg: (payload) => {
+      const result = handleNodeCreation(
+        'procesorog',
+        'Procesos Res. OG',
+        payload.sourceId,
+        payload.meta,
+      )
+      mensaje.value = 'Procesos para Resultado OG creado'
+      return result
+    },
+    /* Agregar Proceso Producto de OE*/
+    addProcesoProductoOE: (payload) => {
+      const result = handleNodeCreation(
+        'procesopoe',
+        'Proceso Producto OE',
+        payload.sourceId,
+        payload.meta,
+      )
+      mensaje.value = 'Procesos para Producto OE creado'
+      return result
+    },
+    /* Agregar Actividd Resultado OG  */
+    addActividadResOG: (payload) => {
+      const result = handleNodeCreation(
+        'actividadrog',
+        'Actividad Res. OG',
+        payload.sourceId,
+        payload.meta,
+      )
+      mensaje.value = 'Actividad para Resultado OG creado'
+      return result
+    },
+    /*Agregar */
+    addActividadProdOE: (payload) => {
+      const result = handleNodeCreation(
+        'actividadpoe',
+        'Actividad Prod. OE',
+        payload.sourceId,
+        payload.meta,
+      )
+      mensaje.value = 'Actividad para Producto OE creado'
+      return result
+    },
+    /* Agregar */
+    addActividadResOE: (payload) => {
+      const result = handleNodeCreation(
+        'actividadroe',
+        'Actividad Res OE',
+        payload.sourceId,
+        payload.meta,
+      )
+      mensaje.value = 'Actividad para Resultado OE creado'
+      return result
+    },
+    /* Agregar Actividad Proc Res OG */
+    addActividadProcesoResOG: (payload) => {
+      const result = handleNodeCreation(
+        'actividad',
+        'Actividad Proc Res OG',
+        payload.sourceId,
+        payload.meta,
+      )
+      mensaje.value = 'Actividad para Proceso Resultado OG creado'
+      return result
+    },
+    /* Agregar Actividad */
+    addActividadProcProdOE: (payload) => {
+      const result = handleNodeCreation(
+        'actividad',
+        'Actividad Proc Res OG',
+        payload.sourceId,
+        payload.meta,
+      )
+      mensaje.value = 'Actividad para Proceso Producto OE creado'
+      return result
+    },
+    /* Agregar */
+    addActividadProcResOE: (payload) => {
+      const result = handleNodeCreation(
+        'actividad',
+        'Actividad Proc Res OE',
+        payload.sourceId,
+        payload.meta,
+      )
+      mensaje.value = 'Actividad para Proceso Resultado OE creado'
       return result
     },
   }

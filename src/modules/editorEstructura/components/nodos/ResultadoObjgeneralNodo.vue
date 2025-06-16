@@ -27,10 +27,10 @@
         </template>
       </v-list-item>
       <!-- Agregar Proceso Objetivo General -->
-      <v-list-item class="custom-menu-item">
+      <v-list-item class="custom-menu-item" @click="agregarActividad">
         <v-list-item-title>Agregar Actividad</v-list-item-title>
         <template v-slot:prepend>
-          <v-icon :icon="'mdi-flag-checkered'"></v-icon>
+          <v-icon :icon="'mdi-clock-outline'"></v-icon>
         </template>
       </v-list-item>
     </template>
@@ -46,6 +46,8 @@ import { inject } from 'vue'
 import BaseNodo from './BaseNodo.vue'
 import { Handle, useVueFlow } from '@vue-flow/core'
 import { useIndicadores } from '@/modules/proyecto/composables/useIndicadores'
+import { useProcesos } from '@/modules/proyecto/composables/useProcesos'
+import { useActividad } from '@/modules/proyecto/composables/useActividad'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -55,6 +57,8 @@ const props = defineProps({
 //Iniciar composables
 const { error, indicadorResultadoObjGeneral, crearIndicadorResultadoObjetivoGeneral } =
   useIndicadores()
+const { procesos, crearProceso } = useProcesos()
+const { actividad, crearActividad } = useActividad()
 
 //Id mapa de estructura
 const proyectoEstructura = inject('proyectoEstructura')
@@ -77,7 +81,7 @@ const handleStyle = {
 
 /* Funciones */
 //Emitir señales
-const emit = defineEmits(['addIndicadorResultadoOg', 'addProcesosResultadoOg'])
+const emit = defineEmits(['addIndicadorResultadoOg', 'addProcesosResultadoOg', 'addActividadResOG'])
 
 //AGregar Indicador Obj General
 const agregarIndicadorResultadoOg = async () => {
@@ -97,8 +101,8 @@ const agregarIndicadorResultadoOg = async () => {
   //Crear el indicador resultado og
   try {
     await crearIndicadorResultadoObjetivoGeneral(indicadorResultadoOg)
-    console.log('Indicador Resultado OG')
-    console.log(indicadorResultadoObjGeneral)
+    // console.log('Indicador Resultado OG')
+    // console.log(indicadorResultadoObjGeneral)
     const payload = {
       sourceId: currentNode.id.toString(),
       meta: {
@@ -129,7 +133,104 @@ const agregarIndicadorResultadoOg = async () => {
 }
 
 //Agregar
-const agregarProcesos = async () => {}
+const agregarProcesos = async () => {
+  const processResOg = {
+    codigo: 'PROC',
+    titulo: 'Procesos Res OG',
+    descripcion: '',
+    resultado_og: idCurrentNode,
+    resultado_oe: null,
+    producto_oe: null,
+  }
+  // console.log(processResOg)
+  try {
+    await crearProceso(processResOg)
+    console.log('Proceso')
+    console.log(procesos)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Procesos Resultado OG',
+        type: 'procesorog',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: procesos.value.id,
+          codigo: procesos.value.codigo,
+          titulo: procesos.value.titulo,
+          descripcion: procesos.value.descripcion,
+          resultado_og: procesos.value.resultado_og,
+          resultado_oe: procesos.value.resultado_oe,
+          producto_oe: procesos.producto_oe,
+        },
+      },
+    }
+    emit('addProcesosResultadoOg', payload)
+  } catch (err) {
+    console.log('Error al crear el Indicador Res OG' + err)
+  }
+}
+
+//Agregar actividad
+const agregarActividad = async () => {
+  const act = {
+    codigo: 'ACT001',
+    descripcion: 'dedede create',
+    tipo: 'CSNS',
+    fecha_programada: null,
+    duracion: 4,
+    fecha_inicio: null,
+    fecha_cierre: null,
+    presupuesto: null,
+    presupuesto_pei: null,
+    estado: 'SPLAN',
+    procedencia_fondos: 'PROY',
+    objetivo_de_actividad: '',
+    descripcion_evaluacion: '',
+    justificacion_modificacion: '',
+    datos_actividad: null,
+    proceso: null,
+    resultado_og: idCurrentNode,
+    resultado_oe: null,
+    producto_oe: null,
+  }
+  try {
+    await crearActividad(act)
+    console.log(actividad)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Actividad Res. OG',
+        type: 'actividadrog',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: actividad.value.id,
+          codigo: actividad.value.codigo,
+          descripcion: actividad.value.descripcion,
+          tipo: actividad.value.tipo,
+          fecha_programada: actividad.value.fecha_programada,
+          duracion: actividad.value.duracion,
+          fecha_inicio: actividad.value.fecha_inicio,
+          fecha_cierre: actividad.value.fecha_cierre,
+          presupuesto: actividad.value.presupuesto,
+          presupuesto_pei: actividad.value.presupuesto_pei,
+          estado: actividad.value.estado,
+          procedencia_fondos: actividad.value.procedencia_fondos,
+          objetivo_de_actividad: actividad.value.objetivo_de_actividad,
+          descripcion_evaluacion: actividad.value.descripcion_evaluacion,
+          justificacion_modificacion: actividad.value.justificacion_modificacion,
+          datos_actividad: actividad.value.datos_actividad,
+          proceso: actividad.value.proceso,
+          resultado_og: actividad.value.resultado_og,
+          resultado_oe: actividad.value.resultado_oe,
+          producto_oe: actividad.value.producto_oe,
+        },
+      },
+    }
+    emit('addActividadResOG', payload)
+  } catch (err) {
+    console.error('Eror al crear', err)
+  }
+}
 </script>
 <style scoped>
 .custom-menu-item {
