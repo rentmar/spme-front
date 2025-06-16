@@ -65,7 +65,7 @@
 
                 <template v-slot:append>
                   <div class="d-flex">
-                    <v-tooltip text="Ver detalles" location="top">
+                    <!-- <v-tooltip text="Ver detalles" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
                           v-bind="props"
@@ -74,7 +74,7 @@
                           color="primary"
                         ></v-btn>
                       </template>
-                    </v-tooltip>
+                    </v-tooltip> -->
 
                     <v-tooltip text="Proceso de planificación" location="top">
                       <template v-slot:activator="{ props }">
@@ -89,7 +89,7 @@
                     </v-tooltip>
 
                     <div class="d-flex">
-                      <v-tooltip text="Solicitud" location="top">
+                      <!-- <v-tooltip text="Solicitud" location="top">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-bind="props"
@@ -99,8 +99,8 @@
                             :to="`/proyecto/${item.id}/planificar`"
                           ></v-btn>
                         </template>
-                      </v-tooltip>
-                      <v-tooltip text="Rendición de cuentas" location="top">
+                      </v-tooltip> -->
+                      <!-- <v-tooltip text="Rendición de cuentas" location="top">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-bind="props"
@@ -110,8 +110,8 @@
                             :to="`/proyecto/${item.id}/planificar`"
                           ></v-btn>
                         </template>
-                      </v-tooltip>
-                      <v-tooltip text="Informe de actividad" location="top">
+                      </v-tooltip> -->
+                      <!-- <v-tooltip text="Informe de actividad" location="top">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-bind="props"
@@ -121,7 +121,7 @@
                             :to="`/proyecto/${item.id}/planificar`"
                           ></v-btn>
                         </template>
-                      </v-tooltip>
+                      </v-tooltip> -->
                     </div>
                   </div>
                 </template>
@@ -158,7 +158,7 @@
 
                 <template v-slot:append>
                   <div class="d-flex">
-                    <v-tooltip text="Ver detalle" location="top">
+                    <!-- <v-tooltip text="Ver detalle" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
                           v-bind="props"
@@ -168,9 +168,9 @@
                           @click="verDetalleActividad(item)"
                         ></v-btn>
                       </template>
-                    </v-tooltip>
+                    </v-tooltip> -->
 
-                    <v-tooltip text="Generar solicitud" location="top">
+                    <!-- <v-tooltip text="Generar solicitud" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
                           v-bind="props"
@@ -180,7 +180,7 @@
                           @click="generarSolicitud(item)"
                         ></v-btn>
                       </template>
-                    </v-tooltip>
+                    </v-tooltip> -->
                   </div>
                 </template>
               </v-list-item>
@@ -252,6 +252,7 @@
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
+import { inject } from 'vue'
 
 // Estados
 const cargandoGeneral = computed(() => cargandoProyecto.value)
@@ -262,6 +263,9 @@ const tiposFiltro = ref([
   { value: 'actividades', title: 'Solo Actividades' },
   { value: 'ambos', title: 'Proyectos y Actividades' },
 ])
+
+//El pei vigente
+const peiVigente = inject('peiVigente')
 
 // Inicializar el store
 const proyectosStore = useProyectoStore()
@@ -291,7 +295,7 @@ onMounted(async () => {
 // Funcion de carga de store
 const cargarDatos = async () => {
   try {
-    await obtenerProyectosPlanificacion(1)
+    await obtenerProyectosPlanificacion(peiVigente.value.id)
   } catch (err) {
     console.log('Error al cargar la informacion stores', err)
   }
@@ -384,13 +388,13 @@ const avancePromedio = computed(() => {
 })
 
 // Métodos para actividades
-const verDetalleActividad = (actividad) => {
-  console.log('Ver detalle de:', actividad)
-}
+// const verDetalleActividad = (actividad) => {
+//   console.log('Ver detalle de:', actividad)
+// }
 
-const generarSolicitud = (actividad) => {
-  console.log('Generar solicitud para:', actividad)
-}
+// const generarSolicitud = (actividad) => {
+//   console.log('Generar solicitud para:', actividad)
+// }
 </script>
 
 <style scoped>

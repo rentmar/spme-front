@@ -23,7 +23,7 @@
           <v-card-text class="contenedor-planificacion">
             <!-- <v-card-text style="height: 750px; position: relative"> -->
             <template v-if="!cargandoGeneral && proyecto">
-              <PlanificacionXls></PlanificacionXls>
+              <PlanificacionXls :proyecto="proyecto"></PlanificacionXls>
             </template>
             <template v-else>
               <div class="d-flex flex-column align-center justify-center" style="height: 100%">
@@ -46,13 +46,14 @@ import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
 import PlanificacionXls from '@/modules/planificacionxls/components/PlanificacionXls.vue'
-//Estilos de Vue Flow
 
 // Store y rutas
 const proyectoStore = useProyectoStore()
 const route = useRoute()
 const idproyecto = route.params.id
 
+/****** Iniciar y desestructurar stores **********/
+//Store del Proyecto
 const { proyectoActual: proyecto, cargando: cargandoProyecto } = storeToRefs(proyectoStore)
 const { obtenerProyectoPorId } = proyectoStore
 
@@ -68,8 +69,10 @@ const cargarDatos = async () => {
   }
 }
 
-// Estado
-const cargandoGeneral = computed(() => cargandoProyecto.value)
+// Estado de carga
+const cargandoGeneral = computed(() => {
+  return cargandoProyecto.value
+})
 </script>
 
 <style scoped>

@@ -19,4 +19,13 @@ export const peiVigenteServicio = {
       console.error('AXIOS: err al cambiar el  PEI vigente', error)
     }
   },
+  /* Obtener la estructura del PEI VIGENTE */
+  peivigenteEstructura: async (params) => {
+    try {
+      const respuesta = await api.get('')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al obtener la estructura del PEI vigente')
+    }
+  },
 }

@@ -89,6 +89,13 @@ registerLanguageDictionary(esMX)
 const hotTableOG = ref(null)
 const hotTableOE = ref(null)
 
+const props = defineProps({
+  proyecto: {
+    type: Object,
+    required: true,
+  },
+})
+
 //Datos del proyecto
 const proyectoEstructura = ref([
   {

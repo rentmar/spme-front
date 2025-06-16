@@ -14,7 +14,7 @@ export const proyectoServicios = {
   /* Obtener todos los proyectos en estado de PLANIFICACION */
   obtenerTodosPlanificacion: async (idPei) => {
     try {
-      const respuesta = await api.get('proyectos/planificacion/' + idPei + '/')
+      const respuesta = await api.get('/proyectos/planificacion/' + idPei + '/')
       return respuesta.data
     } catch (error) {
       console.error('Axios: No se pudo obtener la lista de proyectos en planificacion', error)
@@ -33,7 +33,8 @@ export const proyectoServicios = {
   /* Proyecto por identificador */
   estructuraPorId: async (id) => {
     try {
-      const respuesta = await api.get('/proyecto-estructura/' + id + '/')
+      const respuesta = await api.get('/proyecto/' + id + '/estructura/')
+      //const respuesta = await api.get('/proyecto-estructura/' + id + '/')
       return respuesta.data
     } catch (error) {
       console.error('Axios: No se pudo obtener el proyecto con el ID: ' + id, error)

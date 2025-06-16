@@ -7,7 +7,6 @@
         <div class="mb-1"><strong>Descripcion:</strong> {{ data.nodoProyecto.descripcion }}</div>
         <div class="mb-1"><strong>Supuestos:</strong> {{ data.nodoProyecto.supuestos }}</div>
         <div class="mb-1"><strong>Riesgos:</strong> {{ data.nodoProyecto.riesgos }}</div>
-        {{ data }}
       </div>
     </template>
 
@@ -128,7 +127,7 @@ const agregarKpi = async () => {
 //Agregar indicador
 const agregarIndicadorObjGeneral = async () => {
   const indicadorOg = {
-    codigo: 'IND-',
+    codigo: 'IND-OG',
     redaccion: 'GUIA',
     fuente_verificacion: 'Fuentes de verificacion',
     target_poblacion: '',
@@ -140,10 +139,11 @@ const agregarIndicadorObjGeneral = async () => {
     target_q4: '',
     objetivo_general: idObjetivoGeneral,
   }
+  //console.log(indicadorOg)
 
   try {
     await crearIndicadorObjetivoGeneral(indicadorOg)
-    // console.log(indicadorObjGeneral)
+    console.log(indicadorObjGeneral)
     const payload = {
       sourceId: currentNode.id.toString(),
       meta: {
@@ -167,6 +167,7 @@ const agregarIndicadorObjGeneral = async () => {
         },
       },
     }
+    console.log(payload)
     emit('addIndicadorObjGeneral', payload)
   } catch (err) {
     error.value = err
