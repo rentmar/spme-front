@@ -168,7 +168,7 @@ const cargandoGeneral = computed(() => {
 .contenedor-planificacion {
   width: 100%;
   height: 100%;
-  min-height: 750px;
+  min-height: 600px;
   position: relative;
   padding: 0;
 }

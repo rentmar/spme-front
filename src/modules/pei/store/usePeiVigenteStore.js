@@ -5,6 +5,7 @@ import { peiVigenteServicio } from '../services/peiVigenteService'
 export const usePeiVigenteStore = defineStore('peiVigente', () => {
   /* ESTADOS */
   const peiVigente = ref(null) //Pei vigente
+  const peiVigenteEstructura = ref(null) //Estructura del PEI vigente
   const cargando = ref(false) //ref carga
   const error = ref(null) //ref error
 
@@ -36,11 +37,28 @@ export const usePeiVigenteStore = defineStore('peiVigente', () => {
     }
   }
 
+  const obtenerPeiVigenteEstructura = async () => {
+    cargando.value = true
+    error.value = null
+    try {
+      const response = await peiVigenteServicio.peivigenteEstructura()
+      peiVigenteEstructura.value = response
+      return response
+    } catch (err) {
+      error.value = err.response?.data?.error || 'Error al obtener la estructura del PEI vigente'
+      return { success: false, error: error.value }
+    } finally {
+      cargando.value = false
+    }
+  }
+
   return {
-    peiVigente,
-    cargando,
-    error,
-    obtenerPeiVigente,
-    establecerPeiVigente,
+    peiVigente, //ref
+    peiVigenteEstructura, //ref
+    cargando, //ref
+    error, //ref
+    obtenerPeiVigente, //func
+    establecerPeiVigente, //func
+    obtenerPeiVigenteEstructura, //func
   }
 })
