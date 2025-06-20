@@ -40,6 +40,16 @@ export const proyectoServicios = {
       console.error('Axios: No se pudo obtener el proyecto con el ID: ' + id, error)
     }
   },
+  /* Proyecto estructura con nodos */
+  estructuraNodosPorID: async (id) => {
+    try {
+      const respuesta = await api.get('/proyecto-estructura-nodos/' + id + '/')
+      //const respuesta = await api.get('/proyecto-estructura/' + id + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo obtener el proyecto con el ID: ' + id, error)
+    }
+  },
   /* Crear un nuevo proyecto */
   crear: async (proyectoData) => {
     try {

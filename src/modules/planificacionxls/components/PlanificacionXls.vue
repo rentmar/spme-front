@@ -1,3 +1,5 @@
+<!-- eslint-disable no-unused-vars -->
+<!-- eslint-disable no-unused-vars -->
 <template>
   <div class="hotWraper">
     <LoadingOverlay
@@ -59,8 +61,10 @@
     </div>
   </div>
   <div>{{ datosPlanificacion }}</div>
-  <div>{{ peiVigenteEstructura }}</div>
+  <br /><br />
   <div>{{ proyecto }}</div>
+  <br /><br />
+  <div>{{ proyectoEstructura }}</div>
 </template>
 
 <script setup>
@@ -71,9 +75,12 @@ import { esMX } from 'handsontable/i18n'
 import 'handsontable/dist/handsontable.full.css'
 import LoadingOverlay from '@/components/layout/partials/LoadingOverlay.vue'
 //imports
-import { ref, onMounted, computed, watch } from 'vue'
-import { usePeiVigenteStore } from '@/modules/pei/store/usePeiVigenteStore'
+import { ref, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
+//Stores
+import { usePeiVigenteStore } from '@/modules/pei/store/usePeiVigenteStore'
+import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
+//Composables
 import useLoading from '@/composables/useLoading'
 
 //Props del componente
@@ -82,6 +89,14 @@ const props = defineProps({
   proyecto: {
     type: Object,
     required: true,
+  },
+  proyectoEstructura: {
+    type: Object,
+    required: true,
+  },
+  cargando: {
+    type: Boolean,
+    default: true,
   },
 })
 
@@ -95,58 +110,92 @@ const hotTable = ref(null)
 //Composable
 const { isLoading, loadingMessage, loadingProgress, loadingError, withLoading } = useLoading()
 
-//Iniciar el Store del pei vigente
-const peiVigenteStore = usePeiVigenteStore()
+//Iniciar Stores
+const peiVigenteStore = usePeiVigenteStore() //Pei Vigente
 
 /****************** DES Estructurar los Stores ***********************/
 //Referencias
-const { peiVigenteEstructura, cargando: cargandoPei } = storeToRefs(peiVigenteStore)
+const { peiVigenteEstructura } = storeToRefs(peiVigenteStore) //Referencias al Store del PEi Vigente
 //Funciones
-const { obtenerPeiVigenteEstructura } = peiVigenteStore
+const { obtenerPeiVigenteEstructura } = peiVigenteStore //Funciones
+//Referencias
+
+// Datos iniciales
+// const datosPlanificacion = ref([
+//   {
+//     idObjPei: '',
+//     objetivoPei: '',
+//     idIndPei: '',
+//     indicadorPei: '',
+//     idObjGral: '',
+//     objetivoGral: '',
+//     idKpi: '',
+//     kpi: '',
+//     idIndOg: '',
+//     indicadorOg: '',
+//   },
+// ])
+//Datos de la planilla
+const datosPlanificacion = ref([{}])
+
+//Objetivo General del proyecto
+const objetivosGenerales = ref([props.proyectoEstructura.value?.objetivo_general])
+console.log(objetivosGenerales)
+
+//Indicadores del Objetivo General
+const indicadoresOgOptions = props.proyectoEstructura.value?.indicadores_objgral
 
 onMounted(async () => {
-  cargarDatos()
+  await cargarDatos()
 })
 
 const cargarDatos = async () => {
   try {
-    await withLoading(obtenerPeiVigenteEstructura(), 'Cargado Informacion')
+    await withLoading(obtenerPeiVigenteEstructura(), 'Cargando informacion del PEI')
   } catch (err) {
     console.error('Erro al cargar la informacion', err)
   }
 }
 
-// Estado de carga
-const cargandoGeneral = computed(() => {
-  return cargandoPei.value
-})
-
-// Datos iniciales
-const datosPlanificacion = ref([
-  {
-    idObjPei: '',
-    objetivoPei: '',
-    idIndPei: '',
-    indicadorPei: '',
-  },
-])
+const llenarDatosDesdeElProyecto = () => {}
 
 //Rotulos de lo Headers
 const nestedHeaders = ref([
   //Cuarto Nivel
   [{ label: 'PROYECTO - PLANIFICACION', colspan: 14 }],
-  //Tercer Nivel
+  //Cuarto  Nivel
   [
     { label: 'PEI', colspan: 4 },
     { label: 'PROYECTO', colspan: 10 },
   ],
+  //Tercer Nivel
+  [
+    { label: 'PEI', colspan: 4 },
+    { label: 'OBJETIVO GENERAL', colspan: 10 },
+  ],
+
   //Segundo Nivel
   [
     { label: 'Objetivo', colspan: 2 },
     { label: 'Indicador', colspan: 2 },
+    { label: 'Objetivo General', colspan: 2 },
+    { label: 'Indicador', colspan: 2 },
   ],
   //Primer nivel
-  ['id', 'Objetivo', 'id', 'Indicador'],
+  [
+    //Objetivo del PEI
+    'id',
+    'Objetivo',
+    //Indicador del PEI
+    'id',
+    'Indicador',
+    //Objetivo General
+    'id',
+    'Objetivo',
+    //Indicador
+    'id',
+    'Indicador',
+  ],
 ])
 
 //Opciones para los dropdowns
@@ -158,12 +207,14 @@ const objetivosOptions = computed(() => {
 
 //Definicion de columnas
 const columnas = ref([
+  //Id del Pbj PEI
   {
     data: 'idObjPei',
     type: 'numeric',
     width: 50,
     readOnly: true,
   },
+  //Obj PEI
   {
     data: 'objetivoPei',
     type: 'dropdown',
@@ -174,11 +225,13 @@ const columnas = ref([
     strict: true,
     width: 150,
   },
+  //Id del Ind del PEI
   {
     data: 'idIndPei',
     type: 'numeric',
     readOnly: true,
   },
+  //Indicador del PEI
   {
     data: 'indicadorPei',
     type: 'dropdown',
@@ -197,12 +250,38 @@ const columnas = ref([
     strict: true,
     width: 150,
   },
-  { data: 'e', type: 'text' },
-  { data: 'f', type: 'text' },
-  { data: 'g', type: 'text' },
-  { data: 'h', type: 'text' },
-  { data: 'i', type: 'text' },
-  { data: 'j', type: 'text' },
+  //Id del Obj Gral
+  {
+    data: 'idObjGral',
+    type: 'text',
+    readOnly: true,
+    width: 50,
+  },
+  //Obj General
+  {
+    data: 'objetivoGral',
+    type: 'text',
+    readOnly: true,
+    width: 200,
+  },
+  //Id del indicador del Obj General
+  {
+    data: 'idIndOg',
+    type: 'text',
+    readOnly: true,
+    width: 50,
+  },
+  //Indicador dle Obj General
+  {
+    data: 'indicadorOg',
+    type: 'dropdown',
+    source(query, process) {
+      process(indicadoresOgOptions.value)
+    },
+    allowInvalid: false,
+    strict: true,
+    width: 200,
+  },
 ])
 
 /********* Funciones *********/
@@ -227,21 +306,15 @@ const handleChange = (changes, source) => {
       const codigo = newValue?.split(' - ')[0]
       const objetivo = peiVigenteEstructura.value?.objetivos?.find((o) => o.codigo === codigo)
 
-      // Asignar ID del objetivo
       fila.idObjPei = objetivo?.id || ''
 
-      // Validar si tiene indicadores
       if (!objetivo?.indicadores?.length) {
-        // Limpia campos
         fila.idIndPei = ''
         fila.indicadorPei = ''
-
-        // Mostrar advertencia
         alert(`El objetivo "${newValue}" no tiene indicadores disponibles.`)
         continue
       }
 
-      // Asignar primer indicador si existe
       const primerIndicador = objetivo.indicadores[0]
       fila.idIndPei = primerIndicador.id
       fila.indicadorPei = `${primerIndicador.codigo} - ${primerIndicador.descripcion}`
@@ -250,10 +323,8 @@ const handleChange = (changes, source) => {
     if (prop === 'indicadorPei') {
       const codigoInd = newValue?.split(' - ')[0]
       const codigoObj = fila.objetivoPei?.split(' - ')[0]
-
       const objetivo = peiVigenteEstructura.value?.objetivos?.find((o) => o.codigo === codigoObj)
       const indicador = objetivo?.indicadores?.find((i) => i.codigo === codigoInd)
-
       fila.idIndPei = indicador?.id || ''
     }
   }

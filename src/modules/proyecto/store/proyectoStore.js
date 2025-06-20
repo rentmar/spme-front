@@ -12,6 +12,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
   const proyectos = ref([]) //Lista de proyectos
   const proyectoActual = ref(null) //Almacena el proyecto seleccionado
   const proyectoEstructura = ref(null) //Proyecto estrucutra
+  const proyectoEstructuraNodos = ref(null) //Proyecto estructura con nodos
   const proyectosPlanificacion = ref([]) //Almacena los proyectos en estado de Planificacion
   const proyecto_objgeneral_info = ref(null) //Proyecto - objetivo-general-info adicional
   const objetivosIndicadores = ref([])
@@ -52,6 +53,19 @@ export const useProyectoStore = defineStore('proyecto', () => {
     error.value = null
     try {
       proyectoEstructura.value = await proyectoServicios.estructuraPorId(id)
+    } catch (err) {
+      error.value = err
+    } finally {
+      cargando.value = false
+    }
+  }
+
+  //Estructura del proyecto con nodos
+  const obtenerProyectoEstructuraNodosPorId = async (id) => {
+    cargando.value = true
+    error.value = null
+    try {
+      proyectoEstructuraNodos.value = await proyectoServicios.estructuraNodosPorID(id)
     } catch (err) {
       error.value = err
     } finally {
@@ -103,6 +117,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
     proyectos, //ref
     proyectoActual, //ref
     proyectoEstructura, //ref
+    proyectoEstructuraNodos, //ref
     proyectosPlanificacion, //ref Todos los proyectos en estado de PLANIFICACION
     proyectoObjetivos, //ref
     objetivosIndicadores, //ref
@@ -113,6 +128,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
     obtenerProyectosPlanificacion, //accion, todos los proyectos en estado de planificacion
     obtenerProyectoPorId, //accion
     obtenerProyectoEstructuraPorId, //accion
+    obtenerProyectoEstructuraNodosPorId, //accion
     objetivosIndPorIdProyecto, //accion
     proyectoObjGeneralInfo, //accion
   }

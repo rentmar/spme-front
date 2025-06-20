@@ -56,8 +56,8 @@ const idproyecto = route.params.id
 const cargandoGeneral = computed(() => cargandoProyecto.value)
 
 //Desestructurar store
-const { proyectoEstructura: proyecto, cargando: cargandoProyecto } = storeToRefs(proyectoStore)
-const { obtenerProyectoEstructuraPorId } = proyectoStore
+const { proyectoEstructuraNodos: proyecto, cargando: cargandoProyecto } = storeToRefs(proyectoStore)
+const { obtenerProyectoEstructuraNodosPorId } = proyectoStore
 
 //Inyectar el proyecto y su estructura
 provide('proyectoEstructura', readonly(proyecto))
@@ -68,7 +68,7 @@ onMounted(async () => {
 
 const cargarDatos = async () => {
   try {
-    await obtenerProyectoEstructuraPorId(idproyecto)
+    await obtenerProyectoEstructuraNodosPorId(idproyecto)
   } catch (err) {
     console.error(err)
   }

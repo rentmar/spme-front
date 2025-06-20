@@ -17,33 +17,6 @@
       </div>
     </div>
 
-    <!-- Panel de información del nodo -->
-    <v-card class="node-info-panel" :elevation="8" v-if="nodoSeleccionado">
-      <v-toolbar>
-        <v-toolbar-title>Nodo</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-btn icon @click="nodoSeleccionado = null" class="close-btn">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-toolbar>
-      <v-card-text>
-        <h3>Informacion del nodo seleccionado</h3>
-        <p>
-          {{ nodoSeleccionado }}
-        </p>
-      </v-card-text>
-      <v-card-actions class="px-4 py-3">
-        <v-btn color="secondary" small>
-          <v-icon left small>mdi-pencil</v-icon>
-          Editar
-        </v-btn>
-        <v-btn color="error" small class="ml-2">
-          <v-icon left small>mdi-delete</v-icon>
-          Eliminar
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-
     <!--Nodo Proyecto-->
     <template #node-proyecto="nodeProps">
       <ProyectoNodo
@@ -164,8 +137,83 @@
     <template #node-actividad="nodeProps">
       <ActividadNodo v-bind="nodeProps"></ActividadNodo>
     </template>
+    <Panel position="top-right" class="tool-panel">
+      <!-- Barra de título -->
+      <v-toolbar color="primary" density="compact" class="panel-header">
+        <v-toolbar-title class="text-white">Herramientas</v-toolbar-title>
+      </v-toolbar>
 
-    <ControlMenuDiagrama></ControlMenuDiagrama>
+      <!-- Barra de botones circulares -->
+      <v-toolbar density="compact" class="button-bar">
+        <v-tooltip
+          v-for="btn in toolbarButtons"
+          :key="btn.icon"
+          :text="btn.tooltip"
+          location="bottom"
+        >
+          <template v-slot:activator="{ props }">
+            <v-btn
+              v-bind="props"
+              :icon="btn.icon"
+              :color="btn.color"
+              variant="flat"
+              size="small"
+              class="ma-1 circular-btn"
+              @click="btn.action"
+            />
+          </template>
+        </v-tooltip>
+      </v-toolbar>
+
+      <!-- Panel de edición condicional -->
+      <v-expand-transition>
+        <v-card v-if="nodoSeleccionado" class="node-editor" elevation="8">
+          <v-toolbar color="primary" density="compact" class="panel-header">
+            <v-toolbar-title class="text-white">Editar Nodo</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon variant="text" @click="nodoSeleccionado = null" class="text-white">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar>
+
+          <v-card-text class="pa-4">
+            <v-list density="compact" class="transparent">
+              <v-list-item v-for="(value, key) in nodoSeleccionado.data" :key="key" class="px-0">
+                <template v-slot:prepend>
+                  <v-icon color="primary" size="small">mdi-circle-small</v-icon>
+                </template>
+                <v-list-item-title class="info-label">{{ formatLabel(key) }}</v-list-item-title>
+                <v-list-item-subtitle class="info-value">{{ value }}</v-list-item-subtitle>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+
+          <v-card-actions class="px-4 pb-4 pt-0">
+            <v-btn
+              color="primary"
+              variant="tonal"
+              size="small"
+              class="action-btn"
+              @click="editNode(nodoSeleccionado)"
+            >
+              <v-icon start size="small">mdi-pencil</v-icon>
+              Editar
+            </v-btn>
+            <v-btn
+              color="error"
+              variant="tonal"
+              size="small"
+              class="action-btn ml-2"
+              @click="deleteNode(nodoSeleccionado)"
+            >
+              <v-icon start size="small">mdi-delete</v-icon>
+              Eliminar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-expand-transition>
+    </Panel>
+    <!-- <ControlMenuDiagrama></ControlMenuDiagrama> -->
     <Background variant="lines"></Background>
     <MiniMap pannable zoomable mask-color="rgb(0, 0, 0, 0.7)"></MiniMap>
     <Controls position="left"> </Controls>
@@ -174,8 +222,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, watch } from 'vue'
-import { VueFlow, useVueFlow } from '@vue-flow/core'
+import { ref, onMounted, inject, watch, computed } from 'vue'
+import { VueFlow, useVueFlow, Panel } from '@vue-flow/core'
 //Background
 import { Background } from '@vue-flow/background'
 import '@vue-flow/core/dist/style.css'
@@ -186,7 +234,6 @@ import '@vue-flow/minimap/dist/style.css'
 //Controles
 import { Controls } from '@vue-flow/controls'
 import '@vue-flow/controls/dist/style.css'
-import ControlMenuDiagrama from './controles/ControlMenuDiagrama.vue'
 //Layout
 import { layoutGraph } from '../utils/dagreLayout'
 //Nodos
@@ -226,7 +273,7 @@ const conectores = ref([])
 
 //Inicializar el composable
 // eslint-disable-next-line no-unused-vars
-const { fitView, onNodeDoubleClick, getNodes, getEdges } = useVueFlow()
+const { fitView, onNodeDoubleClick, getNodes, getEdges, addNodes, removeNodes } = useVueFlow()
 
 //Captura del click sobre el nodo
 onNodeDoubleClick((event) => {
@@ -261,6 +308,30 @@ const mostrarMensaje = ref(false)
 watch(mensajeRecibido, (nuevo) => {
   mostrarMensaje.value = !!nuevo
 })
+const toolbarButtons = computed(() => [
+  {
+    icon: 'mdi-plus',
+    color: 'success',
+  },
+  {
+    icon: 'mdi-delete',
+    color: 'error',
+    //action: () => selectedNode.value && removeNodes([selectedNode.value.id]),
+  },
+  {
+    icon: 'mdi-fit-to-page',
+    color: 'info',
+    action: () => fitView(),
+  },
+])
+
+const formatLabel = (key) => {
+  return key
+    .split(/(?=[A-Z])/)
+    .join(' ')
+    .toLowerCase()
+    .replace(/^\w/, (c) => c.toUpperCase())
+}
 </script>
 <style scoped>
 .project-overlay {
@@ -278,7 +349,7 @@ watch(mensajeRecibido, (nuevo) => {
   position: absolute;
   top: 150px;
   left: 20px;
-  width: 400px;
+  width: 800px;
   max-height: 70vh;
   overflow-y: auto;
   z-index: 1000;
@@ -372,5 +443,72 @@ watch(mensajeRecibido, (nuevo) => {
 .fade-slide-down-leave-to {
   transform: translateY(-100%);
   opacity: 0;
+}
+
+/** Panel de edicion*/
+.tool-panel {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 400px;
+}
+
+.button-bar {
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  background-color: #f5f5f5;
+}
+
+.circular-btn {
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.circular-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.node-editor {
+  margin: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.panel-header {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.info-label {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.7);
+  font-size: 0.8rem;
+}
+
+.info-value {
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.9);
+  font-size: 0.9rem;
+  word-break: break-word;
+}
+
+.action-btn {
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.v-list-item {
+  min-height: 36px;
+}
+
+.v-list-item__prepend {
+  margin-right: 8px;
 }
 </style>

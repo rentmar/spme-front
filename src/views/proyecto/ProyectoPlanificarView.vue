@@ -1,51 +1,58 @@
 <template>
   <v-container>
-    <!-- Overlay de carga -->
-    <v-overlay :model-value="cargandoGeneral" class="align-center justify-center">
-      <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
-      <p class="mt-4 text-h6">Cargando Planificacion...</p>
+    <v-overlay :model-value="!cargaCompleta" class="align-center justify-center">
+      <template v-if="errorCarga">
+        <v-alert type="error" class="mb-4">
+          {{ errorCarga }}
+        </v-alert>
+        <v-btn color="primary" @click="cargarDatos">Reintentar</v-btn>
+      </template>
+      <template v-else>
+        <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+        <p class="mt-4 text-h6">Cargando Proyecto...</p>
+      </template>
     </v-overlay>
 
     <!-- CONTENIDO -->
-    <v-row v-if="!cargandoGeneral">
-      <!-- Columna principal (100% ancho) -->
-      <v-col cols="12" md="12">
-        <PaginaTituloIcono :titulo="'planificacion'" :icon="'mdi-calendar'" />
-        <ProyectoHeader v-if="proyecto" :proyecto="proyecto" />
-        <!-- Tarjeta principal con diagrama Vue Flow -->
-        <v-card class="mb-4" min-height="800">
-          <v-toolbar color="info" density="compact">
-            <v-toolbar-title>PLANIFICACION</v-toolbar-title>
-            <v-spacer></v-spacer>
-          </v-toolbar>
+    <template v-if="cargaCompleta">
+      <v-row>
+        <v-col cols="12" md="12">
+          <PaginaTituloIcono :titulo="'planificacion'" :icon="'mdi-calendar'" />
+          <ProyectoHeader v-if="proyecto" :proyecto="proyecto" />
 
-          <!-- Contenedor del diagrama -->
-          <v-card-text class="contenedor-planificacion">
-            <!-- <v-card-text style="height: 750px; position: relative"> -->
-            <template v-if="!cargandoGeneral && proyecto">
-              <PlanificacionXls :proyecto="proyecto"></PlanificacionXls>
-            </template>
-            <template v-else>
-              <div class="d-flex flex-column align-center justify-center" style="height: 100%">
-                <v-progress-circular indeterminate color="primary" />
-                <p class="mt-2">Cargando Proyecto...</p>
-              </div>
-            </template>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+          <v-card class="mb-4" min-height="800">
+            <v-toolbar color="info" density="compact">
+              <v-toolbar-title>PLANIFICACION</v-toolbar-title>
+              <v-spacer></v-spacer>
+            </v-toolbar>
+
+            <v-card-text class="contenedor-planificacion">
+              <!-- Componente hijo con prop de carga -->
+              <PlanificacionXls
+                :proyecto="proyecto"
+                :proyecto-estructura="proyectoEstructura"
+                :cargando="!cargaCompleta"
+              />
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </template>
   </v-container>
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
 import PlanificacionXls from '@/modules/planificacionxls/components/PlanificacionXls.vue'
+
+//Estado de carga
+const cargaCompleta = ref(false)
+const errorCarga = ref(null)
 
 // Store y rutas
 const proyectoStore = useProyectoStore()
@@ -54,18 +61,38 @@ const idproyecto = route.params.id
 
 /****** Iniciar y desestructurar stores **********/
 //Store del Proyecto
-const { proyectoActual: proyecto, cargando: cargandoProyecto } = storeToRefs(proyectoStore)
-const { obtenerProyectoPorId } = proyectoStore
+const {
+  proyectoActual: proyecto,
+  cargando: cargandoProyecto,
+  proyectoEstructura,
+} = storeToRefs(proyectoStore)
+const { obtenerProyectoPorId, obtenerProyectoEstructuraPorId } = proyectoStore
 
 onMounted(async () => {
   await cargarDatos()
 })
 
+//Watch para la carga completa
+watch(
+  [cargandoProyecto, proyecto, proyectoEstructura],
+  ([cargando, proy, estructura]) => {
+    if (!cargando && proy && estructura) {
+      cargaCompleta.value = true
+    }
+  },
+  { immediate: true },
+)
+
 const cargarDatos = async () => {
   try {
-    await obtenerProyectoPorId(idproyecto)
+    errorCarga.value = null
+    await Promise.all([
+      await obtenerProyectoPorId(idproyecto),
+      await obtenerProyectoEstructuraPorId(idproyecto),
+    ])
   } catch (err) {
-    console.log('Error al cargar la informacion stores', err)
+    console.erro('Error al cargar datos', err)
+    errorCarga
   }
 }
 
