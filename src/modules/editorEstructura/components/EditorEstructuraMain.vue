@@ -176,8 +176,20 @@
             </v-btn>
           </v-toolbar>
 
-          <v-card-text class="pa-4">
-            <v-list density="compact" class="transparent">
+          <v-card-text class="pa-4" style="max-height: 80vh; overflow: auto">
+            <component
+              :is="formularioActual"
+              v-if="formularioActual"
+              :node="nodoSeleccionado"
+              @guardar="actualizarNodo"
+              @cancelar="nodoSeleccionado = null"
+              @eliminar="eliminarNodo"
+            />
+
+            <v-alert v-else type="info">
+              No hay formulario disponible para este tipo de nodo
+            </v-alert>
+            <!-- <v-list density="compact" class="transparent">
               <v-list-item v-for="(value, key) in nodoSeleccionado.data" :key="key" class="px-0">
                 <template v-slot:prepend>
                   <v-icon color="primary" size="small">mdi-circle-small</v-icon>
@@ -185,10 +197,10 @@
                 <v-list-item-title class="info-label">{{ formatLabel(key) }}</v-list-item-title>
                 <v-list-item-subtitle class="info-value">{{ value }}</v-list-item-subtitle>
               </v-list-item>
-            </v-list>
+            </v-list> -->
           </v-card-text>
 
-          <v-card-actions class="px-4 pb-4 pt-0">
+          <!-- <v-card-actions class="px-4 pb-4 pt-0">
             <v-btn
               color="primary"
               variant="tonal"
@@ -208,8 +220,8 @@
             >
               <v-icon start size="small">mdi-delete</v-icon>
               Eliminar
-            </v-btn>
-          </v-card-actions>
+            </v-btn> -->
+          <!-- </v-card-actions> -->
         </v-card>
       </v-expand-transition>
     </Panel>
@@ -222,7 +234,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, watch, computed } from 'vue'
+import { ref, onMounted, inject, watch, computed, defineAsyncComponent } from 'vue'
 import { VueFlow, useVueFlow, Panel } from '@vue-flow/core'
 //Background
 import { Background } from '@vue-flow/background'
@@ -332,6 +344,30 @@ const formatLabel = (key) => {
     .toLowerCase()
     .replace(/^\w/, (c) => c.toUpperCase())
 }
+
+// Mapeo de tipos de nodo a componentes de formulario
+const formulariosPorTipo = {
+  kpi: defineAsyncComponent(() => import('./nodosFormularios/KpiNodoForm.vue')),
+  //proyecto: defineAsyncComponent(() => import('./nodos/formularios/ProyectoForm.vue')),
+  // Agrega más tipos según necesites
+}
+
+// Determina el formulario a mostrar basado en el tipo de nodo
+const formularioActual = computed(() => {
+  if (!nodoSeleccionado.value) return null
+  return formulariosPorTipo[nodoSeleccionado.value.type] || null
+})
+
+// Función para actualizar el nodo
+const actualizarNodo = (nuevosDatos) => {
+  alert('actualizar')
+  console.log(nuevosDatos)
+  //nodoSeleccionado.value.data = { ...nodoSeleccionado.value.data, ...nuevosDatos }
+  //nodoSeleccionado.value = null // Cierra el panel después de guardar
+}
+
+//ELiminar nodo
+const eliminarNodo = () => {}
 </script>
 <style scoped>
 .project-overlay {

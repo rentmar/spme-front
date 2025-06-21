@@ -143,7 +143,9 @@ const objetivosGenerales = ref([props.proyectoEstructura.value?.objetivo_general
 console.log(objetivosGenerales)
 
 //Indicadores del Objetivo General
-const indicadoresOgOptions = props.proyectoEstructura.value?.indicadores_objgral
+const indicadoresOgOptions = ref([])
+console.log('indicadores og')
+console.log(indicadoresOgOptions)
 
 onMounted(async () => {
   await cargarDatos()
@@ -152,12 +154,16 @@ onMounted(async () => {
 const cargarDatos = async () => {
   try {
     await withLoading(obtenerPeiVigenteEstructura(), 'Cargando informacion del PEI')
+    inicializarIndicadoresog()
   } catch (err) {
     console.error('Erro al cargar la informacion', err)
   }
 }
 
-const llenarDatosDesdeElProyecto = () => {}
+const inicializarIndicadoresog = () => {
+  const indicadores = props.proyectoEstructura?.objetivo_general?.indicadores_objgral || []
+  indicadoresOgOptions.value = indicadores.map((i) => `${i.codigo} - ${i.redaccion}`)
+}
 
 //Rotulos de lo Headers
 const nestedHeaders = ref([
@@ -326,6 +332,15 @@ const handleChange = (changes, source) => {
       const objetivo = peiVigenteEstructura.value?.objetivos?.find((o) => o.codigo === codigoObj)
       const indicador = objetivo?.indicadores?.find((i) => i.codigo === codigoInd)
       fila.idIndPei = indicador?.id || ''
+    }
+    if (prop === 'indicadorOg') {
+      const codigoInd = newValue?.split(' - ')[0]
+      const indicador = props.proyectoEstructura?.objetivo_general?.indicadores_objgral?.find(
+        (i) => i.codigo === codigoInd,
+      )
+      fila.idIndOg = indicador?.id || ''
+      fila.objetivoGral = props.proyectoEstructura?.objetivo_general?.descripcion || ''
+      fila.idObjGral = props.proyectoEstructura?.objetivo_general?.id || ''
     }
   }
 }

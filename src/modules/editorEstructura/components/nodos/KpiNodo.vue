@@ -3,7 +3,7 @@
     <!-- Contenido del nodo -->
     <template #default>
       <div class="text-body-2">
-        <div class="mb-1"><strong>Codigo:</strong> {{ data.nodoProyecto.id }}</div>
+        <div class="mb-1"><strong>Codigo:</strong> {{ data.nodoProyecto.codigo }}</div>
         <div class="mb-1"><strong>Descripcion:</strong> {{ data.nodoProyecto.descripcion }}</div>
       </div>
     </template>

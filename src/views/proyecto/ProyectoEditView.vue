@@ -9,22 +9,23 @@
       <v-col cols="12" md="9" lg="9" class="">
         <PaginaTituloIcono :titulo="'Editar'" :icon="'mdi-pencil'"></PaginaTituloIcono>
         <ProyectoHeader v-if="proyecto" :proyecto="proyecto"></ProyectoHeader>
-        <ProyectoForm :edit-mode="true" :proyecto-id="idproyecto"></ProyectoForm>
+        <FormularioEdicionProyecto v-if="proyecto" :proyecto="proyecto"></FormularioEdicionProyecto>
       </v-col>
       <v-col cols="12" md="3" lg="3"> </v-col>
     </v-row>
   </v-container>
-  {{ proyecto }}
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
+import FormularioEdicionProyecto from '@/modules/editorEstructura/components/nodosFormularios/FormularioEdicionProyecto.vue'
 //Composer Proyecto
 import { useProyectoCrud } from '@/modules/proyecto/composables/useProyectoCrud'
-import ProyectoForm from '@/modules/proyecto/components/ProyectoForm.vue'
+//Formularios
+import KpiForm from '@/modules/proyecto/components/formularios/KpiForm.vue'
 
 //Inicializar las rutas y obtener el id de proyecto
 const ruta = useRoute()
