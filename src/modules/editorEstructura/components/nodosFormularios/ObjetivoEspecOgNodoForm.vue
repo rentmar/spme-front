@@ -9,16 +9,35 @@
       clearable
       :rules="[(v) => !!v || 'Código requerido']"
     />
-
     <v-textarea
       v-model="formData.nodoProyecto.descripcion"
       variant="outlined"
-      label="Descripción"
+      label="Descripcion"
       outlined
       dense
       clearable
       rows="3"
-    />
+    ></v-textarea>
+
+    <v-textarea
+      v-model="formData.nodoProyecto.supuestos"
+      variant="outlined"
+      label="Supuestos"
+      outlined
+      dense
+      clearable
+      rows="3"
+    ></v-textarea>
+
+    <v-textarea
+      v-model="formData.nodoProyecto.riesgos"
+      variant="outlined"
+      label="Riesgos"
+      outlined
+      dense
+      clearable
+      rows="3"
+    ></v-textarea>
 
     <v-card-actions>
       <v-spacer />
@@ -49,9 +68,9 @@
 
 <script setup>
 import { ref, computed, watch, inject } from 'vue'
-import { useKpis } from '@/modules/proyecto/composables/useKpis'
 import { useVueFlow } from '@vue-flow/core'
 import { useDiagramaCrud } from '../../composables/useDiagramaCrud'
+import { useObjetivoEspecifico } from '@/modules/proyecto/composables/useObjetivoEspecifico'
 
 //Props del componente
 const props = defineProps({
@@ -71,7 +90,7 @@ const props = defineProps({
 })
 
 //Inicar el composable
-const { updateKpi } = useKpis()
+const { updateObjetivoEspecifico } = useObjetivoEspecifico()
 const { getNodes, getEdges, updateNode } = useVueFlow()
 const { actualizarNodosEdges } = useDiagramaCrud()
 
@@ -101,11 +120,11 @@ watch(
 // Método para guardar (Create/Update)
 const guardar = async () => {
   try {
-    const idkpi = formData.value.nodoProyecto.id
-    console.log(idkpi)
+    const idobjespog = formData.value.nodoProyecto.id
     const idDiagrama = proyecto.value.mapa_nodo.id
-    console.log(proyecto)
-    await updateKpi(idkpi, formData.value.nodoProyecto)
+    console.log(idobjespog)
+    console.log(idDiagrama)
+    await updateObjetivoEspecifico(idobjespog, formData.value)
     updateNode(formData.value.id, formData.value)
     await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
     emit('guardar')

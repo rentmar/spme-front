@@ -4,10 +4,12 @@
 import { ref } from 'vue'
 import { productoObjEspecService } from '../services/resultadoProductosService'
 import { productoResultadoObjEspecService } from '../services/resultadoProductosService'
+import { productoGeneralService } from '../services/resultadoProductosService'
 
 //Estados
 const loading = ref(null)
 const error = ref(null)
+const productoGral = ref(null)
 const productoOe = ref(null)
 const productoResultadoOe = ref(null)
 
@@ -118,6 +120,61 @@ export function useProductos() {
     }
   }
 
+  /**************** Productos Resultado Objetivos Especificos ********************/
+  //Cargar producto oe por id
+  async function cargarProductoGeneralPorId(id) {
+    loading.value = true
+    try {
+      const respuesta = await productoGeneralService.obtenerPorId(id)
+      productoGral.value = respuesta
+      // productoResultadoOe.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+  //Crear producto oe
+  async function crearProductoGeneral(data) {
+    loading.value = true
+    try {
+      const respuesta = await productoGeneralService.crear(data)
+      productoGral.value = respuesta
+      // productoResultadoOe.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Updare Prducto oe
+  async function updateProductoGeneral(id, data) {
+    loading.value = true
+    try {
+      const respuesta = await productoGeneralService.update(id, data)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Eliminar Producto oe
+  async function delProductoGeneral(id) {
+    loading.value = true
+    try {
+      const respuesta = await productoGeneralService.delete(id)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading, //ref
     error, //ref
@@ -131,5 +188,10 @@ export function useProductos() {
     crearProductoResultadoOe,
     updateProductoResultadoOe,
     delProductoResultadoOe,
+    productoGral, //ref Producto general
+    cargarProductoGeneralPorId,
+    crearProductoGeneral,
+    updateProductoGeneral,
+    delProductoGeneral,
   }
 }

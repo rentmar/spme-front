@@ -1,5 +1,3 @@
-<!-- eslint-disable no-unused-vars -->
-<!-- eslint-disable no-unused-vars -->
 <template>
   <div class="hotWraper">
     <LoadingOverlay
@@ -49,9 +47,9 @@
         :colHeaders="true"
         :rowHeaders="true"
         :contextMenu="true"
-        :nestedHeaders="nestedHeaders"
         :autoWrapRow="true"
         :autoWrapCol="true"
+        :nestedHeaders="nestedHeaders"
         :autoRowSize="true"
         :language="'es-Mx'"
         :collapsibleColumns="true"
@@ -140,12 +138,21 @@ const datosPlanificacion = ref([{}])
 
 //Objetivo General del proyecto
 const objetivosGenerales = ref([props.proyectoEstructura.value?.objetivo_general])
+console.log('Objetivos Generales(PP):')
 console.log(objetivosGenerales)
 
 //Indicadores del Objetivo General
 const indicadoresOgOptions = ref([])
-console.log('indicadores og')
+console.log('indicadores og(PP)')
 console.log(indicadoresOgOptions)
+
+//Resultados del Objetivo General
+const resultadosOgOptions = ref([])
+console.log('Resultados de OG(PP)')
+console.log(resultadosOgOptions)
+
+//Indicador de resultados de OG
+const indicadorResultadoOgOptions = ref([])
 
 onMounted(async () => {
   await cargarDatos()
@@ -155,37 +162,53 @@ const cargarDatos = async () => {
   try {
     await withLoading(obtenerPeiVigenteEstructura(), 'Cargando informacion del PEI')
     inicializarIndicadoresog()
+    inicializarResultadosOg()
   } catch (err) {
     console.error('Erro al cargar la informacion', err)
   }
 }
-
+//Inicializar los Indicadores OG
 const inicializarIndicadoresog = () => {
   const indicadores = props.proyectoEstructura?.objetivo_general?.indicadores_objgral || []
   indicadoresOgOptions.value = indicadores.map((i) => `${i.codigo} - ${i.redaccion}`)
 }
 
+//Inicializar los Resultados OG
+const inicializarResultadosOg = () => {
+  const resultados = props.proyectoEstructura?.objetivo_general?.resultados_objgral || []
+  resultadosOgOptions.value = resultados.map((i) => `${i.codigo} - ${i.descripcion}`)
+}
+
 //Rotulos de lo Headers
+
 const nestedHeaders = ref([
-  //Cuarto Nivel
-  [{ label: 'PROYECTO - PLANIFICACION', colspan: 14 }],
+  //Quinto  Nivel
+  // [{ label: 'PROYECTO - PLANIFICACION', colspan: 24 }],
   //Cuarto  Nivel
-  [
-    { label: 'PEI', colspan: 4 },
-    { label: 'PROYECTO', colspan: 10 },
-  ],
+  // [
+  //   { label: 'PEI', colspan: 4 },
+  //   { label: 'PROYECTO', colspan: 20 },
+  // ],
   //Tercer Nivel
-  [
-    { label: 'PEI', colspan: 4 },
-    { label: 'OBJETIVO GENERAL', colspan: 10 },
-  ],
+  // [
+  //   { label: 'PEI', colspan: 4 },
+  //   { label: 'OBJETIVO GENERAL', colspan: 4 },
+  // ],
 
   //Segundo Nivel
   [
     { label: 'Objetivo', colspan: 2 },
     { label: 'Indicador', colspan: 2 },
     { label: 'Objetivo General', colspan: 2 },
-    { label: 'Indicador', colspan: 2 },
+    { label: 'Indicador OG', colspan: 2 },
+    { label: 'Producto OG', colspan: 2 },
+
+    { label: 'Objetivo Especifico', colspan: 2 },
+    { label: 'Indicador OE', colspan: 2 },
+    { label: 'Producto OE', colspan: 2 },
+
+    { label: 'Resultado OG', colspan: 2 },
+    { label: 'Indicador Resultado OG', colspan: 2 },
   ],
   //Primer nivel
   [
@@ -198,7 +221,25 @@ const nestedHeaders = ref([
     //Objetivo General
     'id',
     'Objetivo',
-    //Indicador
+    //Indicador OG
+    'id',
+    'Indicador',
+    //Producto OG
+    'id',
+    'Producto OG',
+    //Objetivo especifico
+    'id',
+    'Objetivo Especifico',
+    //Indicador OE
+    'id',
+    'Indicador OE',
+    //Producto OE
+    'id',
+    'Producto OE',
+    //Producto
+    'id',
+    'Resultado',
+    //INdicador
     'id',
     'Indicador',
   ],
@@ -288,11 +329,119 @@ const columnas = ref([
     strict: true,
     width: 200,
   },
+  //Id del resultado de Obj Gral
+  {
+    data: 'idResOg',
+    type: 'text',
+    readOnly: true,
+    width: 50,
+  },
+  //Resultado de OG
+  {
+    data: 'resultadoOg',
+    type: 'dropdown',
+    source(query, process) {
+      process(resultadosOgOptions.value)
+    },
+    allowInvalid: false,
+    strict: true,
+    width: 250,
+  },
+  //Id del resultado de Obj Gral
+  {
+    data: 'idIndResOg',
+    type: 'text',
+    readOnly: true,
+    width: 50,
+  },
+  //Indicador de resultado de OG
+  {
+    data: 'indicadorResOg',
+    type: 'dropdown',
+    allowInvalid: false,
+    source: indicadorResultadoOgOptions,
+    strict: true,
+    width: 250,
+  },
+  {
+    data: 'indicadorResOg',
+    type: 'dropdown',
+    allowInvalid: false,
+    source: indicadorResultadoOgOptions,
+    strict: true,
+    width: 50,
+  },
+  //Producto
+  {
+    data: 'indicadorResOg',
+    type: 'text',
+    allowInvalid: false,
+    source: indicadorResultadoOgOptions,
+    strict: true,
+    width: 250,
+  },
+  {
+    data: 'indicadorResOg',
+    type: 'text',
+    allowInvalid: false,
+    source: indicadorResultadoOgOptions,
+    strict: true,
+    width: 50,
+  },
+  {
+    data: 'indicadorResOg',
+    type: 'text',
+    allowInvalid: false,
+    source: indicadorResultadoOgOptions,
+    strict: true,
+    width: 250,
+  },
+  {
+    data: 'indicadorResOg',
+    type: 'text',
+    allowInvalid: false,
+    source: indicadorResultadoOgOptions,
+    strict: true,
+    width: 50,
+  },
+  {
+    data: 'indicadorResOg',
+    type: 'text',
+    allowInvalid: false,
+    source: indicadorResultadoOgOptions,
+    strict: true,
+    width: 250,
+  },
+  {
+    data: 'indicadorResOg',
+    type: 'text',
+    allowInvalid: false,
+    source: indicadorResultadoOgOptions,
+    strict: true,
+    width: 50,
+  },
+  {
+    data: 'indicadorResOg',
+    type: 'text',
+    allowInvalid: false,
+    source: indicadorResultadoOgOptions,
+    strict: true,
+    width: 250,
+  },
+  {
+    data: 'procedencia',
+    type: 'dropdown',
+    allowInvalid: false,
+    source: ['opcion1'],
+    strict: true,
+    width: 250,
+  },
 ])
 
 /********* Funciones *********/
 const agregarFila = () => {
   console.log('Agregar fila')
+  datosPlanificacion.value.push({})
 }
 const eliminarFila = () => {
   console.log('Eliminar fila')
@@ -342,7 +491,60 @@ const handleChange = (changes, source) => {
       fila.objetivoGral = props.proyectoEstructura?.objetivo_general?.descripcion || ''
       fila.idObjGral = props.proyectoEstructura?.objetivo_general?.id || ''
     }
+    if (prop === 'resultadoOg') {
+      const codigoRes = newValue?.split(' - ')[0]
+      const resultado = props.proyectoEstructura?.objetivo_general?.resultados_objgral?.find(
+        (r) => r.codigo === codigoRes,
+      )
+
+      // Limpiar primero el array de opciones
+      indicadorResultadoOgOptions.value = []
+      // Limpiar la celda seleccionada de indicador relacionado
+      fila.idIndResOg = ''
+      fila.indicadorResOg = ''
+
+      //Obtener los indicadores del resultado
+      const indicadorResultado = obtenerIndicadoresPorResultadoId(
+        props.proyectoEstructura?.objetivo_general?.resultados_objgral,
+        resultado.id,
+      )
+
+      const indicadorResultadoOpciones = indicadorResultado.map(
+        (ir) => `${ir.codigo} - ${ir.redaccion}`,
+      )
+      fila.idResOg = resultado?.id || ''
+      indicadorResultadoOgOptions.value = indicadorResultadoOpciones
+    }
+    if (prop === 'indicadorResOg') {
+      const codigoIndRes = newValue?.split(' - ')[0]
+      // console.log('handle indicador Resultado OG')
+      // console.log(codigoIndRes)
+      const resultados = props.proyectoEstructura?.objetivo_general?.resultados_objgral
+      const idindicador = obtenerIdIndicadorResultadoOG(resultados, codigoIndRes)
+      // console.log(idindicador)
+      fila.idIndResOg = idindicador || ''
+    }
   }
+}
+
+//Filtrar Indicadores de Resultado OG, segun el id del resultado
+function obtenerIndicadoresPorResultadoId(resultadoIn, resultadoId) {
+  const resultados = resultadoIn
+  const resultado = resultados.find((r) => r.id === resultadoId)
+  return resultado?.indicador_res_objgral || []
+}
+//Id del indicador de Resultado OG
+function obtenerIdIndicadorResultadoOG(resultados_objgral, codigoIndicador) {
+  const resultados = resultados_objgral || []
+
+  for (const resultado of resultados) {
+    const indicador = resultado.indicador_res_objgral?.find((i) => i.codigo === codigoIndicador)
+    if (indicador) {
+      return indicador.id
+    }
+  }
+
+  return null // No se encontro el indicador
 }
 </script>
 

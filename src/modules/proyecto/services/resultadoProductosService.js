@@ -193,3 +193,52 @@ export const productoResultadoObjEspecService = {
     }
   },
 }
+
+export const productoGeneralService = {
+  /*******************  *************************/
+  /* fetch */
+  obtener: async () => {
+    try {
+      const respuesta = await api.get('/producto-general/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error fetch producto general ', error)
+    }
+  },
+  /* fetch  */
+  obtenerPorId: async (id) => {
+    try {
+      const respuesta = await api.get('/producto-general/' + id + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error fetch producto general' + id, error)
+    }
+  },
+  /* Crear  */
+  crear: async (data) => {
+    try {
+      const respuesta = await api.post('/producto-general/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error crear producto general', error)
+    }
+  },
+  /* Update */
+  update: async (id, data) => {
+    try {
+      const respuesta = await api.put('/producto-general/' + id + '/', data)
+      return respuesta
+    } catch (error) {
+      console.error('Axios: error actualizar producto general', error)
+    }
+  },
+  /* Del  */
+  delete: async (id) => {
+    try {
+      const respuesta = await api.delete('/producto-general/' + id + '/')
+      return respuesta
+    } catch (error) {
+      console.error('Axios: no se pudo elimir indicador producto resultado oe id ' + id, error)
+    }
+  },
+}

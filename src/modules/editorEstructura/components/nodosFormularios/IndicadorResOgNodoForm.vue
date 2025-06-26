@@ -3,21 +3,93 @@
     <v-text-field
       v-model="formData.nodoProyecto.codigo"
       variant="outlined"
-      label="Código"
+      label="Codigo"
       outlined
       dense
       clearable
       :rules="[(v) => !!v || 'Código requerido']"
     />
+    <v-select
+      v-model="formData.nodoProyecto.redaccion"
+      variant="outlined"
+      :items="redaccion_indicador"
+      item-value="valor"
+      item-title="etiqueta"
+      label="Redaccion"
+    ></v-select>
 
     <v-textarea
-      v-model="formData.nodoProyecto.descripcion"
+      v-model="formData.nodoProyecto.fuente_verificacion"
       variant="outlined"
-      label="Descripción"
+      label="Fuentes de verificacion"
       outlined
       dense
       clearable
       rows="3"
+    ></v-textarea>
+
+    <v-text-field
+      v-model="formData.nodoProyecto.target_poblacion"
+      variant="outlined"
+      label="Target poblacion"
+      outlined
+      dense
+      clearable
+      type="number"
+    />
+    <v-select
+      v-model="formData.nodoProyecto.tipo"
+      variant="outlined"
+      :items="tipo_indicador"
+      item-value="valor"
+      item-title="etiqueta"
+      label="Tipo de indicador"
+    ></v-select>
+
+    <v-text-field
+      v-model="formData.nodoProyecto.baseline"
+      variant="outlined"
+      label="Baseline"
+      outlined
+      dense
+      clearable
+      type="number"
+    />
+
+    <v-text-field
+      v-model="formData.nodoProyecto.target_q1"
+      variant="outlined"
+      label="Target q1"
+      outlined
+      dense
+      clearable
+    />
+
+    <v-text-field
+      v-model="formData.nodoProyecto.target_q2"
+      variant="outlined"
+      label="Target q2"
+      outlined
+      dense
+      clearable
+    />
+
+    <v-text-field
+      v-model="formData.nodoProyecto.target_q3"
+      variant="outlined"
+      label="Target q3"
+      outlined
+      dense
+      clearable
+    />
+
+    <v-text-field
+      v-model="formData.nodoProyecto.target_q4"
+      variant="outlined"
+      label="Target q4"
+      outlined
+      dense
+      clearable
     />
 
     <v-card-actions>
@@ -49,9 +121,10 @@
 
 <script setup>
 import { ref, computed, watch, inject } from 'vue'
-import { useKpis } from '@/modules/proyecto/composables/useKpis'
 import { useVueFlow } from '@vue-flow/core'
 import { useDiagramaCrud } from '../../composables/useDiagramaCrud'
+import { SELECT_OPTIONS } from '@/utility/selectOptions'
+import { useIndicadores } from '@/modules/proyecto/composables/useIndicadores'
 
 //Props del componente
 const props = defineProps({
@@ -71,9 +144,13 @@ const props = defineProps({
 })
 
 //Inicar el composable
-const { updateKpi } = useKpis()
+const { updateIndicadorResultadoObjetivoGeneral } = useIndicadores()
 const { getNodes, getEdges, updateNode } = useVueFlow()
 const { actualizarNodosEdges } = useDiagramaCrud()
+
+//Selects del indicador
+const tipo_indicador = SELECT_OPTIONS.tipos_indicador
+const redaccion_indicador = SELECT_OPTIONS.redaccion_indicador
 
 //Definir señales
 const emit = defineEmits(['guardar', 'cancelar', 'eliminar'])
@@ -101,11 +178,12 @@ watch(
 // Método para guardar (Create/Update)
 const guardar = async () => {
   try {
-    const idkpi = formData.value.nodoProyecto.id
-    console.log(idkpi)
+    const idindog = formData.value.nodoProyecto.id
     const idDiagrama = proyecto.value.mapa_nodo.id
-    console.log(proyecto)
-    await updateKpi(idkpi, formData.value.nodoProyecto)
+    console.log(idindog)
+    console.log(idDiagrama)
+    await updateIndicadorResultadoObjetivoGeneral(idindog, formData.value)
+    //await updateObjetivoEspecifico(idobjespog, formData.value)
     updateNode(formData.value.id, formData.value)
     await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
     emit('guardar')

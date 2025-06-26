@@ -5,7 +5,6 @@
       <div class="text-body-2">
         <div class="mb-1"><strong>Codigo:</strong> {{ data.nodoProyecto.codigo }}</div>
         <div class="mb-1"><strong>Descripcion:</strong> {{ data.nodoProyecto.descripcion }}</div>
-        <div class="mb-1"><strong>Tipo:</strong> {{ data.nodoProyecto.tipo }}</div>
       </div>
     </template>
 

@@ -275,6 +275,16 @@ export default function useNodeEvents() {
       mensaje.value = 'Actividad para Proceso Resultado OE creado'
       return result
     },
+    addProducto: (payload) => {
+      const result = handleNodeCreation(
+        'productogral',
+        'Producto General',
+        payload.sourceId,
+        payload.meta,
+      )
+      mensaje.value = 'Producto general creado'
+      return result
+    },
   }
 
   //Funcion principal para ejecutar acciones

@@ -1,7 +1,7 @@
 <template>
   <v-form @submit.prevent="guardar">
     <v-text-field
-      v-model="formData.nodoProyecto.codigo"
+      v-model="formData.datosNodo.codigo"
       variant="outlined"
       label="Código"
       outlined
@@ -10,15 +10,67 @@
       :rules="[(v) => !!v || 'Código requerido']"
     />
 
-    <v-textarea
-      v-model="formData.nodoProyecto.descripcion"
+    <v-text-field
+      v-model="formData.datosNodo.titulo"
       variant="outlined"
-      label="Descripción"
+      label="Titulo"
       outlined
       dense
       clearable
-      rows="3"
     />
+    <v-textarea
+      v-model="formData.datosNodo.descripcion"
+      variant="outlined"
+      label="Titulo"
+      outlined
+      dense
+      clearable
+    />
+
+    <v-text-field
+      label="Fecha de inicio"
+      v-model="formData.datosNodo.fecha_inicio"
+      type="date"
+      variant="outlined"
+    ></v-text-field>
+
+    <v-text-field
+      label="Fecha de finalizacion"
+      v-model="formData.datosNodo.fecha_finalizacion"
+      type="date"
+      variant="outlined"
+    ></v-text-field>
+
+    <v-select
+      v-model="formData.datosNodo.instancia_gestora"
+      variant="outlined"
+      :items="ig"
+      multiple
+      chips
+      item-value="id"
+      item-title="instancia"
+      label="Instancia gestora"
+      clearable
+    ></v-select>
+
+    <v-text-field
+      v-model="formData.datosNodo.presupuesto"
+      variant="outlined"
+      label="Presupuesto"
+      outlined
+      dense
+      clearable
+    />
+
+    <v-select
+      v-model="formData.datosNodo.estado"
+      variant="outlined"
+      :items="estadoProyecto"
+      item-value="valor"
+      item-title="etiqueta"
+      label="Estado del Proyecto"
+      clearable
+    ></v-select>
 
     <v-card-actions>
       <v-spacer />
@@ -49,9 +101,10 @@
 
 <script setup>
 import { ref, computed, watch, inject } from 'vue'
-import { useKpis } from '@/modules/proyecto/composables/useKpis'
 import { useVueFlow } from '@vue-flow/core'
 import { useDiagramaCrud } from '../../composables/useDiagramaCrud'
+import { SELECT_OPTIONS } from '@/utility/selectOptions'
+import { useProyectoCrud } from '@/modules/proyecto/composables/useProyectoCrud'
 
 //Props del componente
 const props = defineProps({
@@ -70,8 +123,13 @@ const props = defineProps({
   },
 })
 
+//Instancia gestora
+const ig = SELECT_OPTIONS.instancia_gestora
+//Estado
+const estadoProyecto = SELECT_OPTIONS.estado
+
 //Inicar el composable
-const { updateKpi } = useKpis()
+const { updateProyecto } = useProyectoCrud()
 const { getNodes, getEdges, updateNode } = useVueFlow()
 const { actualizarNodosEdges } = useDiagramaCrud()
 
@@ -101,14 +159,25 @@ watch(
 // Método para guardar (Create/Update)
 const guardar = async () => {
   try {
-    const idkpi = formData.value.nodoProyecto.id
+    const idobjgral = formData.value.datosNodo.id
+    const idDiagrama = proyecto.value.mapa_nodo.id
+    console.log(idobjgral)
+    console.log(idDiagrama)
+    console.log('Form data')
+    console.log(formData.value.datosNodo)
+    await updateProyecto(idobjgral, formData.value.datosNodo)
+    //await updateObjetivoGeneral(idobjgral, formData.value)
+    await updateNode(formData.value.id, formData.value)
+    await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
+    emit('guardar')
+
+    /*const idkpi = formData.value.nodoProyecto.id
     console.log(idkpi)
     const idDiagrama = proyecto.value.mapa_nodo.id
     console.log(proyecto)
     await updateKpi(idkpi, formData.value.nodoProyecto)
     updateNode(formData.value.id, formData.value)
-    await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
-    emit('guardar')
+    await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)*/
   } catch (err) {
     console.error('Update informacion', err)
   }

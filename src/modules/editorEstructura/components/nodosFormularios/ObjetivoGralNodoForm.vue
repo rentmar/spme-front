@@ -9,16 +9,35 @@
       clearable
       :rules="[(v) => !!v || 'Código requerido']"
     />
-
     <v-textarea
       v-model="formData.nodoProyecto.descripcion"
       variant="outlined"
-      label="Descripción"
+      label="Descripcion"
       outlined
       dense
       clearable
       rows="3"
-    />
+    ></v-textarea>
+
+    <v-textarea
+      v-model="formData.nodoProyecto.supuestos"
+      variant="outlined"
+      label="Supuestos"
+      outlined
+      dense
+      clearable
+      rows="3"
+    ></v-textarea>
+
+    <v-textarea
+      v-model="formData.nodoProyecto.riesgos"
+      variant="outlined"
+      label="Riesgos"
+      outlined
+      dense
+      clearable
+      rows="3"
+    ></v-textarea>
 
     <v-card-actions>
       <v-spacer />
@@ -49,9 +68,9 @@
 
 <script setup>
 import { ref, computed, watch, inject } from 'vue'
-import { useKpis } from '@/modules/proyecto/composables/useKpis'
 import { useVueFlow } from '@vue-flow/core'
 import { useDiagramaCrud } from '../../composables/useDiagramaCrud'
+import { useObjetivoGeneralProyecto } from '@/modules/proyecto/composables/useObjetivoGeneralProyecto'
 
 //Props del componente
 const props = defineProps({
@@ -71,7 +90,7 @@ const props = defineProps({
 })
 
 //Inicar el composable
-const { updateKpi } = useKpis()
+const { updateObjetivoGeneral } = useObjetivoGeneralProyecto()
 const { getNodes, getEdges, updateNode } = useVueFlow()
 const { actualizarNodosEdges } = useDiagramaCrud()
 
@@ -101,14 +120,22 @@ watch(
 // Método para guardar (Create/Update)
 const guardar = async () => {
   try {
-    const idkpi = formData.value.nodoProyecto.id
+    const idobjgral = formData.value.nodoProyecto.id
+    const idDiagrama = proyecto.value.mapa_nodo.id
+    console.log(idobjgral)
+    console.log(idDiagrama)
+    await updateObjetivoGeneral(idobjgral, formData.value)
+    updateNode(formData.value.id, formData.value)
+    await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
+    emit('guardar')
+
+    /*const idkpi = formData.value.nodoProyecto.id
     console.log(idkpi)
     const idDiagrama = proyecto.value.mapa_nodo.id
     console.log(proyecto)
     await updateKpi(idkpi, formData.value.nodoProyecto)
     updateNode(formData.value.id, formData.value)
-    await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
-    emit('guardar')
+    await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)*/
   } catch (err) {
     console.error('Update informacion', err)
   }

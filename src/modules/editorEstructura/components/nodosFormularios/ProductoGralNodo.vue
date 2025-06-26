@@ -3,22 +3,47 @@
     <v-text-field
       v-model="formData.nodoProyecto.codigo"
       variant="outlined"
-      label="Código"
+      label="Codigo"
       outlined
       dense
       clearable
       :rules="[(v) => !!v || 'Código requerido']"
     />
-
     <v-textarea
       v-model="formData.nodoProyecto.descripcion"
       variant="outlined"
-      label="Descripción"
+      label="Descripcion"
       outlined
       dense
       clearable
       rows="3"
-    />
+    ></v-textarea>
+
+    <v-textarea
+      v-model="formData.nodoProyecto.supuestos"
+      variant="outlined"
+      label="Supuestos"
+      outlined
+      dense
+      clearable
+      rows="3"
+    ></v-textarea>
+
+    <v-textarea
+      v-model="formData.nodoProyecto.riesgos"
+      variant="outlined"
+      label="Riesgos"
+      outlined
+      dense
+      clearable
+      rows="3"
+    ></v-textarea>
+
+    <v-checkbox v-model="formData.nodoProyecto.entregado">
+      <template v-slot:label>
+        <div class="custom-label">Entregado</div>
+      </template>
+    </v-checkbox>
 
     <v-card-actions>
       <v-spacer />
@@ -28,7 +53,7 @@
         {{ esNuevo ? 'Crear' : 'Guardar' }}
       </v-btn>
     </v-card-actions>
-
+    {{ formData }}
     <!-- Diálogo de confirmación para eliminar -->
     <v-dialog v-model="dialogoEliminar" max-width="400">
       <v-card>
@@ -49,10 +74,9 @@
 
 <script setup>
 import { ref, computed, watch, inject } from 'vue'
-import { useKpis } from '@/modules/proyecto/composables/useKpis'
 import { useVueFlow } from '@vue-flow/core'
 import { useDiagramaCrud } from '../../composables/useDiagramaCrud'
-
+import { useProductos } from '@/modules/proyecto/composables/useProductos'
 //Props del componente
 const props = defineProps({
   node: {
@@ -71,7 +95,7 @@ const props = defineProps({
 })
 
 //Inicar el composable
-const { updateKpi } = useKpis()
+const { updateProductoGeneral } = useProductos()
 const { getNodes, getEdges, updateNode } = useVueFlow()
 const { actualizarNodosEdges } = useDiagramaCrud()
 
@@ -101,46 +125,17 @@ watch(
 // Método para guardar (Create/Update)
 const guardar = async () => {
   try {
-    const idkpi = formData.value.nodoProyecto.id
-    console.log(idkpi)
+    const idindog = formData.value.nodoProyecto.id
     const idDiagrama = proyecto.value.mapa_nodo.id
-    console.log(proyecto)
-    await updateKpi(idkpi, formData.value.nodoProyecto)
+    console.log(idindog)
+    console.log(idDiagrama)
+    await updateProductoGeneral(idindog, formData.value)
     updateNode(formData.value.id, formData.value)
     await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
-    emit('guardar')
+    //emit('guardar')
   } catch (err) {
     console.error('Update informacion', err)
   }
-
-  //emit('guardar', { data: formData.value })
-  // guardando.value = true
-
-  // try {
-  //   let respuesta
-
-  //   if (esNuevo.value) {
-  //     // Operación CREATE
-  //     respuesta = await axios.post('/api/proyectos', formData.value)
-  //     console.log('Nuevo proyecto creado:', respuesta.data)
-  //   } else {
-  //     // Operación UPDATE
-  //     respuesta = await axios.put(`/api/proyectos/${props.node.id}`, formData.value)
-  //     console.log('Proyecto actualizado:', respuesta.data)
-  //   }
-
-  //   // Emitir los datos guardados (puedes usar respuesta.data si el backend devuelve el objeto actualizado)
-  //   emit('guardar', {
-  //     ...props.node,
-  //     data: formData.value
-  //   })
-
-  // } catch (error) {
-  //   console.error('Error al guardar:', error)
-  //   // Aquí podrías mostrar un mensaje de error al usuario
-  // } finally {
-  //   guardando.value = false
-  // }
 }
 
 // Método para confirmar eliminación

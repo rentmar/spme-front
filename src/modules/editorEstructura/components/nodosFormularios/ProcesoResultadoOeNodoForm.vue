@@ -11,6 +11,16 @@
     />
 
     <v-textarea
+      v-model="formData.nodoProyecto.titulo"
+      variant="outlined"
+      label="Titulo"
+      outlined
+      dense
+      clearable
+      rows="3"
+    />
+
+    <v-textarea
       v-model="formData.nodoProyecto.descripcion"
       variant="outlined"
       label="Descripción"
@@ -49,9 +59,9 @@
 
 <script setup>
 import { ref, computed, watch, inject } from 'vue'
-import { useKpis } from '@/modules/proyecto/composables/useKpis'
 import { useVueFlow } from '@vue-flow/core'
 import { useDiagramaCrud } from '../../composables/useDiagramaCrud'
+import { useProcesos } from '@/modules/proyecto/composables/useProcesos'
 
 //Props del componente
 const props = defineProps({
@@ -71,7 +81,7 @@ const props = defineProps({
 })
 
 //Inicar el composable
-const { updateKpi } = useKpis()
+const { updateProceso } = useProcesos()
 const { getNodes, getEdges, updateNode } = useVueFlow()
 const { actualizarNodosEdges } = useDiagramaCrud()
 
@@ -105,7 +115,7 @@ const guardar = async () => {
     console.log(idkpi)
     const idDiagrama = proyecto.value.mapa_nodo.id
     console.log(proyecto)
-    await updateKpi(idkpi, formData.value.nodoProyecto)
+    await updateProceso(idkpi, formData.value.nodoProyecto)
     updateNode(formData.value.id, formData.value)
     await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
     emit('guardar')

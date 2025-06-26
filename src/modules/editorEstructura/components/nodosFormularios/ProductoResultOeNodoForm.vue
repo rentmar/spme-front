@@ -3,22 +3,47 @@
     <v-text-field
       v-model="formData.nodoProyecto.codigo"
       variant="outlined"
-      label="Código"
+      label="Codigo"
       outlined
       dense
       clearable
       :rules="[(v) => !!v || 'Código requerido']"
     />
-
     <v-textarea
       v-model="formData.nodoProyecto.descripcion"
       variant="outlined"
-      label="Descripción"
+      label="Descripcion"
       outlined
       dense
       clearable
       rows="3"
-    />
+    ></v-textarea>
+
+    <v-textarea
+      v-model="formData.nodoProyecto.supuestos"
+      variant="outlined"
+      label="Supuestos"
+      outlined
+      dense
+      clearable
+      rows="3"
+    ></v-textarea>
+
+    <v-textarea
+      v-model="formData.nodoProyecto.riesgos"
+      variant="outlined"
+      label="Riesgos"
+      outlined
+      dense
+      clearable
+      rows="3"
+    ></v-textarea>
+
+    <v-checkbox v-model="formData.nodoProyecto.entregado">
+      <template v-slot:label>
+        <div class="custom-label">Entregado</div>
+      </template>
+    </v-checkbox>
 
     <v-card-actions>
       <v-spacer />
@@ -49,10 +74,9 @@
 
 <script setup>
 import { ref, computed, watch, inject } from 'vue'
-import { useKpis } from '@/modules/proyecto/composables/useKpis'
 import { useVueFlow } from '@vue-flow/core'
 import { useDiagramaCrud } from '../../composables/useDiagramaCrud'
-
+import { useProductos } from '@/modules/proyecto/composables/useProductos'
 //Props del componente
 const props = defineProps({
   node: {
@@ -71,7 +95,7 @@ const props = defineProps({
 })
 
 //Inicar el composable
-const { updateKpi } = useKpis()
+const { updateProductoResultadoOe } = useProductos()
 const { getNodes, getEdges, updateNode } = useVueFlow()
 const { actualizarNodosEdges } = useDiagramaCrud()
 
@@ -101,11 +125,11 @@ watch(
 // Método para guardar (Create/Update)
 const guardar = async () => {
   try {
-    const idkpi = formData.value.nodoProyecto.id
-    console.log(idkpi)
+    const idindog = formData.value.nodoProyecto.id
     const idDiagrama = proyecto.value.mapa_nodo.id
-    console.log(proyecto)
-    await updateKpi(idkpi, formData.value.nodoProyecto)
+    console.log(idindog)
+    console.log(idDiagrama)
+    await updateProductoResultadoOe(idindog, formData.value)
     updateNode(formData.value.id, formData.value)
     await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
     emit('guardar')

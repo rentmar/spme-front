@@ -1,0 +1,33 @@
+//Opciones para selects
+
+export const SELECT_OPTIONS = {
+  tipos_indicador: [
+    { valor: 'A-Z', etiqueta: 'Literal' },
+    { valor: '1-9', etiqueta: 'Numérico' },
+    { valor: '%', etiqueta: 'Porcentual' },
+  ],
+  redaccion_indicador: [
+    { valor: 'GUIA', etiqueta: 'Indicador GUIA' },
+    { valor: 'SMART', etiqueta: 'Indicador SMART' },
+  ],
+  instancia_gestora: [
+    { id: 1, codigo: 'UG', clasificador: '', instancia: 'Unidad de Gestión' },
+    { id: 2, codigo: 'DIR EJEC', clasificador: 'A', instancia: 'Dirección Ejecutiva' },
+    { id: 3, codigo: 'COM', clasificador: 'B', instancia: 'Comunicación ' },
+    {
+      id: 4,
+      codigo: 'PM&E',
+      clasificador: 'C',
+      instancia: 'Planifación, Monitoreo y Evaluación',
+    },
+    { id: 5, codigo: 'REDES', clasificador: 'D', instancia: 'Desarrollo de Redes' },
+    { id: 6, codigo: 'URBANO', clasificador: 'E', instancia: 'Programa Urbano' },
+    { id: 7, codigo: 'NINA', clasificador: 'F', instancia: 'Programa Nina' },
+    { id: 8, codigo: 'DEFENSORES', clasificador: 'G', instancia: 'Programa Defensores' },
+    { id: 9, codigo: 'ADM', clasificador: 'H', instancia: 'Administración' },
+  ],
+  estado: [
+    { valor: 'ES', etiqueta: 'Estructuracion' },
+    { valor: 'EP', etiqueta: 'En Planificacion' },
+  ],
+}

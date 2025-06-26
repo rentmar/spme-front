@@ -33,6 +33,7 @@
         @addIndicadorObjGeneral="(payload) => ejecutarAccion('addIndicadorObjGeneral', payload)"
         @addResultadoObjGeneral="(payload) => ejecutarAccion('addResultadoObjGeneral', payload)"
         @addObjetivoEspecificoOg="(payload) => ejecutarAccion('addObjetivoEspecificoOg', payload)"
+        @addProducto="(payload) => ejecutarAccion('addProducto', payload)"
       ></ObjetivogeneralNodo>
     </template>
     <!--Nodo Objetivo Especifico-->
@@ -42,6 +43,7 @@
         @addIndicadorOE="(payload) => ejecutarAccion('addIndicadorOE', payload)"
         @addResultadoOE="(payload) => ejecutarAccion('addResultadoOE', payload)"
         @addProductoOE="(payload) => ejecutarAccion('addProductoOE', payload)"
+        @addProducto="(payload) => ejecutarAccion('addProducto', payload)"
       ></ObjetivoespecificoNodo>
     </template>
     <!-- Nodo Objetivo Especifico relacionado al Objetivo General-->
@@ -51,6 +53,7 @@
         @addIndicadorOE="(payload) => ejecutarAccion('addIndicadorOE', payload)"
         @addResultadoOE="(payload) => ejecutarAccion('addResultadoOE', payload)"
         @addProductoOE="(payload) => ejecutarAccion('addProductoOE', payload)"
+        @addProducto="(payload) => ejecutarAccion('addProducto', payload)"
       ></ObjetivoespecificoOGNodo>
     </template>
     <!--Nodo KPI-->
@@ -59,11 +62,17 @@
     </template>
     <!--Indicador de Objetivo general-->
     <template #node-indicadorog="nodeProps">
-      <IndicadorObjgeneralNodo v-bind="nodeProps"></IndicadorObjgeneralNodo>
+      <IndicadorObjgeneralNodo
+        v-bind="nodeProps"
+        @addProducto="(payload) => ejecutarAccion('addProducto', payload)"
+      ></IndicadorObjgeneralNodo>
     </template>
     <!--Indicador de Objetivo especifico-->
     <template #node-indicadoroe="nodeProps">
-      <IndicadorObjespecifico v-bind="nodeProps"></IndicadorObjespecifico>
+      <IndicadorObjespecifico
+        v-bind="nodeProps"
+        @addProducto="(payload) => ejecutarAccion('addProducto', payload)"
+      ></IndicadorObjespecifico>
     </template>
     <!--Resultado de Objetivo especifico-->
     <template #node-resultadoog="nodeProps">
@@ -72,6 +81,7 @@
         @addIndicadorResultadoOg="(payload) => ejecutarAccion('addIndicadorResultadoOg', payload)"
         @addProcesosResultadoOg="(payload) => ejecutarAccion('addProcesosResultadoOg', payload)"
         @addActividadResOG="(payload) => ejecutarAccion('addActividadResOG', payload)"
+        @addProducto="(payload) => ejecutarAccion('addProducto', payload)"
       ></ResultadoObjgeneralNodo>
     </template>
     <!-- Resultado de Objetivo Especifico -->
@@ -82,6 +92,7 @@
         @addProductoResultadoOE="(payload) => ejecutarAccion('addProductoResultadoOE', payload)"
         @addProcesosResultadoOE="(payload) => ejecutarAccion('addProcesosResultadoOE', payload)"
         @addActividadResOE="(payload) => ejecutarAccion('addActividadResOE', payload)"
+        @addProducto="(payload) => ejecutarAccion('addProducto', payload)"
       ></ResultadoObjetivoEspecifico>
     </template>
     <!-- Resultado de Objetivo Especifico -->
@@ -98,10 +109,16 @@
     </template>
     <!-- Indicador del Resultado Objetivo Especifico-->
     <template #node-indicadorrog="nodeProps">
-      <IndicadorResultadoObjGeneral v-bind="nodeProps"></IndicadorResultadoObjGeneral>
+      <IndicadorResultadoObjGeneral
+        v-bind="nodeProps"
+        @addProducto="(payload) => ejecutarAccion('addProducto', payload)"
+      ></IndicadorResultadoObjGeneral>
     </template>
     <template #node-indicadorroe="nodeProps">
-      <IndicadorResultadoObjEspecifico v-bind="nodeProps"></IndicadorResultadoObjEspecifico>
+      <IndicadorResultadoObjEspecifico
+        v-bind="nodeProps"
+        @addProducto="(payload) => ejecutarAccion('addProducto', payload)"
+      ></IndicadorResultadoObjEspecifico>
     </template>
     <template #node-procesorog="nodeProps">
       <ProcesoResultadoObjGeneral
@@ -137,6 +154,11 @@
     <template #node-actividad="nodeProps">
       <ActividadNodo v-bind="nodeProps"></ActividadNodo>
     </template>
+    <!-- Nodo Producto General -->
+    <template #node-productogral="nodeProps">
+      <ProductoNodo v-bind="nodeProps"></ProductoNodo>
+    </template>
+
     <Panel position="top-right" class="tool-panel">
       <!-- Barra de título -->
       <v-toolbar color="primary" density="compact" class="panel-header">
@@ -269,6 +291,7 @@ import ActividadNodo from './nodos/ActividadNodo.vue'
 import ActividadRogNodo from './nodos/ActividadRogNodo.vue'
 import ActividadPoeNodo from './nodos/ActividadPoeNodo.vue'
 import ActividadRoeNodo from './nodos/ActividadRoeNodo.vue'
+import ProductoNodo from './nodos/ProductoNodo.vue'
 //Manjeador de eventos
 import useNodeEvents from '../composables/useNodeEvents'
 
@@ -347,7 +370,44 @@ const formatLabel = (key) => {
 
 // Mapeo de tipos de nodo a componentes de formulario
 const formulariosPorTipo = {
+  proyecto: defineAsyncComponent(() => import('./nodosFormularios/ProyectoNodoForm.vue')),
   kpi: defineAsyncComponent(() => import('./nodosFormularios/KpiNodoForm.vue')),
+  objetivogeneral: defineAsyncComponent(
+    () => import('./nodosFormularios/ObjetivoGralNodoForm.vue'),
+  ),
+  objetivoespecifico: defineAsyncComponent(
+    () => import('./nodosFormularios/ObjetivoEspecNodoForm.vue'),
+  ),
+  objetivoespecificoog: defineAsyncComponent(
+    () => import('./nodosFormularios/ObjetivoEspecOgNodoForm.vue'),
+  ),
+  indicadorog: defineAsyncComponent(() => import('./nodosFormularios/IndicadorOgNodoForm.vue')),
+  indicadoroe: defineAsyncComponent(() => import('./nodosFormularios/IndicadorOeNodoForm.vue')),
+  resultadoog: defineAsyncComponent(() => import('./nodosFormularios/ResultadoOgNodoForm.vue')),
+  resultadooe: defineAsyncComponent(() => import('./nodosFormularios/ResultadoOeNodoForm.vue')),
+  productooe: defineAsyncComponent(() => import('./nodosFormularios/ProductoOeNodoForm.vue')),
+  productoroe: defineAsyncComponent(
+    () => import('./nodosFormularios/ProductoResultOeNodoForm.vue'),
+  ),
+  indicadorrog: defineAsyncComponent(() => import('./nodosFormularios/IndicadorResOgNodoForm.vue')),
+  indicadorroe: defineAsyncComponent(() => import('./nodosFormularios/IndicadorResOeNodoForm.vue')),
+  procesorog: defineAsyncComponent(
+    () => import('./nodosFormularios/ProcesoResultadoOgNodoForm.vue'),
+  ),
+  procesoroe: defineAsyncComponent(
+    () => import('./nodosFormularios/ProcesoResultadoOeNodoForm.vue'),
+  ),
+  procesopoe: defineAsyncComponent(() => import('./nodosFormularios/ProcesoProdOeNodoForm.vue')),
+  actividadrog: defineAsyncComponent(() => import('./nodosFormularios/ActividadResOgNodoForm.vue')),
+  actividadpoe: defineAsyncComponent(
+    () => import('./nodosFormularios/ActividadProdOeNodoForm.vue'),
+  ),
+  actividadroe: defineAsyncComponent(
+    () => import('./nodosFormularios/ActividadResulOeNodoForm.vue'),
+  ),
+  actividad: defineAsyncComponent(() => import('./nodosFormularios/ActividadNodoForm.vue')),
+  productogral: defineAsyncComponent(() => import('./nodosFormularios/ProductoGralNodo.vue')),
+
   //proyecto: defineAsyncComponent(() => import('./nodos/formularios/ProyectoForm.vue')),
   // Agrega más tipos según necesites
 }

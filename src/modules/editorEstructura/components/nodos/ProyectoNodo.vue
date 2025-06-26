@@ -133,7 +133,7 @@ const agregarObjetivoEspecifico = async () => {
           descripcion: objetivoEspecifico.value.descripcion,
           supuestos: objetivoEspecifico.value.supuestos,
           riesgos: objetivoEspecifico.value.riesgos,
-          proyecto: null,
+          proyecto: objetivoEspecifico.value.proyecto,
           objetivo_general: objetivoEspecifico.value.objetivo_general,
         },
       },
@@ -142,9 +142,6 @@ const agregarObjetivoEspecifico = async () => {
   } catch (err) {
     console.log('Error ' + err)
   }
-
-  //Emitir el evento
-  //emit('addObjetivoEspecifico', payload)
 }
 
 /* Estilos */

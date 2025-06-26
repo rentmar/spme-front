@@ -33,6 +33,13 @@
           <v-icon :icon="'mdi-package-variant-closed'"></v-icon>
         </template>
       </v-list-item>
+      <!-- Agregar Producto General -->
+      <v-list-item class="custom-menu-item" @click="agregarProductoGeneral">
+        <v-list-item-title>Agregar Producto</v-list-item-title>
+        <template v-slot:prepend>
+          <v-icon :icon="'mdi-flag-checkered'"></v-icon>
+        </template>
+      </v-list-item>
     </template>
     <template #handles>
       <Handle type="target" position="top" :id="`source-${id}`" :style="handleStyle" />
@@ -58,7 +65,7 @@ const props = defineProps({
 //Iniciar los composables
 const { indicadorObjetivoEspecifico, crearIndicadorObjEspecifico } = useIndicadores()
 const { crearResultadoOe, resultadoOe, error } = useResultados()
-const { crearProductoOe, productoOe } = useProductos()
+const { crearProductoOe, productoOe, productoGral, crearProductoGeneral } = useProductos()
 
 //Datos del nodo
 const { findNode } = useVueFlow()
@@ -76,7 +83,7 @@ const handleStyle = {
   borderRadius: '50%',
 }
 
-const emit = defineEmits(['addIndicadorOE', 'addResultadoOE', 'addProductoOE'])
+const emit = defineEmits(['addIndicadorOE', 'addResultadoOE', 'addProductoOE', 'addProducto'])
 
 /* Funciones */
 const agregarIndicadorOE = async () => {
@@ -158,16 +165,6 @@ const agregarResultadoOE = async () => {
   } catch (err) {
     console.error('Error al crear ' + error, err)
   }
-  // const payload = {
-  //   label: 'Resultado OE',
-  //   sourceId: currentNode.id.toString(),
-  //   meta: {
-  //     prioridad: 'alta',
-  //     fechaLimite: '2023-12-31',
-  //   },
-  // }
-  // //Emitir el evento
-  // emit('addResultadoOE', payload)
 }
 
 const agregarProductoOE = async () => {
@@ -203,17 +200,53 @@ const agregarProductoOE = async () => {
   } catch (err) {
     console.error('Error al crear Producto OE', err)
   }
+}
 
-  // const payload = {
-  //   label: 'Producto OE',
-  //   sourceId: currentNode.id.toString(),
-  //   meta: {
-  //     prioridad: 'alta',
-  //     fechaLimite: '2023-12-31',
-  //   },
-  // }
-  // //Emitir el evento
-  // emit('addProductoOE', payload)
+const agregarProductoGeneral = async () => {
+  const ptrGral = {
+    codigo: 'PTRG',
+    supuestos: '',
+    riesgos: '',
+    entregado: false,
+    objetivo_general: null,
+    objetivo_especifico: idCurrenNode,
+    indicador_og: null,
+    indicador_oe: null,
+    resultado_og: null,
+    resultado_oe: null,
+    indicador_resultado_og: null,
+    indicador_resultado_oe: null,
+  }
+  try {
+    console.log(ptrGral)
+    await crearProductoGeneral(ptrGral)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Producto',
+        type: 'productogral',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: productoGral.value.id,
+          codigo: productoGral.value.codigo,
+          supuestos: productoGral.value.supuestos,
+          riesgos: productoGral.value.riesgos,
+          entregado: productoGral.entregado,
+          objetivo_general: productoGral.value.objetivo_general,
+          objetivo_especifico: productoGral.value.objetivo_especifico,
+          indicador_og: productoGral.value.indicador_og,
+          indicador_oe: productoGral.value.indicador_oe,
+          resultado_og: productoGral.value.resultado_og,
+          resultado_oe: productoGral.value.resultado_oe,
+          indicador_resultado_og: productoGral.value.indicador_resultado_og,
+          indicador_resultado_oe: productoGral.value.indicador_resultado_oe,
+        },
+      },
+    }
+    emit('addProducto', payload)
+  } catch (err) {
+    console.log('ERROR: ', err)
+  }
 }
 </script>
 <style scoped>

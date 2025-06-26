@@ -74,7 +74,6 @@ const cargarDatos = async () => {
   }
 }
 </script>
-
 <style scoped>
 /* Estilos generales para las tarjetas */
 .v-card {
