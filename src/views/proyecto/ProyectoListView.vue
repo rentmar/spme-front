@@ -518,7 +518,6 @@
                 </v-col>
 
                 <v-col cols="12" md="6">
-                  <div>Instancia seleccionada ID:</div>
                   <v-select
                     variant="outlined"
                     v-model="proyecto.instancia_gestora"
@@ -556,6 +555,21 @@
                     variant="outlined"
                     :precision="2"
                   ></v-number-input>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-select
+                    variant="outlined"
+                    v-model="proyecto.instancia_gestora"
+                    label="Instancia gestora*"
+                    :items="instancias"
+                    item-title="instancia"
+                    item-value="id"
+                    multiple
+                    chips
+                    :return-object="false"
+                    :rules="[(v) => !!v || 'La instancia gestora es requerida']"
+                  ></v-select>
                 </v-col>
               </v-row>
 

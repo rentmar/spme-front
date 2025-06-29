@@ -132,7 +132,7 @@ const guardar = async () => {
     await updateProductoGeneral(idindog, formData.value)
     updateNode(formData.value.id, formData.value)
     await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
-    //emit('guardar')
+    emit('guardar')
   } catch (err) {
     console.error('Update informacion', err)
   }
