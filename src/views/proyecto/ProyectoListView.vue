@@ -558,12 +558,13 @@
                 </v-col>
 
                 <v-col cols="12" md="6">
+                  {{ proyecto.procedencia_fondos }}
                   <v-select
                     variant="outlined"
-                    v-model="proyecto.instancia_gestora"
-                    label="Instancia gestora*"
-                    :items="instancias"
-                    item-title="instancia"
+                    v-model="proyecto.procedencia_fondos"
+                    label="Procedencia de Fondos*"
+                    :items="opcionesEntidadFinanciera"
+                    item-title="financiera"
                     item-value="id"
                     multiple
                     chips
@@ -654,6 +655,7 @@ import { useRouter } from 'vue-router'
 import { proyectoServicios } from '@/modules/proyecto/services/proyectoService'
 //Instancias Gestoras
 import { useInstanciaGestora } from '@/modules/instanciaGestora/composables/useInstanciaGestora'
+import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
 
 //Instancias gestoras, des
 const { instancias, cargarInstancias } = useInstanciaGestora()
@@ -688,9 +690,13 @@ const proyecto = reactive({
   fecha_inicio: null,
   fecha_finalizacion: null,
   presupuesto: null,
+  procedencia_fondos: [],
 })
 // El store de los proyectos
 const proyectoStore = useProyectoStore()
+
+//Composables
+const { opcionesEntidadFinanciera, fetchOptions } = useProcedenciaFondos()
 
 // Estados
 const loading = ref(false)
@@ -760,6 +766,7 @@ const cargarProyectos = async () => {
     emptyResponse.value = false
     await proyectoStore.obtenerProyectos()
     cargarInstancias()
+    fetchOptions()
     if (proyectoStore.proyectos.length === 0) {
       emptyResponse.value = true
     }
@@ -959,6 +966,7 @@ const resetForm = () => {
     fecha_inicio: null,
     fecha_finalizacion: null,
     presupuesto: null,
+    procedencia_fondos: [],
   })
 }
 

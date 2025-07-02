@@ -8,8 +8,9 @@ const loading = ref(null)
 const error = ref(null)
 const entidadesFinancieras = ref([])
 const entidadFinanciera = ref(null)
+const opcionesEntidadFinanciera = ref([])
 
-export function useActividad() {
+export function useProcedenciaFondos() {
   //fecth kpis
   async function cargarActividades() {
     loading.value = true
@@ -78,15 +79,32 @@ export function useActividad() {
     }
   }
 
+  //Poblar select
+  const fetchOptions = async (transformFn = (item) => item) => {
+    loading.value = true
+    error.value = null
+    try {
+      const data = await procedenciaFondosServicio.all()
+      opcionesEntidadFinanciera.value = data.map((item) => transformFn(item))
+    } catch (err) {
+      error.value = err.message || 'Error al cargar las opciones'
+      console.error('Error fetching options:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading, //ref
     error, //ref
     entidadFinanciera, //ref entidad
     entidadesFinancieras, //ref entidades
+    opcionesEntidadFinanciera, //ref
     cargarActividades,
     cargarActividadPorId,
     crearActividad,
     updateActividad,
     delActividad,
+    fetchOptions,
   }
 }

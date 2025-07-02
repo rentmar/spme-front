@@ -8,7 +8,7 @@
       progressType="linear"
     ></LoadingOverlay>
 
-    <div class="hot-container">
+    <div class="hotWraper">
       <v-toolbar flat density="comfortable" class="excel-toolbar">
         <!--Agregar Fila-->
         <v-tooltip text="Agregar fila" location="bottom">
@@ -38,31 +38,22 @@
       </v-toolbar>
       <HotTable
         ref="hotTable"
-        :data="datosPlanificacion"
-        :columns="columnas"
-        :height="400"
-        :dropdownMenu="true"
-        :autoColumnSize="true"
-        :manualColumnResize="true"
-        :colHeaders="true"
+        :data="tableData"
+        :columns="columns"
+        :colHeaders="headers"
         :rowHeaders="true"
+        :height="400"
         :contextMenu="true"
-        :autoWrapRow="true"
-        :autoWrapCol="true"
-        :nestedHeaders="nestedHeaders"
-        :autoRowSize="true"
         :language="'es-Mx'"
-        :collapsibleColumns="true"
         :afterChange="handleChange"
         :licenseKey="'non-commercial-and-evaluation'"
-      ></HotTable>
+      >
+      </HotTable>
     </div>
   </div>
-  <div>{{ datosPlanificacion }}</div>
+  {{ tableData }}
   <br /><br />
-  <div>{{ proyecto }}</div>
-  <br /><br />
-  <div>{{ proyectoEstructura }}</div>
+  {{ proyectoEstructura }}
 </template>
 
 <script setup>
@@ -72,17 +63,14 @@ import { registerLanguageDictionary } from 'handsontable/i18n'
 import { esMX } from 'handsontable/i18n'
 import 'handsontable/dist/handsontable.full.css'
 import LoadingOverlay from '@/components/layout/partials/LoadingOverlay.vue'
-//imports
-import { ref, onMounted, computed } from 'vue'
-import { storeToRefs } from 'pinia'
-//Stores
-import { usePeiVigenteStore } from '@/modules/pei/store/usePeiVigenteStore'
-import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
-//Composables
+import { ref, computed, onMounted, inject } from 'vue'
+import { usePlanificacionStore } from '../store/usePlanificacionStore'
+import { useRoute } from 'vue-router'
 import useLoading from '@/composables/useLoading'
+import { SELECT_OPTIONS } from '@/utility/selectOptions'
+import { unirValoresConComas, formatearObjetivoGeneral } from '@/utility/strings'
 
 //Props del componente
-
 const props = defineProps({
   proyecto: {
     type: Object,
@@ -102,57 +90,391 @@ const props = defineProps({
 registerAllModules()
 registerLanguageDictionary(esMX)
 
-// Referencia a la instancia
-const hotTable = ref(null)
+//Pei Vigente
+const peiVigente = inject('peiVigente')
+// console.log(peiVigente.value.id)
+
+//Obtener el id del proyecto de la ruta
+const route = useRoute()
+const idproyecto = route.params.id
+
+//Obtener el id del pei
+const idpei = peiVigente.value.id
+
+//Obtener el objetivo general del proyecto
+const objetivoGeneralProyecto = formatearObjetivoGeneral(props.proyectoEstructura.objetivo_general)
+
+//Tipos de actividad
+const tipoActividad = SELECT_OPTIONS.tipo_actividad
+
+//Programa/Area
+const programaArea = unirValoresConComas(props.proyectoEstructura.instancia_gestora)
 
 //Composable
 const { isLoading, loadingMessage, loadingProgress, loadingError, withLoading } = useLoading()
 
-//Iniciar Stores
-const peiVigenteStore = usePeiVigenteStore() //Pei Vigente
+//Iniciar el store de planificacion
+const planificacionStore = usePlanificacionStore()
 
-/****************** DES Estructurar los Stores ***********************/
-//Referencias
-const { peiVigenteEstructura } = storeToRefs(peiVigenteStore) //Referencias al Store del PEi Vigente
-//Funciones
-const { obtenerPeiVigenteEstructura } = peiVigenteStore //Funciones
-//Referencias
+//Informacion para la tabla
+const tableData = ref([])
 
-// Datos iniciales
-// const datosPlanificacion = ref([
-//   {
-//     idObjPei: '',
-//     objetivoPei: '',
-//     idIndPei: '',
-//     indicadorPei: '',
-//     idObjGral: '',
-//     objetivoGral: '',
-//     idKpi: '',
-//     kpi: '',
-//     idIndOg: '',
-//     indicadorOg: '',
-//   },
-// ])
-//Datos de la planilla
-const datosPlanificacion = ref([{}])
+// Rótulos para columnas
+const headers = ref([
+  //Objetivo PEI
+  'Objetivo PEI',
+  //Indicador PEI
+  'Indicadores PEI',
+  //Objetivo General del Proyecto
+  'Objetivo General',
+  //Indicador OG
+  'Indicador OG',
+  //Producto OG
+  'id',
+  'Producto OG',
+  //Indicador Producto OG
+  'id',
+  'Indicador Producto OG',
+  //Objetivo Especifico
+  'Objetivo Especifico',
+  //Indicador OE
+  'id',
+  'Indicador OE',
+  //Producto OE
+  'id',
+  'Producto OE',
+  //Indicador Producto OE
+  'id',
+  'Indicador Producto OE',
+  //Resultado OE
+  'id',
+  'Resultado OE',
+  //Indicador Resultado OE
+  'id',
+  'Indicador Resultado OE',
+  //Area Programa
+  'Programa/Area',
+  //Proceso Actividad
+  'Proceso',
+  //Actividad
+  'Actividad',
+  //Tipoo de actividad
+  'Tipo actividad',
+  //Fecha inicio
+  'Fecha Inicio',
+  //Fecha cierre
+  'Fecha Cierre',
+  //Supuestos Riesgos
+  'Supuestos Riesgos',
+  //Presupuesto Programa
+  'Presupuesto Programa',
+  //Nombre cuenta
+  'Nombre Cuenta',
+  //Presupuesto Global
+  'Presupuesto Global',
+  //Total Reportado
+  'Total Reportado',
+  'Total Ejecutado',
+  'Saldo',
+  'Grado de ejecucion',
+  'Medios de verificacion',
+])
 
-//Objetivo General del proyecto
-const objetivosGenerales = ref([props.proyectoEstructura.value?.objetivo_general])
-console.log('Objetivos Generales(PP):')
-console.log(objetivosGenerales)
+const hiddenColumns = ref([])
+const hiddenColumnsConfig = computed(() => ({
+  columns: hiddenColumns.value,
+  indicators: true, // Muestra indicadores de columnas ocultas
+}))
 
-//Indicadores del Objetivo General
-const indicadoresOgOptions = ref([])
-console.log('indicadores og(PP)')
-console.log(indicadoresOgOptions)
+// Configuración de columnas personalizadas
+const columns = ref([
+  //Objetivo PEI
+  {
+    data: 'objetivoPei',
+    type: 'dropdown',
+    width: 300,
+    source: function (query, process) {
+      fetch('http://127.0.0.1:8000/api/pei/' + idpei + '/listobj/')
+        .then((response) => response.json())
+        .then((data) => {
+          process(data.data) // Usamos directamente el array de strings
+        })
+        .catch((error) => {
+          console.error('Error:', error)
+          process([])
+        })
+    },
+    strict: true,
+    validator: function (value, callback) {
+      // Validación personalizada
+      callback(true) // Siempre válido temporalmente
+    },
+  },
+  //Indicador PEI
+  {
+    data: 'indicadorPei',
+    type: 'dropdown',
+    width: 200,
+    source: function (query, process) {
+      const rowData = this.instance.getSourceDataAtRow(this.row)
+      if (!rowData?.objetivoPei) return process([])
 
-//Resultados del Objetivo General
-const resultadosOgOptions = ref([])
-console.log('Resultados de OG(PP)')
-console.log(resultadosOgOptions)
+      // Extraer el ID del objetivo (formato: "id-codigo-descripcion")
+      const objetivoId = rowData.objetivoPei.split('-')[0]
 
-//Indicador de resultados de OG
-const indicadorResultadoOgOptions = ref([])
+      fetch(`http://127.0.0.1:8000/api/objetivos/${objetivoId}/indicadores-compactos/`)
+        .then((response) => response.json())
+        .then((data) => {
+          // Guardar el primer ID si es necesario
+          if (data.data.length > 0 && !rowData.idindpei) {
+            const firstId = data.data[0].split('-')[0]
+            this.instance.setDataAtRowProp(this.row, 'idindpei', firstId)
+          }
+          process(data.data)
+        })
+        .catch(() => process([]))
+    },
+    afterGetColHeader: function (col, TH) {
+      // Forzar actualización al hacer clic en el header
+      if (col === this.prop) {
+        TH.addEventListener('click', () => {
+          this.instance.updateSettings({})
+        })
+      }
+    },
+  },
+  //Objetivo General
+  {
+    data: 'objetivoGeneral',
+    type: 'text',
+    width: 200,
+    readOnly: true,
+  },
+  //Indicador Objetivo General
+  {
+    data: 'indicadorOg',
+    type: 'dropdown',
+    width: 200,
+    source: function (query, process) {
+      fetch('http://127.0.0.1:8000/api/proyectos/' + idproyecto + '/indicadores-og/')
+        .then((response) => response.json())
+        .then((data) => {
+          process(data.data) // Usamos directamente el array de strings
+        })
+        .catch((error) => {
+          console.error('Error:', error)
+          process([])
+        })
+    },
+    strict: true,
+    validator: function (value, callback) {
+      // Validación personalizada
+      callback(true) // Siempre válido temporalmente
+    },
+  },
+  //Producto Objetivo General
+  {
+    data: 'idpog',
+    type: 'numeric',
+    width: 70,
+    readOnly: true,
+  },
+  {
+    data: 'productoOg',
+    type: 'dropdown',
+    width: 200,
+    source: [],
+  },
+  //Indicador Producto OG
+  {
+    data: 'idipog',
+    type: 'numeric',
+    width: 70,
+    readOnly: true,
+  },
+  {
+    data: 'indicadorProductoOg',
+    type: 'dropdown',
+    width: 200,
+    source: [],
+  },
+  //Objetivo Especifico
+  {
+    data: 'objetivoEspecifico',
+    type: 'dropdown',
+    width: 200,
+    source: function (query, process) {
+      fetch('http://127.0.0.1:8000/api/proyectos/' + idproyecto + '/objetivos-especificos/')
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            // Combinar ambos arrays de objetivos
+            const options = [...data.data.proyecto, ...data.data.objetivo_general]
+            process(options)
+          } else {
+            process([])
+          }
+        })
+        .catch(() => process([]))
+    },
+  },
+  //Indicador Objetivo Especifico
+  {
+    data: 'idioe',
+    type: 'numeric',
+    width: 70,
+    readOnly: true,
+  },
+  {
+    data: 'indicadorOe',
+    type: 'dropdown',
+    width: 200,
+    source: function (query, process) {
+      const rowData = this.instance.getSourceDataAtRow(this.row)
+      const objetivoEspecifico = rowData?.objetivoEspecifico
+
+      if (!objetivoEspecifico) {
+        return process([])
+      }
+
+      // Extraer el ID del objetivo específico (asumiendo formato "id-codigo-descripcion")
+      const objetivoId = objetivoEspecifico.split('-')[0].trim()
+
+      fetch(`http://127.0.0.1:8000/api/objetivos-especificos/${objetivoId}/indicadores/`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            // El endpoint ya devuelve el formato correcto: "id-codigo-redaccion"
+            process(data.data)
+
+            // Si hay indicadores, establecer el primer ID
+            if (data.data.length > 0 && !rowData.idioe) {
+              const firstId = data.data[0].split('-')[0]
+              this.instance.setDataAtRowProp(this.row, 'idioe', firstId)
+            }
+          } else {
+            process([])
+          }
+        })
+        .catch((error) => {
+          console.error('Error al cargar indicadores:', error)
+          process([])
+        })
+    },
+    strict: true,
+    afterGetColHeader: function (col, TH) {
+      if (col === this.prop) {
+        TH.addEventListener('click', () => {
+          this.instance.updateSettings({})
+        })
+      }
+    },
+  },
+  //Producto Objetivo Especifico
+  {
+    data: 'idpoe',
+    type: 'numeric',
+    width: 70,
+    readOnly: true,
+  },
+  {
+    data: 'productoOe',
+    type: 'dropdown',
+    width: 200,
+    source: [],
+  },
+  //Indicador Producto Objetivo Especifico
+  {
+    data: 'idipoe',
+    type: 'numeric',
+    width: 70,
+    readOnly: true,
+  },
+  {
+    data: 'indicadorProductoOe',
+    type: 'dropdown',
+    width: 200,
+    source: [],
+  },
+  //Resultado OE
+  {
+    data: 'idresoe',
+    type: 'numeric',
+    width: 70,
+    readOnly: true,
+  },
+  {
+    data: 'resultadoOe',
+    type: 'dropdown',
+    width: 200,
+    source: [],
+  },
+  //Indicador resultado OE
+  {
+    data: 'idiroe',
+    type: 'numeric',
+    width: 70,
+    readOnly: true,
+  },
+  {
+    data: 'indicadorResultadoOe',
+    type: 'dropdown',
+    width: 200,
+    source: [],
+  },
+  //Programa Area
+  {
+    data: 'programa-area',
+    type: 'text',
+    width: 200,
+  },
+  //Proceso
+  {
+    data: 'proceso',
+    type: 'autocomplete',
+    width: 200,
+    async source(query, process) {
+      fetch('http://127.0.0.1:8000/api/proyectos/' + idproyecto + '/procesos/') // tu endpoint real
+        .then((res) => res.json())
+        .then((data) => {
+          // Mostrar display_name como opciones
+          const opciones = data.map((item) => item.display_name)
+          process(opciones)
+        })
+        .catch((error) => {
+          console.error('Error cargando procesos:', error)
+          process([]) // evitar que se rompa
+        })
+    },
+    strict: false,
+  },
+  //Actividad
+  {
+    data: 'actividad',
+    type: 'text',
+    width: 200,
+  },
+  //Tipo de actividad
+  {
+    data: 'tipo_actividad',
+    type: 'dropdown',
+    width: 200,
+    source: tipoActividad,
+  },
+  //Fecha inicio
+  {
+    data: 'fecha_inicio',
+    type: 'date',
+    width: 150,
+  },
+  //Fecha cierre
+  {
+    data: 'fecha_cierre',
+    type: 'date',
+    width: 150,
+    source: [],
+  },
+])
 
 onMounted(async () => {
   await cargarDatos()
@@ -160,392 +482,82 @@ onMounted(async () => {
 
 const cargarDatos = async () => {
   try {
-    await withLoading(obtenerPeiVigenteEstructura(), 'Cargando informacion del PEI')
-    inicializarIndicadoresog()
-    inicializarResultadosOg()
+    //await obtenerEstructuraPeiPorID(peiVigente.value.id)
+    //await obtenerConteosProyecto(idproyecto)
   } catch (err) {
-    console.error('Erro al cargar la informacion', err)
+    console.error('Error al cargar datos', err)
   }
 }
-//Inicializar los Indicadores OG
-const inicializarIndicadoresog = () => {
-  const indicadores = props.proyectoEstructura?.objetivo_general?.indicadores_objgral || []
-  indicadoresOgOptions.value = indicadores.map((i) => `${i.codigo} - ${i.redaccion}`)
-}
 
-//Inicializar los Resultados OG
-const inicializarResultadosOg = () => {
-  const resultados = props.proyectoEstructura?.objetivo_general?.resultados_objgral || []
-  resultadosOgOptions.value = resultados.map((i) => `${i.codigo} - ${i.descripcion}`)
-}
+const hotTable = ref(null)
+const hot = computed(() => hotTable.value?.hotInstance)
 
-//Rotulos de lo Headers
-
-const nestedHeaders = ref([
-  //Quinto  Nivel
-  // [{ label: 'PROYECTO - PLANIFICACION', colspan: 24 }],
-  //Cuarto  Nivel
-  // [
-  //   { label: 'PEI', colspan: 4 },
-  //   { label: 'PROYECTO', colspan: 20 },
-  // ],
-  //Tercer Nivel
-  // [
-  //   { label: 'PEI', colspan: 4 },
-  //   { label: 'OBJETIVO GENERAL', colspan: 4 },
-  // ],
-
-  //Segundo Nivel
-  [
-    { label: 'Objetivo', colspan: 2 },
-    { label: 'Indicador', colspan: 2 },
-    { label: 'Objetivo General', colspan: 2 },
-    { label: 'Indicador OG', colspan: 2 },
-    { label: 'Producto OG', colspan: 2 },
-
-    { label: 'Objetivo Especifico', colspan: 2 },
-    { label: 'Indicador OE', colspan: 2 },
-    { label: 'Producto OE', colspan: 2 },
-
-    { label: 'Resultado OG', colspan: 2 },
-    { label: 'Indicador Resultado OG', colspan: 2 },
-  ],
-  //Primer nivel
-  [
-    //Objetivo del PEI
-    'id',
-    'Objetivo',
-    //Indicador del PEI
-    'id',
-    'Indicador',
-    //Objetivo General
-    'id',
-    'Objetivo',
-    //Indicador OG
-    'id',
-    'Indicador',
-    //Producto OG
-    'id',
-    'Producto OG',
-    //Objetivo especifico
-    'id',
-    'Objetivo Especifico',
-    //Indicador OE
-    'id',
-    'Indicador OE',
-    //Producto OE
-    'id',
-    'Producto OE',
-    //Producto
-    'id',
-    'Resultado',
-    //INdicador
-    'id',
-    'Indicador',
-  ],
-])
-
-//Opciones para los dropdowns
-// Computed
-const objetivosOptions = computed(() => {
-  if (!peiVigenteEstructura.value?.objetivos) return []
-  return peiVigenteEstructura.value.objetivos.map((obj) => `${obj.codigo} - ${obj.descripcion}`)
-})
-
-//Definicion de columnas
-const columnas = ref([
-  //Id del Pbj PEI
-  {
-    data: 'idObjPei',
-    type: 'numeric',
-    width: 50,
-    readOnly: true,
-  },
-  //Obj PEI
-  {
-    data: 'objetivoPei',
-    type: 'dropdown',
-    source(query, process) {
-      process(objetivosOptions.value)
-    },
-    allowInvalid: false,
-    strict: true,
-    width: 150,
-  },
-  //Id del Ind del PEI
-  {
-    data: 'idIndPei',
-    type: 'numeric',
-    readOnly: true,
-  },
-  //Indicador del PEI
-  {
-    data: 'indicadorPei',
-    type: 'dropdown',
-    source: function (query, process) {
-      // `this.row` hace referencia a la fila actual
-      const rowIndex = this.row
-      const fila = datosPlanificacion.value?.[rowIndex]
-      if (!fila) return process([])
-
-      const codigoObj = fila.objetivoPei?.split(' - ')[0]
-      const objetivo = peiVigenteEstructura.value?.objetivos?.find((o) => o.codigo === codigoObj)
-      const opciones = objetivo?.indicadores?.map((i) => `${i.codigo} - ${i.descripcion}`) || []
-
-      process(opciones)
-    },
-    strict: true,
-    width: 150,
-  },
-  //Id del Obj Gral
-  {
-    data: 'idObjGral',
-    type: 'text',
-    readOnly: true,
-    width: 50,
-  },
-  //Obj General
-  {
-    data: 'objetivoGral',
-    type: 'text',
-    readOnly: true,
-    width: 200,
-  },
-  //Id del indicador del Obj General
-  {
-    data: 'idIndOg',
-    type: 'text',
-    readOnly: true,
-    width: 50,
-  },
-  //Indicador dle Obj General
-  {
-    data: 'indicadorOg',
-    type: 'dropdown',
-    source(query, process) {
-      process(indicadoresOgOptions.value)
-    },
-    allowInvalid: false,
-    strict: true,
-    width: 200,
-  },
-  //Id del resultado de Obj Gral
-  {
-    data: 'idResOg',
-    type: 'text',
-    readOnly: true,
-    width: 50,
-  },
-  //Resultado de OG
-  {
-    data: 'resultadoOg',
-    type: 'dropdown',
-    source(query, process) {
-      process(resultadosOgOptions.value)
-    },
-    allowInvalid: false,
-    strict: true,
-    width: 250,
-  },
-  //Id del resultado de Obj Gral
-  {
-    data: 'idIndResOg',
-    type: 'text',
-    readOnly: true,
-    width: 50,
-  },
-  //Indicador de resultado de OG
-  {
-    data: 'indicadorResOg',
-    type: 'dropdown',
-    allowInvalid: false,
-    source: indicadorResultadoOgOptions,
-    strict: true,
-    width: 250,
-  },
-  {
-    data: 'indicadorResOg',
-    type: 'dropdown',
-    allowInvalid: false,
-    source: indicadorResultadoOgOptions,
-    strict: true,
-    width: 50,
-  },
-  //Producto
-  {
-    data: 'indicadorResOg',
-    type: 'text',
-    allowInvalid: false,
-    source: indicadorResultadoOgOptions,
-    strict: true,
-    width: 250,
-  },
-  {
-    data: 'indicadorResOg',
-    type: 'text',
-    allowInvalid: false,
-    source: indicadorResultadoOgOptions,
-    strict: true,
-    width: 50,
-  },
-  {
-    data: 'indicadorResOg',
-    type: 'text',
-    allowInvalid: false,
-    source: indicadorResultadoOgOptions,
-    strict: true,
-    width: 250,
-  },
-  {
-    data: 'indicadorResOg',
-    type: 'text',
-    allowInvalid: false,
-    source: indicadorResultadoOgOptions,
-    strict: true,
-    width: 50,
-  },
-  {
-    data: 'indicadorResOg',
-    type: 'text',
-    allowInvalid: false,
-    source: indicadorResultadoOgOptions,
-    strict: true,
-    width: 250,
-  },
-  {
-    data: 'indicadorResOg',
-    type: 'text',
-    allowInvalid: false,
-    source: indicadorResultadoOgOptions,
-    strict: true,
-    width: 50,
-  },
-  {
-    data: 'indicadorResOg',
-    type: 'text',
-    allowInvalid: false,
-    source: indicadorResultadoOgOptions,
-    strict: true,
-    width: 250,
-  },
-  {
-    data: 'procedencia',
-    type: 'dropdown',
-    allowInvalid: false,
-    source: ['opcion1'],
-    strict: true,
-    width: 250,
-  },
-])
-
-/********* Funciones *********/
-const agregarFila = () => {
-  console.log('Agregar fila')
-  datosPlanificacion.value.push({})
-}
-const eliminarFila = () => {
-  console.log('Eliminar fila')
-}
-const exportarExcel = () => {
-  console.log('Exportar a excel')
-}
-
-//Manejo de los cambios
+//FUNCIONES
 const handleChange = (changes, source) => {
-  if (!changes || source !== 'edit') return
+  if (source === 'edit') {
+    changes.forEach(([row, prop, oldValue, newValue]) => {
+      const hotInstance = hotTable.value?.hotInstance
+      if (!hotInstance) return
 
-  for (const [row, prop, oldValue, newValue] of changes) {
-    const fila = datosPlanificacion.value[row]
+      if (prop === 'objetivoPei') {
+        // Manejar cambios en objetivo PEI (tu código existente)
+        hotInstance.setDataAtRowProp(row, 'indicadorPei', '')
 
-    if (prop === 'objetivoPei') {
-      const codigo = newValue?.split(' - ')[0]
-      const objetivo = peiVigenteEstructura.value?.objetivos?.find((o) => o.codigo === codigo)
-
-      fila.idObjPei = objetivo?.id || ''
-
-      if (!objetivo?.indicadores?.length) {
-        fila.idIndPei = ''
-        fila.indicadorPei = ''
-        alert(`El objetivo "${newValue}" no tiene indicadores disponibles.`)
-        continue
+        if (newValue) {
+          const objetivoId = newValue.split('-')[0]
+          fetch(`http://127.0.0.1:8000/api/objetivos/${objetivoId}/indicadores-compactos/`)
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.data?.length > 0) {
+                const firstId = data.data[0].split('-')[0]
+                hotInstance.setDataAtRowProp(row, 'idindpei', firstId)
+              }
+            })
+        }
+        hotInstance.updateSettings({})
       }
 
-      const primerIndicador = objetivo.indicadores[0]
-      fila.idIndPei = primerIndicador.id
-      fila.indicadorPei = `${primerIndicador.codigo} - ${primerIndicador.descripcion}`
-    }
+      if (prop === 'indicadorPei' && newValue) {
+        const indicadorId = newValue.split('-')[0]
+        hotInstance.setDataAtRowProp(row, 'idindpei', indicadorId)
+      }
 
-    if (prop === 'indicadorPei') {
-      const codigoInd = newValue?.split(' - ')[0]
-      const codigoObj = fila.objetivoPei?.split(' - ')[0]
-      const objetivo = peiVigenteEstructura.value?.objetivos?.find((o) => o.codigo === codigoObj)
-      const indicador = objetivo?.indicadores?.find((i) => i.codigo === codigoInd)
-      fila.idIndPei = indicador?.id || ''
-    }
-    if (prop === 'indicadorOg') {
-      const codigoInd = newValue?.split(' - ')[0]
-      const indicador = props.proyectoEstructura?.objetivo_general?.indicadores_objgral?.find(
-        (i) => i.codigo === codigoInd,
-      )
-      fila.idIndOg = indicador?.id || ''
-      fila.objetivoGral = props.proyectoEstructura?.objetivo_general?.descripcion || ''
-      fila.idObjGral = props.proyectoEstructura?.objetivo_general?.id || ''
-    }
-    if (prop === 'resultadoOg') {
-      const codigoRes = newValue?.split(' - ')[0]
-      const resultado = props.proyectoEstructura?.objetivo_general?.resultados_objgral?.find(
-        (r) => r.codigo === codigoRes,
-      )
+      // Manejar cambios en objetivo específico
+      if (prop === 'objetivoEspecifico') {
+        // Resetear valores dependientes
+        hotInstance.setDataAtRowProp(row, 'indicadorOe', '')
+        hotInstance.setDataAtRowProp(row, 'idioe', '')
 
-      // Limpiar primero el array de opciones
-      indicadorResultadoOgOptions.value = []
-      // Limpiar la celda seleccionada de indicador relacionado
-      fila.idIndResOg = ''
-      fila.indicadorResOg = ''
+        if (newValue) {
+          const objetivoId = newValue.split('-')[0].trim()
+          // No necesitamos cargar aquí, se hará automáticamente al abrir el dropdown
+        }
+        hotInstance.updateSettings({})
+      }
 
-      //Obtener los indicadores del resultado
-      const indicadorResultado = obtenerIndicadoresPorResultadoId(
-        props.proyectoEstructura?.objetivo_general?.resultados_objgral,
-        resultado.id,
-      )
-
-      const indicadorResultadoOpciones = indicadorResultado.map(
-        (ir) => `${ir.codigo} - ${ir.redaccion}`,
-      )
-      fila.idResOg = resultado?.id || ''
-      indicadorResultadoOgOptions.value = indicadorResultadoOpciones
-    }
-    if (prop === 'indicadorResOg') {
-      const codigoIndRes = newValue?.split(' - ')[0]
-      // console.log('handle indicador Resultado OG')
-      // console.log(codigoIndRes)
-      const resultados = props.proyectoEstructura?.objetivo_general?.resultados_objgral
-      const idindicador = obtenerIdIndicadorResultadoOG(resultados, codigoIndRes)
-      // console.log(idindicador)
-      fila.idIndResOg = idindicador || ''
-    }
+      // Actualizar ID cuando cambia el indicador OE
+      if (prop === 'indicadorOe' && newValue) {
+        const indicadorId = newValue.split('-')[0].trim()
+        hotInstance.setDataAtRowProp(row, 'idioe', indicadorId)
+      }
+    })
   }
 }
-
-//Filtrar Indicadores de Resultado OG, segun el id del resultado
-function obtenerIndicadoresPorResultadoId(resultadoIn, resultadoId) {
-  const resultados = resultadoIn
-  const resultado = resultados.find((r) => r.id === resultadoId)
-  return resultado?.indicador_res_objgral || []
+const nuevaFila = {
+  objetivoPei: '',
+  indicadorPei: '',
+  objetivoGeneral: objetivoGeneralProyecto,
+  'programa-area': programaArea,
+  // ... otras propiedades
 }
-//Id del indicador de Resultado OG
-function obtenerIdIndicadorResultadoOG(resultados_objgral, codigoIndicador) {
-  const resultados = resultados_objgral || []
 
-  for (const resultado of resultados) {
-    const indicador = resultado.indicador_res_objgral?.find((i) => i.codigo === codigoIndicador)
-    if (indicador) {
-      return indicador.id
-    }
-  }
-
-  return null // No se encontro el indicador
+const agregarFila = async () => {
+  tableData.value.push({ ...nuevaFila }) // Crea una copia nueva cada vez
 }
+
+const eliminarFila = async () => {}
+
+const exportarExcel = async () => {}
 </script>
 
 <style scoped>
