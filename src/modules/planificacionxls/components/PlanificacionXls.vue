@@ -51,9 +51,6 @@
       </HotTable>
     </div>
   </div>
-  {{ tableData }}
-  <br /><br />
-  {{ proyectoEstructura }}
 </template>
 
 <script setup>
@@ -641,7 +638,79 @@ const columns = ref([
     type: 'text',
     width: 200,
   },
+  //Presupuesto global
+  {
+    data: 'presupuestoGlobal',
+    type: 'numeric',
+    width: 200,
+  },
+  //Total Reportado
+  {
+    data: 'totalReportado',
+    type: 'numeric',
+    width: 200,
+  },
+  //Total Ejecutado
+  {
+    data: 'totalReportado',
+    type: 'numeric',
+    width: 200,
+  },
+  //Saldo
+  {
+    data: 'saldo',
+    type: 'numeric',
+    width: 200,
+  },
+  //Grado de Ejecucion
+  {
+    data: 'gradoEjecucion',
+    type: 'dropdown',
+    width: 200,
+    source: [
+      'PLANIFICADA',
+      'RETRASO',
+      'REPROGRAMACION',
+      'EN EJECUCION',
+      'EN REPORTE',
+      'FINALIZADO',
+    ],
+  },
+  //Medios de verificacion
+  {
+    data: 'medioVerificacion',
+    type: 'text',
+    width: 200,
+    renderer: function (instance, td, row, col, prop, value, cellProperties) {
+      // Limpiar el contenido de la celda
+      td.innerHTML = ''
+
+      // Crear botón
+      const button = document.createElement('button')
+      button.className = 'btn-celda'
+      button.textContent = 'Acción'
+
+      // Agregar evento click
+      button.addEventListener('click', (e) => {
+        e.stopPropagation()
+        console.log('Botón clickeado en fila:', row)
+        // Aquí puedes llamar a métodos de tu componente
+        accionBoton(row)
+      })
+
+      td.appendChild(button)
+      return td
+    },
+    // Deshabilitar el editor para esta columna
+    editor: false,
+  },
 ])
+
+const accionBoton = (row) => {
+  alert('Medios de verificacion')
+  console.log('Acción ejecutada para fila:', row)
+  // Aquí puedes acceder a tableData.value[row] para trabajar con los datos
+}
 
 onMounted(async () => {
   await cargarDatos()
