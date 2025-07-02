@@ -129,34 +129,28 @@ const headers = ref([
   'Objetivo General',
   //Indicador OG
   'Indicador OG',
-  //Producto OG
-  'id',
-  'Producto OG',
-  //Indicador Producto OG
-  'id',
-  'Indicador Producto OG',
+  //Resultado OG
+  'Resultado OG',
+  //Indicador Resultado OG
+  'Indicador Resultado OG',
   //Objetivo Especifico
   'Objetivo Especifico',
   //Indicador OE
-  'id',
   'Indicador OE',
   //Producto OE
-  'id',
   'Producto OE',
   //Indicador Producto OE
-  'id',
-  'Indicador Producto OE',
+  //'Indicador Producto OE',
   //Resultado OE
-  'id',
   'Resultado OE',
   //Indicador Resultado OE
-  'id',
   'Indicador Resultado OE',
   //Area Programa
   'Programa/Area',
   //Proceso Actividad
   'Proceso',
   //Actividad
+  'Actividad - COD',
   'Actividad',
   //Tipoo de actividad
   'Tipo actividad',
@@ -272,31 +266,70 @@ const columns = ref([
       callback(true) // Siempre válido temporalmente
     },
   },
-  //Producto Objetivo General
+  //Resultado Objetivo General
   {
-    data: 'idpog',
-    type: 'numeric',
-    width: 70,
-    readOnly: true,
-  },
-  {
-    data: 'productoOg',
+    data: 'resultadoOg',
     type: 'dropdown',
     width: 200,
-    source: [],
+    source: async function (query, process) {
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/proyectos/${idproyecto}/resultados-og/`,
+        )
+        const data = await response.json()
+
+        // Guardar datos completos para referencia
+        this.instance.resultadosOGData = data.data
+
+        process(data.data.map((item) => item.display_text))
+      } catch (error) {
+        console.error('Error cargando resultados OG:', error)
+        process([])
+      }
+    },
+    afterGetColHeader: function (col, TH) {
+      if (col === this.prop) {
+        TH.addEventListener('click', () => {
+          this.instance.updateSettings({})
+        })
+      }
+    },
   },
-  //Indicador Producto OG
+  //Indicador Resultado OG
   {
-    data: 'idipog',
-    type: 'numeric',
-    width: 70,
-    readOnly: true,
-  },
-  {
-    data: 'indicadorProductoOg',
+    data: 'indicadorResultadoOg',
     type: 'dropdown',
     width: 200,
-    source: [],
+    source: async function (query, process) {
+      const rowData = this.instance.getSourceDataAtRow(this.row)
+      const resultadoOgId = rowData?.resultadoOgId // Este campo se setea en handleChange
+
+      if (!resultadoOgId) {
+        return process([])
+      }
+
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/resultados-og/${resultadoOgId}/indicadores/`,
+        )
+        const data = await response.json()
+
+        // Guardar datos completos para referencia
+        this.instance.indicadoresResultadoOGData = data.data
+
+        process(data.data.map((item) => item.display_text))
+      } catch (error) {
+        console.error('Error cargando indicadores:', error)
+        process([])
+      }
+    },
+    afterGetColHeader: function (col, TH) {
+      if (col === this.prop) {
+        TH.addEventListener('click', () => {
+          this.instance.updateSettings({})
+        })
+      }
+    },
   },
   //Objetivo Especifico
   {
@@ -319,12 +352,6 @@ const columns = ref([
     },
   },
   //Indicador Objetivo Especifico
-  {
-    data: 'idioe',
-    type: 'numeric',
-    width: 70,
-    readOnly: true,
-  },
   {
     data: 'indicadorOe',
     type: 'dropdown',
@@ -372,55 +399,145 @@ const columns = ref([
   },
   //Producto Objetivo Especifico
   {
-    data: 'idpoe',
-    type: 'numeric',
-    width: 70,
-    readOnly: true,
-  },
-  {
     data: 'productoOe',
     type: 'dropdown',
     width: 200,
-    source: [],
+    source: function (query, process) {
+      const rowData = this.instance.getSourceDataAtRow(this.row)
+      const objetivoEspecifico = rowData?.objetivoEspecifico
+
+      if (!objetivoEspecifico) {
+        return process([])
+      }
+
+      // Extraer el ID del objetivo específico (asumiendo formato "id-codigo-descripcion")
+      const objetivoId = objetivoEspecifico.split('-')[0].trim()
+
+      fetch(`http://127.0.0.1:8000/api/objetivos-especificos/${objetivoId}/productos/`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            process(data.data)
+
+            // Si hay productos, establecer el primer ID
+            if (data.data.length > 0 && !rowData.idpoe) {
+              const firstId = data.data[0].split('-')[0]
+              this.instance.setDataAtRowProp(this.row, 'idpoe', firstId)
+            }
+          } else {
+            process([])
+          }
+        })
+        .catch((error) => {
+          console.error('Error al cargar productos:', error)
+          process([])
+        })
+    },
+    strict: true,
+    afterGetColHeader: function (col, TH) {
+      if (col === this.prop) {
+        TH.addEventListener('click', () => {
+          this.instance.updateSettings({})
+        })
+      }
+    },
   },
   //Indicador Producto Objetivo Especifico
-  {
-    data: 'idipoe',
-    type: 'numeric',
-    width: 70,
-    readOnly: true,
-  },
-  {
-    data: 'indicadorProductoOe',
-    type: 'dropdown',
-    width: 200,
-    source: [],
-  },
+  // {
+  //   data: 'indicadorProductoOe',
+  //   type: 'dropdown',
+  //   width: 200,
+  //   source: [],
+  // },
   //Resultado OE
-  {
-    data: 'idresoe',
-    type: 'numeric',
-    width: 70,
-    readOnly: true,
-  },
   {
     data: 'resultadoOe',
     type: 'dropdown',
     width: 200,
-    source: [],
+    source: function (query, process) {
+      const rowData = this.instance.getSourceDataAtRow(this.row)
+      const objetivoEspecifico = rowData?.objetivoEspecifico
+
+      if (!objetivoEspecifico) {
+        return process([])
+      }
+
+      // Extraer el ID del objetivo específico
+      const objetivoId = objetivoEspecifico.split('-')[0].trim()
+
+      fetch(`http://127.0.0.1:8000/api/objetivos-especificos/${objetivoId}/resultados/`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            process(data.data)
+
+            // Si hay resultados, establecer el primer ID
+            if (data.data.length > 0 && !rowData.idresoe) {
+              const firstId = data.data[0].split('-')[0]
+              this.instance.setDataAtRowProp(this.row, 'idresoe', firstId)
+            }
+          } else {
+            process([])
+          }
+        })
+        .catch((error) => {
+          console.error('Error al cargar resultados:', error)
+          process([])
+        })
+    },
+    strict: true,
+    afterGetColHeader: function (col, TH) {
+      if (col === this.prop) {
+        TH.addEventListener('click', () => {
+          this.instance.updateSettings({})
+        })
+      }
+    },
   },
   //Indicador resultado OE
-  {
-    data: 'idiroe',
-    type: 'numeric',
-    width: 70,
-    readOnly: true,
-  },
   {
     data: 'indicadorResultadoOe',
     type: 'dropdown',
     width: 200,
-    source: [],
+    source: function (query, process) {
+      const rowData = this.instance.getSourceDataAtRow(this.row)
+      const resultadoOe = rowData?.resultadoOe
+
+      if (!resultadoOe) {
+        return process([])
+      }
+
+      // Extraer el ID del resultado OE
+      const resultadoId = resultadoOe.split('-')[0].trim()
+
+      fetch(`http://127.0.0.1:8000/api/resultados-oe/${resultadoId}/indicadores/`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            process(data.data)
+
+            // Si hay indicadores, establecer el primer ID
+            if (data.data.length > 0 && !rowData.idiroe) {
+              const firstId = data.data[0].split('-')[0]
+              this.instance.setDataAtRowProp(this.row, 'idiroe', firstId)
+            }
+          } else {
+            process([])
+          }
+        })
+        .catch((error) => {
+          console.error('Error al cargar indicadores:', error)
+          process([])
+        })
+    },
+    strict: true,
+    afterGetColHeader: function (col, TH) {
+      if (col === this.prop) {
+        TH.addEventListener('click', () => {
+          this.instance.updateSettings({})
+        })
+      }
+    },
   },
   //Programa Area
   {
@@ -451,6 +568,38 @@ const columns = ref([
   //Actividad
   {
     data: 'actividad',
+    type: 'dropdown',
+    width: 200,
+    source: function (query, process) {
+      fetch(`http://127.0.0.1:8000/api/proyectos/${idproyecto}/actividades/`)
+        .then((response) => response.json())
+        .then((data) => {
+          // Procesar los datos para el dropdown
+          const options = data.map((item) => item.display_text)
+          process(options)
+
+          // Si hay datos, podemos guardar la información completa para usarla después
+          if (data.length > 0) {
+            // Guardamos los datos en una propiedad temporal del HotTable
+            this.instance.actividadesData = data
+          }
+        })
+        .catch((error) => {
+          console.error('Error cargando actividades:', error)
+          process([])
+        })
+    },
+    strict: true,
+    afterGetColHeader: function (col, TH) {
+      if (col === this.prop) {
+        TH.addEventListener('click', () => {
+          this.instance.updateSettings({})
+        })
+      }
+    },
+  },
+  {
+    data: 'actividad-info',
     type: 'text',
     width: 200,
   },
@@ -473,6 +622,24 @@ const columns = ref([
     type: 'date',
     width: 150,
     source: [],
+  },
+  //Supuestos y Riesgos
+  {
+    data: 'supuestosRiesgos',
+    type: 'text',
+    width: 200,
+  },
+  //Supuestos y Riesgos
+  {
+    data: 'supuestosRiesgos',
+    type: 'text',
+    width: 200,
+  },
+  //Nombre de Cuenta
+  {
+    data: 'nombreCuenta',
+    type: 'text',
+    width: 200,
   },
 ])
 
@@ -499,9 +666,10 @@ const handleChange = (changes, source) => {
       const hotInstance = hotTable.value?.hotInstance
       if (!hotInstance) return
 
+      // 1. Manejar cambios en objetivo PEI
       if (prop === 'objetivoPei') {
-        // Manejar cambios en objetivo PEI (tu código existente)
         hotInstance.setDataAtRowProp(row, 'indicadorPei', '')
+        hotInstance.setDataAtRowProp(row, 'idindpei', '')
 
         if (newValue) {
           const objetivoId = newValue.split('-')[0]
@@ -517,28 +685,130 @@ const handleChange = (changes, source) => {
         hotInstance.updateSettings({})
       }
 
+      // 2. Manejar cambios en indicador PEI
       if (prop === 'indicadorPei' && newValue) {
         const indicadorId = newValue.split('-')[0]
         hotInstance.setDataAtRowProp(row, 'idindpei', indicadorId)
       }
 
-      // Manejar cambios en objetivo específico
+      // 3. Manejar cambios en objetivo específico
       if (prop === 'objetivoEspecifico') {
-        // Resetear valores dependientes
+        // Resetear todos los valores dependientes
         hotInstance.setDataAtRowProp(row, 'indicadorOe', '')
         hotInstance.setDataAtRowProp(row, 'idioe', '')
+        hotInstance.setDataAtRowProp(row, 'productoOe', '')
+        hotInstance.setDataAtRowProp(row, 'idpoe', '')
+        hotInstance.setDataAtRowProp(row, 'resultadoOe', '')
+        hotInstance.setDataAtRowProp(row, 'idresoe', '')
+        hotInstance.setDataAtRowProp(row, 'indicadorResultadoOe', '')
+        hotInstance.setDataAtRowProp(row, 'idiroe', '')
 
         if (newValue) {
           const objetivoId = newValue.split('-')[0].trim()
-          // No necesitamos cargar aquí, se hará automáticamente al abrir el dropdown
+          // La carga de dropdowns dependientes se manejará al abrirlos
         }
         hotInstance.updateSettings({})
       }
 
-      // Actualizar ID cuando cambia el indicador OE
+      // 4. Manejar cambios en indicador OE
       if (prop === 'indicadorOe' && newValue) {
         const indicadorId = newValue.split('-')[0].trim()
         hotInstance.setDataAtRowProp(row, 'idioe', indicadorId)
+      }
+
+      // 5. Manejar cambios en producto OE
+      if (prop === 'productoOe' && newValue) {
+        const productoId = newValue.split('-')[0].trim()
+        hotInstance.setDataAtRowProp(row, 'idpoe', productoId)
+      }
+
+      // 6. Manejar cambios en resultado OE
+      if (prop === 'resultadoOe') {
+        hotInstance.setDataAtRowProp(row, 'indicadorResultadoOe', '')
+        hotInstance.setDataAtRowProp(row, 'idiroe', '')
+
+        if (newValue) {
+          const resultadoId = newValue.split('-')[0].trim()
+          hotInstance.setDataAtRowProp(row, 'idresoe', resultadoId)
+        }
+        hotInstance.updateSettings({})
+      }
+
+      // 7. Manejar cambios en indicador de resultado OE
+      if (prop === 'indicadorResultadoOe' && newValue) {
+        const indicadorId = newValue.split('-')[0].trim()
+        hotInstance.setDataAtRowProp(row, 'idiroe', indicadorId)
+      }
+
+      // 8. Manejar cambios en Resultado OG (NUEVO)
+      if (prop === 'resultadoOg') {
+        // Limpiar el dropdown dependiente
+        hotInstance.setDataAtRowProp(row, 'indicadorResultadoOg', '')
+        hotInstance.setDataAtRowProp(row, 'indicadorResultadoOgId', '')
+
+        if (newValue && hotInstance.resultadosOGData) {
+          // Buscar el resultado seleccionado en los datos cacheados
+          const resultadoSeleccionado = hotInstance.resultadosOGData.find(
+            (item) => item.display_text === newValue,
+          )
+
+          if (resultadoSeleccionado) {
+            // Guardar el ID para referencia
+            hotInstance.setDataAtRowProp(row, 'resultadoOgId', resultadoSeleccionado.id)
+
+            // Forzar actualización del dropdown de indicadores
+            hotInstance.updateSettings({})
+          }
+        }
+      }
+
+      // 9. Manejar cambios en Indicador Resultado OG (NUEVO)
+      if (prop === 'indicadorResultadoOg' && newValue && hotInstance.indicadoresResultadoOGData) {
+        const indicadorSeleccionado = hotInstance.indicadoresResultadoOGData.find(
+          (item) => item.display_text === newValue,
+        )
+
+        if (indicadorSeleccionado) {
+          hotInstance.setDataAtRowProp(row, 'indicadorResultadoOgId', indicadorSeleccionado.id)
+        }
+      }
+
+      // 10. Manejar cambios en actividad (autocompletar proceso)
+      if (prop === 'actividad' && newValue) {
+        const actividadSeleccionada = hotInstance.actividadesData?.find(
+          (item) => item.display_text === newValue,
+        )
+
+        if (actividadSeleccionada?.proceso) {
+          hotInstance.setDataAtRowProp(
+            row,
+            'proceso',
+            `${actividadSeleccionada.proceso.codigo} - ${actividadSeleccionada.proceso.titulo}`,
+          )
+        } else {
+          hotInstance.setDataAtRowProp(row, 'proceso', '')
+        }
+      }
+
+      // 11. Validación de fechas
+      if (prop === 'fecha_inicio' && newValue) {
+        const fechaCierre = hotInstance.getDataAtRowProp(row, 'fecha_cierre')
+        if (fechaCierre && new Date(newValue) > new Date(fechaCierre)) {
+          hotInstance.setDataAtRowProp(row, 'fecha_cierre', newValue)
+        }
+      }
+
+      if (prop === 'fecha_cierre' && newValue) {
+        const fechaInicio = hotInstance.getDataAtRowProp(row, 'fecha_inicio')
+        if (fechaInicio && new Date(newValue) < new Date(fechaInicio)) {
+          hotInstance.setDataAtRowProp(row, 'fecha_inicio', newValue)
+        }
+      }
+
+      // 12. Manejar cambios en tipo de actividad
+      if (prop === 'tipo_actividad' && newValue) {
+        // Lógica adicional si es necesaria
+        console.log(`Tipo de actividad cambiado a: ${newValue}`)
       }
     })
   }
