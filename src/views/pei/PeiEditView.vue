@@ -199,9 +199,7 @@
           </v-card-text>
           <v-card-actions class="justify-end">
             <v-btn color="grey" @click="dialogNuevoObjetivo = false">Cancelar</v-btn>
-            <v-btn color="primary" @click="agregarObjetivo" :loading="cargandoAccion">
-              Guardar
-            </v-btn>
+            <v-btn color="primary" @click="agregarObjetivo" :loading="cargandoAccion">Guardar</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>

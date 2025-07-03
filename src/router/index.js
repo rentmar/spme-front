@@ -44,6 +44,11 @@ const router = createRouter({
       component: () => import('../views/pei/PeiIndicadoresView.vue'),
     },
     {
+      path: '/pei/estructura',
+      // name: 'editarIndicadores',
+      component: () => import('../views/pei/PeiEstructuracionSpme.vue'),
+    },
+    {
       path: '/proyecto',
       name: 'proyecto',
       component: () => import('../views/proyecto/ProyectoListView.vue'),

@@ -9,6 +9,6 @@ const peiVigente = inject('peiVigente')
     <v-icon icon="mdi-home" size="64"></v-icon>
 
     <div class="mt-3">Home</div>
-    <p>{{ peiVigente }}</p>
+<!--    <p>{{ peiVigente }}</p> -->
   </v-container>
 </template>
