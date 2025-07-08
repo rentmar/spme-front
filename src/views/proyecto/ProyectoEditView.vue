@@ -10,6 +10,7 @@
         <PaginaTituloIcono :titulo="'Editar'" :icon="'mdi-pencil'"></PaginaTituloIcono>
         <ProyectoHeader v-if="proyecto" :proyecto="proyecto"></ProyectoHeader>
         <FormularioEdicionProyecto v-if="proyecto" :proyecto="proyecto"></FormularioEdicionProyecto>
+        <ProcedenciaFondosLista></ProcedenciaFondosLista>
       </v-col>
       <v-col cols="12" md="3" lg="3"> </v-col>
     </v-row>
@@ -22,6 +23,7 @@ import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
 import FormularioEdicionProyecto from '@/modules/editorEstructura/components/nodosFormularios/FormularioEdicionProyecto.vue'
+import ProcedenciaFondosLista from '@/modules/procedenciaFondos/components/ProcedenciaFondosLista.vue'
 //Composer Proyecto
 import { useProyectoCrud } from '@/modules/proyecto/composables/useProyectoCrud'
 //Formularios

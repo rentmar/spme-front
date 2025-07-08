@@ -12,7 +12,7 @@ const opcionesEntidadFinanciera = ref([])
 
 export function useProcedenciaFondos() {
   //fecth kpis
-  async function cargarActividades() {
+  async function cargarProcedencias() {
     loading.value = true
     try {
       const respuesta = await procedenciaFondosServicio.all()
@@ -26,7 +26,7 @@ export function useProcedenciaFondos() {
   }
 
   //fetch kpi por id
-  async function cargarActividadPorId(id) {
+  async function cargarProcedenciaPorId(id) {
     loading.value = true
     try {
       const respuesta = await procedenciaFondosServicio.porId(id)
@@ -40,7 +40,7 @@ export function useProcedenciaFondos() {
   }
 
   //crear
-  async function crearActividad(data) {
+  async function crearProcedencia(data) {
     loading.value = true
     try {
       const respuesta = await procedenciaFondosServicio.crear(data)
@@ -54,7 +54,7 @@ export function useProcedenciaFondos() {
   }
 
   //Update
-  async function updateActividad(id, data) {
+  async function updateProcedencia(id, data) {
     loading.value = true
     try {
       const respuesta = await procedenciaFondosServicio.update(id, data)
@@ -67,7 +67,7 @@ export function useProcedenciaFondos() {
   }
 
   //Eliminar
-  async function delActividad(id) {
+  async function delProcedencia(id) {
     loading.value = true
     try {
       const respuesta = await procedenciaFondosServicio.delete(id)
@@ -100,11 +100,11 @@ export function useProcedenciaFondos() {
     entidadFinanciera, //ref entidad
     entidadesFinancieras, //ref entidades
     opcionesEntidadFinanciera, //ref
-    cargarActividades,
-    cargarActividadPorId,
-    crearActividad,
-    updateActividad,
-    delActividad,
+    cargarProcedencias,
+    cargarProcedenciaPorId,
+    crearProcedencia,
+    updateProcedencia,
+    delProcedencia,
     fetchOptions,
   }
 }

@@ -1,25 +1,41 @@
 <!-- NavMenu.vue -->
 <template>
   <v-list density="compact" nav>
-    <v-list-item prepend-icon="mdi-home-outline" title="Inicio" value="home" to="/"></v-list-item>
+    <v-list-item prepend-icon="mdi-home" title="Inicio" value="home" to="/"></v-list-item>
 
     <v-list-group value="estructuracion">
       <template v-slot:activator="{ props }">
-        <v-list-item v-bind="props" prepend-icon="mdi-domain" title="Estructuración"></v-list-item>
+        <v-list-item v-bind="props" prepend-icon="mdi-sitemap" title="Estructuración"></v-list-item>
       </template>
 
       <v-list-item
-        prepend-icon="mdi-notebook-outline"
+        prepend-icon="mdi-file-document-outline"
         title="PEI"
         value="pei-list"
         to="/pei"
       ></v-list-item>
 
       <v-list-item
-        prepend-icon="mdi-folder-table-outline"
+        prepend-icon="mdi-folder-multiple-outline"
         title="Proyectos"
         value="projects-list"
         to="/proyecto"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-chart-gantt"
+        title="Programas"
+        value="programas-list"
+        to="/"
+      ></v-list-item>
+
+      <v-list-item prepend-icon="mdi-finance" title="FPD" value="fpd-list" to="/"></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-cash-multiple"
+        title="FONFOSC"
+        value="fonfosc-list"
+        to="/"
       ></v-list-item>
     </v-list-group>
 
@@ -27,20 +43,20 @@
       <template v-slot:activator="{ props }">
         <v-list-item
           v-bind="props"
-          prepend-icon="mdi-calendar-edit"
+          prepend-icon="mdi-calendar-month"
           title="Planificación"
         ></v-list-item>
       </template>
 
       <v-list-item
-        prepend-icon="mdi-playlist-edit"
+        prepend-icon="mdi-playlist-check"
         title="Proyectos/Actividades"
         value="planning-activities"
         to="/planificacion/actividades"
       ></v-list-item>
 
       <v-list-item
-        prepend-icon="mdi-timeline-outline"
+        prepend-icon="mdi-chart-timeline-variant"
         title="Cronogramas"
         value="planning-schedules"
         to="/planificacion/cronogramas"
@@ -49,40 +65,35 @@
 
     <v-list-group value="monitoreo">
       <template v-slot:activator="{ props }">
-        <v-list-item v-bind="props" prepend-icon="mdi-eye-outline" title="Monitoreo"></v-list-item>
+        <v-list-item v-bind="props" prepend-icon="mdi-chart-line" title="Monitoreo"></v-list-item>
       </template>
 
       <v-list-item
-        prepend-icon="mdi-account-alert-outline"
+        prepend-icon="mdi-account-alert"
         title="Solicitud/Reposición"
         value="monitoring-requests"
         to=""
       ></v-list-item>
 
       <v-list-item
-        prepend-icon="mdi-chart-bar"
+        prepend-icon="mdi-chart-box"
         title="Rendición Cuentas"
         value="monitoring-reports"
         to=""
       ></v-list-item>
 
       <v-list-item
-        prepend-icon="mdi-file-document-outline"
+        prepend-icon="mdi-file-chart"
         title="Informe de Actividad"
         value="monitoring-activity"
         to=""
       ></v-list-item>
     </v-list-group>
 
-    <v-list-item
-      prepend-icon="mdi-help-circle-outline"
-      title="Ayuda"
-      value="help"
-      to="/help"
-    ></v-list-item>
+    <v-list-item prepend-icon="mdi-help-box" title="Ayuda" value="help" to="/help"></v-list-item>
 
     <v-list-item
-      prepend-icon="mdi-information-outline"
+      prepend-icon="mdi-information"
       title="Acerca de"
       value="about"
       to="/about"

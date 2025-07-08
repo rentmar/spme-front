@@ -44,7 +44,7 @@ export const procedenciaFondosServicio = {
   /*eliminar */
   delete: async (id) => {
     try {
-      const respuesta = await api.del('/procedencia-fondos/' + id + '/')
+      const respuesta = await api.delete('/procedencia-fondos/' + id + '/')
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al eliminar procedencia de fondos ' + id, error)

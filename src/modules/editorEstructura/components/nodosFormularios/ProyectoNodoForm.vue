@@ -97,14 +97,16 @@
       </v-card>
     </v-dialog>
   </v-form>
+  {{ opcionesEntidadFinanciera }}
 </template>
 
 <script setup>
-import { ref, computed, watch, inject } from 'vue'
+import { ref, computed, watch, inject, onMounted } from 'vue'
 import { useVueFlow } from '@vue-flow/core'
 import { useDiagramaCrud } from '../../composables/useDiagramaCrud'
 import { SELECT_OPTIONS } from '@/utility/selectOptions'
 import { useProyectoCrud } from '@/modules/proyecto/composables/useProyectoCrud'
+import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
 
 //Props del componente
 const props = defineProps({
@@ -132,12 +134,17 @@ const estadoProyecto = SELECT_OPTIONS.estado
 const { updateProyecto } = useProyectoCrud()
 const { getNodes, getEdges, updateNode } = useVueFlow()
 const { actualizarNodosEdges } = useDiagramaCrud()
+const { fetchOptions, opcionesEntidadFinanciera } = useProcedenciaFondos()
 
 //Definir señales
 const emit = defineEmits(['guardar', 'cancelar', 'eliminar'])
 
 //Estructura del proyecto
 const proyecto = inject('proyectoEstructura')
+
+onMounted(async () => {
+  await fetchOptions()
+})
 
 // Estado del formulario
 const formData = ref({ ...props.node.data })
