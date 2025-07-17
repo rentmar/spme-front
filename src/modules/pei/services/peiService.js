@@ -92,6 +92,15 @@ export const objetivoPeiServicios = {
       throw error
     }
   },
+  update: async (id, data) => {
+    try {
+      const respuesta = await api.put('/objetivos-pei/' + id + '/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se actualizo objetivo pei id: ' + id, error)
+      throw error
+    }
+  },
 }
 
 export const indicadorPeiServicios = {

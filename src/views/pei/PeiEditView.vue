@@ -206,6 +206,34 @@
         </v-card>
       </v-dialog>
 
+      <v-dialog v-model="dialogoEditObjetivo" max-width="800" persistent>
+        <v-card>
+          <v-card-title>Editar Objetivo Estratégico</v-card-title>
+          <v-card-text>
+            <v-text-field
+              variant="outlined"
+              v-model="objetivo.codigo"
+              label="Código"
+              required
+              :disabled="cargandoAccion"
+            ></v-text-field>
+            <v-textarea
+              variant="outlined"
+              v-model="objetivo.descripcion"
+              label="Descripción"
+              rows="3"
+              :disabled="cargandoAccion"
+            ></v-textarea>
+          </v-card-text>
+          <v-card-actions class="justify-end">
+            <v-btn color="grey" @click="dialogoEditObjetivo = false">Cancelar</v-btn>
+            <v-btn color="primary" @click="actualizarObjetivo" :loading="cargandoAccion">
+              Actualizar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
       <v-dialog v-model="dialogNuevoIndicador" max-width="600" persistent>
         <v-card>
           <v-card-title>Agregar Indicador</v-card-title>
@@ -219,7 +247,6 @@
             ></v-select>
 
             <template v-if="nuevoIndicador.tipo === 'Avance'">
-              {{ nuevoIndicadorCualitativo }}
               <v-text-field
                 v-model="nuevoIndicadorCualitativo.codigo"
                 variant="outlined"
@@ -265,7 +292,6 @@
             </template>
 
             <template v-else>
-              {{ nuevoIndicadorCuantitativo }}
               <v-text-field
                 v-model="nuevoIndicadorCuantitativo.codigo"
                 variant="outlined"
@@ -423,6 +449,7 @@ const cargandoEliminacionIndicador = ref(false)
 const dialogNuevoObjetivo = ref(false)
 const dialogNuevoIndicador = ref(false)
 const dialogConfirmarEliminacion = ref(false)
+const dialogoEditObjetivo = ref(false)
 
 // Datos del store
 const {
@@ -439,6 +466,13 @@ const {
 
 // Formularios
 const nuevoObjetivo = ref({
+  codigo: '',
+  descripcion: '',
+  pei: peiID,
+})
+
+const objetivo = ref({
+  id: '',
   codigo: '',
   descripcion: '',
   pei: peiID,
@@ -643,14 +677,30 @@ const agregarObjetivo = async () => {
   }
 }
 
-const editarObjetivo = (objetivo) => {
-  nuevoObjetivo.value = {
-    codigo: objetivo.codigo,
-    descripcion: objetivo.descripcion,
-    pei: peiID,
-  }
-  dialogNuevoObjetivo.value = true
+const editarObjetivo = (obj) => {
+  // nuevoObjetivo.value = {
+  //   codigo: objetivo.codigo,
+  //   descripcion: objetivo.descripcion,
+  //   pei: peiID,
+  // }
+  objetivo.value.id = obj.id
+  objetivo.value.codigo = obj.codigo
+  objetivo.value.descripcion = obj.descripcion
+
+  dialogoEditObjetivo.value = true
+  // dialogNuevoObjetivo.value = true
 }
+
+const actualizarObjetivo = async () => {
+  try {
+    await objetivoPeiServicios.update(objetivo.value.id, objetivo.value)
+    await cargarDatos()
+    dialogoEditObjetivo.value = false
+  } catch (err) {
+    console.error('Error al actualizar', err)
+  }
+}
+
 //Eliminar objetivos
 const solicitarEliminarObjetivo = (objetivo) => {
   objetivoAEliminar.value = {
