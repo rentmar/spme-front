@@ -1,157 +1,114 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { proyectoServicios } from '@/modules/proyecto/services/proyectoService'
-import { peiServicios } from '@/modules/pei/services/peiService'
+import { planificacionServicios } from '../services/planificacionService'
 
 export const usePlanificacionStore = defineStore('planificacion', () => {
-  // Estado
-  const conteosProyecto = ref(null)
-  const peiEstructura = ref(null)
+  //Estado
   const loading = ref(false)
   const error = ref(null)
-
-  // Getters computados
-  const tableData = computed(() => {
-    if (!conteosProyecto.value) return [{}]
-
-    return [
-      {
-        objetivo_general: conteosProyecto.value.objetivo_general || 0,
-        indicador_og: conteosProyecto.value.indicador_objetivo_general || 0,
-        producto_og: conteosProyecto.value.producto_objetivo_general || 0,
-        indicador_producto_og: conteosProyecto.value.indicador_producto_objetivo_general || 0,
-        objetivo_especifico:
-          (conteosProyecto.value.objetivo_especifico_og || 0) +
-          (conteosProyecto.value.objetivo_especifico_proyecto || 0),
-        indicador_oe:
-          (conteosProyecto.value.indicador_objetivo_especifico_og || 0) +
-          (conteosProyecto.value.indicador_objetivo_especifico_proyecto || 0),
-        producto_oe:
-          (conteosProyecto.value.producto_objetivo_especifico_og || 0) +
-          (conteosProyecto.value.producto_objetivo_especifico_proyecto || 0),
-        indicador_producto_oe:
-          (conteosProyecto.value.indicador_producto_objetivo_especifico_og || 0) +
-          (conteosProyecto.value.indicador_producto_objetivo_especifico_proyecto || 0),
-        resultado_oe:
-          (conteosProyecto.value.resultado_objetivo_especifico_og || 0) +
-          (conteosProyecto.value.resultado_objetivo_especifico_proyecto || 0),
-        indicador_resultado_oe:
-          (conteosProyecto.value.indicador_resultado_objetivo_especifico_og || 0) +
-          (conteosProyecto.value.indicador_resultado_objetivo_especifico_proyecto || 0),
-      },
-    ]
+  const currentPlanificacion = ref(null)
+  const revisiones = ref([])
+  const inicializado = ref(false)
+  const columnStats = ref(null)
+  // Estado reactivo para columnas ocultas
+  const columnasEscondidas = ref({
+    columns: [], // Columna 0 siempre oculta por defecto
+    indicators: true,
+    version: 1,
   })
 
-  const dynamicColumns = computed(() => {
-    if (!conteosProyecto.value) return []
-
-    const columnsConfig = [
-      {
-        key: 'objetivo_general',
-        header: 'OBJETIVO GENERAL',
-        active: conteosProyecto.value.objetivo_general > 0,
-      },
-      {
-        key: 'indicador_og',
-        header: 'INDICADOR OG',
-        active: conteosProyecto.value.indicador_objetivo_general > 0,
-      },
-      {
-        key: 'producto_og',
-        header: 'PRODUCTO OG',
-        active: conteosProyecto.value.producto_objetivo_general > 0,
-      },
-      {
-        key: 'indicador_producto_og',
-        header: 'INDICADOR PRODUCTO OG',
-        active: conteosProyecto.value.indicador_producto_objetivo_general > 0,
-      },
-      {
-        key: 'objetivo_especifico',
-        header: 'OBJETIVO ESPECIFICO',
-        active:
-          conteosProyecto.value.objetivo_especifico_og +
-            conteosProyecto.value.objetivo_especifico_proyecto >
-          0,
-      },
-      {
-        key: 'indicador_oe',
-        header: 'INDICADOR OE',
-        active:
-          conteosProyecto.value.indicador_objetivo_especifico_og +
-            conteosProyecto.value.indicador_objetivo_especifico_proyecto >
-          0,
-      },
-      {
-        key: 'producto_oe',
-        header: 'PRODUCTO OE',
-        active:
-          conteosProyecto.value.producto_objetivo_especifico_og +
-            conteosProyecto.value.producto_objetivo_especifico_proyecto >
-          0,
-      },
-      {
-        key: 'indicador_producto_oe',
-        header: 'INDICADOR PRODUCTO OE',
-        active:
-          conteosProyecto.value.indicador_producto_objetivo_especifico_og +
-            conteosProyecto.value.indicador_producto_objetivo_especifico_proyecto >
-          0,
-      },
-      {
-        key: 'resultado_oe',
-        header: 'RESULTADO OE',
-        active:
-          conteosProyecto.value.resultado_objetivo_especifico_og +
-            conteosProyecto.value.resultado_objetivo_especifico_proyecto >
-          0,
-      },
-      {
-        key: 'indicador_resultado_oe',
-        header: 'INDICADOR RESULTADO OE',
-        active:
-          conteosProyecto.value.indicador_resultado_objetivo_especifico_og +
-            conteosProyecto.value.indicador_resultado_objetivo_especifico_proyecto >
-          0,
-      },
-    ]
-
-    return columnsConfig.filter((col) => col.active)
+  const COLUMN_MAP = Object.freeze({
+    objetivoPei: 0,
+    indicadorPei: 1,
+    objetivoGeneral: 2,
+    indicadorOg: 3,
+    resultadoOg: 4,
+    indicadorResultadoOg: 5,
+    objetivoEspecifico: 6,
+    indicadorOe: 7,
+    productoOe: 8,
+    resultadoOe: 9,
+    indicadorResultadoOe: 10,
   })
 
-  const hotColumns = computed(() => {
-    return dynamicColumns.value.map((col) => ({
-      data: col.key,
-      type: 'numeric',
-      readOnly: true,
-    }))
+  const getDefaultStats = () => ({
+    indicadores_og: 1,
+    resultados_og: 1,
+    objetivos_especificos: 1,
+    indicadores_oe: 1,
+    productos_oe: 1,
   })
 
-  const hotHeaders = computed(() => {
-    return dynamicColumns.value.map((col) => col.header)
+  // Getters
+  const hasPlanificacion = computed(() => (proyectoId) => {
+    return currentPlanificacion.value?.proyecto?.id === proyectoId
   })
 
-  // Acciones
-  const obtenerConteosProyecto = async (proyectoId) => {
-    loading.value = true
-    error.value = null
+  const getCurrentVersion = computed(() => {
+    return currentPlanificacion.value?.version || 1
+  })
+
+  const fetchColumnStats = async (proyectoId) => {
     try {
-      const response = await proyectoServicios.getConteosPorId(proyectoId)
-      conteosProyecto.value = response
+      const stats = await planificacionServicios.getColumnasCount(proyectoId)
+      columnStats.value = stats
+      updateHiddenColumns(stats)
+      return stats
     } catch (err) {
-      error.value = 'Error al cargar los conteos del proyecto'
-      console.error('Error en obtenerConteosProyecto:', err)
+      console.error('Error fetching column stats:', err)
+      const defaultStats = getDefaultStats()
+      updateHiddenColumns(defaultStats)
+      return defaultStats
+    }
+  }
+
+  //Comprobar si hay planificaciones
+  const fetchPlanificacion = async (proyectoId) => {
+    try {
+      loading.value = true
+      error.value = null
+      const [respuesta, stats] = await Promise.all([
+        planificacionServicios.planProyecto(proyectoId),
+        fetchColumnStats(proyectoId),
+      ])
+      //const respuesta = await planificacionServicios.planProyecto(proyectoId)
+      if (respuesta.exists) {
+        //Cargar la planificacion
+        currentPlanificacion.value = respuesta.planificacion
+        console.log(stats)
+      } else {
+        //Crear la planificacion
+        await crearPlanificacion(proyectoId)
+        console.log(stats)
+      }
+      inicializado.value = true
+      return currentPlanificacion.value
+    } catch (err) {
+      error.value = err
+      throw err
     } finally {
       loading.value = false
     }
   }
 
-  const obtenerEstructuraPeiPorID = async (id) => {
-    loading.value = true
-    error.value = null
+  const crearPlanificacion = async (proyectoId, stats = null) => {
     try {
-      const response = await peiServicios.getEstructuraPorId(id)
-      peiEstructura.value = response
+      loading.value = true
+      error.value = null
+
+      //Si no se proporciona stats, obtenerlas del api
+      const columnStats = stats || (await fetchColumnStats(proyectoId))
+
+      const nuevaPlanificacion = {
+        proyecto: proyectoId,
+        table_config: generateDynamicConfig(columnStats),
+        rows_data: [],
+        version: 1,
+      }
+
+      const respuesta = await planificacionServicios.crear(nuevaPlanificacion)
+      currentPlanificacion.value = respuesta
+      return respuesta
     } catch (err) {
       error.value = err
     } finally {
@@ -159,20 +116,71 @@ export const usePlanificacionStore = defineStore('planificacion', () => {
     }
   }
 
+  const updateHiddenColumns = (stats) => {
+    const hiddenColumns = []
+    if (!stats.indicadores_og) {
+      hiddenColumns.push(COLUMN_MAP.indicadorOg)
+    }
+    if (!stats.resultados_og) {
+      hiddenColumns.push(COLUMN_MAP.resultadoOg, COLUMN_MAP.indicadorResultadoOg)
+    }
+    if (!stats.objetivos_especificos) {
+      hiddenColumns.push(COLUMN_MAP.objetivoEspecifico, COLUMN_MAP.indicadorOe)
+    }
+    if (!stats.productos_oe) {
+      hiddenColumns.push(COLUMN_MAP.productoOe)
+    }
+
+    if (!stats.resultados_oe) {
+      hiddenColumns.push(COLUMN_MAP.resultadoOe, COLUMN_MAP.indicadorResultadoOe)
+    }
+
+    columnasEscondidas.value = {
+      columns: [...new Set(hiddenColumns)].sort((a, b) => a - b),
+      indicators: true,
+      version: columnasEscondidas.value.version + 1,
+    }
+  }
+
+  const generateDefaultConfig = () => ({
+    hiddenColumns: {
+      columns: [0],
+      indicators: true,
+    },
+  })
+
+  const generateDynamicConfig = (stats) => {
+    const columnasEscondidas = []
+    if (!stats.indicadores_og) {
+      columnasEscondidas.push(COLUMN_MAP.indicadorOg)
+    }
+    if (!stats.resultados_og) {
+      columnasEscondidas.push(COLUMN_MAP.resultadoOg, COLUMN_MAP.indicadorResultadoOg)
+    }
+    if (!stats.objetivos_especificos) {
+      columnasEscondidas.push(COLUMN_MAP.objetivoEspecifico, COLUMN_MAP.indicadorOe)
+    }
+    if (!stats.productos_oe) {
+      columnasEscondidas.push(COLUMN_MAP.productoOe)
+    }
+    return {
+      hiddenColumns: {
+        columns: [...new Set(columnasEscondidas)].sort((a, b) => a - b),
+        indicators: true,
+      },
+    }
+  }
+
   return {
-    // Estado
-    peiEstructura,
-    conteosProyecto,
     loading,
     error,
-
-    // Getters
-    tableData,
-    hotColumns,
-    hotHeaders,
-
-    // Acciones
-    obtenerConteosProyecto,
-    obtenerEstructuraPeiPorID,
+    inicializado,
+    currentPlanificacion,
+    columnStats,
+    columnasEscondidas,
+    revisiones,
+    hasPlanificacion, //get
+    getCurrentVersion, //get
+    fetchPlanificacion, //fun
   }
 })

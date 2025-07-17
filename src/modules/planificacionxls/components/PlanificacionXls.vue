@@ -1,56 +1,294 @@
 <template>
   <div class="hotWraper">
     <LoadingOverlay
-      :isLoading="isLoading"
+      :isLoading="isLoading || loading"
       :loadingMessage="loadingMessage"
       :loadingProgress="loadingProgress"
       :loadingError="loadingError"
       progressType="linear"
     ></LoadingOverlay>
 
-    <div class="hotWraper">
-      <v-toolbar flat density="comfortable" class="excel-toolbar">
-        <!--Agregar Fila-->
-        <v-tooltip text="Agregar fila" location="bottom">
-          <template #activator="{ props }">
-            <v-btn v-bind="props" variant="text" class="excel-btn" @click="agregarFila">
-              <v-icon size="18">mdi-plus</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-        <!--Eliminar fila-->
-        <v-tooltip text="Eliminar fila seleccionada" location="bottom">
-          <template #activator="{ props }">
-            <v-btn v-bind="props" variant="text" class="excel-btn" @click="eliminarFila">
-              <v-icon size="18">mdi-delete</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-        <v-spacer></v-spacer>
-        <!--Exportar a Excel-->
-        <v-tooltip text="Exportar a Excel" location="bottom">
-          <template #activator="{ props }">
-            <v-btn v-bind="props" variant="text" class="excel-btn" @click="exportarExcel">
-              <v-icon size="18">mdi-microsoft-excel</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-      </v-toolbar>
-      <HotTable
-        ref="hotTable"
-        :data="tableData"
-        :columns="columns"
-        :colHeaders="headers"
-        :rowHeaders="true"
-        :height="400"
-        :contextMenu="true"
-        :language="'es-Mx'"
-        :afterChange="handleChange"
-        :licenseKey="'non-commercial-and-evaluation'"
-      >
-      </HotTable>
+    <div class="content-wrapper">
+      <!-- Panel Izquierdo - Tabla Excel -->
+      <div class="excel-panel">
+        <v-toolbar flat density="comfortable" class="excel-toolbar">
+          <!-- Panel de informacion -->
+          <v-tooltip text="Mostrar/Esconder Panel de informacion" location="bottom">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" variant="text" class="excel-btn" @click="toogleSidePanel">
+                <v-icon size="18">mdi-view-agenda</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+
+          <!--Guardar-->
+          <v-tooltip text="Guardar Planificacion" location="bottom">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" variant="text" class="excel-btn" @click="guardarPlanificacion">
+                <v-icon size="18">mdi-content-save</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <!--Agregar Fila-->
+          <v-tooltip text="Agregar fila" location="bottom">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" variant="text" class="excel-btn" @click="agregarFila">
+                <v-icon size="18">mdi-plus</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <!--Eliminar fila-->
+          <v-tooltip text="Eliminar fila seleccionada" location="bottom">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" variant="text" class="excel-btn" @click="eliminarFila">
+                <v-icon size="18">mdi-delete</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <v-spacer></v-spacer>
+          <!--Exportar a Excel-->
+          <v-tooltip text="Exportar a Excel" location="bottom">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" variant="text" class="excel-btn" @click="exportarExcel">
+                <v-icon size="18">mdi-microsoft-excel</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </v-toolbar>
+        <HotTable
+          v-if="inicializado"
+          ref="hotTable"
+          :data="tableData"
+          :columns="columns"
+          :colHeaders="headers"
+          :rowHeaders="true"
+          :height="400"
+          :hiddenColumns="hiddenColumnsConfig"
+          :contextMenu="true"
+          :language="'es-Mx'"
+          :afterChange="handleChange"
+          :licenseKey="'non-commercial-and-evaluation'"
+        >
+        </HotTable>
+      </div>
+      <!-- Panel Derecho - Contenido Adicional -->
+      <div class="side-panel" v-if="sidePanelVisible">
+        <v-card>
+          <v-tabs v-model="tab" bg-color="primary">
+            <v-tab value="info">
+              <v-icon left>mdi-information</v-icon>
+              Información
+            </v-tab>
+            <v-tab value="presupuesto">
+              <v-icon left>mdi-cash</v-icon>
+              Presupuesto
+            </v-tab>
+            <v-tab value="actividades">
+              <v-icon left>mdi-checkbox-marked-circle</v-icon>
+              Actividades
+            </v-tab>
+          </v-tabs>
+
+          <v-card-text>
+            <v-window v-model="tab">
+              <!-- Pestaña de Información -->
+              <v-window-item value="info">
+                <div class="panel-section">
+                  <h4>Resumen del Proyecto</h4>
+                  <p><strong>Nombre:</strong> {{ proyecto.nombre }}</p>
+                  <p><strong>Objetivo General:</strong> {{ objetivoGeneralProyecto }}</p>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <div class="panel-section">
+                  <h4>Estadísticas</h4>
+                  <v-progress-linear
+                    v-model="progressValue"
+                    height="20"
+                    color="primary"
+                    class="mb-2"
+                  >
+                    <template v-slot:default="{ value }">
+                      <strong>{{ Math.ceil(value) }}% completado</strong>
+                    </template>
+                  </v-progress-linear>
+
+                  <div class="stats-grid">
+                    <div class="stat-item">
+                      <div class="stat-value">{{ totalActividades }}</div>
+                      <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-item">
+                      <div class="stat-value">{{ actividadesEnProgreso }}</div>
+                      <div class="stat-label">En progreso</div>
+                    </div>
+                    <div class="stat-item">
+                      <div class="stat-value">{{ actividadesCompletadas }}</div>
+                      <div class="stat-label">Completadas</div>
+                    </div>
+                  </div>
+                </div>
+              </v-window-item>
+
+              <!-- Pestaña de Presupuesto -->
+              <v-window-item value="presupuesto">
+                <div class="panel-section">
+                  <h4>Resumen Presupuestario</h4>
+
+                  <v-table density="compact" class="budget-table">
+                    <thead>
+                      <tr>
+                        <th>Concepto</th>
+                        <th class="text-right">Monto</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Presupuesto asignado</td>
+                        <td class="text-right">{{ formatCurrency(presupuestoAsignado) }}</td>
+                      </tr>
+                      <tr>
+                        <td>Ejecutado</td>
+                        <td class="text-right">{{ formatCurrency(presupuestoEjecutado) }}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Saldo disponible</strong></td>
+                        <td class="text-right" :class="{ 'text-error': saldoDisponible < 0 }">
+                          <strong>{{ formatCurrency(saldoDisponible) }}</strong>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <div class="panel-section">
+                  <h4>Distribución</h4>
+                  <div class="chart-container">
+                    <v-progress-circular
+                      :rotate="90"
+                      :size="150"
+                      :width="15"
+                      :value="porcentajeEjecutado"
+                      color="primary"
+                    >
+                      {{ Math.round(porcentajeEjecutado) }}%
+                    </v-progress-circular>
+                    <div class="chart-legend">
+                      <div><v-icon color="primary">mdi-circle</v-icon> Ejecutado</div>
+                      <div><v-icon color="grey">mdi-circle</v-icon> Pendiente</div>
+                    </div>
+                  </div>
+                </div>
+              </v-window-item>
+
+              <!-- Pestaña de Actividades -->
+              <v-window-item value="actividades">
+                <div class="panel-section">
+                  <h4>Estado de Actividades</h4>
+
+                  <v-list lines="two" density="compact">
+                    <v-list-item
+                      v-for="(item, index) in estadoActividades"
+                      :key="index"
+                      :title="item.estado"
+                      :prepend-icon="item.icon"
+                      :subtitle="`${item.cantidad} actividades`"
+                    >
+                      <template v-slot:append>
+                        <v-chip small :color="item.color">{{ item.porcentaje }}%</v-chip>
+                      </template>
+                    </v-list-item>
+                  </v-list>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <div class="panel-section">
+                  <h4>Acciones</h4>
+                  <v-btn
+                    block
+                    color="primary"
+                    class="mb-2"
+                    @click="guardarPlanificacion"
+                    prepend-icon="mdi-content-save"
+                  >
+                    Guardar cambios
+                  </v-btn>
+                  <v-btn
+                    block
+                    color="secondary"
+                    @click="exportarExcel"
+                    prepend-icon="mdi-microsoft-excel"
+                  >
+                    Exportar a Excel
+                  </v-btn>
+                </div>
+              </v-window-item>
+            </v-window>
+          </v-card-text>
+        </v-card>
+      </div>
     </div>
   </div>
+  <!-- Modal para el desglose de presupuesto -->
+  <v-dialog v-model="showBudgetModal" max-width="600">
+    <v-card>
+      <v-toolbar color="primary" dark>
+        <v-toolbar-title>Desglose de Presupuesto</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn icon @click="showBudgetModal = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
+
+      <v-card-text>
+        <v-table>
+          <thead>
+            <tr>
+              <th>Fuente</th>
+              <th class="text-right">Monto</th>
+              <th class="text-right">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="source in currentFundingSources" :key="source">
+              <td>{{ getSourceName(source) }}</td>
+              <td class="text-right">
+                <v-text-field
+                  v-model.number="currentBreakdown[source]"
+                  type="number"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  @update:modelValue="updateTotal"
+                />
+              </td>
+              <td class="text-right">{{ calculatePercentage(currentBreakdown[source] || 0) }}%</td>
+            </tr>
+            <tr class="font-weight-bold">
+              <td>Total</td>
+              <td class="text-right">{{ formatCurrency(currentRowTotal) }}</td>
+              <td class="text-right">100%</td>
+            </tr>
+          </tbody>
+        </v-table>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn @click="showBudgetModal = false">Cancelar</v-btn>
+        <v-btn color="primary" @click="saveBreakdown">Guardar</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  {{ tableData }}
+  <br /><br /><br />
+  {{ proyectoEstructura }}
+  <br /><br /><br />
+  {{ currentPlanificacion }}
 </template>
 
 <script setup>
@@ -60,12 +298,14 @@ import { registerLanguageDictionary } from 'handsontable/i18n'
 import { esMX } from 'handsontable/i18n'
 import 'handsontable/dist/handsontable.full.css'
 import LoadingOverlay from '@/components/layout/partials/LoadingOverlay.vue'
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, computed, onMounted, inject, watch } from 'vue'
 import { usePlanificacionStore } from '../store/usePlanificacionStore'
 import { useRoute } from 'vue-router'
 import useLoading from '@/composables/useLoading'
 import { SELECT_OPTIONS } from '@/utility/selectOptions'
 import { unirValoresConComas, formatearObjetivoGeneral } from '@/utility/strings'
+import { storeToRefs } from 'pinia'
+import { planificacionServicios } from '../services/planificacionService'
 
 //Props del componente
 const props = defineProps({
@@ -112,9 +352,57 @@ const { isLoading, loadingMessage, loadingProgress, loadingError, withLoading } 
 
 //Iniciar el store de planificacion
 const planificacionStore = usePlanificacionStore()
+const { currentPlanificacion, columnasEscondidas, loading, inicializado } =
+  storeToRefs(planificacionStore)
+const { fetchPlanificacion } = planificacionStore
+
+console.log(columnasEscondidas.value.columns)
 
 //Informacion para la tabla
 const tableData = ref([])
+
+/************************** Modales  *********************************/
+const showBudgetModal = ref(false)
+const currentRowIndex = ref(null)
+const currentFundingSources = ref([])
+const currentBreakdown = ref({})
+const currentRowTotal = ref(0)
+// Métodos para el desglose de presupuesto
+const openBudgetModal = (row) => {
+  const rowData = tableData.value[row]
+  currentRowIndex.value = row
+  currentFundingSources.value = rowData.procedencia_fondos || []
+  currentRowTotal.value = rowData.presupuestoPrograma || 0
+
+  // Inicializar el desglose
+  currentBreakdown.value = {}
+  currentFundingSources.value.forEach((source) => {
+    currentBreakdown.value[source] = rowData.presupuestoDesglose?.[source] || 0
+  })
+
+  showBudgetModal.value = true
+}
+const saveBreakdown = () => {
+  if (currentRowIndex.value !== null) {
+    // Actualizar los datos en la tabla
+    tableData.value[currentRowIndex.value].presupuestoDesglose = { ...currentBreakdown.value }
+
+    // Opcional: Actualizar el total si es necesario
+    // tableData.value[currentRowIndex.value].presupuestoPrograma = Object.values(currentBreakdown.value).reduce((sum, val) => sum + (Number(val) || 0), 0)
+
+    showBudgetModal.value = false
+  }
+}
+const updateTotal = () => {
+  // Puedes agregar lógica de validación aquí si es necesario
+}
+
+const calculatePercentage = (amount) => {
+  if (currentRowTotal.value <= 0) return '0.00'
+  return ((amount / currentRowTotal.value) * 100).toFixed(2)
+}
+
+/************************** fin Modales  *********************************/
 
 // Rótulos para columnas
 const headers = ref([
@@ -144,11 +432,17 @@ const headers = ref([
   'Indicador Resultado OE',
   //Area Programa
   'Programa/Area',
+  //Responsable
+  'Responsable',
+  //Actividad nueva
+  'Actividad Nueva',
   //Proceso Actividad
   'Proceso',
   //Actividad
-  'Actividad - COD',
+  'Actividad Estructura',
+  'Actividad - CODIGO',
   'Actividad',
+  'Proceso de la Actividad',
   //Tipoo de actividad
   'Tipo actividad',
   //Fecha inicio
@@ -171,9 +465,12 @@ const headers = ref([
   'Medios de verificacion',
 ])
 
-const hiddenColumns = ref([])
+//Ocultar columnas
+
+// const hiddenColumns = ref([])
 const hiddenColumnsConfig = computed(() => ({
-  columns: hiddenColumns.value,
+  // columns: currentPlanificacion.value.table_config.hiddenColumns.columns
+  columns: columnasEscondidas.value.columns,
   indicators: true, // Muestra indicadores de columnas ocultas
 }))
 
@@ -439,14 +736,6 @@ const columns = ref([
       }
     },
   },
-  //Indicador Producto Objetivo Especifico
-  // {
-  //   data: 'indicadorProductoOe',
-  //   type: 'dropdown',
-  //   width: 200,
-  //   source: [],
-  // },
-  //Resultado OE
   {
     data: 'resultadoOe',
     type: 'dropdown',
@@ -538,10 +827,24 @@ const columns = ref([
   },
   //Programa Area
   {
-    data: 'programa-area',
+    data: 'programa_area',
     type: 'text',
     width: 200,
   },
+  //Responsable
+  {
+    data: 'responsable',
+    type: 'text',
+    width: 200,
+  },
+  //Actividad no definida en la estructura
+  {
+    data: 'actividad_nueva',
+    type: 'checkbox',
+    width: 150,
+    className: 'htCenter',
+  },
+
   //Proceso
   {
     data: 'proceso',
@@ -561,6 +864,7 @@ const columns = ref([
         })
     },
     strict: false,
+    readOnly: true,
   },
   //Actividad
   {
@@ -586,6 +890,7 @@ const columns = ref([
           process([])
         })
     },
+    readOnly: true,
     strict: true,
     afterGetColHeader: function (col, TH) {
       if (col === this.prop) {
@@ -595,10 +900,38 @@ const columns = ref([
       }
     },
   },
+  //Codigo de la actividad nueva
   {
-    data: 'actividad-info',
+    data: 'actividad_cod',
+    type: 'text',
+    width: 150,
+    readOnly: false,
+  },
+  {
+    data: 'actividad_titulo',
     type: 'text',
     width: 200,
+    readOnly: false,
+  },
+  {
+    data: 'procesoActividad',
+    type: 'autocomplete',
+    width: 200,
+    async source(query, process) {
+      fetch('http://127.0.0.1:8000/api/proyectos/' + idproyecto + '/procesos/') // tu endpoint real
+        .then((res) => res.json())
+        .then((data) => {
+          // Mostrar display_name como opciones
+          const opciones = data.map((item) => item.display_name)
+          process(opciones)
+        })
+        .catch((error) => {
+          console.error('Error cargando procesos:', error)
+          process([]) // evitar que se rompa
+        })
+    },
+    strict: false,
+    readOnly: false,
   },
   //Tipo de actividad
   {
@@ -628,9 +961,27 @@ const columns = ref([
   },
   //Supuestos y Riesgos
   {
-    data: 'supuestosRiesgos',
-    type: 'text',
+    data: 'presupuestoPrograma',
+    type: 'numeric',
     width: 200,
+    renderer: function (instance, td, row, col, prop, value) {
+      // Limpiar la celda
+      td.innerHTML = ''
+
+      // Crear elemento clickable
+      const container = document.createElement('div')
+      container.className = 'budget-cell'
+      container.innerHTML = formatCurrency(value || 0)
+
+      // Manejar clic
+      container.onclick = (e) => {
+        e.stopPropagation()
+        openBudgetModal(row)
+      }
+
+      td.appendChild(container)
+      return td
+    },
   },
   //Nombre de Cuenta
   {
@@ -652,7 +1003,7 @@ const columns = ref([
   },
   //Total Ejecutado
   {
-    data: 'totalReportado',
+    data: 'totalEjecutado',
     type: 'numeric',
     width: 200,
   },
@@ -706,6 +1057,37 @@ const columns = ref([
   },
 ])
 
+const updateRowState = (row) => {
+  const hotInstance = hotTable.value?.hotInstance
+  if (!hotInstance) return
+
+  const rowData = hotInstance.getSourceDataAtRow(row)
+  const isNewActivity = rowData.actividad_nueva
+
+  // Actualizar estado de las celdas
+  hotInstance.setCellMeta(row, hotInstance.propToCol('proceso'), 'readOnly', isNewActivity)
+  hotInstance.setCellMeta(row, hotInstance.propToCol('actividad'), 'readOnly', isNewActivity)
+  hotInstance.setCellMeta(row, hotInstance.propToCol('actividad_cod'), 'readOnly', !isNewActivity)
+  hotInstance.setCellMeta(
+    row,
+    hotInstance.propToCol('actividad_titulo'),
+    'readOnly',
+    !isNewActivity,
+  )
+
+  // Limpiar celdas según el estado
+  if (isNewActivity) {
+    hotInstance.setDataAtRowProp(row, 'proceso', '')
+    hotInstance.setDataAtRowProp(row, 'actividad', '')
+  } else {
+    hotInstance.setDataAtRowProp(row, 'actividad_cod', '')
+    hotInstance.setDataAtRowProp(row, 'actividad_titulo', '')
+  }
+
+  // Forzar actualización visual
+  hotInstance.render()
+}
+
 const accionBoton = (row) => {
   alert('Medios de verificacion')
   console.log('Acción ejecutada para fila:', row)
@@ -718,12 +1100,21 @@ onMounted(async () => {
 
 const cargarDatos = async () => {
   try {
-    //await obtenerEstructuraPeiPorID(peiVigente.value.id)
-    //await obtenerConteosProyecto(idproyecto)
+    await fetchPlanificacion(idproyecto)
   } catch (err) {
     console.error('Error al cargar datos', err)
   }
 }
+
+watch(
+  () => currentPlanificacion.value?.rows_data,
+  (newRows) => {
+    if (newRows && JSON.stringify(newRows) !== JSON.stringify(tableData.value)) {
+      tableData.value = [...newRows]
+    }
+  },
+  { deep: true },
+)
 
 const hotTable = ref(null)
 const hot = computed(() => hotTable.value?.hotInstance)
@@ -734,6 +1125,11 @@ const handleChange = (changes, source) => {
     changes.forEach(([row, prop, oldValue, newValue]) => {
       const hotInstance = hotTable.value?.hotInstance
       if (!hotInstance) return
+
+      //Manejar cambios en actividad-nueva
+      if (prop === 'actividad_nueva') {
+        updateRowState(row)
+      }
 
       // 1. Manejar cambios en objetivo PEI
       if (prop === 'objetivoPei') {
@@ -886,7 +1282,12 @@ const nuevaFila = {
   objetivoPei: '',
   indicadorPei: '',
   objetivoGeneral: objetivoGeneralProyecto,
-  'programa-area': programaArea,
+  programa_area: programaArea,
+  actividad_nueva: true,
+  actividad_cod: '',
+  actividad_titulo: '',
+  proceso: '',
+  actividad: '',
   // ... otras propiedades
 }
 
@@ -897,6 +1298,79 @@ const agregarFila = async () => {
 const eliminarFila = async () => {}
 
 const exportarExcel = async () => {}
+
+const guardarPlanificacion = async () => {
+  alert('Guardar planificacion')
+  try {
+    loading.value = true
+    await planificacionServicios.update(currentPlanificacion.value.id, {
+      rows_data: tableData.value,
+      proyecto: currentPlanificacion.value.proyecto,
+    })
+  } catch (error) {
+    console.error('Error al guardar', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const sidePanelVisible = ref(false)
+
+const toogleSidePanel = async () => {
+  sidePanelVisible.value = !sidePanelVisible.value
+}
+
+// Nueva ref para controlar la pestaña activa
+const tab = ref('info')
+
+// Datos de ejemplo para el presupuesto
+const presupuestoAsignado = ref(150000)
+const presupuestoEjecutado = ref(87500)
+const saldoDisponible = computed(() => presupuestoAsignado.value - presupuestoEjecutado.value)
+const porcentajeEjecutado = computed(
+  () => (presupuestoEjecutado.value / presupuestoAsignado.value) * 100,
+)
+
+// Datos de actividades
+const totalActividades = ref(24)
+const actividadesEnProgreso = ref(8)
+const actividadesCompletadas = ref(5)
+const actividadesPendientes = computed(
+  () => totalActividades.value - actividadesEnProgreso.value - actividadesCompletadas.value,
+)
+const progressValue = computed(() => (actividadesCompletadas.value / totalActividades.value) * 100)
+
+const estadoActividades = computed(() => [
+  {
+    estado: 'Completadas',
+    cantidad: actividadesCompletadas.value,
+    porcentaje: Math.round((actividadesCompletadas.value / totalActividades.value) * 100),
+    icon: 'mdi-check-circle',
+    color: 'success',
+  },
+  {
+    estado: 'En progreso',
+    cantidad: actividadesEnProgreso.value,
+    porcentaje: Math.round((actividadesEnProgreso.value / totalActividades.value) * 100),
+    icon: 'mdi-progress-clock',
+    color: 'warning',
+  },
+  {
+    estado: 'Pendientes',
+    cantidad: actividadesPendientes.value,
+    porcentaje: Math.round((actividadesPendientes.value / totalActividades.value) * 100),
+    icon: 'mdi-alert-circle',
+    color: 'error',
+  },
+])
+
+// Función para formatear moneda
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency: 'MXN',
+  }).format(value)
+}
 </script>
 
 <style scoped>
@@ -938,5 +1412,172 @@ const exportarExcel = async () => {}
 
 .excel-btn:active {
   background-color: #e0e0e0 !important;
+}
+
+/* Estilos para el panel de informacion */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+  background-color: #f5f5f5;
+}
+
+.content-wrapper {
+  display: flex;
+  gap: 16px;
+  height: calc(100vh - 150px); /* Ajusta según necesidades */
+}
+
+.excel-panel {
+  flex: 3; /* Ocupa 3 partes del espacio disponible */
+  min-width: 0; /* Necesario para que flex-shrink funcione correctamente */
+  display: flex;
+  flex-direction: column;
+}
+
+.side-panel {
+  flex: 1; /* Ocupa 1 parte del espacio disponible */
+  min-width: 300px; /* Ancho mínimo */
+  max-width: 400px; /* Ancho máximo */
+}
+
+.panel-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-title {
+  background-color: #1976d2;
+  color: white;
+  padding: 12px 16px;
+}
+
+.panel-section {
+  margin-bottom: 16px;
+}
+
+.panel-section h4 {
+  margin-bottom: 12px;
+  color: #1976d2;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #666;
+}
+/* Estilos tabs */
+/* Estilos para las pestañas */
+.v-tabs {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Estilos para la tabla de presupuesto */
+.budget-table {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.budget-table th,
+.budget-table td {
+  padding: 8px 12px;
+}
+
+.budget-table thead {
+  background-color: #f5f5f5;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-error {
+  color: #ff5252;
+}
+
+/* Estilos para el gráfico circular */
+.chart-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 16px 0;
+}
+
+.chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Estilos para la lista de actividades */
+.v-list {
+  background: transparent;
+}
+
+/* Ajustes generales para el contenido de las pestañas */
+.v-window-item {
+  padding: 8px 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.panel-section {
+  margin-bottom: 16px;
+}
+
+.panel-section h4 {
+  margin-bottom: 12px;
+  color: #1976d2;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.handsontable .htDimmed {
+  background-color: #f5f5f5;
+  color: #999;
 }
 </style>

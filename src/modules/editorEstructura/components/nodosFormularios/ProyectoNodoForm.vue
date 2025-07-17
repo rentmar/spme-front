@@ -72,6 +72,18 @@
       clearable
     ></v-select>
 
+    <v-select
+      v-model="formData.datosNodo.procedencia_fondos"
+      variant="outlined"
+      :items="opcionesEntidadFinanciera"
+      item-value="id"
+      item-title="financiera"
+      label="Procedencia de Fondos"
+      multiple
+      chips
+      clearable
+    ></v-select>
+
     <v-card-actions>
       <v-spacer />
       <v-btn color="error" text @click="confirmarEliminar" v-if="!esNuevo"> Eliminar </v-btn>
@@ -97,7 +109,6 @@
       </v-card>
     </v-dialog>
   </v-form>
-  {{ opcionesEntidadFinanciera }}
 </template>
 
 <script setup>

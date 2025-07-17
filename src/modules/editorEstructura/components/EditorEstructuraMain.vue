@@ -253,6 +253,28 @@
     <Controls position="left"> </Controls>
   </VueFlow>
   <!-- {{ proyecto }}<br /><br />{{ getNodes }}<br /><br />{{ getEdges }} -->
+  <!-- Modal para administrar financiadores -->
+  <v-dialog v-model="mostrarModalFinanciadores" max-width="800">
+    <v-card>
+      <v-toolbar color="primary" density="compact">
+        <v-toolbar-title class="text-white">Administrar Financiadores</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn icon @click="mostrarModalFinanciadores = false" variant="text" class="text-white">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
+
+      <v-card-text class="pa-4">
+        <!-- Aquí puedes incluir tu componente de administración de financiadores -->
+        <ProcedenciaFondosLista></ProcedenciaFondosLista>
+      </v-card-text>
+
+      <v-card-actions class="pa-4">
+        <v-spacer></v-spacer>
+        <v-btn color="primary" @click="mostrarModalFinanciadores = false">Cerrar</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -292,11 +314,13 @@ import ActividadRogNodo from './nodos/ActividadRogNodo.vue'
 import ActividadPoeNodo from './nodos/ActividadPoeNodo.vue'
 import ActividadRoeNodo from './nodos/ActividadRoeNodo.vue'
 import ProductoNodo from './nodos/ProductoNodo.vue'
+import ProcedenciaFondosLista from '@/modules/procedenciaFondos/components/ProcedenciaFondosLista.vue'
 //Manjeador de eventos
 import useNodeEvents from '../composables/useNodeEvents'
 
 //Capturar la inyeccion de datos
 const proyecto = inject('proyectoEstructura')
+const mostrarModalFinanciadores = ref(false)
 
 //Nodos antes del layout
 const rawNodes = ref([])
@@ -336,6 +360,10 @@ onMounted(() => {
 
 /****  PANEL DE INFORMACION  ****/
 const nodoSeleccionado = ref(null)
+// En los métodos
+const abrirModalFinanciadores = () => {
+  mostrarModalFinanciadores.value = true
+}
 
 /**** MENSAJES ****/
 const mostrarMensaje = ref(false)
@@ -345,28 +373,18 @@ watch(mensajeRecibido, (nuevo) => {
 })
 const toolbarButtons = computed(() => [
   {
-    icon: 'mdi-plus',
-    color: 'success',
-  },
-  {
-    icon: 'mdi-delete',
-    color: 'error',
-    //action: () => selectedNode.value && removeNodes([selectedNode.value.id]),
+    icon: 'mdi-bank-plus',
+    color: 'primary',
+    tooltip: 'Administrar financiadores',
+    action: abrirModalFinanciadores,
   },
   {
     icon: 'mdi-fit-to-page',
     color: 'info',
+    tooltip: 'Ajustar vista',
     action: () => fitView(),
   },
 ])
-
-const formatLabel = (key) => {
-  return key
-    .split(/(?=[A-Z])/)
-    .join(' ')
-    .toLowerCase()
-    .replace(/^\w/, (c) => c.toUpperCase())
-}
 
 // Mapeo de tipos de nodo a componentes de formulario
 const formulariosPorTipo = {

@@ -94,6 +94,26 @@ export function useProcedenciaFondos() {
     }
   }
 
+  const findProcedenciaById = (id) => {
+    return entidadesFinancieras.value.find((item) => item.id === id) || null
+  }
+
+  const findProcedenciasByIds = (ids) => {
+    if (!Array.isArray(ids)) return []
+    return ids.map((id) => findProcedenciaById(id)).filter(Boolean)
+  }
+
+  const getChipsDataFromIds = (ids) => {
+    const defaultColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error']
+
+    return findProcedenciasByIds(ids).map((item, index) => ({
+      id: item.id,
+      text: item.valor,
+      sigla: item.sigla,
+      color: defaultColors[index % defaultColors.length],
+    }))
+  }
+
   return {
     loading, //ref
     error, //ref
@@ -106,5 +126,8 @@ export function useProcedenciaFondos() {
     updateProcedencia,
     delProcedencia,
     fetchOptions,
+    findProcedenciaById,
+    findProcedenciasByIds,
+    getChipsDataFromIds,
   }
 }

@@ -10,7 +10,6 @@
         <PaginaTituloIcono :titulo="'Editar'" :icon="'mdi-pencil'"></PaginaTituloIcono>
         <ProyectoHeader v-if="proyecto" :proyecto="proyecto"></ProyectoHeader>
         <FormularioEdicionProyecto v-if="proyecto" :proyecto="proyecto"></FormularioEdicionProyecto>
-        <ProcedenciaFondosLista></ProcedenciaFondosLista>
       </v-col>
       <v-col cols="12" md="3" lg="3"> </v-col>
     </v-row>
