@@ -1,3 +1,4 @@
+// // Backup 19 julio 2025, Componente Excel //
 <template>
   <div class="hotWraper">
     <LoadingOverlay
@@ -26,6 +27,19 @@
             <template #activator="{ props }">
               <v-btn v-bind="props" variant="text" class="excel-btn" @click="guardarPlanificacion">
                 <v-icon size="18">mdi-content-save</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <!--Reprogramar-->
+          <v-tooltip text="Reprogramar" location="bottom">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                variant="text"
+                class="excel-btn"
+                @click="reprogramarPlanificacion"
+              >
+                <v-icon size="18">mdi-wrench-clock</v-icon>
               </v-btn>
             </template>
           </v-tooltip>
@@ -64,7 +78,7 @@
           :rowHeaders="true"
           :height="400"
           :hiddenColumns="hiddenColumnsConfig"
-          :contextMenu="true"
+          :contextMenu="contextMenuOptions"
           :language="'es-Mx'"
           :afterChange="handleChange"
           :licenseKey="'non-commercial-and-evaluation'"
@@ -234,56 +248,157 @@
     </div>
   </div>
   <!-- Modal para el desglose de presupuesto -->
-  <v-dialog v-model="showBudgetModal" max-width="600">
+  <v-dialog v-model="showBudgetModal" max-width="800" persistent>
     <v-card>
       <v-toolbar color="primary" dark>
         <v-toolbar-title>Desglose de Presupuesto</v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn icon @click="showBudgetModal = false">
+        <v-btn icon @click="closeBudgetModal">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
 
-      <v-card-text>
-        <v-table>
+      <v-card-text class="pa-4">
+        <v-alert v-if="totalDesglose > currentRowTotal" type="error" class="mb-4">
+          La suma del desglose ({{ formatCurrency(totalDesglose) }}) excede el presupuesto programa
+          ({{ formatCurrency(currentRowTotal) }})
+        </v-alert>
+
+        <v-row>
+          <v-col cols="12" md="6">
+            <h4 class="mb-3">Presupuesto Total: {{ formatCurrency(currentRowTotal) }}</h4>
+            <h4 class="mb-3">Total Desglosado: {{ formatCurrency(totalDesglose) }}</h4>
+            <h4 class="mb-3">
+              Saldo Disponible:
+              <span :class="{ 'text-error': saldoDisponible < 0 }">
+                {{ formatCurrency(saldoDisponible) }}
+              </span>
+            </h4>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-progress-linear
+              :value="porcentajeDesglose"
+              height="20"
+              :color="porcentajeDesglose > 100 ? 'error' : 'primary'"
+              striped
+            >
+              <template v-slot:default="{ value }">
+                <strong>{{ Math.ceil(value) }}% utilizado</strong>
+              </template>
+            </v-progress-linear>
+          </v-col>
+        </v-row>
+
+        <v-divider class="my-4"></v-divider>
+
+        <!-- Selector de fuentes financieras -->
+        <v-row>
+          <v-col cols="12" md="8">
+            <v-autocomplete
+              v-model="nuevaFuenteSeleccionada"
+              :items="fuentesFinancierasDisponibles"
+              label="Seleccionar fuente financiera"
+              item-title="nombre"
+              item-value="id"
+              return-object
+              clearable
+            ></v-autocomplete>
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-btn
+              color="primary"
+              block
+              :disabled="!nuevaFuenteSeleccionada"
+              @click="agregarFuenteExistente"
+            >
+              Agregar Fuente
+            </v-btn>
+          </v-col>
+        </v-row>
+
+        <!-- Agregar fuente manual -->
+        <v-row class="mt-2">
+          <v-col cols="12" md="5">
+            <v-text-field
+              v-model="nuevaFuenteManual.nombre"
+              label="Nombre de fuente nueva"
+              clearable
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="5">
+            <v-text-field
+              v-model.number="nuevaFuenteManual.monto"
+              type="number"
+              label="Monto"
+              min="0"
+              :max="saldoDisponible"
+              clearable
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="2">
+            <v-btn
+              color="secondary"
+              block
+              :disabled="!nuevaFuenteManual.nombre || !nuevaFuenteManual.monto"
+              @click="agregarFuenteManual"
+            >
+              Agregar
+            </v-btn>
+          </v-col>
+        </v-row>
+
+        <!-- Tabla de desglose -->
+        <v-table density="compact" class="mt-4">
           <thead>
             <tr>
               <th>Fuente</th>
               <th class="text-right">Monto</th>
               <th class="text-right">%</th>
+              <th class="text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="source in currentFundingSources" :key="source">
-              <td>{{ getSourceName(source) }}</td>
+            <tr v-for="(item, index) in currentBreakdown" :key="index">
+              <td>{{ item.nombre }}</td>
               <td class="text-right">
                 <v-text-field
-                  v-model.number="currentBreakdown[source]"
+                  v-model.number="item.monto"
                   type="number"
                   density="compact"
                   variant="outlined"
                   hide-details
-                  @update:modelValue="updateTotal"
+                  :min="0"
+                  :max="currentRowTotal"
+                  @update:modelValue="actualizarMonto(index)"
                 />
               </td>
-              <td class="text-right">{{ calculatePercentage(currentBreakdown[source] || 0) }}%</td>
+              <td class="text-right">{{ calcularPorcentaje(item.monto) }}%</td>
+              <td class="text-center">
+                <v-btn icon size="small" color="error" @click="eliminarFuente(index)">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </td>
             </tr>
             <tr class="font-weight-bold">
               <td>Total</td>
-              <td class="text-right">{{ formatCurrency(currentRowTotal) }}</td>
-              <td class="text-right">100%</td>
+              <td class="text-right">{{ formatCurrency(totalDesglose) }}</td>
+              <td class="text-right">{{ porcentajeDesglose.toFixed(2) }}%</td>
+              <td></td>
             </tr>
           </tbody>
         </v-table>
       </v-card-text>
 
-      <v-card-actions>
+      <v-card-actions class="pa-4">
         <v-spacer></v-spacer>
-        <v-btn @click="showBudgetModal = false">Cancelar</v-btn>
-        <v-btn color="primary" @click="saveBreakdown">Guardar</v-btn>
+        <v-btn @click="closeBudgetModal">Cancelar</v-btn>
+        <v-btn color="primary" @click="saveBreakdown" :disabled="totalDesglose > currentRowTotal">
+          Guardar
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
+
   {{ tableData }}
   <br /><br /><br />
   {{ proyectoEstructura }}
@@ -361,49 +476,6 @@ console.log(columnasEscondidas.value.columns)
 //Informacion para la tabla
 const tableData = ref([])
 
-/************************** Modales  *********************************/
-const showBudgetModal = ref(false)
-const currentRowIndex = ref(null)
-const currentFundingSources = ref([])
-const currentBreakdown = ref({})
-const currentRowTotal = ref(0)
-// Métodos para el desglose de presupuesto
-const openBudgetModal = (row) => {
-  const rowData = tableData.value[row]
-  currentRowIndex.value = row
-  currentFundingSources.value = rowData.procedencia_fondos || []
-  currentRowTotal.value = rowData.presupuestoPrograma || 0
-
-  // Inicializar el desglose
-  currentBreakdown.value = {}
-  currentFundingSources.value.forEach((source) => {
-    currentBreakdown.value[source] = rowData.presupuestoDesglose?.[source] || 0
-  })
-
-  showBudgetModal.value = true
-}
-const saveBreakdown = () => {
-  if (currentRowIndex.value !== null) {
-    // Actualizar los datos en la tabla
-    tableData.value[currentRowIndex.value].presupuestoDesglose = { ...currentBreakdown.value }
-
-    // Opcional: Actualizar el total si es necesario
-    // tableData.value[currentRowIndex.value].presupuestoPrograma = Object.values(currentBreakdown.value).reduce((sum, val) => sum + (Number(val) || 0), 0)
-
-    showBudgetModal.value = false
-  }
-}
-const updateTotal = () => {
-  // Puedes agregar lógica de validación aquí si es necesario
-}
-
-const calculatePercentage = (amount) => {
-  if (currentRowTotal.value <= 0) return '0.00'
-  return ((amount / currentRowTotal.value) * 100).toFixed(2)
-}
-
-/************************** fin Modales  *********************************/
-
 // Rótulos para columnas
 const headers = ref([
   //Objetivo PEI
@@ -453,8 +525,6 @@ const headers = ref([
   'Supuestos Riesgos',
   //Presupuesto Programa
   'Presupuesto Programa',
-  //Nombre cuenta
-  'Nombre Cuenta',
   //Presupuesto Global
   'Presupuesto Global',
   //Total Reportado
@@ -983,12 +1053,6 @@ const columns = ref([
       return td
     },
   },
-  //Nombre de Cuenta
-  {
-    data: 'nombreCuenta',
-    type: 'text',
-    width: 200,
-  },
   //Presupuesto global
   {
     data: 'presupuestoGlobal',
@@ -1295,6 +1359,10 @@ const agregarFila = async () => {
   tableData.value.push({ ...nuevaFila }) // Crea una copia nueva cada vez
 }
 
+const reprogramarPlanificacion = async () => {
+  alert('Reprogramar planificacion')
+}
+
 const eliminarFila = async () => {}
 
 const exportarExcel = async () => {}
@@ -1371,6 +1439,90 @@ const formatCurrency = (value) => {
     currency: 'MXN',
   }).format(value)
 }
+
+const contextMenuOptions = computed(() => {
+  return {
+    items: {
+      // Opción para agregar fila
+      row_above: {
+        name: 'Insertar fila arriba',
+        callback: function () {
+          const selected = this.getSelectedLast()
+          tableData.value.splice(selected[0], 0, { ...nuevaFila })
+          this.render()
+        },
+      },
+      row_below: {
+        name: 'Insertar fila abajo',
+        callback: function () {
+          const selected = this.getSelectedLast()
+          tableData.value.splice(selected[0] + 1, 0, { ...nuevaFila })
+          this.render()
+        },
+      },
+      // Separador
+      hsep1: '---------',
+      // Opción para eliminar fila
+      remove_row: {
+        name: 'Eliminar fila',
+        disabled: function () {
+          return this.getSelectedLast()[0] === undefined
+        },
+        callback: function () {
+          const selected = this.getSelectedLast()
+          tableData.value.splice(selected[0], 1)
+          this.render()
+        },
+      },
+      // Separador
+      hsep2: '---------',
+      // Opción para copiar
+      copy: {
+        name: 'Copiar',
+        callback: function () {
+          this.copy()
+        },
+      },
+      // Opción para pegar
+      paste: {
+        name: 'Pegar',
+        callback: function () {
+          this.paste()
+        },
+      },
+      // Opción para limpiar
+      clear_custom: {
+        name: 'Limpiar contenido',
+        callback: function () {
+          const selected = this.getSelected()
+          this.setDataAtCell(selected, '')
+        },
+      },
+      // Separador
+      hsep3: '---------',
+      // Opción para desglose de presupuesto
+      budget_breakdown: {
+        name: 'Desglose de presupuesto',
+        callback: function () {
+          const selected = this.getSelectedLast()
+          if (selected[0] !== undefined) {
+            openBudgetModal(selected[0])
+          }
+        },
+      },
+      // Opción para medios de verificación
+      verification_media: {
+        name: 'Medios de verificación',
+        callback: function () {
+          const selected = this.getSelectedLast()
+          if (selected[0] !== undefined) {
+            accionBoton(selected[0])
+          }
+        },
+      },
+    },
+  }
+})
 </script>
 
 <style scoped>

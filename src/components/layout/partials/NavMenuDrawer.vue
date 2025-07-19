@@ -24,12 +24,12 @@
 
       <v-list-item
         prepend-icon="mdi-chart-gantt"
-        title="Programas"
+        title="Programas/Areas"
         value="programas-list"
         to="/"
       ></v-list-item>
 
-      <v-list-item prepend-icon="mdi-finance" title="FPD" value="fpd-list" to="/"></v-list-item>
+      <v-list-item prepend-icon="mdi-finance" title="FPP" value="fpd-list" to="/"></v-list-item>
 
       <v-list-item
         prepend-icon="mdi-cash-multiple"
