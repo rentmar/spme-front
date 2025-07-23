@@ -397,12 +397,6 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-
-  {{ tableData }}
-  <br /><br /><br />
-  {{ proyectoEstructura }}
-  <br /><br /><br />
-  {{ currentPlanificacion }}
 </template>
 
 <script setup>
