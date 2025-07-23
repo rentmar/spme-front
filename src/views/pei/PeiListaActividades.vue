@@ -377,7 +377,7 @@
               <template v-slot:prepend>
                 <v-icon color="green">mdi-check-circle</v-icon>
               </template>
-              <v-list-item-title>Completadas</v-list-item-title>
+              <v-list-item-title>Finalizado</v-list-item-title>
               <v-list-item-subtitle class="text-right">
                 {{ countByStatus('COMP') }}
               </v-list-item-subtitle>

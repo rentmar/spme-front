@@ -69,28 +69,6 @@ const router = createRouter({
       component: () => import('../views/pei/PeiFormulario03.vue'),
     },
 
-
-    {
-      path: '/pei/ApprovalDashboard',
-      // name: 'editarIndicadores',
-      component: () => import('../views/pei/ApprovalDashboard.vue'),
-    },
-    {
-      path: '/pei/FormList',
-      // name: 'editarIndicadores',
-      component: () => import('../views/pei/FormList.vue'),
-    },
-    {
-      path: '/pei/FormApprover',
-      // name: 'editarIndicadores',
-      component: () => import('../views/pei/FormApprover.vue'),
-    },
-    {
-      path: '/pei/FormCreator',
-      // name: 'editarIndicadores',
-      component: () => import('../views/pei/FormCreator.vue'),
-    },
-
     {
       path: '/proyecto',
       name: 'proyecto',
