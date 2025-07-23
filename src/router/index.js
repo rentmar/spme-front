@@ -49,6 +49,49 @@ const router = createRouter({
       component: () => import('../views/pei/PeiEstructuracionSpme.vue'),
     },
     {
+      path: '/pei/listaactividades',
+      // name: 'editarIndicadores',
+      component: () => import('../views/pei/PeiListaActividades.vue'),
+    },
+    {
+      path: '/pei/formulario01',
+      // name: 'editarIndicadores',
+      component: () => import('../views/pei/PeiFormulario01.vue'),
+    },
+    {
+      path: '/pei/formulario02',
+      // name: 'editarIndicadores',
+      component: () => import('../views/pei/PeiFormulario02.vue'),
+    },
+    {
+      path: '/pei/formulario03',
+      // name: 'editarIndicadores',
+      component: () => import('../views/pei/PeiFormulario03.vue'),
+    },
+
+
+    {
+      path: '/pei/ApprovalDashboard',
+      // name: 'editarIndicadores',
+      component: () => import('../views/pei/ApprovalDashboard.vue'),
+    },
+    {
+      path: '/pei/FormList',
+      // name: 'editarIndicadores',
+      component: () => import('../views/pei/FormList.vue'),
+    },
+    {
+      path: '/pei/FormApprover',
+      // name: 'editarIndicadores',
+      component: () => import('../views/pei/FormApprover.vue'),
+    },
+    {
+      path: '/pei/FormCreator',
+      // name: 'editarIndicadores',
+      component: () => import('../views/pei/FormCreator.vue'),
+    },
+
+    {
       path: '/proyecto',
       name: 'proyecto',
       component: () => import('../views/proyecto/ProyectoListView.vue'),

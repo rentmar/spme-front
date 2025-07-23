@@ -52,27 +52,31 @@
         <v-list-item v-bind="props" prepend-icon="mdi-eye-outline" title="Monitoreo"></v-list-item>
       </template>
 
+      <!--*****-->
       <v-list-item
+        @click = "goToPageWithButton(1)"
         prepend-icon="mdi-account-alert-outline"
         title="Solicitud/Reposición"
         value="monitoring-requests"
-        to=""
+        to="/pei/listaactividades?showButton=1"
       ></v-list-item>
 
       <v-list-item
+        @click = "goToPageWithButton(2)"
         prepend-icon="mdi-chart-bar"
         title="Rendición Cuentas"
         value="monitoring-reports"
-        to=""
+        to="/pei/listaactividades?showButton=2"
       ></v-list-item>
 
       <v-list-item
+        @click = "goToPageWithButton(3)"
         prepend-icon="mdi-file-document-outline"
         title="Informe de Actividad"
         value="monitoring-activity"
-        to=""
+        to="/pei/listaactividades?showButton=3"
       ></v-list-item>
-    </v-list-group>
+    </v-list-group><!--*****-->
 
     <v-list-item
       prepend-icon="mdi-help-circle-outline"
@@ -90,7 +94,20 @@
   </v-list>
 </template>
 
-<script setup></script>
+<script>
+//exporta el valor booleano showButton
+export default {
+  methods: {
+    goToPageWithButton(buttonType) {
+      this.$router.push({
+        path: '/pei/listaactividades',
+        query: { showButton: buttonType }
+      });
+    }
+  }
+}
+//********************************** */
+</script>
 <style scoped>
 .v-list-item {
   transition: all 0.3s ease;
