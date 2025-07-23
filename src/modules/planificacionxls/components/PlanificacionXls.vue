@@ -1,4 +1,3 @@
-// // Backup 19 julio 2025, Componente Excel //
 <template>
   <div class="hotWraper">
     <LoadingOverlay
@@ -260,8 +259,8 @@
 
       <v-card-text class="pa-4">
         <v-alert v-if="totalDesglose > currentRowTotal" type="error" class="mb-4">
-          La suma del desglose ({{ formatCurrency(totalDesglose) }}) excede el presupuesto programa
-          ({{ formatCurrency(currentRowTotal) }})
+          La suma del desglose ({{ formatCurrency(totalDesglose) }}) excede el presupuesto
+          programado ({{ formatCurrency(currentRowTotal) }})
         </v-alert>
 
         <v-row>
@@ -421,6 +420,7 @@ import { SELECT_OPTIONS } from '@/utility/selectOptions'
 import { unirValoresConComas, formatearObjetivoGeneral } from '@/utility/strings'
 import { storeToRefs } from 'pinia'
 import { planificacionServicios } from '../services/planificacionService'
+import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
 
 //Props del componente
 const props = defineProps({
@@ -464,6 +464,7 @@ const programaArea = unirValoresConComas(props.proyectoEstructura.instancia_gest
 
 //Composable
 const { isLoading, loadingMessage, loadingProgress, loadingError, withLoading } = useLoading()
+const { opcionesEntidadFinanciera, fetchOptions } = useProcedenciaFondos()
 
 //Iniciar el store de planificacion
 const planificacionStore = usePlanificacionStore()
@@ -1046,7 +1047,7 @@ const columns = ref([
       // Manejar clic
       container.onclick = (e) => {
         e.stopPropagation()
-        openBudgetModal(row)
+        //openBudgetModal(row)
       }
 
       td.appendChild(container)
@@ -1165,6 +1166,7 @@ onMounted(async () => {
 const cargarDatos = async () => {
   try {
     await fetchPlanificacion(idproyecto)
+    await fetchOptions()
   } catch (err) {
     console.error('Error al cargar datos', err)
   }
@@ -1394,7 +1396,7 @@ const tab = ref('info')
 // Datos de ejemplo para el presupuesto
 const presupuestoAsignado = ref(150000)
 const presupuestoEjecutado = ref(87500)
-const saldoDisponible = computed(() => presupuestoAsignado.value - presupuestoEjecutado.value)
+const saldoDisponibleAside = computed(() => presupuestoAsignado.value - presupuestoEjecutado.value)
 const porcentajeEjecutado = computed(
   () => (presupuestoEjecutado.value / presupuestoAsignado.value) * 100,
 )
@@ -1523,6 +1525,186 @@ const contextMenuOptions = computed(() => {
     },
   }
 })
+
+/*********************************** modal ***********************************/
+
+// Variables reactivas para el modal
+const showBudgetModal = ref(false)
+const currentBreakdown = ref([])
+const currentRowTotal = ref(0)
+const currentRowIndex = ref(null)
+const nuevaFuenteSeleccionada = ref(null)
+const nuevaFuenteManual = ref({
+  nombre: '',
+  monto: 0,
+})
+const fuentesFinancierasDisponibles = ref([])
+
+// Computed properties
+const totalDesglose = computed(() => {
+  return currentBreakdown.value.reduce((sum, item) => sum + (Number(item.monto) || 0), 0)
+})
+
+const saldoDisponible = computed(() => {
+  return currentRowTotal.value - totalDesglose.value
+})
+
+const porcentajeDesglose = computed(() => {
+  return currentRowTotal.value > 0 ? (totalDesglose.value / currentRowTotal.value) * 100 : 0
+})
+
+// Métodos
+const openBudgetModal = (rowIndex) => {
+  const hotInstance = hotTable.value?.hotInstance
+  if (!hotInstance) return
+
+  currentRowIndex.value = rowIndex
+  const rowData = hotInstance.getSourceDataAtRow(rowIndex)
+
+  // Obtener el presupuesto programado (asegurando que sea número)
+  currentRowTotal.value = Number(rowData.presupuestoPrograma) || 0
+
+  // Cargar desglose existente o inicializar array vacío
+  currentBreakdown.value = rowData.desglosePresupuesto
+    ? JSON.parse(JSON.stringify(rowData.desglosePresupuesto))
+    : []
+
+  // Cargar fuentes financieras disponibles
+  cargarFuentesFinancieras()
+
+  showBudgetModal.value = true
+}
+
+const closeBudgetModal = () => {
+  showBudgetModal.value = false
+  currentBreakdown.value = []
+  currentRowTotal.value = 0
+  currentRowIndex.value = null
+  nuevaFuenteSeleccionada.value = null
+  nuevaFuenteManual.value = { nombre: '', monto: 0 }
+}
+
+const cargarFuentesFinancieras = async () => {
+  try {
+    await fetchOptions()
+    fuentesFinancierasDisponibles.value = opcionesEntidadFinanciera.value.map((item) => ({
+      id: item.id,
+      nombre: item.financiera,
+    }))
+  } catch (error) {
+    console.error('Error al cargar fuentes financieras:', error)
+    fuentesFinancierasDisponibles.value = []
+  }
+
+  // try {
+  //   const response = await fetch(API_ENDPOINTS.FUENTES_FINANCIERAS())
+  //   const data = await response.json()
+  //   fuentesFinancierasDisponibles.value = data.data || []
+  // } catch (error) {
+  //   console.error('Error al cargar fuentes financieras:', error)
+  //   fuentesFinancierasDisponibles.value = []
+  // }
+}
+
+const agregarFuenteExistente = () => {
+  if (!nuevaFuenteSeleccionada.value) return
+
+  // Verificar si la fuente ya existe en el desglose
+  const existe = currentBreakdown.value.some((item) => item.id === nuevaFuenteSeleccionada.value.id)
+
+  if (existe) {
+    alert('Esta fuente ya ha sido agregada al desglose')
+    return
+  }
+
+  const nuevaFuente = {
+    ...nuevaFuenteSeleccionada.value,
+    monto: 0, // Inicializar en 0 para que el usuario lo establezca
+  }
+
+  currentBreakdown.value.push(nuevaFuente)
+  nuevaFuenteSeleccionada.value = null
+}
+
+const agregarFuenteManual = () => {
+  if (!nuevaFuenteManual.value.nombre || !nuevaFuenteManual.value.monto) return
+
+  // Validar que el monto no exceda el saldo disponible
+  if (Number(nuevaFuenteManual.value.monto) > saldoDisponible.value) {
+    alert('El monto excede el saldo disponible')
+    return
+  }
+
+  currentBreakdown.value.push({
+    nombre: nuevaFuenteManual.value.nombre,
+    monto: Number(nuevaFuenteManual.value.monto),
+    manual: true, // Marcar como fuente manual
+  })
+
+  // Resetear el formulario manual
+  nuevaFuenteManual.value = { nombre: '', monto: 0 }
+}
+
+const eliminarFuente = (index) => {
+  currentBreakdown.value.splice(index, 1)
+}
+
+const actualizarMonto = (index) => {
+  // Validar que el monto no sea negativo
+  if (currentBreakdown.value[index].monto < 0) {
+    currentBreakdown.value[index].monto = 0
+  }
+
+  // Validar que no exceda el presupuesto total
+  if (totalDesglose.value > currentRowTotal.value) {
+    // Ajustar automáticamente si excede
+    currentBreakdown.value[index].monto = Math.max(
+      0,
+      currentBreakdown.value[index].monto - (totalDesglose.value - currentRowTotal.value),
+    )
+  }
+
+  // Forzar actualización reactiva
+  currentBreakdown.value = [...currentBreakdown.value]
+}
+
+const calcularPorcentaje = (monto) => {
+  return currentRowTotal.value > 0 ? ((Number(monto) / currentRowTotal.value) * 100).toFixed(2) : 0
+}
+
+const saveBreakdown = () => {
+  if (totalDesglose.value > currentRowTotal.value) {
+    alert('El total desglosado no puede exceder el presupuesto programado')
+    return
+  }
+
+  const hotInstance = hotTable.value?.hotInstance
+  if (!hotInstance || currentRowIndex.value === null) return
+
+  // Actualizar los datos en la fila
+  hotInstance.setDataAtRowProp(currentRowIndex.value, 'desglosePresupuesto', [
+    ...currentBreakdown.value,
+  ])
+
+  // Calcular y actualizar campos derivados
+  const presupuestoEjecutado = currentBreakdown.value.reduce(
+    (sum, item) => sum + (item.ejecutado || 0),
+    0,
+  )
+
+  hotInstance.setDataAtRowProp(currentRowIndex.value, 'totalEjecutado', presupuestoEjecutado)
+
+  hotInstance.setDataAtRowProp(
+    currentRowIndex.value,
+    'saldo',
+    currentRowTotal.value - presupuestoEjecutado,
+  )
+
+  // Cerrar el modal
+  closeBudgetModal()
+}
+
+/***************************************************************************************** */
 </script>
 
 <style scoped>
