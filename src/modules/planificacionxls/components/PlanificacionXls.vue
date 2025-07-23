@@ -415,6 +415,7 @@ import { unirValoresConComas, formatearObjetivoGeneral } from '@/utility/strings
 import { storeToRefs } from 'pinia'
 import { planificacionServicios } from '../services/planificacionService'
 import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
+import { utils, writeFileXLSX } from 'xlsx'
 
 //Props del componente
 const props = defineProps({
@@ -1361,7 +1362,89 @@ const reprogramarPlanificacion = async () => {
 
 const eliminarFila = async () => {}
 
-const exportarExcel = async () => {}
+// const exportarExcel = async () => {
+//   const pres = ref([])
+//   const ws = utils.json_to_sheet(pres.value)
+//   /* create workbook and append worksheet */
+//   const wb = utils.book_new()
+//   utils.book_append_sheet(wb, ws, 'Data')
+//   /* export to XLSX */
+//   writeFileXLSX(wb, 'SheetJSVueAoO.xlsx')
+// }
+// En la sección de imports, asegúrate de tener:
+
+// Función para exportar toda la tabla principal a Excel
+const exportarExcel = async () => {
+  try {
+    isLoading.value = true
+    loadingMessage.value = 'Generando archivo Excel...'
+
+    const hotInstance = hotTable.value?.hotInstance
+    if (!hotInstance) throw new Error('No se pudo acceder a la tabla')
+
+    // Obtener todos los datos de la tabla
+    const tableData = hotInstance.getSourceData()
+
+    // Obtener todas las columnas (incluyendo las ocultas)
+    const allColumns = hotInstance.getColHeader()
+
+    // Crear array de datos para exportar
+    const exportData = tableData.map((row) => {
+      const rowData = {}
+
+      // Mapear todas las columnas
+      allColumns.forEach((header, index) => {
+        const prop = hotInstance.colToProp(index)
+        rowData[header] = row[prop]
+
+        // Formatear campos especiales
+        if (header === 'Fecha Inicio' || header === 'Fecha Cierre') {
+          rowData[header] = formatExcelDate(row[prop])
+        } else if (
+          header.includes('Presupuesto') ||
+          header === 'Total Reportado' ||
+          header === 'Total Ejecutado' ||
+          header === 'Saldo'
+        ) {
+          rowData[header] = {
+            t: 'n', // tipo número
+            v: Number(row[prop]) || 0,
+            z: '$#,##0.00', // formato moneda
+          }
+        }
+      })
+
+      return rowData
+    })
+
+    // Crear hoja de cálculo
+    const ws = utils.json_to_sheet(exportData)
+
+    // Ajustar anchos de columnas
+    ws['!cols'] = allColumns.map(() => ({ width: 20 }))
+
+    // Crear libro de Excel
+    const wb = utils.book_new()
+    utils.book_append_sheet(wb, ws, 'Planificación')
+
+    // Exportar archivo
+    const fileName = `Planificacion_${props.proyecto.nombre}_${new Date().toISOString().slice(0, 10)}.xlsx`
+    writeFileXLSX(wb, fileName)
+  } catch (error) {
+    console.error('Error al exportar:', error)
+    loadingError.value = 'Error al generar el archivo Excel'
+  } finally {
+    isLoading.value = false
+    loadingMessage.value = ''
+  }
+}
+
+// Función auxiliar para formatear fechas
+const formatExcelDate = (dateString) => {
+  if (!dateString) return ''
+  const [day, month, year] = dateString.split('/')
+  return `${year}-${month}-${day}`
+}
 
 const guardarPlanificacion = async () => {
   alert('Guardar planificacion')
@@ -1516,10 +1599,87 @@ const contextMenuOptions = computed(() => {
           }
         },
       },
+      //Exportar Desglose de Presupuesto
+      export_budget: {
+        name: 'Exportar desglose presupuesto',
+        callback: function () {
+          const selected = this.getSelectedLast()
+          if (selected[0] !== undefined) {
+            exportBudgetBreakdown(selected[0])
+          }
+        },
+      },
     },
   }
 })
+//Exportacion del presupuesto desglosado
+const exportBudgetBreakdown = (rowIndex) => {
+  try {
+    const hotInstance = hotTable.value?.hotInstance
+    if (!hotInstance) throw new Error('No se pudo acceder a la tabla')
 
+    const rowData = hotInstance.getSourceDataAtRow(rowIndex)
+
+    if (!rowData.desglosePresupuesto || rowData.desglosePresupuesto.length === 0) {
+      alert('Esta fila no tiene desglose de presupuesto')
+      return
+    }
+
+    // 1. Preparar datos para la exportación
+    const exportData = [
+      ['INFORMACIÓN GENERAL'],
+      ['Actividad:', rowData.actividad_titulo || rowData.actividad || 'Sin nombre'],
+      ['Presupuesto total:', rowData.presupuestoPrograma],
+      ['Ejecutado:', rowData.totalEjecutado],
+      ['Saldo:', rowData.saldo],
+      [], // Fila vacía como separador
+      ['DETALLE DE PRESUPUESTO'],
+      ['Fuente', 'Monto', '% del total', 'Tipo'],
+    ]
+
+    // 2. Añadir cada item del desglose
+    const total = rowData.presupuestoPrograma || 1 // Evitar división por cero
+    rowData.desglosePresupuesto.forEach((item) => {
+      exportData.push([
+        item.nombre,
+        item.monto,
+        { t: 'n', v: item.monto / total, z: '0.00%' }, // Formato porcentaje
+        item.manual ? 'Manual' : 'Registrado',
+      ])
+    })
+
+    // 3. Añadir totales
+    const sum = rowData.desglosePresupuesto.reduce((acc, item) => acc + item.monto, 0)
+    exportData.push(['TOTAL', sum, { t: 'n', v: sum / total, z: '0.00%' }, ''])
+
+    // 4. Crear hoja de cálculo
+    const ws = utils.aoa_to_sheet(exportData)
+
+    // Aplicar formatos
+    ws['!cols'] = [
+      { width: 25 }, // Fuente
+      { width: 15 }, // Monto
+      { width: 15 }, // %
+      { width: 15 }, // Tipo
+    ]
+
+    // Resaltar encabezados
+    utils.sheet_add_aoa(ws, [['', '', '', '']], {
+      origin: -1,
+      style: { fill: { fgColor: { rgb: 'FFD9D9D9' } } },
+    })
+
+    // 5. Crear y exportar el libro
+    const wb = utils.book_new()
+    utils.book_append_sheet(wb, ws, 'Desglose Presupuesto')
+
+    const fileName = `Desglose_${rowData.actividad_titulo || 'presupuesto'}_${new Date().toISOString().slice(0, 10)}.xlsx`
+    writeFileXLSX(wb, fileName)
+  } catch (error) {
+    console.error('Error al exportar desglose:', error)
+    alert('Error al exportar el desglose de presupuesto')
+  }
+}
 /*********************************** modal ***********************************/
 
 // Variables reactivas para el modal
