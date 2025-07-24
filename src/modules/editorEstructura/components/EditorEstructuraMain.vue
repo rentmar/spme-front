@@ -9,7 +9,7 @@
       </v-btn>
     </div>
   </transition>
-  <VueFlow :nodes="nodos" :edges="conectores" :minZoom="0.1" :maxZoom="2">
+  <VueFlow ref="vueFlowRef" :nodes="nodos" :edges="conectores" :minZoom="0.1" :maxZoom="2">
     <div class="project-overlay">
       <div class="project-metadata">
         <h3>Proyecto</h3>
@@ -211,15 +211,6 @@
             <v-alert v-else type="info">
               No hay formulario disponible para este tipo de nodo
             </v-alert>
-            <!-- <v-list density="compact" class="transparent">
-              <v-list-item v-for="(value, key) in nodoSeleccionado.data" :key="key" class="px-0">
-                <template v-slot:prepend>
-                  <v-icon color="primary" size="small">mdi-circle-small</v-icon>
-                </template>
-                <v-list-item-title class="info-label">{{ formatLabel(key) }}</v-list-item-title>
-                <v-list-item-subtitle class="info-value">{{ value }}</v-list-item-subtitle>
-              </v-list-item>
-            </v-list> -->
           </v-card-text>
 
           <!-- <v-card-actions class="px-4 pb-4 pt-0">
@@ -317,6 +308,10 @@ import ProductoNodo from './nodos/ProductoNodo.vue'
 import ProcedenciaFondosLista from '@/modules/procedenciaFondos/components/ProcedenciaFondosLista.vue'
 //Manjeador de eventos
 import useNodeEvents from '../composables/useNodeEvents'
+//Exportaciones
+import { toJpeg, toPng, toSvg } from 'html-to-image'
+import jsPDF from 'jspdf'
+import * as XLSX from 'xlsx'
 
 //Capturar la inyeccion de datos
 const proyecto = inject('proyectoEstructura')
@@ -384,6 +379,42 @@ const toolbarButtons = computed(() => [
     tooltip: 'Ajustar vista',
     action: () => fitView(),
   },
+  {
+    icon: 'mdi-image',
+    color: 'purple',
+    tooltip: 'Exportar a PNG',
+    action: () => exportDiagram('png'),
+  },
+  {
+    icon: 'mdi-image',
+    color: 'green',
+    tooltip: 'Exportar a JPEG',
+    action: () => exportDiagram('jpeg'),
+  },
+  {
+    icon: 'mdi-file-pdf-box',
+    color: 'red',
+    tooltip: 'Exportar a PDF',
+    action: exportToPDF,
+  },
+  {
+    icon: 'mdi-microsoft-excel',
+    color: 'green',
+    tooltip: 'Exportar a Excel',
+    action: exportToExcel,
+  },
+  {
+    icon: 'mdi-code-json',
+    color: 'amber',
+    tooltip: 'Exportar a JSON',
+    action: exportToJSON,
+  },
+  {
+    icon: 'mdi-graphql', // O usa 'mdi-xml' si prefieres
+    color: 'orange',
+    tooltip: 'Exportar a GraphML',
+    action: exportToGraphML,
+  },
 ])
 
 // Mapeo de tipos de nodo a componentes de formulario
@@ -446,6 +477,387 @@ const actualizarNodo = (nuevosDatos) => {
 
 //ELiminar nodo
 const eliminarNodo = () => {}
+
+/******************** RUTINAS DE EXPORTACIONES ************************/
+const vueFlowRef = ref(null)
+const exportDiagram = async (type = 'png') => {
+  const vueFlowInstance = vueFlowRef.value
+
+  if (!vueFlowInstance) {
+    console.error('No se pudo acceder al contenedor del diagrama')
+    return
+  }
+
+  try {
+    const element = vueFlowInstance.$el
+    const options = {
+      backgroundColor: '#ffffff',
+      quality: 0.95, // Solo aplica para JPEG
+      pixelRatio: 2, // Mejor calidad para dispositivos HiDPI
+      filter: (node) => {
+        // Excluir elementos que no queremos en la exportación
+        return !(
+          node.classList?.contains('vue-flow__controls') ||
+          node.classList?.contains('vue-flow__minimap') ||
+          node.classList?.contains('tool-panel')
+        )
+      },
+    }
+
+    let imageData
+    switch (type) {
+      case 'png':
+        imageData = await toPng(element, options)
+        break
+      case 'jpeg':
+        imageData = await toJpeg(element, options)
+        break
+      case 'svg':
+        imageData = await toSvg(element, options)
+        break
+      default:
+        throw new Error(`Tipo de exportación no soportado: ${type}`)
+    }
+
+    const link = document.createElement('a')
+    link.href = imageData
+    link.download = `diagrama-${new Date().toISOString().slice(0, 10)}.${type}`
+    link.click()
+  } catch (err) {
+    console.error('Error al exportar diagrama:', err)
+    alert(`Error al exportar: ${err.message}`)
+  }
+}
+const exportToPDF = async () => {
+  const vueFlowInstance = vueFlowRef.value
+
+  if (!vueFlowInstance) {
+    console.error('No se pudo acceder al contenedor del diagrama')
+    return
+  }
+
+  try {
+    // Mostrar mensaje de carga
+    mostrarMensaje.value = true
+    mensajeRecibido.value = 'Generando PDF, por favor espere...'
+
+    const element = vueFlowInstance.$el
+    const options = {
+      backgroundColor: '#ffffff',
+      pixelRatio: 2, // Mejor calidad
+      filter: (node) => {
+        // Excluir elementos que no queremos en la exportación
+        return !(
+          node.classList?.contains('vue-flow__controls') ||
+          node.classList?.contains('vue-flow__minimap') ||
+          node.classList?.contains('tool-panel')
+        )
+      },
+    }
+
+    // Generar imagen PNG
+    const imageData = await toPng(element, options)
+
+    // Crear PDF
+    const pdf = new jsPDF({
+      orientation: 'landscape', // o 'portrait' según necesites
+      unit: 'mm',
+    })
+
+    // Tamaño de la página A4
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+
+    // Añadir imagen al PDF
+    const imgProps = pdf.getImageProperties(imageData)
+    const imgWidth = pageWidth - 20 // Margen de 10mm cada lado
+    const imgHeight = (imgProps.height * imgWidth) / imgProps.width
+
+    // Centrar la imagen en la página
+    const x = (pageWidth - imgWidth) / 2
+    const y = (pageHeight - imgHeight) / 2
+
+    pdf.addImage(imageData, 'PNG', x, y, imgWidth, imgHeight)
+
+    // Guardar PDF
+    pdf.save(`diagrama-${new Date().toISOString().slice(0, 10)}.pdf`)
+
+    // Ocultar mensaje
+    mostrarMensaje.value = false
+  } catch (err) {
+    console.error('Error al exportar a PDF:', err)
+    mensajeRecibido.value = `Error al generar PDF: ${err.message}`
+    setTimeout(() => {
+      mostrarMensaje.value = false
+    }, 5000)
+  }
+}
+
+const exportToExcel = () => {
+  try {
+    mostrarMensaje.value = true
+    mensajeRecibido.value = 'Generando Excel, por favor espere...'
+
+    const wb = XLSX.utils.book_new()
+
+    // 1. Hoja de información del proyecto
+    if (proyecto.value) {
+      const proyectoData = [
+        ['INFORMACIÓN DEL PROYECTO'],
+        ['Código', proyecto.value.codigo || ''],
+        ['Nombre', proyecto.value.nombre || ''],
+        ['Descripción', proyecto.value.descripcion || ''],
+        ['Fecha creación', proyecto.value.createdAt || ''],
+        ['Última actualización', proyecto.value.updatedAt || ''],
+      ]
+
+      const wsProyecto = XLSX.utils.aoa_to_sheet(proyectoData)
+      XLSX.utils.book_append_sheet(wb, wsProyecto, 'Proyecto')
+    }
+
+    // 2. Hoja de nodos
+    const nodesData = [
+      ['NODOS DEL DIAGRAMA'],
+      ['ID', 'Tipo', 'Título', 'Descripción', 'Fecha creación'],
+    ]
+
+    getNodes.value.forEach((node) => {
+      nodesData.push([
+        node.id,
+        node.type || '',
+        node.data?.title || '',
+        node.data?.description || '',
+        node.data?.createdAt || '',
+      ])
+    })
+
+    const wsNodes = XLSX.utils.aoa_to_sheet(nodesData)
+    XLSX.utils.book_append_sheet(wb, wsNodes, 'Nodos')
+
+    // 3. Hoja de conexiones
+    const edgesData = [['CONEXIONES'], ['ID', 'Origen', 'Destino', 'Tipo', 'Etiqueta']]
+
+    getEdges.value.forEach((edge) => {
+      edgesData.push([edge.id, edge.source, edge.target, edge.type || '', edge.label || ''])
+    })
+
+    const wsEdges = XLSX.utils.aoa_to_sheet(edgesData)
+    XLSX.utils.book_append_sheet(wb, wsEdges, 'Conexiones')
+
+    // Generar archivo Excel
+    XLSX.writeFile(
+      wb,
+      `diagrama-${proyecto.value?.codigo || 'proyecto'}-${new Date().toISOString().slice(0, 10)}.xlsx`,
+    )
+
+    mostrarMensaje.value = false
+  } catch (err) {
+    console.error('Error al exportar a Excel:', err)
+    mensajeRecibido.value = `Error al generar Excel: ${err.message}`
+    setTimeout(() => {
+      mostrarMensaje.value = false
+    }, 5000)
+  }
+}
+
+const exportToJSON = (options = {}) => {
+  try {
+    mostrarMensaje.value = true
+    mensajeRecibido.value = 'Generando JSON, por favor espere...'
+
+    // Opciones por defecto
+    const defaultOptions = {
+      prettyPrint: true,
+      includeMetadata: true,
+      includeProjectInfo: true,
+      includeDiagramData: true,
+      customFileName: null,
+    }
+
+    const finalOptions = { ...defaultOptions, ...options }
+
+    // Construir el objeto de exportación
+    const exportData = {}
+
+    // 1. Metadatos
+    if (finalOptions.includeMetadata) {
+      exportData.metadata = {
+        exportedAt: new Date().toISOString(),
+        exportTool: 'Vue Flow Diagram Exporter',
+        version: '1.1',
+      }
+    }
+
+    // 2. Información del proyecto
+    if (finalOptions.includeProjectInfo && proyecto.value) {
+      exportData.proyecto = {
+        id: proyecto.value.id,
+        codigo: proyecto.value.codigo,
+        nombre: proyecto.value.nombre,
+        descripcion: proyecto.value.descripcion,
+        createdAt: proyecto.value.createdAt,
+        updatedAt: proyecto.value.updatedAt,
+      }
+    }
+
+    // 3. Datos del diagrama
+    if (finalOptions.includeDiagramData) {
+      exportData.diagrama = {
+        nodos: getNodes.value.map((node) => ({
+          id: node.id,
+          type: node.type,
+          position: node.position,
+          data: node.data,
+          hidden: node.hidden,
+          selected: node.selected,
+          dragging: node.dragging,
+          zIndex: node.zIndex,
+        })),
+        edges: getEdges.value.map((edge) => ({
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          sourceHandle: edge.sourceHandle,
+          targetHandle: edge.targetHandle,
+          type: edge.type,
+          label: edge.label,
+          animated: edge.animated,
+          data: edge.data,
+          hidden: edge.hidden,
+          selected: edge.selected,
+        })),
+        viewport: {
+          x: vueFlowRef.value?.viewport.x || 0,
+          y: vueFlowRef.value?.viewport.y || 0,
+          zoom: vueFlowRef.value?.viewport.zoom || 1,
+        },
+      }
+    }
+
+    // Convertir a JSON
+    const jsonString = finalOptions.prettyPrint
+      ? JSON.stringify(exportData, null, 2)
+      : JSON.stringify(exportData)
+
+    // Crear y descargar archivo
+    const blob = new Blob([jsonString], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+
+    const fileName =
+      finalOptions.customFileName ||
+      `diagrama-${proyecto.value?.codigo || 'proyecto'}-${new Date().toISOString().slice(0, 10)}.json`
+
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+
+    // Limpiar
+    setTimeout(() => {
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      mostrarMensaje.value = false
+    }, 100)
+  } catch (err) {
+    console.error('Error al exportar a JSON:', err)
+    mensajeRecibido.value = `Error al generar JSON: ${err.message}`
+    setTimeout(() => {
+      mostrarMensaje.value = false
+    }, 5000)
+  }
+}
+const exportToGraphML = () => {
+  try {
+    mostrarMensaje.value = true
+    mensajeRecibido.value = 'Generando GraphML, por favor espere...'
+
+    // Crear documento XML
+    const parser = new DOMParser()
+    const xmlDoc = parser.parseFromString(
+      '<?xml version="1.0" encoding="UTF-8"?><graphml xmlns="http://graphml.graphdrawing.org/xmlns"></graphml>',
+      'application/xml',
+    )
+    const graphml = xmlDoc.documentElement
+
+    // Definir atributos para nodos y aristas
+    const keyId = xmlDoc.createElement('key')
+    keyId.setAttribute('id', 'd0')
+    keyId.setAttribute('for', 'node')
+    keyId.setAttribute('attr.name', 'tipo')
+    keyId.setAttribute('attr.type', 'string')
+    graphml.appendChild(keyId)
+
+    // Crear elemento <graph>
+    const graph = xmlDoc.createElement('graph')
+    graph.setAttribute('id', 'G')
+    graph.setAttribute('edgedefault', 'directed')
+    graphml.appendChild(graph)
+
+    // Agregar nodos
+    getNodes.value.forEach((node) => {
+      const nodeElement = xmlDoc.createElement('node')
+      nodeElement.setAttribute('id', node.id)
+
+      const data = xmlDoc.createElement('data')
+      data.setAttribute('key', 'd0')
+      data.textContent = node.type || 'unknown'
+      nodeElement.appendChild(data)
+
+      // Opcional: Agregar más atributos (título, descripción)
+      if (node.data?.title) {
+        const keyTitle = xmlDoc.createElement('key')
+        keyTitle.setAttribute('id', 'd1')
+        keyTitle.setAttribute('for', 'node')
+        keyTitle.setAttribute('attr.name', 'titulo')
+        keyTitle.setAttribute('attr.type', 'string')
+        graphml.insertBefore(keyTitle, graph)
+
+        const titleData = xmlDoc.createElement('data')
+        titleData.setAttribute('key', 'd1')
+        titleData.textContent = node.data.title
+        nodeElement.appendChild(titleData)
+      }
+
+      graph.appendChild(nodeElement)
+    })
+
+    // Agregar aristas (conexiones)
+    getEdges.value.forEach((edge) => {
+      const edgeElement = xmlDoc.createElement('edge')
+      edgeElement.setAttribute('source', edge.source)
+      edgeElement.setAttribute('target', edge.target)
+      edgeElement.setAttribute('id', edge.id)
+      graph.appendChild(edgeElement)
+    })
+
+    // Serializar a string
+    const serializer = new XMLSerializer()
+    const xmlString = serializer.serializeToString(xmlDoc)
+
+    // Crear y descargar archivo
+    const blob = new Blob([xmlString], { type: 'application/xml' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `diagrama-${proyecto.value?.codigo || 'proyecto'}-${new Date().toISOString().slice(0, 10)}.graphml`
+    document.body.appendChild(a)
+    a.click()
+
+    // Limpiar
+    setTimeout(() => {
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      mostrarMensaje.value = false
+    }, 100)
+  } catch (err) {
+    console.error('Error al exportar a GraphML:', err)
+    mensajeRecibido.value = `Error al generar GraphML: ${err.message}`
+    setTimeout(() => {
+      mostrarMensaje.value = false
+    }, 5000)
+  }
+}
 </script>
 <style scoped>
 .project-overlay {

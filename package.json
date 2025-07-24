@@ -23,6 +23,8 @@
     "axios": "^1.8.4",
     "dagre": "^0.8.5",
     "handsontable": "^15.3.0",
+    "html-to-image": "^1.11.13",
+    "jspdf": "^3.0.1",
     "jspreadsheet-ce": "^5.0.2",
     "jsuites": "^5.10.0",
     "pinia": "^3.0.1",
