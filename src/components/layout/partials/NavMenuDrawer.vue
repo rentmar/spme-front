@@ -49,6 +49,13 @@
       </template>
 
       <v-list-item
+        prepend-icon="mdi-format-list-checkbox"
+        title="Tareas"
+        value="planning-tareas"
+        to="/proyecto/actividades/tareas/"
+      ></v-list-item>
+
+      <v-list-item
         prepend-icon="mdi-playlist-check"
         title="Proyectos/Actividades"
         value="planning-activities"
