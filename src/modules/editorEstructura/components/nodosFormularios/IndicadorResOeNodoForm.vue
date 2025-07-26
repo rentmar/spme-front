@@ -9,6 +9,27 @@
       clearable
       :rules="[(v) => !!v || 'Código requerido']"
     />
+
+    <v-textarea
+      v-model="formData.nodoProyecto.descripcion"
+      variant="outlined"
+      label="Descripcion"
+      outlined
+      dense
+      clearable
+      rows="3"
+    ></v-textarea>
+
+    <v-textarea
+      v-model="formData.nodoProyecto.definicion"
+      variant="outlined"
+      label="Definicion"
+      outlined
+      dense
+      clearable
+      rows="3"
+    ></v-textarea>
+
     <v-select
       v-model="formData.nodoProyecto.redaccion"
       variant="outlined"
@@ -78,15 +99,6 @@
       v-model="formData.nodoProyecto.target_q3"
       variant="outlined"
       label="Target q3"
-      outlined
-      dense
-      clearable
-    />
-
-    <v-text-field
-      v-model="formData.nodoProyecto.target_q4"
-      variant="outlined"
-      label="Target q4"
       outlined
       dense
       clearable

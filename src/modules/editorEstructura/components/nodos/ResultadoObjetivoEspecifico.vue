@@ -107,15 +107,16 @@ const emit = defineEmits([
 const agregarIndicadorResultadoOE = async () => {
   const indicadorREsOe = {
     codigo: 'IND-RES-OE',
+    descripcion: '',
+    definicion: '',
     redaccion: 'GUIA',
-    fuente_verificacion: 'verificacion',
-    target_poblacion: '1',
+    fuente_verificacion: '',
+    target_poblacion: '',
     tipo: 'A-Z',
-    baseline: '12',
-    target_q1: '12',
-    target_q2: '21',
-    target_q3: '212',
-    target_q4: null,
+    baseline: '',
+    target_q1: '',
+    target_q2: '',
+    target_q3: '',
     resultado_obj_especifico: idCurrenNode.toString(),
   }
   try {
@@ -130,6 +131,8 @@ const agregarIndicadorResultadoOE = async () => {
         nodoProyecto: {
           id: indicadorResultadoObjEspecifico.value.id,
           codigo: indicadorResultadoObjEspecifico.value.codigo,
+          descripcion: indicadorResultadoObjEspecifico.value.descripcion,
+          definicion: indicadorResultadoObjEspecifico.value.definicion,
           redaccion: indicadorResultadoObjEspecifico.value.redaccion,
           fuente_verificacion: indicadorResultadoObjEspecifico.value.fuente_verificacion,
           target_poblacion: indicadorResultadoObjEspecifico.value.target_poblacion,
@@ -138,7 +141,6 @@ const agregarIndicadorResultadoOE = async () => {
           target_q1: indicadorResultadoObjEspecifico.value.target_q1,
           target_q2: indicadorResultadoObjEspecifico.value.target_q2,
           target_q3: indicadorResultadoObjEspecifico.value.target_q3,
-          target_q4: indicadorResultadoObjEspecifico.value.target_q4,
           resultado_obj_especifico: indicadorResultadoObjEspecifico.resultado_obj_especifico,
         },
       },
