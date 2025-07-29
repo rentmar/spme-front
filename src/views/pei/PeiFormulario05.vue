@@ -2,7 +2,7 @@
   <div class="v-container v-locale--is-ltr">
     <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
       <div class="v-card-title text-h5 font-weight-bold">
-        Formulario F-01:<br> Solicitud de Fondos en Avance con Cargo a Rendición de Cuenta
+        Formulario F-05:<br> Solicitud de Viaje (Participacion en Eventos)
       </div>
 
       <div class="v-card-text">
@@ -11,60 +11,80 @@
           <div class="form-section">
             <v-text-field
               v-model="formData.nombre"
-              label="Nombre del Solicitante"
+              label="Nombre del Seminario, curso, taller o reunión"
+              required
+            ></v-text-field>
+
+            <v-row>
+              <v-col cols="12" sm="6">
+                <v-text-field
+                  v-model="formData1.fecha_inicio"
+                  label="Fecha de inicio"
+                  type="date"
+                  required
+                  :max="formData1.fecha_fin"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6">
+                <v-text-field
+                  v-model="formData1.fecha_fin"
+                  label="Fecha de fin"
+                  type="date"
+                  required
+                  :min="formData1.fecha_inicio"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+
+            <v-text-field
+              v-model="formData.lugar"
+              label="Lugar de realización"
               required
             ></v-text-field>
 
             <v-text-field
-              v-model="formData.paterno"
-              label="Apellido paterno del Solicitante"
+              v-model="formData.organizaciones"
+              label="Organizaciones Participantes"
               required
             ></v-text-field>
 
             <v-text-field
-              v-model="formData.materno"
-              label="Apellido materno del Solicitante"
+              v-model="formData.organizador"
+              label="Institución que invita"
               required
             ></v-text-field>
 
             <v-text-field
-              v-model="formData.cargo"
-              label="Cargo"
+              v-model="formData.padrinos"
+              label="Quien cubre los gastos de estadía, transporte y viáticos"
               required
             ></v-text-field>
 
             <v-text-field
-              v-model="formData.aprobador"
-              label="Aprobado por (Coordinador o Dirección Ejecutiva)"
+              v-model="formData.padrinos"
+              label="Requiere fondos de UNITAS (Especificar para qué gastos)"
+              required
+            ></v-text-field>
+
+            <v-text-field
+              v-model="formData.padrinos"
+              label="Persona que presenta la solicitud"
               required
             ></v-text-field>
 
             <v-textarea
               v-model="formData.descripcion"
-              label="Descripción de la Actividad"
+              label="Justificación de la importancia de asistir al evento y su relación con el trabajo que desarrolla"
               rows="3"
               required
             ></v-textarea>
-
-            <v-text-field
-              v-model="formData.fecha_realizacion"
-              label="Fecha de Realización"
-              type="date"
-              required
-            ></v-text-field>
 
             <v-textarea
               v-model="formData.objetivo_actividad"
-              label="Objetivo de la Actividad"
+              label="Tareas previas que debe cumplir para asistir al evento"
               rows="3"
               required
             ></v-textarea>
-
-            <v-text-field
-              v-model="formData.fuente_financiamiento"
-              label="Fuente de Financiamiento"
-              required
-            ></v-text-field>
           </div>
 
           <v-divider class="my-4"></v-divider>
@@ -343,6 +363,10 @@ export default {
       responsableCuenta: [],
       coordinador: [],
       loading: false,
+      formData1: {
+        fecha_inicio: '',
+        fecha_fin: ''
+      },
       formData: {
         nombre: '',
         paterno:'',
