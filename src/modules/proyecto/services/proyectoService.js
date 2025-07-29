@@ -50,6 +50,24 @@ export const proyectoServicios = {
       console.error('Axios: No se pudo obtener el proyecto con el ID: ' + id, error)
     }
   },
+  /* Conteos de componentes */
+  getConteosPorId: async (id) => {
+    try {
+      const respuesta = await api.get('/proyecto/' + id + '/conteos/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo obtener los conteos con el ID: ' + id, error)
+    }
+  },
+  /* Procesos de un proyecto */
+  getProcesosProyectoPorId: async (id) => {
+    try {
+      const respuesta = await api.get('/proyectos/' + id + '/procesos/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo obtener los procesos del proyecto con el ID: ' + id, error)
+    }
+  },
   /* Crear un nuevo proyecto */
   crear: async (proyectoData) => {
     try {

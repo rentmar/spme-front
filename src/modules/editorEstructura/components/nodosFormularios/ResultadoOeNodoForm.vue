@@ -123,42 +123,14 @@ const guardar = async () => {
     const idDiagrama = proyecto.value.mapa_nodo.id
     console.log(idindog)
     console.log(idDiagrama)
-    await updateResultadoOe(idindog, formData.value)
+    console.log(formData.value.nodoProyecto)
+    await updateResultadoOe(idindog, formData.value.nodoProyecto)
     updateNode(formData.value.id, formData.value)
     await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
     emit('guardar')
   } catch (err) {
     console.error('Update informacion', err)
   }
-
-  //emit('guardar', { data: formData.value })
-  // guardando.value = true
-
-  // try {
-  //   let respuesta
-
-  //   if (esNuevo.value) {
-  //     // Operación CREATE
-  //     respuesta = await axios.post('/api/proyectos', formData.value)
-  //     console.log('Nuevo proyecto creado:', respuesta.data)
-  //   } else {
-  //     // Operación UPDATE
-  //     respuesta = await axios.put(`/api/proyectos/${props.node.id}`, formData.value)
-  //     console.log('Proyecto actualizado:', respuesta.data)
-  //   }
-
-  //   // Emitir los datos guardados (puedes usar respuesta.data si el backend devuelve el objeto actualizado)
-  //   emit('guardar', {
-  //     ...props.node,
-  //     data: formData.value
-  //   })
-
-  // } catch (error) {
-  //   console.error('Error al guardar:', error)
-  //   // Aquí podrías mostrar un mensaje de error al usuario
-  // } finally {
-  //   guardando.value = false
-  // }
 }
 
 // Método para confirmar eliminación

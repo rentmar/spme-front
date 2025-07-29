@@ -149,61 +149,6 @@ const removeObjetivo = (index) => {
 // Estado reactivo para control de tabs
 const activeTab = ref('general')
 const editing = ref(false)
-
-// Inicializar códigos automáticos
-/*watch(
-  () => nuevoProyectoStore.nuevoProyecto.objetivoEspecifico,
-  (objetivos) => {
-    objetivos.forEach((obj, index) => {
-      if (!obj.codigo || !obj.codigo.startsWith('PSO')) {
-        obj.codigo = `PSO${index + 1}`
-      }
-    })
-
-    // Asegurar que el objetivo general tenga POO
-    if (
-      !nuevoProyectoStore.nuevoProyecto.objetivoGeneral[0].codigo ||
-      nuevoProyectoStore.nuevoProyecto.objetivoGeneral[0].codigo !== 'POO'
-    ) {
-      nuevoProyectoStore.nuevoProyecto.objetivoGeneral[0].codigo = 'POO'
-    }
-  },
-  { immediate: true, deep: true },
-)*/
-
-// Eliminar objetivo específico (excepto el primero)
-/* const removeObjective = (index) => {
-  if (index > 0 && nuevoProyectoStore.nuevoProyecto.objetivoEspecifico.length > 1) {
-    const wasActive = activeTab.value === 'specific-' + index
-
-    nuevoProyectoStore.nuevoProyecto.objetivoEspecifico.splice(index, 1)
-
-    // Reindexar los códigos
-    nuevoProyectoStore.nuevoProyecto.objetivoEspecifico.forEach((obj, idx) => {
-      obj.codigo = `PSO${idx + 1}`
-    })
-
-    if (wasActive) {
-      activeTab.value = index > 1 ? 'specific-' + (index - 1) : 'general'
-    }
-  }
-}
- */
-// Función para verificar cambios
-/* const hasChanges = () => {
-  return (
-    nuevoProyectoStore.nuevoProyecto.objetivoGeneral.descripcion.trim() !== '' ||
-    nuevoProyectoStore.nuevoProyecto.objetivoEspecifico.some(
-      (obj) =>
-        obj.descripcion.trim() !== '' || obj.supuestos.trim() !== '' || obj.riesgos.trim() !== '',
-    )
-  )
-}
-
-// Exponemos funciones al padre si es necesario
-defineExpose({
-  hasChanges,
-}) */
 </script>
 
 <style scoped>

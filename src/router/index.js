@@ -135,6 +135,11 @@ const router = createRouter({
       component: () => import('@/views/planeamiento/ActividadesKantView.vue'),
     },
     {
+      path: '/usuario/perfil/',
+      name: 'usuarioPerfil',
+      component: () => import('@/views/usuario/PerfilUsuarioView.vue'),
+    },
+    {
       path: '/about',
       name: 'about',
       // route level code-splitting

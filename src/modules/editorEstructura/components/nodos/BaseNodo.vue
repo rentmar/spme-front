@@ -85,7 +85,9 @@ const { removeNodes, findNode } = useVueFlow()
 const currentNode = findNode(props.id)
 //Inyectar el curren node en los hijos
 
-const eliminarNodo = () => removeNodes([{ id: props.id }])
+const eliminarNodo = () => {
+  removeNodes([{ id: props.id }])
+}
 
 const attrs = useAttrs()
 const filteredAttrs = computed(() => {

@@ -72,6 +72,18 @@
       clearable
     ></v-select>
 
+    <v-select
+      v-model="formData.datosNodo.procedencia_fondos"
+      variant="outlined"
+      :items="opcionesEntidadFinanciera"
+      item-value="id"
+      item-title="financiera"
+      label="Procedencia de Fondos"
+      multiple
+      chips
+      clearable
+    ></v-select>
+
     <v-card-actions>
       <v-spacer />
       <v-btn color="error" text @click="confirmarEliminar" v-if="!esNuevo"> Eliminar </v-btn>
@@ -100,11 +112,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, inject } from 'vue'
+import { ref, computed, watch, inject, onMounted } from 'vue'
 import { useVueFlow } from '@vue-flow/core'
 import { useDiagramaCrud } from '../../composables/useDiagramaCrud'
 import { SELECT_OPTIONS } from '@/utility/selectOptions'
 import { useProyectoCrud } from '@/modules/proyecto/composables/useProyectoCrud'
+import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
 
 //Props del componente
 const props = defineProps({
@@ -132,12 +145,17 @@ const estadoProyecto = SELECT_OPTIONS.estado
 const { updateProyecto } = useProyectoCrud()
 const { getNodes, getEdges, updateNode } = useVueFlow()
 const { actualizarNodosEdges } = useDiagramaCrud()
+const { fetchOptions, opcionesEntidadFinanciera } = useProcedenciaFondos()
 
 //Definir señales
 const emit = defineEmits(['guardar', 'cancelar', 'eliminar'])
 
 //Estructura del proyecto
 const proyecto = inject('proyectoEstructura')
+
+onMounted(async () => {
+  await fetchOptions()
+})
 
 // Estado del formulario
 const formData = ref({ ...props.node.data })
@@ -166,50 +184,12 @@ const guardar = async () => {
     console.log('Form data')
     console.log(formData.value.datosNodo)
     await updateProyecto(idobjgral, formData.value.datosNodo)
-    //await updateObjetivoGeneral(idobjgral, formData.value)
     await updateNode(formData.value.id, formData.value)
     await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
     emit('guardar')
-
-    /*const idkpi = formData.value.nodoProyecto.id
-    console.log(idkpi)
-    const idDiagrama = proyecto.value.mapa_nodo.id
-    console.log(proyecto)
-    await updateKpi(idkpi, formData.value.nodoProyecto)
-    updateNode(formData.value.id, formData.value)
-    await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)*/
   } catch (err) {
     console.error('Update informacion', err)
   }
-
-  //emit('guardar', { data: formData.value })
-  // guardando.value = true
-
-  // try {
-  //   let respuesta
-
-  //   if (esNuevo.value) {
-  //     // Operación CREATE
-  //     respuesta = await axios.post('/api/proyectos', formData.value)
-  //     console.log('Nuevo proyecto creado:', respuesta.data)
-  //   } else {
-  //     // Operación UPDATE
-  //     respuesta = await axios.put(`/api/proyectos/${props.node.id}`, formData.value)
-  //     console.log('Proyecto actualizado:', respuesta.data)
-  //   }
-
-  //   // Emitir los datos guardados (puedes usar respuesta.data si el backend devuelve el objeto actualizado)
-  //   emit('guardar', {
-  //     ...props.node,
-  //     data: formData.value
-  //   })
-
-  // } catch (error) {
-  //   console.error('Error al guardar:', error)
-  //   // Aquí podrías mostrar un mensaje de error al usuario
-  // } finally {
-  //   guardando.value = false
-  // }
 }
 
 // Método para confirmar eliminación

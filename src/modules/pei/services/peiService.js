@@ -19,6 +19,15 @@ export const peiServicios = {
       console.log('No se pudo obtener el PEI don id: ' + id, error)
     }
   },
+  /* PEI - Obtener estructura por id */
+  getEstructuraPorId: async (id) => {
+    try {
+      const respuesta = await api.get('/pei/estructura/' + id + '/')
+      return respuesta.data
+    } catch (error) {
+      console.log('Error PEI estructura con id: ' + id, error)
+    }
+  },
   /* PEI - objetivos -indicadores */
   obtenerPeiObjIndPorId: async (id) => {
     try {
@@ -80,6 +89,15 @@ export const objetivoPeiServicios = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: No se pudo eliminar el objetivo Pei con Id: ' + id, error)
+      throw error
+    }
+  },
+  update: async (id, data) => {
+    try {
+      const respuesta = await api.put('/objetivos-pei/' + id + '/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se actualizo objetivo pei id: ' + id, error)
       throw error
     }
   },

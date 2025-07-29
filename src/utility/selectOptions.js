@@ -30,4 +30,13 @@ export const SELECT_OPTIONS = {
     { valor: 'ES', etiqueta: 'Estructuracion' },
     { valor: 'EP', etiqueta: 'En Planificacion' },
   ],
+  tipo_actividad: [
+    'ACAP - Actividad de Capacitación',
+    'PRIN - Proyecto de Investigación',
+    'AOP - Actividad Operativa',
+    'CSNS - Campaña de Sensibilización',
+    'PDES - Proyecto de Desarrollo',
+    'AINC - Actividad de Incidencia',
+    'AART - Actividad de Articulación',
+  ],
 }
