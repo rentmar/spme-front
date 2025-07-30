@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { usuarioServicios } from '../services/usuariosService'
 //Estados
-const loading = ref(null)
+const loading = ref(false)
 const error = ref(null)
 const usuarios = ref([])
 const usuario = ref(null)

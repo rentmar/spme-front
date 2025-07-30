@@ -3,7 +3,6 @@
     <LoadingOverlay
       :isLoading="loading"
       :loadingMessage="loadingMessage"
-      :loadingProgress="loadingProgress"
       :loadingError="error"
       progressType="circular"
     />
