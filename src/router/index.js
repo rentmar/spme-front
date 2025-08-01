@@ -107,7 +107,7 @@ const router = createRouter({
     {
       path: '/planificacion/cronogramas',
       name: 'cronogramas',
-      component: () => import('../views/AboutView.vue'),
+      component: () => import('@/views/planeamiento/ActividadesCronogramaView.vue'),
     },
     {
       path: '/about',
