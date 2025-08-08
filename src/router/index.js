@@ -144,6 +144,32 @@ const router = createRouter({
       name: 'settingsApp',
       component: () => import('@/views/settings/SettingsView.vue'),
     },
+    /****************** Notificaciones **********************/
+    {
+      path: '/notificaciones',
+      name: 'notificaciones',
+      component: HomeView,
+    },
+    {
+      path: '/notificaciones/configuracion',
+      name: 'notificaciones-configuracion',
+      component: HomeView,
+    },
+    {
+      path: '/admin/notificaciones',
+      name: 'admin-notificaciones',
+      component: HomeView,
+    },
+    {
+      path: '/admin/notificaciones/plantillas',
+      name: 'admin-notificaciones-plantillas',
+      component: HomeView,
+    },
+    {
+      path: '/admin/notificaciones/configuracion',
+      name: 'admin-notificaciones-configuracion',
+      component: HomeView,
+    },
     {
       path: '/about',
       name: 'about',
@@ -160,6 +186,7 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/HelpView.vue'),
     },
+
     /*
     {
       path: '/about',

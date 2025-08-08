@@ -144,6 +144,61 @@
       ></v-list-item>
     </v-list-group>
 
+    <v-list-group value="notifications">
+      <template v-slot:activator="{ props }">
+        <v-list-item v-bind="props" prepend-icon="mdi-bell" title="Notificaciones"></v-list-item>
+      </template>
+
+      <v-list-item
+        prepend-icon="mdi-bell-outline"
+        title="Mis Notificaciones"
+        value="user-notifications"
+        to="/notificaciones"
+      >
+        <template v-slot:append>
+          <v-badge
+            v-if="unreadNotificationsCount > 0"
+            color="error"
+            :content="unreadNotificationsCount"
+            inline
+          ></v-badge>
+        </template>
+      </v-list-item>
+      <v-list-item
+        prepend-icon="mdi-cog-outline"
+        title="Configuración"
+        value="notification-settings"
+        to="/notificaciones/configuracion"
+      ></v-list-item>
+      <!-- Sección de administración (solo visible para admin) -->
+      <template v-if="userIsAdmin">
+        <v-divider class="my-1"></v-divider>
+
+        <v-list-item
+          prepend-icon="mdi-bell-cog"
+          title="Administrar Notificaciones"
+          value="admin-notifications"
+          to="/admin/notificaciones"
+          class="admin-item"
+        ></v-list-item>
+        <v-list-item
+          prepend-icon="mdi-format-list-checks"
+          title="Plantillas"
+          value="notification-templates"
+          to="/admin/notificaciones/plantillas"
+          class="admin-item"
+        ></v-list-item>
+
+        <v-list-item
+          prepend-icon="mdi-server-security"
+          title="Configuración del Sistema"
+          value="system-notification-settings"
+          to="/admin/notificaciones/configuracion"
+          class="admin-item"
+        ></v-list-item>
+      </template>
+    </v-list-group>
+
     <v-list-item prepend-icon="mdi-help-box" title="Ayuda" value="help" to="/help"></v-list-item>
 
     <v-list-item
@@ -158,6 +213,9 @@
 <script setup>
 // Puedes agregar lógica aquí para controlar qué elementos del menú se muestran
 // basado en los permisos del usuario
+import { ref } from 'vue'
+const userIsAdmin = ref(true)
+const unreadNotificationsCount = ref(0)
 </script>
 
 <style scoped>
