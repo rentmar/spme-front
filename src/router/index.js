@@ -110,6 +110,41 @@ const router = createRouter({
       component: () => import('@/views/usuario/PerfilUsuarioView.vue'),
     },
     {
+      path: '/admin/usuariosDashboard/',
+      name: 'usuarioDashboard',
+      component: () => import('@/views/usuario/DashboardUsuarioView.vue'),
+    },
+    {
+      path: '/admin/usuarios/',
+      name: 'usuarios',
+      component: () => import('@/views/usuario/UserAdminView.vue'),
+    },
+    {
+      path: '/admin/roles',
+      name: 'roles',
+      component: () => import('@/views/usuario/RolUsuarioView.vue'),
+    },
+    {
+      path: '/admin/permisos',
+      name: 'permisos',
+      component: () => import('@/views/usuario/PermisosView.vue'),
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: HomeView,
+    },
+    {
+      path: '/admin/auditoria',
+      name: 'auditoria',
+      component: HomeView,
+    },
+    {
+      path: '/admin/configuracion',
+      name: 'settingsApp',
+      component: () => import('@/views/settings/SettingsView.vue'),
+    },
+    {
       path: '/about',
       name: 'about',
       // route level code-splitting

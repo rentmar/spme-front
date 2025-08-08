@@ -1,6 +1,14 @@
 <!-- NavMenu.vue -->
 <template>
   <v-list density="compact" nav>
+    <!-- Dashboard Principal -->
+    <v-list-item
+      prepend-icon="mdi-view-dashboard"
+      title="Dashboard"
+      value="dashboard"
+      to="/dashboard"
+    ></v-list-item>
+
     <v-list-item prepend-icon="mdi-home" title="Inicio" value="home" to="/"></v-list-item>
 
     <v-list-group value="estructuracion">
@@ -72,14 +80,14 @@
         prepend-icon="mdi-account-alert"
         title="Solicitud/Reposición"
         value="monitoring-requests"
-        to=""
+        to="/"
       ></v-list-item>
 
       <v-list-item
         prepend-icon="mdi-chart-box"
         title="Rendición Cuentas"
         value="monitoring-reports"
-        to=""
+        to="/"
       ></v-list-item>
 
       <v-list-item
@@ -87,6 +95,52 @@
         title="Informe de Actividad"
         value="monitoring-activity"
         to=""
+      ></v-list-item>
+    </v-list-group>
+
+    <!-- Administración de Usuarios -->
+    <v-list-group value="admin">
+      <template v-slot:activator="{ props }">
+        <v-list-item
+          v-bind="props"
+          prepend-icon="mdi-account-cog"
+          title="Administración"
+        ></v-list-item>
+      </template>
+
+      <v-list-item
+        prepend-icon="mdi-table-account"
+        title="Dashboard Usuarios"
+        value="users"
+        to="/admin/usuariosDashboard"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-account-group"
+        title="Usuarios"
+        value="usuarios"
+        to="/admin/usuarios"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-shield-account"
+        title="Roles"
+        value="roles"
+        to="/admin/roles"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-key-chain"
+        title="Permisos"
+        value="permissions"
+        to="/admin/permisos"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-cog"
+        title="Configuración del Sistema"
+        value="settings"
+        to="/admin/configuracion"
       ></v-list-item>
     </v-list-group>
 
@@ -101,7 +155,11 @@
   </v-list>
 </template>
 
-<script setup></script>
+<script setup>
+// Puedes agregar lógica aquí para controlar qué elementos del menú se muestran
+// basado en los permisos del usuario
+</script>
+
 <style scoped>
 .v-list-item {
   transition: all 0.3s ease;
@@ -115,5 +173,15 @@
 .v-list-item--active {
   background-color: rgba(25, 118, 210, 0.1);
   border-left: 3px solid #1976d2;
+}
+
+/* Destacar la sección de administración */
+.v-list-group[value='admin'] .v-list-item {
+  color: #6a1b9a; /* Color púrpura para destacar */
+}
+
+.v-list-group[value='admin'] .v-list-item--active {
+  background-color: rgba(106, 27, 154, 0.1);
+  border-left: 3px solid #6a1b9a;
 }
 </style>
