@@ -8,10 +8,11 @@ const loading = ref(null)
 const error = ref(null)
 const entidadesFinancieras = ref([])
 const entidadFinanciera = ref(null)
+const opcionesEntidadFinanciera = ref([])
 
-export function useActividad() {
+export function useProcedenciaFondos() {
   //fecth kpis
-  async function cargarActividades() {
+  async function cargarProcedencias() {
     loading.value = true
     try {
       const respuesta = await procedenciaFondosServicio.all()
@@ -25,7 +26,7 @@ export function useActividad() {
   }
 
   //fetch kpi por id
-  async function cargarActividadPorId(id) {
+  async function cargarProcedenciaPorId(id) {
     loading.value = true
     try {
       const respuesta = await procedenciaFondosServicio.porId(id)
@@ -39,7 +40,7 @@ export function useActividad() {
   }
 
   //crear
-  async function crearActividad(data) {
+  async function crearProcedencia(data) {
     loading.value = true
     try {
       const respuesta = await procedenciaFondosServicio.crear(data)
@@ -53,7 +54,7 @@ export function useActividad() {
   }
 
   //Update
-  async function updateActividad(id, data) {
+  async function updateProcedencia(id, data) {
     loading.value = true
     try {
       const respuesta = await procedenciaFondosServicio.update(id, data)
@@ -66,7 +67,7 @@ export function useActividad() {
   }
 
   //Eliminar
-  async function delActividad(id) {
+  async function delProcedencia(id) {
     loading.value = true
     try {
       const respuesta = await procedenciaFondosServicio.delete(id)
@@ -78,15 +79,55 @@ export function useActividad() {
     }
   }
 
+  //Poblar select
+  const fetchOptions = async (transformFn = (item) => item) => {
+    loading.value = true
+    error.value = null
+    try {
+      const data = await procedenciaFondosServicio.all()
+      opcionesEntidadFinanciera.value = data.map((item) => transformFn(item))
+    } catch (err) {
+      error.value = err.message || 'Error al cargar las opciones'
+      console.error('Error fetching options:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const findProcedenciaById = (id) => {
+    return entidadesFinancieras.value.find((item) => item.id === id) || null
+  }
+
+  const findProcedenciasByIds = (ids) => {
+    if (!Array.isArray(ids)) return []
+    return ids.map((id) => findProcedenciaById(id)).filter(Boolean)
+  }
+
+  const getChipsDataFromIds = (ids) => {
+    const defaultColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error']
+
+    return findProcedenciasByIds(ids).map((item, index) => ({
+      id: item.id,
+      text: item.valor,
+      sigla: item.sigla,
+      color: defaultColors[index % defaultColors.length],
+    }))
+  }
+
   return {
     loading, //ref
     error, //ref
     entidadFinanciera, //ref entidad
     entidadesFinancieras, //ref entidades
-    cargarActividades,
-    cargarActividadPorId,
-    crearActividad,
-    updateActividad,
-    delActividad,
+    opcionesEntidadFinanciera, //ref
+    cargarProcedencias,
+    cargarProcedenciaPorId,
+    crearProcedencia,
+    updateProcedencia,
+    delProcedencia,
+    fetchOptions,
+    findProcedenciaById,
+    findProcedenciasByIds,
+    getChipsDataFromIds,
   }
 }

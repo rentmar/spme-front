@@ -14,6 +14,18 @@
         </div>
         <div class="mb-1"><strong>Presupuesto:</strong> {{ datosNodoProyecto.presupuesto }}</div>
         <div class="mb-1"><strong>Estado:</strong> {{ datosNodoProyecto.estado }}</div>
+        <div class="mb-1">
+          <strong>Entidad Financiera:</strong>
+          <div class="d-flex flex-wrap gap-1 mt-1">
+            <v-chip v-for="item in procedenciasSeleccionadas" :key="item.id" class="ma-1">
+              <v-icon start>mdi-bank</v-icon>
+              {{ item.sigla }}
+            </v-chip>
+            <span v-if="!procedenciasSeleccionadas.length" class="text-caption text-grey">
+              No se han seleccionado entidades financieras
+            </span>
+          </div>
+        </div>
       </div>
     </template>
 
@@ -43,10 +55,11 @@
 <script setup>
 import BaseNodo from './BaseNodo.vue'
 import { Handle } from '@vue-flow/core'
-import { reactive, inject } from 'vue'
+import { reactive, inject, onMounted, computed } from 'vue'
 //COmposables CRUD
 import { useObjetivoGeneralProyecto } from '@/modules/proyecto/composables/useObjetivoGeneralProyecto'
 import { useObjetivoEspecifico } from '@/modules/proyecto/composables/useObjetivoEspecifico'
+import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -62,6 +75,7 @@ const datosNodoProyecto = reactive(props.data.datosNodo || {})
 //Composable de objetivos especificos
 const { objetivoGeneral, error, addObjetivoGeneral } = useObjetivoGeneralProyecto()
 const { objetivoEspecifico, crearObjetivoEspecifico } = useObjetivoEspecifico()
+const { cargarProcedencias, findProcedenciasByIds } = useProcedenciaFondos()
 
 const proyectoEstructura = inject('proyectoEstructura')
 
@@ -144,7 +158,19 @@ const agregarObjetivoEspecifico = async () => {
   }
 }
 
-/* Estilos */
+onMounted(async () => {
+  await cargarProcedencias()
+})
+
+const procedenciasSeleccionadas = computed(() => {
+  return findProcedenciasByIds(datosNodoProyecto.procedencia_fondos)
+})
+
+// const procedenciasSeleccionadas = computed(() => {
+//   return findProcedenciasByIds(idsSeleccionados.value)
+// })
+/* Esti
+los */
 //Estilos
 const handleStyle = {
   width: '12px',

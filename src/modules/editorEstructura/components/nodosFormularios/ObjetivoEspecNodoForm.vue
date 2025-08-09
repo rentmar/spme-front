@@ -124,7 +124,7 @@ const guardar = async () => {
     const idDiagrama = proyecto.value.mapa_nodo.id
     console.log(idobjesp)
     console.log(idDiagrama)
-    await updateObjetivoEspecifico(idobjesp, formData.value)
+    await updateObjetivoEspecifico(idobjesp, formData.value.nodoProyecto)
     updateNode(formData.value.id, formData.value)
     await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
     emit('guardar')

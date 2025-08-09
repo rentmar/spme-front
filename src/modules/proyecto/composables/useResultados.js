@@ -83,7 +83,7 @@ export function useResultados() {
   async function updateResultadoOe(id, data) {
     loading.value = true
     try {
-      const respuesta = await resultadObjEspecService(id, data)
+      const respuesta = await resultadObjEspecService.update(id, data)
       return respuesta
     } catch (err) {
       error.value = err

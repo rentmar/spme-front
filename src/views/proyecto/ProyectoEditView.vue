@@ -22,6 +22,7 @@ import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
 import FormularioEdicionProyecto from '@/modules/editorEstructura/components/nodosFormularios/FormularioEdicionProyecto.vue'
+import ProcedenciaFondosLista from '@/modules/procedenciaFondos/components/ProcedenciaFondosLista.vue'
 //Composer Proyecto
 import { useProyectoCrud } from '@/modules/proyecto/composables/useProyectoCrud'
 //Formularios

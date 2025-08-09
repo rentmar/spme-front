@@ -45,11 +45,6 @@
       </v-card>
     </v-dialog>
   </v-form>
-  {{ formData }}
-  <br /><br /><br />
-  {{ proyecto }}
-  <br /><br /><br />
-  {{ getNodes }}
 </template>
 
 <script setup>
