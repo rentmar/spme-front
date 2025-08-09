@@ -1,18 +1,20 @@
 <template>
   <v-app>
-    <!--Componente Barra Superior-->
-    <AppHeader :usuario="usuarioActivo" @toogle-drawer="toogleDrawer"></AppHeader>
-    <!--Componente SideBar-->
-    <AppDrawer :usuario="usuarioActivo" :drawer-state="isDrawerOpen"></AppDrawer>
-    <!--Contenido Principal-->
+    <template v-if="$route.name !== 'Login'">
+      <AppHeader :usuario="usuarioActivo" @toogle-drawer="toogleDrawer"></AppHeader>
+      <AppDrawer :usuario="usuarioActivo" :drawer-state="isDrawerOpen"></AppDrawer>
+    </template>
+
     <v-main>
       <v-container fluid>
         <RouterView></RouterView>
         <AppSnackBar></AppSnackBar>
       </v-container>
     </v-main>
-    <!--Componente Footer-->
-    <AppFooter></AppFooter>
+
+    <template v-if="$route.name !== 'Login'">
+      <AppFooter></AppFooter>
+    </template>
   </v-app>
 </template>
 <script setup>

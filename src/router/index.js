@@ -1,10 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
+import LoginView from '@/views/LoginView.vue'
+import { useUserStore } from '@/stores/user';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
+     {
       path: '/',
+      name: 'Login',
+      component: LoginView,
+    },
+    {
+      path: '/home',
       name: 'home',
       component: HomeView,
     },
@@ -17,16 +24,19 @@ const router = createRouter({
       path: '/pei',
       name: 'pei',
       component: () => import('../views/pei/PeiViewList.vue'),
+      meta: { requiresAuth: true, requiredRole: 'admin' },
     },
     {
       path: '/pei/nuevo',
       name: 'peiNuevo',
       component: () => import('../views/pei/PeiNuevoView.vue'),
+      meta: { requiresAuth: true, requiredRole: 'admin' },
     },
     {
       path: '/pei/:id/detalle',
       name: 'detallePei',
       component: () => import('../views/pei/PeiDetalleView.vue'),
+      meta: { requiresAuth: true, requiredRole: 'admin' },
     },
     {
       path: '/pei/:id/editar',
@@ -131,5 +141,26 @@ const router = createRouter({
     },*/
   ],
 })
+
+router.beforeEach((to, from) => {
+  const userStore = useUserStore();
+
+  // Check if the route requires authentication
+  if (to.meta.requiresAuth && !userStore.isAuthenticated) {
+    // If not authenticated, redirect to the login page
+    return { name: 'login' };
+  }
+
+  // Check if the user has the required role
+  if (to.meta.requiredRole) {
+    // Make sure to handle both string and array of roles
+    const requiredRoles = Array.isArray(to.meta.requiredRole) ? to.meta.requiredRole : [to.meta.requiredRole];
+
+    if (!requiredRoles.includes(userStore.userRole)) {
+      // If the user's role is not in the allowed roles, redirect to a forbidden page or home
+      return { name: 'home' }; // Or a specific 'forbidden' route
+    }
+  }
+});
 
 export default router

@@ -80,7 +80,7 @@ export default {
           fechaini: "2025-04-10",
           fechafin: "2025-05-30",
           descripcion: "elaboracion C",
-          estado: "En_Ejecucion"
+          estado: "Retraso"
         },
         {
           codigo: 1226,
@@ -94,7 +94,7 @@ export default {
           fechaini: "2025-02-01",
           fechafin: "2025-07-31",
           descripcion: "elaboracion D",
-          estado: "En_Ejecucion"
+          estado: "Planificacion"
         }
       ]
     };
