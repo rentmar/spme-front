@@ -11,6 +11,16 @@ const api = axios.create({
   },
 })
 
+//INstancia para Solicitud
+const apiMonitoreo = axios.create({
+  baseURL: import.meta.env.VITE_API_URL_MONITOREO,
+  withCredentials: false,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
 //Instancia para planes
 const apiPlan = axios.create({
   baseURL: import.meta.env.VITE_API_URL_PLAN,
@@ -49,4 +59,4 @@ apiUsuarios.interceptors.response.use((response) => response, errorInterceptor)
 //   },
 // )
 export default api
-export { api, apiPlan, apiUsuarios }
+export { api, apiPlan, apiUsuarios, apiMonitoreo }
