@@ -2,98 +2,62 @@
   <v-container class="v-container v-locale--is-ltr">
     <v-card class="pa-6">
       <v-card-title class="text-h5 font-weight-bold">
-        Formulario F-01:<br> Solicitud de Fondos en Avance con Cargo a Rendición de Cuenta
+        Formulario F-08:<br> Solicitud de Pago Directo
       </v-card-title>
-
-      <v-divider class="my-4"></v-divider>
-
       <v-card-text>
         <v-form @submit.prevent="submitForm">
           <div class="form-section">
-            <v-row>
-              <v-col cols="12" md="4">
-                <v-text-field
-                  v-model="formData.nombre"
-                  label="Nombre del Solicitante"
-                  required
-                  readonly
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field
-                  v-model="formData.paterno"
-                  label="Apellido paterno del Solicitante"
-                  required
-                  readonly
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field
-                  v-model="formData.materno"
-                  label="Apellido materno del Solicitante"
-                  required
-                  readonly
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field
-                  v-model="formData.documento_identidad"
-                  label="Carnet de Identidad"
-                  required
-                  readonly
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field
-                  v-model="formData.cargo"
-                  label="Cargo"
-                  required
-                  readonly
-                ></v-text-field>
-              </v-col>
-            </v-row>
-
-            <v-divider class="my-4"></v-divider>
-
+            <v-text-field
+              v-model="formData.nombre"
+              label="Nombre del Solicitante"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="formData.paterno"
+              label="Apellido paterno del Solicitante"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="formData.materno"
+              label="Apellido materno del Solicitante"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="formData.documento_identidad"
+              label="Carnet de Identidad"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="formData.cargo"
+              label="Cargo"
+              required
+            ></v-text-field>
             <v-textarea
-              v-model="formData.descripcion_actividad"
+              v-model="formData.descripcion_actividad1"
               label="Descripción de la Actividad"
+              bg-color="blue-lighten-5"
               rows="3"
               required
-              readonly
-            ></v-textarea>
-            <v-row>
-              <v-col cols="12" md="4">
-              <v-text-field
-                v-model="formData.fecha_irealizacion"
-                label="Inicio de Fecha de Realización"
-                type="date"
-                required
-                readonly
-              ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-              <v-text-field
-                v-model="formData.fecha_frealizacion"
-                label="fin de Fecha de Realización"
-                type="date"
-                required
-                readonly
-              ></v-text-field>
-              </v-col>
-            </v-row>
-            <v-textarea
-              v-model="formData.objetivo_actividad"
-              label="Objetivo de la Actividad"
-              rows="3"
-              required
-              readonly
             ></v-textarea>
             <v-text-field
-              v-model="formData.fuente_financiamiento"
-              label="Fuente de Financiamiento"
+              v-model="formData.fecha_realizacion1"
+              label="Fecha de Realización"
+              bg-color="blue-lighten-5"
+              type="date"
               required
-              readonly
+            ></v-text-field>
+            <v-textarea
+              v-model="formData.objetivo_actividad1"
+              label="Objetivo de la Actividad"
+              bg-color="blue-lighten-5"
+              rows="3"
+              required
+            ></v-textarea>
+            <v-text-field
+              v-model="formData.fuente_financiamiento1"
+              label="Fuente de Financiamiento"
+              bg-color="blue-lighten-5"
+              required
             ></v-text-field>
           </div>
 
@@ -190,7 +154,6 @@
               label="Fecha de la Solicitud"
               type="date"
               required
-              readonly
             ></v-text-field>
           </div>
 
@@ -201,10 +164,10 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="formData.idresponsable"
+                  v-model="formData.responsable_elegido"
                   bg-color="blue-lighten-5"
                   :items="responsablesList"
-                  :item-title="getNombreCompleto"
+                  item-title="usuario"
                   item-value="id"
                   label="Responsable del Cargo de Cuenta"
                   required
@@ -212,7 +175,7 @@
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
-                  v-model="formData.validacion_responsable"
+                  v-model="formData.responsable_ok"
                   label="Aprobado por Responsable del Cargo de Cuenta"
                   :disabled="isFrozen"
                 ></v-checkbox>
@@ -221,10 +184,10 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="formData.idcoordinador"
+                  v-model="formData.coordinador_elegido"
                   bg-color="blue-lighten-5"
                   :items="coordinadoresList"
-                  :item-title="getNombreCompleto"
+                  item-title="usuario"
                   item-value="id"
                   label="Coordinador"
                   required
@@ -232,7 +195,7 @@
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
-                  v-model="formData.validacion_coordinador"
+                  v-model="formData.coordinador_ok"
                   label="Aprobado por Coordinador"
                   :disabled="isFrozen"
                 ></v-checkbox>
@@ -265,8 +228,7 @@
 </template>
 
 <script setup>
-import * as XLSX from 'xlsx';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
 
@@ -279,47 +241,52 @@ const paymentMethods = ['Cuenta de Banco', 'Cheque'];
 const responsablesList = ref([]);
 const coordinadoresList = ref([]);
 const formData = ref({
-  //descripcion_actividad: '',
+  // nombre: '',
+  // paterno: '',
+  // materno: '',
+  // documento_identidad: '',
+  // cargo: '',
+  // descripcion: '',
+  // fecha_realizacion: '',
+  // objetivo_actividad: '',
+  // fuente_financiamiento: '',
+  // detalle_destino_fondos: [{ partida: '', descripcion: '', monto: 0 }],
+  // forma_pago: '',
+  // lugar_solicitud: '',
+  // fecha_solicitud: getCurrentDate(),
+  // responsable_elegido: null,
+  // responsable: false,
+  // coordinador_elegido: null,
+  // coordinador: false,
+  descripcion_actividad: '',
   detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
   forma_pago: '',
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
   monto_solicitado: 0,
-  validacion_responsable: false,
-  idresponsable:null,
-  validacion_coordinador: false,
-  idcoordinador: null,
-  id_usuario: 0,
+  responsable_elegido: null,
+  idresponsable_aprobacion: null,
+  responsable_ok: false,
+  coordinador_elegido: null,
+  idcoordinador_aprobacion: null,
+  coordinador_ok: false,
+  id_solicitante: 0,
   id_actividad: 0
 });
 
+watch(() => formData.value.responsable_elegido, (newId) => {
+  formData.value.idresponsable_aprobacion = newId;
+});
+watch(() => formData.value.coordinador_elegido, (newId) => {
+  formData.value.idcoordinador_aprobacion = newId;
+});
+
 // Propiedades computadas
-const nombreCoordinadorElegido = computed(() => {
-  const coordinador = coordinadoresList.value.find(
-    (user) => user.id === formData.value.idcoordinador
-  );
-  return coordinador ? getNombreCompleto(coordinador) : '';
-});
-
-const nombreResponsableElegido = computed(() => {
-  const responsable = responsablesList.value.find(
-    (user) => user.id === formData.value.idresponsable
-  );
-  return responsable ? getNombreCompleto(responsable) : '';
-});
-
 const totalMontoSolicitado = computed(() => {
   return formData.value.detalle_destino_fondos.reduce(
     (total, gasto) => total + Number(gasto.monto || 0),
     0
   );
-});
-
-const nombreCompletoSolicitante = computed(() => {
-  const nombre = usuario.value?.nombre || '';
-  const paterno = usuario.value?.paterno || '';
-  const materno = usuario.value?.materno || '';
-  return `${nombre} ${paterno} ${materno}`.trim();
 });
 
 const isFrozen = computed(() => {
@@ -331,10 +298,6 @@ const isFrozen = computed(() => {
 });
 
 // Métodos
-function getNombreCompleto(user) {
-  return `${user.nombre} ${user.paterno} ${user.materno}`.trim();
-}
-
 function getCurrentDate() {
   const today = new Date();
   const year = today.getFullYear();
@@ -376,10 +339,8 @@ async function fetchActivityData() {
     const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/datos_actividad/');
     if (response.data.desglosePresupuesto.length > 0) {
       const activity = response.data.desglosePresupuesto[0];
-      formData.value.descripcion_actividad = activity.descripcion_actividad;
       formData.value.objetivo_actividad = activity.objetivo_actividad;
-      formData.value.fecha_irealizacion = activity.fecha_iactividad;
-      formData.value.fecha_frealizacion = activity.fecha_factividad;
+      formData.value.fecha_realizacion = activity.fecha_actividad;
       formData.value.fuente_financiamiento = activity.fuente_financiamiento;
       formData.value.id_actividad = activity.id;
     }
@@ -399,109 +360,59 @@ function removeGasto(index) {
   }
 }
 
-// ... (código previo de la función)
 async function submitForm() {
   loading.value = true;
   try {
-    // Aquí puedes quitar esto, ya que el payload lo construyes manualmente
-    // formData.value.id_solicitante = usuario.value.id;
-
-    //Propiedades del formulario que son obligatorias (validacion)
-    const requiredFields = [
-      // ... (validaciones)
-      'detalle_destino_fondos',
-      'forma_pago',
-      'lugar_solicitud',
-      'fecha_solicitud',
-      'idresponsable',
-      'idcoordinador',
-    ];
-
+    // Validaciones básicas antes de enviar
+    //const requiredFields = ['nombre', 'paterno', 'materno', 'documento_identidad', 'cargo', 'descripcion', 'fecha_realizacion', 'objetivo_actividad', 'fuente_financiamiento', 'lugar_solicitud', 'forma_pago', 'responsable_elegido', 'coordinador_elegido'];
+    formData.value.monto_solicitado = totalMontoSolicitado.value;
+    formData.value.id_solicitante = usuario.value.id;
+    //formData.value.id_actividad = formData.value.id_actividad;
+    const requiredFields = ['descripcion_actividad', 'detalle_destino_fondos', 'forma_pago', 'lugar_solicitud', 'fecha_solicitud', 'monto_solicitado', 'idresponsable_aprobacion', 'idcoordinador_aprobacion', 'id_solicitante', 'id_actividad'];
     for (const field of requiredFields) {
       if (!formData.value[field]) {
         throw new Error(`El campo '${field}' es requerido.`);
       }
     }
-
-    if (
-      formData.value.detalle_destino_fondos.some(
-        (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0
-      )
-    ) {
-      throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.');
+    if (formData.value.detalle_destino_fondos.some(gasto => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0)) {
+        throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.');
     }
-
-    // --- CARGAR EL PAYLOAD CON LA ESTRUCTURA CORRECTA ---
     const payload = {
-      // detalle_destino_fondos: {},
-      // forma_pago: paymentMethods.indexOf(formData.value.forma_pago) + 1, // Convertir texto a ID
-      // lugar_solicitud: formData.value.lugar_solicitud,
-      // fecha_solicitud: formData.value.fecha_solicitud,
-      // monto_solicitado: totalMontoSolicitado.value,
-      // validacion_responsable: formData.value.validacion_responsable,
-      // id_responsable: formData.value.idresponsable, // Corregir nombre de propiedad
-      // validacion_coordinador: formData.value.validacion_coordinador,
-      // id_coordinador: formData.value.idcoordinador, // Corregir nombre de propiedad
-      // id_usuario: usuario.value.id, // ID del usuario autenticado
-      // id_actividad: formData.value.id_actividad,
-    "detalle_destino_fondos":{},
-    "forma_pago": 2,
-    "lugar_solicitud":"La Paz",
-    "fecha_solicitud":"2025-07-16",
-    "monto_solicitado":100.50,
-    "validacion_responsable":false,
-    "id_responsable":1,
-    "validacion_coordinador":false,
-    "id_coordinador":1,
-    "id_usuario": 2,
-    "id_actividad":1,
+      ...formData.value,
+      descripcion_actividad: formData.value.descripcion_actividad,
+      detalle_destino_fondos: JSON.stringify(formData.value.detalle_destino_fondos),
+      forma_pago: formData.value.forma_pago,
+      lugar_solicitud: formData.value.lugar_solicitud,
+      fecha_solicitud: formData.value.fecha_solicitud,
+      monto_solicitado: totalMontoSolicitado.value,
+      idresponsable_aprobacion: formData.value.idresponsable_aprobacion,
+      idcoordinador_aprobacion: formData.value.idcoordinador_aprobacion,
+      responsable_ok: formData.value.responsable_ok,
+      coordinador_ok: formData.value.coordinador_ok,
+      id_solicitante: usuario.value.id || '',
+      id_actividad: formData.value.id_actividad || ''
     };
 
-    // Si tu API espera los detalles de gastos como un array JSON, usa esta linea en su lugar
-    // Si la API no espera detalle de gastos o lo maneja de otra forma, revisa la documentación de tu API.
-    // detalle_destino_fondos: JSON.stringify(formData.value.detalle_destino_fondos),
+    delete payload.responsable_elegido;
+    delete payload.coordinador_elegido;
 
-    console.log('Payload a enviar (JSON):', JSON.stringify(payload, null, 2));
+    console.log('Payload a enviar (JSON):', payload);
 
-    await axios.post('http://127.0.0.1:8000/monitoreo_api/crearSolicitudFondos/', payload, {
+    await axios.post('http://127.0.0.1:8000/monitoreo_api/crearUsuario/', payload, {
       headers: {
-        'Content-Type': 'application/json',
-      },
+        'Content-Type': 'application/json'
+      }
     });
 
     alert('Solicitud enviada con éxito');
-    exportToExcel();
     resetForm();
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message);
-    alert(`Error: ${error.response?.data?.mensaje || error.message}`);
+    alert(`Error: ${error.response?.data?.message || error.message}`);
   } finally {
     loading.value = false;
   }
 }
-
-// ... (código posterior de la función)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function resetForm() {
   Object.assign(formData.value, {
@@ -512,50 +423,12 @@ function resetForm() {
   fecha_solicitud: getCurrentDate(),
   monto_solicitado: 0,
   responsable_elegido: null,
-  idresponsable: null,
-  validacion_responsable: false,
+  idresponsable_aprobacion: null,
+  responsable_ok: false,
   coordinador_elegido: null,
-  idcoordinador: null,
-  validacion_coordinador: false,
+  idcoordinador_aprobacion: null,
+  coordinador_ok: false,
   });
-}
-
-function exportToExcel() {
-  const mainData = [
-    ["Formulario F-01:", "Solicitud de Fondos en Avance con Cargo a Rendicion de Cuenta"],
-    [],
-    ["Nombre del Solicitante:", nombreCompletoSolicitante.value],
-    ["Documento de Identidad:", formData.value.documento_identidad],
-    ["Cargo:", formData.value.cargo],
-    ["Descripcion de Actividad:", formData.value.descripcion_actividad],
-    ["Inicio de Fecha de Actividad:", formData.value.fecha_irealizacion],
-    ["Fin de Fecha de Actividad:", formData.value.fecha_frealizacion],
-    ["Objetivo de la Actividad:", formData.value.objetivo_actividad],
-    ["Fuente de Financiamiento:", formData.value.fuente_financiamiento],
-    ["Forma de Pago", formData.value.forma_pago],
-    ["Lugar de Solicitud", formData.value.lugar_solicitud],
-    ["Fecha de Solicitud", getCurrentDate()],
-    ["Monto Total Solicitado (Bs.):", totalMontoSolicitado.value],
-    ["Responsable:", nombreResponsableElegido.value],
-    ["Coordinador:", nombreCoordinadorElegido.value],
-  ];
-
-  const expensesHeaders = ["Partida", "Descripción del Gasto", "Monto (Bs.)"];
-  const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
-    gasto.partida,
-    gasto.descripcion_gasto,
-    gasto.monto,
-  ]);
-
-  const wb = XLSX.utils.book_new();
-  const wsMain = XLSX.utils.aoa_to_sheet(mainData);
-  const wsExpenses = XLSX.utils.aoa_to_sheet([expensesHeaders, ...expensesData]);
-
-  XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud Principal');
-  XLSX.utils.book_append_sheet(wb, wsExpenses, 'Detalle de Gastos');
-
-  wsExpenses['!cols'] = [{ wch: 15 }, { wch: 40 }, { wch: 15 }];
-  XLSX.writeFile(wb, 'Solicitud_Fondos_F-01.xlsx');
 }
 
 // Ciclo de vida

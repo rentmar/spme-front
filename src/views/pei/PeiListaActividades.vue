@@ -121,7 +121,7 @@
                     <span v-if="item.fecha_cierre">a {{ formatDate(item.fecha_cierre) }}</span>
                   </div>
                 </v-list-item-subtitle>
-<!-- icono solicitud -->
+<!-- icono solicitud de Fondos -->
                   <template v-slot:append>
                   <div class="d-flex">
                     <v-tooltip text="Solicitud de Fondos" location="top">
@@ -136,7 +136,7 @@
                         ></v-btn>
                       </template>
                     </v-tooltip>
-<!-- icono reposicion-->
+<!-- icono Solicitud de Reposicion -->
                     <v-tooltip text="Solicitud de Reposicion" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
@@ -162,6 +162,32 @@
                         ></v-btn>
                       </template>
                     </v-tooltip>
+<!-- icono Solicitud de Viaje -->
+                    <v-tooltip text="Solicitud de Viaje" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-if="parseInt($route.query.showButton) === 1"
+                          v-bind="props"
+                          icon="mdi-file-document-edit-outline"
+                          variant="text"
+                          color="deep-purple"
+                          :to="`/pei/formulario05`"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+<!-- icono Solicitud de Pago Directo -->
+                    <v-tooltip text="Solicitud de Pago Directo" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-if="parseInt($route.query.showButton) === 1"
+                          v-bind="props"
+                          icon="mdi-file-document-edit-outline"
+                          variant="text"
+                          color="teal-lighten-2"
+                          :to="`/pei/formulario08`"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
 
                     <!-- <v-tooltip text="Avances" location="top">
                       <template v-slot:activator="{ props }">
@@ -171,7 +197,8 @@
                           icon="mdi-progress-check"
                           variant="text"
                           color="teal"
-                          :to="`/actividad/${item.id}/avances`"
+                          @click="toggleExpanded(item.id)"
+                          :class="{ 'rotate-180': expandedActividadId === item.id }"
                         ></v-btn>
                       </template>
                     </v-tooltip> -->
@@ -181,11 +208,10 @@
                         <v-btn
                           v-if="parseInt($route.query.showButton) === 3"
                           v-bind="props"
-                          icon="mdi-chevron-down"
+                          icon="mdi-file-document-edit-outline"
                           variant="text"
                           color="info"
-                          @click="toggleExpanded(item.id)"
-                          :class="{ 'rotate-180': expandedActividadId === item.id }"
+                          :to="`/pei/formularioinf`"
                         ></v-btn>
                       </template>
                     </v-tooltip>

@@ -1,82 +1,107 @@
 <template>
-  <v-container class="py-6">
-    <v-card elevation="3" class="pa-6">
-      <!-- Título del formulario -->
-      <v-card-title class="text-h5 font-weight-bold mb-4">
-        Form. F-03:<br> Solicitud de Reposición
+  <v-container class="v-container v-locale--is-ltr">
+    <v-card class="pa-6">
+      <v-card-title class="text-h5 font-weight-bold">
+        Formulario F-03:<br> Solicitud de Reposición
       </v-card-title>
-      <v-divider class="my-4"></v-divider>
-
-      <!-- Sección 1: Datos del Solicitante -->
-      <v-subheader class="text-h6">Datos del Solicitante</v-subheader>
-      <v-row dense>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="form.solicitante.nombre"
-            label="Nombre Completo del Solicitante"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="form.solicitante.cargo"
-            label="Cargo"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12">
-          <v-text-field
-            v-model="form.solicitante.aprobadoPor"
-            label="Aprobado por Coordinador o Dirección Ejecutiva"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12">
-          <v-textarea
-            v-model="form.descripcionActividad"
-            label="Descripción de la Actividad"
-            variant="filled"
-            rows="3"
-            density="compact"
-          ></v-textarea>
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="form.fechaRealizacion"
-            label="Fecha de Realización"
-            type="date"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12">
-          <v-textarea
-            v-model="form.objetivoActividad"
-            label="Objetivo de la Actividad"
-            variant="filled"
-            rows="3"
-            density="compact"
-          ></v-textarea>
-        </v-col>
-        <v-col cols="12">
-          <v-text-field
-            v-model="form.fuenteFinanciamiento"
-            label="Fuente de Financiamiento"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-      </v-row>
 
       <v-divider class="my-4"></v-divider>
 
-      <!-- Sección 2: Detalle del Destino de Fondos -->
+      <v-card-text>
+        <v-form @submit.prevent="submitForm">
           <div class="form-section">
-            <div class="v-card-subtitle text-subtitle-1">Detalle del Destino de Fondos</div>
+            <v-row>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="formData.nombre"
+                  label="Nombre del Solicitante"
+                  required
+                  readonly
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="formData.paterno"
+                  label="Apellido paterno del Solicitante"
+                  required
+                  readonly
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="formData.materno"
+                  label="Apellido materno del Solicitante"
+                  required
+                  readonly
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="formData.documento_identidad"
+                  label="Carnet de Identidad"
+                  required
+                  readonly
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="formData.cargo"
+                  label="Cargo"
+                  required
+                  readonly
+                ></v-text-field>
+              </v-col>
+            </v-row>
 
+            <v-divider class="my-4"></v-divider>
+
+            <v-textarea
+              v-model="formData.descripcion_actividad"
+              label="Descripción de la Actividad"
+              bg-color="blue-lighten-5"
+              rows="3"
+              required
+            ></v-textarea>
+            <v-text-field
+              v-model="formData.fecha_realizacion"
+              label="Fecha de Realización"
+              type="date"
+              required
+              readonly
+            ></v-text-field>
+            <v-textarea
+              v-model="formData.objetivo_actividad"
+              label="Objetivo de la Actividad"
+              rows="3"
+              required
+              readonly
+            ></v-textarea>
+            <v-text-field
+              v-model="formData.fuente_financiamiento"
+              label="Fuente de Financiamiento"
+              required
+              readonly
+            ></v-text-field>
+          </div>
+
+          <v-divider class="my-4"></v-divider>
+
+          <div class="form-section">
+            <h3 class="mb-4">Detalle del Destino de Fondos</h3>
+            <div class="d-flex justify-space-between align-center mb-4">
+              <v-btn
+                variant="flat"
+                class="text-grey-darken-3 bg-white"
+                rounded="lg"
+                :elevation="3"
+                @click="addGasto"
+              >
+                Agregar Gasto
+              </v-btn>
+              <v-chip class="text-subtitle-1" color="grey-darken-2" variant="outlined">
+                Monto Total Solicitado (Bs.): {{ totalMontoSolicitado }}
+              </v-chip>
+            </div>
             <v-table>
               <thead>
                 <tr>
@@ -87,17 +112,19 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(gasto, index) in form.gastos" :key="index">
+                <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
                   <td>
                     <v-text-field
                       v-model="gasto.partida"
+                      bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
                     ></v-text-field>
                   </td>
                   <td>
                     <v-text-field
-                      v-model="gasto.descripcion"
+                      v-model="gasto.descripcion_gasto"
+                      bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
                     ></v-text-field>
@@ -105,9 +132,11 @@
                   <td>
                     <v-text-field
                       v-model="gasto.monto"
+                      bg-color="blue-lighten-5"
                       type="number"
                       hide-details
                       density="compact"
+                      min="0"
                     ></v-text-field>
                   </td>
                   <td>
@@ -115,7 +144,7 @@
                       variant="text"
                       icon
                       color="error"
-                      @click="eliminarGasto(index)"
+                      @click="removeGasto(index)"
                     >
                       <v-icon>mdi-delete</v-icon>
                     </v-btn>
@@ -123,177 +152,356 @@
                 </tr>
               </tbody>
             </v-table>
-
-            <v-btn
-              variant="flat"
-              class="text-grey-darken-3 bg-white"
-              prepend-icon="mdi-plus"
-              rounded="lg"
-              :elevation="3"
-              @click="agregarGasto"
-            >
-              Agregar Gasto
-            </v-btn>
           </div>
 
-      <v-divider class="my-4"></v-divider>
+          <v-divider class="my-4"></v-divider>
 
-      <!-- Sección 3: Aclaraciones - Reembolso a Cuenta Bancaria -->
-      <v-subheader class="text-h6">
-        Aclaraciones - Reembolso a Cuenta Bancaria
-      </v-subheader>
-      <v-row dense>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="form.beneficiario.nombre"
-            label="Nombre del Beneficiario"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="form.beneficiario.documento"
-            label="Documento de Identidad"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="form.beneficiario.banco"
-            label="Nombre del Banco"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="form.beneficiario.cuenta"
-            label="Número de Cuenta"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" md="6">
           <v-select
-            v-model="form.beneficiario.tipoCuenta"
-            label="Tipo de Cuenta"
-            :items="tiposCuenta"
-            variant="filled"
-            density="compact"
+            v-model="formData.forma_pago"
+            :items="paymentMethods"
+            label="Forma de Pago"
+            bg-color="blue-lighten-5"
+            required
+            class="mb-4"
           ></v-select>
-        </v-col>
-      </v-row>
 
-      <v-divider class="my-4"></v-divider>
+          <div class="form-section">
+            <v-text-field
+              v-model="formData.lugar_solicitud"
+              bg-color="blue-lighten-5"
+              label="Lugar de la Solicitud"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="formData.fecha_solicitud"
+              label="Fecha de la Solicitud"
+              type="date"
+              required
+              readonly
+            ></v-text-field>
+          </div>
 
-      <!-- Sección 4: Firmas y Fecha -->
-      <v-subheader class="text-h6">Firmas y Fecha</v-subheader>
-      <v-row dense>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="form.firmas.beneficiario"
-            label="Firma del Beneficiario"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="form.firmas.coordinador"
-            label="Firma del Coordinador"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="form.firmas.lugar"
-            label="Lugar de la Solicitud"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="form.firmas.fecha"
-            label="Fecha de la Solicitud"
-            type="date"
-            variant="filled"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-      </v-row>
+          <v-divider class="my-4"></v-divider>
 
-      <v-divider class="my-6"></v-divider>
+          <div class="form-section">
+            <div class="text-subtitle-1 font-weight-bold mb-2">Firmas</div>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="formData.idresponsable_elegido"
+                  bg-color="blue-lighten-5"
+                  :items="responsablesList"
+                  :item-title="getNombreCompleto"
+                  item-value="id"
+                  label="Responsable del Cargo de Cuenta"
+                  required
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="6" class="d-flex align-center">
+                <v-checkbox
+                  v-model="formData.validacion_responsable"
+                  label="Aprobado por Responsable del Cargo de Cuenta"
+                  :disabled="isFrozen"
+                ></v-checkbox>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="formData.idcoordinador_elegido"
+                  bg-color="blue-lighten-5"
+                  :items="coordinadoresList"
+                  :item-title="getNombreCompleto"
+                  item-value="id"
+                  label="Coordinador"
+                  required
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="6" class="d-flex align-center">
+                <v-checkbox
+                  v-model="formData.validacion_coordinador"
+                  label="Aprobado por Coordinador"
+                  :disabled="isFrozen"
+                ></v-checkbox>
+              </v-col>
+            </v-row>
+          </div>
 
-      <!-- Botón de envío -->
-      <v-btn color="success" @click="enviarSolicitud">
-        Enviar Solicitud
-      </v-btn>
+          <div class="d-flex justify-end mt-4">
+            <v-btn
+              color="error"
+              class="mr-2"
+              prepend-icon="mdi-backspace-outline"
+              @click="resetForm"
+            >
+              Limpiar
+            </v-btn>
+            <v-btn
+              color="primary"
+              prepend-icon="mdi-file-document-arrow-right"
+              type="submit"
+              :loading="loading"
+            >
+              Enviar Solicitud
+            </v-btn>
+          </div>
+        </v-form>
+      </v-card-text>
     </v-card>
   </v-container>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      tiposCuenta: ['Ahorros', 'Corriente'],
-      form: {
-        solicitante: {
-          nombre: '',
-          cargo: '',
-          aprobadoPor: ''
-        },
-        descripcionActividad: '',
-        fechaRealizacion: '',
-        objetivoActividad: '',
-        fuenteFinanciamiento: '',
-        gastos: [
-          {
-            partida: '',
-            descripcion: '',
-            monto: 0
-          }
-        ],
-        beneficiario: {
-          nombre: '',
-          documento: '',
-          banco: '',
-          cuenta: '',
-          tipoCuenta: ''
-        },
-        firmas: {
-          beneficiario: '',
-          coordinador: '',
-          lugar: '',
-          fecha: ''
-        }
-      }
+<script setup>
+import * as XLSX from 'xlsx';
+import { ref, onMounted, computed } from 'vue';
+import axios from 'axios';
+import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
+
+// Utilizando Composition API para una mejor organización
+const { usuario, informacionUsuarioPorNick } = useUsuario();
+
+// Estado reactivo
+const loading = ref(false);
+const paymentMethods = ['Cuenta de Banco', 'Cheque'];
+const responsablesList = ref([]);
+const coordinadoresList = ref([]);
+const formData = ref({
+  descripcion_actividad: '',
+  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+  forma_pago: '',
+  lugar_solicitud: '',
+  fecha_solicitud: getCurrentDate(),
+  idresponsable_elegido:null,
+  validacion_responsable: false,
+  idcoordinador_elegido: null,
+  validacion_coordinador: false,
+  id_solicitante: 0,
+  id_actividad: 0
+});
+
+// Propiedades computadas
+const nombreCoordinadorElegido = computed(() => {
+  const coordinador = coordinadoresList.value.find(
+    (user) => user.id === formData.value.idcoordinador_elegido
+  );
+  return coordinador ? getNombreCompleto(coordinador) : '';
+});
+
+const nombreResponsableElegido = computed(() => {
+  const responsable = responsablesList.value.find(
+    (user) => user.id === formData.value.idresponsable_elegido
+  );
+  return responsable ? getNombreCompleto(responsable) : '';
+});
+
+const totalMontoSolicitado = computed(() => {
+  return formData.value.detalle_destino_fondos.reduce(
+    (total, gasto) => total + Number(gasto.monto || 0),
+    0
+  );
+});
+
+const nombreCompletoSolicitante = computed(() => {
+  const nombre = usuario.value?.nombre || '';
+  const paterno = usuario.value?.paterno || '';
+  const materno = usuario.value?.materno || '';
+  return `${nombre} ${paterno} ${materno}`.trim();
+});
+
+const isFrozen = computed(() => {
+  if (!usuario.value || !formData.value.coordinador_elegido) {
+    return true;
+  }
+  //return usuario.value.id !== formData.value.coordinador_elegido;
+  return true;
+});
+
+// Métodos
+function getNombreCompleto(user) {
+  return `${user.nombre} ${user.paterno} ${user.materno}`.trim();
+}
+
+function getCurrentDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+async function prefillFormData(nick) {
+  try {
+    await informacionUsuarioPorNick({ usuario: nick });
+    if (usuario.value) {
+      formData.value.nombre = usuario.value.nombre || '';
+      formData.value.paterno = usuario.value.paterno || '';
+      formData.value.materno = usuario.value.materno || '';
+      formData.value.cargo = usuario.value.cargo || '';
+      formData.value.documento_identidad = usuario.value.ci || '';
     }
-  },
-  methods: {
-    agregarGasto() {
-      this.form.gastos.push({
-        partida: '',
-        descripcion: '',
-        monto: 0
-      });
-    },
-    eliminarGasto(index) {
-      this.form.gastos.splice(index, 1)
-    },
-    enviarSolicitud() {
-      // Lógica para enviar el formulario
-      console.log('Formulario enviado:', this.form)
-      // Aquí podrías agregar una llamada API o validación adicional
-    }
+  } catch (err) {
+    console.error('Error al pre-llenar los datos del usuario:', err);
   }
 }
+
+async function fetchUsers() {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/listaUsuarios/');
+    const allUsers = response.data.usuarios;
+    responsablesList.value = allUsers.filter(user => user.rol === 'responsable');
+    coordinadoresList.value = allUsers.filter(user => user.rol === 'coordinador');
+
+  } catch (error) {
+    console.error('Error al cargar la lista de usuarios:', error);
+    alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
+  }
+}
+
+async function fetchActivityData() {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/datos_actividad/');
+    if (response.data.desglosePresupuesto.length > 0) {
+      const activity = response.data.desglosePresupuesto[0];
+      formData.value.objetivo_actividad = activity.objetivo_actividad;
+      formData.value.fecha_realizacion = activity.fecha_actividad;
+      formData.value.fuente_financiamiento = activity.fuente_financiamiento;
+      formData.value.id_actividad = activity.id;
+    }
+  } catch (error) {
+    console.error('Error al cargar actividades:', error);
+    alert('No se pudieron cargar las actividades. Por favor recargue la página.');
+  }
+}
+
+function addGasto() {
+  formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 });
+}
+
+function removeGasto(index) {
+  if (formData.value.detalle_destino_fondos.length > 1) {
+    formData.value.detalle_destino_fondos.splice(index, 1);
+  }
+}
+
+async function submitForm() {
+  loading.value = true;
+  try {
+    formData.value.id_solicitante = usuario.value.id;
+
+    //Propiedades del formulario que son obligatorias (validacion)
+    const requiredFields = [
+      'descripcion_actividad',
+      'detalle_destino_fondos',
+      'forma_pago',
+      'lugar_solicitud',
+      'idresponsable_elegido',
+      'idcoordinador_elegido',
+    ];
+
+    for (const field of requiredFields) {
+      if (!formData.value[field]) {
+        throw new Error(`El campo '${field}' es requerido.`);
+      }
+    }
+
+    if (
+      formData.value.detalle_destino_fondos.some(
+        (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0
+      )
+    ) {
+      throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.');
+    }
+
+    const payload = {
+      ...formData.value,
+      monto_solicitado: totalMontoSolicitado.value,
+      detalle_destino_fondos: JSON.stringify(formData.value.detalle_destino_fondos),
+    };
+
+    console.log('Payload a enviar (JSON):', payload);
+
+    await axios.post('http://127.0.0.1:8000/monitoreo_api/crearUsuario/', payload, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    alert('Solicitud enviada con éxito');
+    exportToExcel();
+    resetForm();
+  } catch (error) {
+    console.error('Error completo:', error.response?.data || error.message);
+    alert(`Error: ${error.response?.data?.message || error.message}`);
+  } finally {
+    loading.value = false;
+  }
+}
+
+function resetForm() {
+  Object.assign(formData.value, {
+  descripcion_actividad: '',
+  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+  forma_pago: '',
+  lugar_solicitud: '',
+  fecha_solicitud: getCurrentDate(),
+  monto_solicitado: 0,
+  responsable_elegido: null,
+  idresponsable_elegido: null,
+  validacion_responsable: false,
+  coordinador_elegido: null,
+  idcoordinador_elegido: null,
+  validacion_coordinador: false,
+  });
+}
+
+function exportToExcel() {
+  const mainData = [
+    ["Formulario F-03:", "Solicitud de Reposición"],
+    [],
+    ["Nombre del Solicitante:", nombreCompletoSolicitante.value],
+    ["Documento de Identidad:", formData.value.documento_identidad],
+    ["Cargo:", formData.value.cargo],
+    ["Descripcion de Actividad:", formData.value.descripcion_actividad],
+    ["Fecha de Realizacion de Actividad:", formData.value.fecha_realizacion],
+    ["Objetivo de la Actividad:", formData.value.objetivo_actividad],
+    ["Fuente de Financiamiento:", formData.value.fuente_financiamiento],
+    ["Forma de Pago", formData.value.forma_pago],
+    ["Lugar de Solicitud", formData.value.lugar_solicitud],
+    ["Fecha de Solicitud", getCurrentDate()],
+    ["Monto Total Solicitado (Bs.):", totalMontoSolicitado.value],
+    ["Responsable:", nombreResponsableElegido.value],
+    ["Coordinador:", nombreCoordinadorElegido.value],
+  ];
+
+  const expensesHeaders = ["Partida", "Descripción del Gasto", "Monto (Bs.)"];
+  const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
+    gasto.partida,
+    gasto.descripcion_gasto,
+    gasto.monto,
+  ]);
+
+  const wb = XLSX.utils.book_new();
+  const wsMain = XLSX.utils.aoa_to_sheet(mainData);
+  const wsExpenses = XLSX.utils.aoa_to_sheet([expensesHeaders, ...expensesData]);
+
+  XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud Principal');
+  XLSX.utils.book_append_sheet(wb, wsExpenses, 'Detalle de Gastos');
+
+  wsExpenses['!cols'] = [{ wch: 15 }, { wch: 40 }, { wch: 15 }];
+  XLSX.writeFile(wb, 'Solicitud_Reposición_F-03.xlsx');
+}
+
+// Ciclo de vida
+onMounted(async () => {
+  await fetchUsers();
+  await fetchActivityData();
+  await prefillFormData('ACarvajal'); // Reemplaza con tu lógica de autenticación
+});
 </script>
 
 <style scoped>
-/* Estilos personalizados si son necesarios */
+.v-card {
+  max-width: 900px;
+  margin: 0 auto;
+}
 </style>
