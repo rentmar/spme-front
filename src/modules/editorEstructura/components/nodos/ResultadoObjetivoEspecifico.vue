@@ -243,8 +243,7 @@ const agregarActividad = async () => {
   //   producto_oe: null,
   // }
   const act = {
-    id: 1,
-    codigo: null,
+    codigo: 'ACT',
     descripcion: '',
     supuestos: '',
     riesgos: '',
