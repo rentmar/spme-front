@@ -88,6 +88,11 @@ const router = createRouter({
       // name: 'editarIndicadores',
       component: () => import('../views/pei/PeiPrueba2.vue'),
     },
+        {
+      path: '/pei/prueba1',
+      // name: 'editarIndicadores',
+      component: () => import('../views/pei/PeiPrueba1.vue'),
+    },
     {
       path: '/proyecto',
       name: 'proyecto',
