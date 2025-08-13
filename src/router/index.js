@@ -89,6 +89,11 @@ const router = createRouter({
       component: () => import('../views/pei/PeiPrueba2.vue'),
     },
     {
+      path: '/pei/prueba3',
+      // name: 'editarIndicadores',
+      component: () => import('@/views/pei/PeiComposableView.vue'),
+    },
+    {
       path: '/proyecto',
       name: 'proyecto',
       component: () => import('../views/proyecto/ProyectoListView.vue'),
