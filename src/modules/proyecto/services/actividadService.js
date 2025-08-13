@@ -44,7 +44,7 @@ export const actividadServicios = {
   /*eliminar */
   delete: async (id) => {
     try {
-      const respuesta = await api.del('/actividades/' + id + '/')
+      const respuesta = await api.delete('/actividades/' + id + '/')
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al eliminar actividad  id' + id, error)

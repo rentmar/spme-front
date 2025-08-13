@@ -22,11 +22,55 @@ export function useUsuario() {
     }
   }
 
+  //Datos de usuario por id
+  async function usuarioPorIdentificador(id) {
+    loading.value = true
+    try {
+      const respuesta = await usuarioServicios.usuarioPorId(id)
+      usuario.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Lista de usuarios
+  async function listaUsuarios() {
+    loading.value = true
+    try {
+      const respuesta = await usuarioServicios.usuariosTodos()
+      usuarios.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function crearUsuario(datosUsuario) {
+    loading.value = true
+    try {
+      const respuesta = await usuarioServicios.regUsuario(datosUsuario)
+      usuarios.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading, //ref
     error, //ref
     usuarios, //ref lista de kpis
     usuario, //ref un kpi por id
     informacionUsuarioPorNick, //func
+    usuarioPorIdentificador, //func
+    listaUsuarios, //func
+    crearUsuario, //func
   }
 }
