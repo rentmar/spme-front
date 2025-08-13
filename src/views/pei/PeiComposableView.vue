@@ -155,7 +155,7 @@ const {
 
 // Estado del formulario
 const formData = ref({
-  codigo: 'ACT',
+  codigo: '',
   descripcion: '',
   supuestos: '',
   riesgos: '',
@@ -202,7 +202,7 @@ async function fetchActividad(id) {
     await cargarActividadPorId(id)
     // Prellenar formulario para edición
     formData.value = {
-      nombre: actividad.value.nombre,
+      codigo: actividad.value.codigo,
       descripcion: actividad.value.descripcion,
       // Copia otros campos
     }
@@ -242,9 +242,6 @@ async function confirmDelete() {
   try {
     await delActividad(actividadToDelete.value)
     await fetchActividades()
-    if (actividad.value && actividad.value.id === actividadToDelete.value) {
-      actividad.value = null
-    }
     confirmDialog.value = false
   } catch (err) {
     console.error('Error al eliminar actividad:', err)
