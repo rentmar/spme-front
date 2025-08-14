@@ -96,7 +96,7 @@
                 </template>
 
                 <v-list-item-title class="font-weight-bold">
-                  {{ getTipoTexto(item.tipo) }}: {{ item.codigo }}
+                  Codigo: {{ item.codigo }}
                 </v-list-item-title>
                 <v-list-item-subtitle class="mt-1">
                   <div class="d-flex align-center flex-wrap">
@@ -110,6 +110,7 @@
                     </v-chip>
                     <span class="mr-2">Presupuesto: {{ formatCurrency(item.presupuesto) }}</span>
                     <span>Fondos: {{ getProcedenciaTexto(item.procedencia_fondos) }}</span>
+                    <span>Descripcion: {{ item.descripcion }}</span>
                   </div>
                   <div class="text-caption mt-1">{{ item.descripcion }}</div>
                   <div class="text-caption mt-1" v-if="item.fecha_programada">
@@ -132,7 +133,7 @@
                           icon="mdi-file-document-edit-outline"
                           variant="text"
                           color="primary"
-                          :to="`/pei/formulario01`"
+                          :to="`/pei/formulario01/${item.id}`"
                         ></v-btn>
                       </template>
                     </v-tooltip>
@@ -145,7 +146,7 @@
                           icon="mdi-file-document-edit-outline"
                           variant="text"
                           color="warning"
-                          :to="`/pei/formulario03`"
+                          :to="`/pei/formulario03/${item.id}`"
                         ></v-btn>
                       </template>
                     </v-tooltip>
@@ -158,7 +159,7 @@
                           icon="mdi-file-document-edit-outline"
                           variant="text"
                           color="error"
-                          :to="`/pei/formulario02`"
+                          :to="`/pei/formulario02/${item.id}`"
                         ></v-btn>
                       </template>
                     </v-tooltip>
@@ -171,7 +172,7 @@
                           icon="mdi-file-document-edit-outline"
                           variant="text"
                           color="deep-purple"
-                          :to="`/pei/formulario05`"
+                          :to="`/pei/formulario05/${item.id}`"
                         ></v-btn>
                       </template>
                     </v-tooltip>
@@ -184,7 +185,7 @@
                           icon="mdi-file-document-edit-outline"
                           variant="text"
                           color="teal-lighten-2"
-                          :to="`/pei/formulario08`"
+                          :to="`/pei/formulario08/${item.id}`"
                         ></v-btn>
                       </template>
                     </v-tooltip>
@@ -211,7 +212,7 @@
                           icon="mdi-file-document-edit-outline"
                           variant="text"
                           color="info"
-                          :to="`/pei/formularioinf`"
+                          :to="`/pei/formularioinf/${item.id}`"
                         ></v-btn>
                       </template>
                     </v-tooltip>
@@ -537,6 +538,7 @@
       </v-card>
     </v-dialog>
   </v-container>
+  {{ actividades }}
 </template>
 
 <script setup>

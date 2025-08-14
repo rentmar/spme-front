@@ -124,6 +124,11 @@ import { formulariosServicios } from '@/modules/formularios/services/formularios
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const idActividad = route.params.id || null;
+console.log('ID de Actividad desde la ruta:', idActividad);
 
 // Utilizando Composition API para una mejor organización
 const { usuario, informacionUsuarioPorNick } = useUsuario();

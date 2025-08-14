@@ -21,14 +21,11 @@
     "@vue-flow/core": "^1.45.0",
     "@vue-flow/minimap": "^1.5.3",
     "@vue-flow/node-toolbar": "^1.1.1",
-<<<<<<< HEAD
     "ag-grid-vue3": "^34.0.1",
     "axios": "^1.10.0",
-    "core-js": "^3.43.0",
-=======
-    "axios": "^1.8.4",
+    "chart": "^0.1.2",
     "chart.js": "^4.5.0",
->>>>>>> release-prot
+    "core-js": "^3.43.0",
     "dagre": "^0.8.5",
     "date-fns": "^4.1.0",
     "echarts": "^6.0.0",

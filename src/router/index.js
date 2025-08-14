@@ -50,36 +50,36 @@ const router = createRouter({
     },
     {
       path: '/pei/listaactividades',
-      // name: 'editarIndicadores',
+      name: 'listadeActividades',
       component: () => import('../views/pei/PeiListaActividades.vue'),
     },
     {
-      path: '/pei/formulario01',
+      path: '/pei/formulario01/:id/',
       // name: 'editarIndicadores',
       component: () => import('../views/pei/PeiFormulario01.vue'),
     },
     {
-      path: '/pei/formulario02',
+      path: '/pei/formulario02/:id',
       // name: 'editarIndicadores',
       component: () => import('../views/pei/PeiFormulario02.vue'),
     },
     {
-      path: '/pei/formulario03',
+      path: '/pei/formulario03/:id',
       // name: 'editarIndicadores',
       component: () => import('../views/pei/PeiFormulario03.vue'),
     },
     {
-      path: '/pei/formulario05',
+      path: '/pei/formulario05/:id',
       // name: 'editarIndicadores',
       component: () => import('../views/pei/PeiFormulario05.vue'),
     },
     {
-      path: '/pei/formulario08',
+      path: '/pei/formulario08/:id',
       // name: 'editarIndicadores',
       component: () => import('../views/pei/PeiFormulario08.vue'),
     },
     {
-      path: '/pei/formularioinf',
+      path: '/pei/formularioinf/:id',
       // name: 'editarIndicadores',
       component: () => import('../views/pei/PeiFormularioInf.vue'),
     },

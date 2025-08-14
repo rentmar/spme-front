@@ -89,7 +89,7 @@
         prepend-icon="mdi-account-alert"
         title="Solicitud/Reposición"
         value="monitoring-requests"
-        to="/"
+        to="/pei/listaactividades?showButton=1"
       ></v-list-item>
 
       <v-list-item
@@ -97,7 +97,7 @@
         prepend-icon="mdi-chart-box"
         title="Rendición Cuentas"
         value="monitoring-reports"
-        to="/"
+        to="/pei/listaactividades?showButton=2"
       ></v-list-item>
 
       <v-list-item
