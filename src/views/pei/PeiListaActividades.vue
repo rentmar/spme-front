@@ -364,62 +364,45 @@
                 <v-icon color="primary">mdi-calendar-check</v-icon>
               </template>
               <v-list-item-title>Total actividades</v-list-item-title>
-              <v-list-item-subtitle class="text-right">{{
-                filteredActividades.length
-              }}</v-list-item-subtitle>
+              <v-list-item-subtitle class="text-right">{{ filteredActividades.length }}</v-list-item-subtitle>
             </v-list-item>
-
             <v-list-item>
               <template v-slot:prepend>
                 <v-icon color="yellow">mdi-calendar-question</v-icon>
               </template>
               <v-list-item-title>Reprogramación</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ countByStatus('SPLAN') }}
-              </v-list-item-subtitle>
+              <v-list-item-subtitle class="text-right"> {{ countByStatus('SPLAN') }} </v-list-item-subtitle>
             </v-list-item>
-
             <v-list-item>
               <template v-slot:prepend>
                 <v-icon color="light-blue">mdi-calendar-edit</v-icon>
               </template>
               <v-list-item-title>Planificación</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ countByStatus('PLAN') }}
-              </v-list-item-subtitle>
+              <v-list-item-subtitle class="text-right"> {{ countByStatus('PLAN') }} </v-list-item-subtitle>
             </v-list-item>
-
             <v-list-item>
               <template v-slot:prepend>
                 <v-icon color="orange">mdi-progress-clock</v-icon>
               </template>
               <v-list-item-title>En Ejecución</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ countByStatus('EJEC') }}
-              </v-list-item-subtitle>
+              <v-list-item-subtitle class="text-right"> {{ countByStatus('EJEC') }} </v-list-item-subtitle>
             </v-list-item>
-
             <v-list-item>
               <template v-slot:prepend>
                 <v-icon color="green">mdi-check-circle</v-icon>
               </template>
               <v-list-item-title>Finalizado</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ countByStatus('COMP') }}
-              </v-list-item-subtitle>
+              <v-list-item-subtitle class="text-right"> {{ countByStatus('COMP') }} </v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-card>
       </v-col>
     </v-row>
-
     <!-- Diálogo de confirmación de eliminación -->
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
         <v-card-title class="text-h5">Confirmar eliminación</v-card-title>
-        <v-card-text>
-          ¿Estás seguro de que deseas eliminar la ACTIVIDAD: "{{ actividadToDelete.codigo }}"?
-        </v-card-text>
+        <v-card-text> ¿Estás seguro de que deseas eliminar la ACTIVIDAD: "{{ actividadToDelete.codigo }}"? </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="grey" @click="deleteDialog = false">Cancelar</v-btn>
@@ -427,516 +410,292 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
     <!-- Diálogo para nueva actividad -->
     <v-dialog v-model="dialogNuevaActividad" max-width="800" persistent>
       <v-card>
         <v-toolbar color="primary" title="Nueva Actividad"></v-toolbar>
-
         <v-card-text>
           <v-form ref="form" v-model="formValid" @submit.prevent="openConfirmation">
             <v-container>
               <!-- Primera fila: Código y Tipo -->
               <v-row>
                 <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="actividad.codigo"
-                    label="Código *"
-                    :rules="codigoRules"
-                    counter="60"
-                    required
-                    variant="outlined"
-                  ></v-text-field>
+                  <v-text-field v-model="actividad.codigo" label="Código" :rules="codigoRules" required></v-text-field>
                 </v-col>
-
                 <v-col cols="12" md="6">
                   <v-select
                     v-model="actividad.tipo"
                     :items="tiposActividad"
-                    label="Tipo de actividad *"
                     item-title="text"
                     item-value="value"
+                    label="Tipo de actividad"
                     required
-                    variant="outlined"
                   ></v-select>
                 </v-col>
               </v-row>
-
-              <!-- Descripción -->
+              <!-- Segunda fila: Fechas -->
+              <v-row>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="actividad.fecha_programada"
+                    label="Fecha Programada"
+                    type="date"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field v-model="actividad.duracion" label="Duración (días)" type="number"></v-text-field>
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field v-model="actividad.fecha_inicio" label="Fecha Inicio" type="date"></v-text-field>
+                </v-col>
+              </v-row>
+              <!-- Tercera fila: Descripción y presupuesto -->
               <v-row>
                 <v-col cols="12">
                   <v-textarea
                     v-model="actividad.descripcion"
-                    label="Descripción *"
+                    label="Descripción de la actividad"
                     rows="3"
-                    variant="outlined"
-                    :rules="[(v) => !!v || 'La descripción es requerida']"
+                    required
                   ></v-textarea>
                 </v-col>
-              </v-row>
-
-              <!-- Segunda fila: Estado y Procedencia de fondos -->
-              <v-row>
                 <v-col cols="12" md="6">
-                  <v-select
-                    v-model="actividad.estado"
-                    :items="availableStatuses"
-                    label="Estado *"
-                    item-title="text"
-                    item-value="value"
+                  <v-text-field
+                    v-model="actividad.presupuesto"
+                    label="Presupuesto"
+                    type="number"
+                    prefix="Bs."
                     required
-                    variant="outlined"
-                  ></v-select>
+                  ></v-text-field>
                 </v-col>
-
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="actividad.presupuesto_pei"
+                    label="Presupuesto PEI"
+                    type="number"
+                    prefix="Bs."
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+              <!-- Cuarta fila: Procedencia de fondos y objetivo -->
+              <v-row>
                 <v-col cols="12" md="6">
                   <v-select
                     v-model="actividad.procedencia_fondos"
                     :items="procedenciaFondos"
-                    label="Procedencia de fondos *"
                     item-title="text"
                     item-value="value"
+                    label="Procedencia de fondos"
                     required
-                    variant="outlined"
                   ></v-select>
                 </v-col>
-              </v-row>
-
-              <!-- Tercera fila: Presupuestos -->
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-number-input
-                    v-model="actividad.presupuesto"
-                    label="Presupuesto"
-                    variant="outlined"
-                    :precision="2"
-                  ></v-number-input>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-number-input
-                    v-model="actividad.presupuesto_pei"
-                    label="Presupuesto PEI"
-                    variant="outlined"
-                    :precision="2"
-                  ></v-number-input>
-                </v-col>
-              </v-row>
-
-              <!-- Cuarta fila: Fechas -->
-              <v-row>
-                <v-col cols="12" md="4">
-                  <v-text-field
-                    label="Fecha programada"
-                    v-model="actividad.fecha_programada"
-                    type="date"
-                    variant="outlined"
-                  ></v-text-field>
-                </v-col>
-
-                <v-col cols="12" md="4">
-                  <v-text-field
-                    label="Fecha de inicio"
-                    v-model="actividad.fecha_inicio"
-                    type="date"
-                    variant="outlined"
-                  ></v-text-field>
-                </v-col>
-
-                <v-col cols="12" md="4">
-                  <v-text-field
-                    label="Fecha de cierre"
-                    v-model="actividad.fecha_cierre"
-                    type="date"
-                    variant="outlined"
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-
-              <!-- Quinta fila: Duración -->
-              <v-row>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="actividad.duracion"
-                    label="Duración (días)"
-                    type="number"
-                    min="0"
-                    variant="outlined"
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-
-              <v-divider class="my-4"></v-divider>
-
-              <!-- Sexta fila: Objetivo y evaluación -->
-              <v-row>
-                <v-col cols="12">
-                  <v-textarea
                     v-model="actividad.objetivo_de_actividad"
                     label="Objetivo de la actividad"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+              <!-- Quinta fila: Justificación de modificación y evaluación -->
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-textarea
+                    v-model="actividad.justificacion_modificacion"
+                    label="Justificación de modificación"
                     rows="2"
-                    variant="outlined"
                   ></v-textarea>
                 </v-col>
-
-                <v-col cols="12">
+                <v-col cols="12" md="6">
                   <v-textarea
                     v-model="actividad.descripcion_evaluacion"
                     label="Descripción de evaluación"
                     rows="2"
-                    variant="outlined"
                   ></v-textarea>
                 </v-col>
               </v-row>
             </v-container>
+            <div class="d-flex justify-end mt-4">
+              <v-btn color="primary" type="submit" :disabled="!formValid" class="mr-2">Crear</v-btn>
+              <v-btn color="error" @click="closeDialog">Cancelar</v-btn>
+            </div>
           </v-form>
         </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="error" variant="text" @click="closeDialog"> Cancelar </v-btn>
-          <v-btn
-            color="success"
-            variant="elevated"
-            :disabled="!formValid"
-            @click="openConfirmation"
-          >
-            Guardar
-          </v-btn>
-        </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- Diálogo de confirmación de creación -->
-    <v-dialog v-model="confirmDialog" max-width="400">
+    <v-dialog v-model="confirmationDialog" max-width="400">
       <v-card>
-        <v-card-title class="text-h5">Confirmar creación</v-card-title>
-        <v-card-text> ¿Está seguro que desea crear esta actividad? </v-card-text>
+        <v-card-title class="text-h5">Confirmar Creación</v-card-title>
+        <v-card-text> ¿Estás seguro de que los datos son correctos? </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="secondary" variant="text" @click="confirmDialog = false"> No </v-btn>
-          <v-btn color="primary" variant="elevated" @click="submitActividad"> Sí, crear </v-btn>
+          <v-btn color="secondary" @click="confirmationDialog = false">
+            Editar
+          </v-btn>
+          <v-btn color="primary" @click="createActividad">Confirmar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- Mensaje de confirmación -->
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
-      {{ snackbar.text }}
-
-      <template v-slot:actions>
-        <v-btn variant="text" @click="snackbar.show = false"> Cerrar </v-btn>
-      </template>
-    </v-snackbar>
   </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { formatDate } from '@/utility/formatters'
+import { ref, onMounted, computed } from 'vue'
+import { useActividad } from '@/modules/proyecto/composables/useActividad.js'
 
-// Enrutador
-const router = useRouter()
+// Usamos el composable
+const {
+  loading,
+  error,
+  actividades,
+  actividad,
+  cargarActividades,
+  crearActividad,
+} = useActividad()
 
-// Estado del snackbar
+// Estado del formulario
+const formValid = ref(false)
+const dialogNuevaActividad = ref(false)
+const confirmationDialog = ref(false)
 const snackbar = ref({
   show: false,
   text: '',
-  color: 'success', // 'success' o 'error'
+  color: '',
 })
 
-// Estados para los modales CREACION DE ACTIVIDAD
-const dialogNuevaActividad = ref(false)
-const confirmDialog = ref(false)
-const form = ref(null)
-const formValid = ref(false)
-
-// Datos de actividades (ahora se cargarán desde la API)
-const actividades = ref([])
-const loading = ref(true)
-const error = ref(null)
-const emptyResponse = ref(false)
-
-// Función para cargar actividades desde la API
-const fetchActividades = async () => {
-  try {
-    loading.value = true
-    const response = await fetch('http://127.0.0.1:8000/actividades_api/obtenerActividadesUsuario/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ user_id: 1 })
-    })
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`)
-    }
-
-    const data = await response.json()
-    actividades.value = data.actividades || []
-    emptyResponse.value = actividades.value.length === 0
-  } catch (err) {
-    console.error('Error al obtener actividades:', err)
-    error.value = 'Error al cargar las actividades'
-    snackbar.value = {
-      show: true,
-      text: error.value,
-      color: 'error'
-    }
-    actividades.value = [] // Asegurarse de que actividades es un array
-    emptyResponse.value = true
-  } finally {
-    loading.value = false
-  }
-}
-
-// Resto del código permanece igual...
-const deleteDialog = ref(false)
-const actividadToDelete = ref(null)
-const expandedActividadId = ref(null)
+// Paginación y búsqueda
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
 const searchQuery = ref('')
-const activeTab = ref('datos')
-
-// Filtros
 const statusFilters = ref([])
 const tipoFilter = ref(null)
 const procedenciaFilter = ref(null)
+const expandedActividadId = ref(null)
 
-// Paginación
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-
-// Opciones para selects
 const availableStatuses = [
-  { text: 'Reprogramación', value: 'SPLAN' },
-  { text: 'Planificación', value: 'PLAN' },
-  { text: 'En Ejecución', value: 'EJEC' },
-  { text: 'En Reporte', value: 'POST' },
-  { text: 'Retraso', value: 'CANC' },
-  { text: 'Finalizado', value: 'COMP' },
+  { value: 'SPLAN', text: 'Reprogramación' },
+  { value: 'PLAN', text: 'Planificación' },
+  { value: 'EJEC', text: 'En Ejecución' },
+  { value: 'COMP', text: 'Finalizado' },
+  { value: 'NODEF', text: 'No Definido' },
 ]
 
 const tiposActividad = [
-  { text: 'No definido', value: 'NODEF' },
-  { text: 'Capacitación', value: 'ACAP' },
-  { text: 'Investigación', value: 'PRIN' },
-  { text: 'Operativa', value: 'AOP' },
-  { text: 'Sensibilización', value: 'CSNS' },
-  { text: 'Desarrollo', value: 'PDES' },
-  { text: 'Incidencia', value: 'AINC' },
-  { text: 'Articulación', value: 'AART' },
+  { value: 'A', text: 'Actividad' },
+  { value: 'T', text: 'Tarea' },
+  { value: 'NODEF', text: 'No Definido' },
 ]
 
 const procedenciaFondos = [
-  { text: 'Fondos de la Institución', value: 'UG' },
-  { text: 'Fondos del proyecto', value: 'PROY' },
+  { value: 'PROY', text: 'Proyecto' },
+  { value: 'PRESP', text: 'Presupuesto' },
+  { value: 'NODEF', text: 'No Definido' },
 ]
 
-// Computed
+// Cargar actividades al montar el componente
+onMounted(async () => {
+  await fetchActividades()
+})
+
+// Funciones del componente
+async function fetchActividades() {
+  try {
+    await cargarActividades()
+  } catch (err) {
+    console.error('Error al cargar actividades:', err)
+  }
+}
+
+// Lógica de paginación y filtros
 const filteredActividades = computed(() => {
   let filtered = actividades.value
-
-  // Filtro por búsqueda
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(
-      (actividad) =>
-        (actividad.codigo && actividad.codigo.toLowerCase().includes(query)) ||
-        (actividad.descripcion && actividad.descripcion.toLowerCase().includes(query)),
-    )
-  }
-
-  // Filtro por estado
-  if (statusFilters.value.length > 0) {
-    filtered = filtered.filter((actividad) => statusFilters.value.includes(actividad.estado))
-  }
-
-  // Filtro por tipo
-  if (tipoFilter.value) {
-    filtered = filtered.filter((actividad) => actividad.tipo === tipoFilter.value)
-  }
-
-  // Filtro por procedencia de fondos
-  if (procedenciaFilter.value) {
-    filtered = filtered.filter(
-      (actividad) => actividad.procedencia_fondos === procedenciaFilter.value,
-    )
-  }
-
+    ? actividades.value.filter(
+        (act) =>
+          (searchQuery.value === null ||
+            searchQuery.value === '' ||
+            act.codigo.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            act.descripcion.toLowerCase().includes(searchQuery.value.toLowerCase())) &&
+          (statusFilters.value.length === 0 || statusFilters.value.includes(act.estado)) &&
+          (tipoFilter.value === null || tipoFilter.value === act.tipo) &&
+          (procedenciaFilter.value === null || procedenciaFilter.value === act.procedencia_fondos)
+      )
+    : []
   return filtered
 })
 
-// Paginación
+const totalPages = computed(() => Math.ceil(filteredActividades.value.length / itemsPerPage.value))
+
 const actividadesPaginadas = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredActividades.value.slice(start, end)
 })
 
-const totalPages = computed(() => Math.ceil(filteredActividades.value.length / itemsPerPage.value))
+const emptyResponse = computed(() => filteredActividades.value.length === 0 && !loading.value)
+
 const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
-const endItem = computed(() => {
-  const end = currentPage.value * itemsPerPage.value
-  return end > filteredActividades.value.length ? filteredActividades.value.length : end
-})
-
-// Cargar actividades al montar el componente
-onMounted(() => {
-  fetchActividades()
-})
-
-// Funciones de ayuda
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'SPLAN':
-      return 'yellow'
-    case 'PLAN':
-      return 'light-blue'
-    case 'EJEC':
-      return 'orange'
-    case 'POST':
-      return 'light-green'
-    case 'CANC':
-      return 'red'
-    case 'COMP':
-      return 'green'
-    default:
-      return 'grey'
-  }
-}
-
-const getEstadoTexto = (estado) => {
-  const status = availableStatuses.find((s) => s.value === estado)
-  return status ? status.text : estado
-}
-
-const getTipoTexto = (tipo) => {
-  const tipoObj = tiposActividad.find((t) => t.value === tipo)
-  return tipoObj ? tipoObj.text : tipo
-}
-
-const getProcedenciaTexto = (procedencia) => {
-  const proc = procedenciaFondos.find((p) => p.value === procedencia)
-  return proc ? proc.text : procedencia
-}
-
-const getTipoIcon = (tipo) => {
-  switch (tipo) {
-    case 'ACAP':
-      return 'mdi-school'
-    case 'PRIN':
-      return 'mdi-microscope'
-    case 'AOP':
-      return 'mdi-cog'
-    case 'CSNS':
-      return 'mdi-bullhorn'
-    case 'PDES':
-      return 'mdi-home-city'
-    case 'AINC':
-      return 'mdi-handshake'
-    case 'AART':
-      return 'mdi-account-group'
-    default:
-      return 'mdi-calendar'
-  }
-}
-
-const formatCurrency = (value) => {
-  if (!value) return '$0.00'
-  return new Intl.NumberFormat('es-US', { style: 'currency', currency: 'USD' }).format(value)
-}
-
-// Contador por estado
-const countByStatus = (status) => {
-  return filteredActividades.value.filter((a) => a.estado === status).length
-}
-
-// Acciones
-const confirmDelete = (actividad) => {
-  actividadToDelete.value = actividad
-  deleteDialog.value = true
-}
-
-const deleteActividad = async () => {
-  try {
-    loading.value = true
-
-    // Simulamos la eliminación de la actividad
-    actividades.value = actividades.value.filter((a) => a.id !== actividadToDelete.value.id)
-
-    snackbar.value = {
-      show: true,
-      text: 'Actividad eliminada exitosamente',
-      color: 'success',
-    }
-  } catch (err) {
-    error.value = 'Error al eliminar la actividad: Intente nuevamente más tarde'
-    console.error('Error al eliminar actividad', err)
-    snackbar.value = {
-      show: true,
-      text: error.value,
-      color: 'error',
-    }
-  } finally {
-    loading.value = false
-    deleteDialog.value = false
-  }
-}
-
-const exportToExcel = () => {
-  alert('Función de exportar a Excel simulada')
-}
+const endItem = computed(() =>
+  Math.min(currentPage.value * itemsPerPage.value, filteredActividades.value.length)
+)
 
 const toggleExpanded = (id) => {
   expandedActividadId.value = expandedActividadId.value === id ? null : id
 }
 
-// Métodos para el formulario
-const openConfirmation = async () => {
-  const { valid } = await form.value.validate()
-  if (valid) {
-    confirmDialog.value = true
+// Funciones de utilidad
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'PLAN':
+      return 'light-blue'
+    case 'EJEC':
+      return 'orange'
+    case 'COMP':
+      return 'green'
+    case 'SPLAN':
+      return 'yellow'
+    default:
+      return 'grey'
   }
 }
 
-const submitActividad = async () => {
-  try {
-    loading.value = true
+const getEstadoTexto = (status) => {
+  const s = availableStatuses.find((s) => s.value === status)
+  return s ? s.text : 'Desconocido'
+}
 
-    // Simulamos la creación de una nueva actividad
-    const newId = Math.max(...actividades.value.map((a) => a.id)) + 1
-    const newActividad = {
-      id: newId,
-      ...actividad,
-      datos_actividad: {
-        // Datos adicionales según el tipo de actividad
-      },
-    }
-
-    actividades.value.unshift(newActividad)
-
-    // Mostrar mensaje de éxito
-    snackbar.value = {
-      show: true,
-      text: 'Actividad creada exitosamente',
-      color: 'success',
-    }
-
-    confirmDialog.value = false
-    dialogNuevaActividad.value = false
-    resetForm()
-  } catch (error) {
-    console.error('Error al crear actividad:', error)
-    // Mostrar mensaje de error
-    snackbar.value = {
-      show: true,
-      text: 'Error al crear la actividad',
-      color: 'error',
-    }
-  } finally {
-    loading.value = false
+const getTipoIcon = (tipo) => {
+  switch (tipo) {
+    case 'A':
+      return 'mdi-calendar-month'
+    case 'T':
+      return 'mdi-list-box'
+    default:
+      return 'mdi-help-circle'
   }
+}
+
+const getTipoTexto = (tipo) => {
+  const t = tiposActividad.find((t) => t.value === tipo)
+  return t ? t.text : 'Desconocido'
+}
+
+const getProcedenciaTexto = (procedencia) => {
+  const p = procedenciaFondos.find((p) => p.value === procedencia)
+  return p ? p.text : 'Desconocido'
+}
+
+const formatCurrency = (value) => {
+  return value ? `Bs. ${value.toFixed(2)}` : 'N/A'
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  const date = new Date(dateString)
+  return date.toLocaleDateString()
+}
+
+const countByStatus = (status) => {
+  return filteredActividades.value.filter((act) => act.estado === status).length
 }
 
 const resetForm = () => {
@@ -969,6 +728,34 @@ const codigoRules = [
   (v) => !!v || 'El código es requerido',
   (v) => (v && v.length <= 60) || 'Máximo 60 caracteres',
 ]
+
+const openConfirmation = () => {
+  confirmationDialog.value = true
+}
+
+const createActividad = async () => {
+  confirmationDialog.value = false
+  try {
+    loading.value = true
+    await crearActividad(actividad)
+    snackbar.value = {
+      show: true,
+      text: 'Actividad creada con éxito',
+      color: 'success',
+    }
+    resetForm()
+  } catch (error) {
+    console.error('Error al crear actividad:', error)
+    // Mostrar mensaje de error
+    snackbar.value = {
+      show: true,
+      text: 'Error al crear la actividad',
+      color: 'error',
+    }
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -978,36 +765,15 @@ const codigoRules = [
 }
 
 .v-list-item:hover {
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
-.v-list-item:last-child {
-  border-bottom: none;
-}
-
-.v-card-title {
-  font-size: 1.25rem;
-  font-weight: 500;
-}
-
-.text-right {
-  text-align: right;
-}
-
-.v-pagination {
-  justify-content: center;
+.actividad-container {
+  max-width: 1200px;
 }
 
 .rotate-180 {
   transform: rotate(180deg);
   transition: transform 0.3s ease;
-}
-
-.bg-grey-lighten-4 {
-  background-color: #f5f5f5;
-}
-
-.gap-2 {
-  gap: 8px;
 }
 </style>

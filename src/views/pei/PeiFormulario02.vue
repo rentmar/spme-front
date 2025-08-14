@@ -198,7 +198,7 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="formData.idresponsable_elegido"
+                  v-model="formData.idresponsable"
                   :items="lista_responsables"
                   bg-color="blue-lighten-5"
                   item-title="getNombreCompleto"
@@ -219,7 +219,7 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="formData.idcoordinador_elegido"
+                  v-model="formData.idcoordinador"
                   :items="lista_coordinadores"
                   bg-color="blue-lighten-5"
                   item-title="getNombreCompleto"
@@ -240,7 +240,7 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="formData.idcontador_elegido"
+                  v-model="formData.idcontador"
                   :items="lista_contadores"
                   bg-color="blue-lighten-5"
                   item-title="getNombreCompleto"
@@ -261,7 +261,7 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="formData.idadministrador_elegido"
+                  v-model="formData.idadministrador"
                   :items="lista_administradores"
                   bg-color="blue-lighten-5"
                   item-title="getNombreCompleto"
@@ -299,6 +299,7 @@ import * as XLSX from 'xlsx';
 import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
+import { formulariosServicios } from '@/modules/formularios/services/formulariosServices';
 
 const { usuario, informacionUsuarioPorNick } = useUsuario();
 
@@ -318,23 +319,27 @@ const formData = ref({
   //formulario_numero: '',
   cpte_diario: '',
   fecha_desembolso: '',
-  //monto_asignado: 0,
-  //monto_gastado: 0,
-  //fuente_financiamiento: '',
-  descripcion: '',
-  lugar_actividad: '',
-  fecha_actividad: '', //se tiene en db
+  monto_asignado: 0,//
+  monto_descargado: 0,//
+  saldo: 0,//
   detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
-  idresponsable_elegido: null,//para enviar datos al backend
-  //validacion_responsable: false,
-  idcoordinador_elegido: null,
-  //validacion_coordinador: false,
-  idcontador_elegido: null,
-  //validacion_contador: false,
-  idadministrador_elegido: null,
-  //validacion_administrador: false,
-  id_rinde_cuentas: null,
+  validacion_contador: false,
+  idcontador: null,
+  validacion_responsable: false,
+  idresponsable: null,//para enviar datos al backend
+  validacion_coordinador: false,
+  idcoordinador: null,
+  validacion_administrador: false,
+  idadministrador: null,
+  id_usuario: null,
   id_actividad: null,
+
+
+
+  // descripcion: '',
+  // lugar_actividad: '',
+  // fecha_actividad: '',
+
 });
 
 // Propiedades computadas
@@ -368,13 +373,6 @@ const nombreCompletoSolicitante = computed(() => {
   const materno = usuario.value?.materno || '';
   return `${nombre} ${paterno} ${materno}`.trim();
 });
-// function getCurrentDate() {
-//   const today = new Date();
-//   const year = today.getFullYear();
-//   const month = String(today.getMonth() + 1).padStart(2, '0');
-//   const day = String(today.getDate()).padStart(2, '0');
-//   return `${year}-${month}-${day}`;
-// }
 
 async function prefillFormData() {
   try {
@@ -385,7 +383,7 @@ async function prefillFormData() {
       formData.value.materno = usuario.value.materno || '';
       formData.value.cargo = usuario.value.cargo || '';
       formData.value.documento_identidad_beneficiario = usuario.value.ci || '';
-      //formData.value.id_rinde_cuentas = usuario.value.id || null;
+      //formData.value.id_usuario = usuario.value.id || null;
       //isAdmin.value = usuario.value.rol === 'administrador'; // Establece isAdmin
     }
   } catch (err) {
@@ -443,41 +441,67 @@ async function submitForm() {
       'descripcion',
       'lugar_actividad',
       'fecha_actividad',
-      'detalle_destino_fondos',
-      'idresponsable_elegido',
-      'idcoordinador_elegido',
-      'idcontador_elegido',
-      'idadministrador_elegido'
+      'idresponsable',
+      'idcoordinador',
+      'idcontador',
+      'idadministrador'
     ];
     for (const field of requiredFields) {
       if (!formData.value[field]) {
         throw new Error(`El campo '${field}' es requerido.`);
       }
     }
+    if (!formData.value.detalle_destino_fondos || formData.value.detalle_destino_fondos.length === 0) {
+      throw new Error('Debe agregar al menos un gasto.');
+    }
     if (formData.value.detalle_destino_fondos.some(gasto => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0)) {
       throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.');
     }
 
-    // Preparar payload
+    // Preparar payload para la rendición de cuentas con todos los campos necesarios
     const payload = {
-      ...formData.value,
+      // Campos de la rendición de cuentas
+      cpte_diario: formData.value.cpte_diario,
+      fecha_desembolso: formData.value.fecha_desembolso,
+      descripcion: formData.value.descripcion,
+      lugar_actividad: formData.value.lugar_actividad,
+      fecha_actividad: formData.value.fecha_actividad,
+      monto_asignado: Number(formData.value.monto_asignado),
       monto_gastado: Number(totalMontoGastado.value),
+      monto_descargado: Number(formData.value.monto_descargado), // Asegúrate de que esto se llene correctamente
+      saldo: Number(saldoPorReembolsar.value), // O el saldo que el backend necesite
+      id_actividad: formData.value.id_actividad,
+      fuente_financiamiento: formData.value.fuente_financiamiento,
+
+      // Detalle de los gastos
       detalle_destino_fondos: JSON.stringify(formData.value.detalle_destino_fondos),
-      id_rinde_cuentas: formData.value.id_rinde_cuentas || (usuario.value ? usuario.value.id : null),
+
+      // Validaciones y responsables
+      validacion_responsable: formData.value.validacion_responsable,
+      id_responsable: formData.value.idresponsable,
+      validacion_coordinador: formData.value.validacion_coordinador,
+      id_coordinador: formData.value.idcoordinador,
+      validacion_contador: formData.value.validacion_contador,
+      id_contador: formData.value.idcontador,
+      validacion_administrador: formData.value.validacion_administrador,
+      id_administrador: formData.value.idadministrador,
+
+      // ID del usuario
+      id_usuario: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
     };
 
-    console.log('Payload a enviar (JSON):', JSON.stringify(payload, null, 2));
+    console.log('Payload a enviar:', payload);
 
-    const response = await axios.post('http://127.0.0.1:8000/monitoreo_api/crearUsuario/', payload, {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // Usar la función del servicio importado para la rendición de cuentas
+    const respuesta = await formulariosServicios.crearRendicionCuentas(payload);
+    console.log('Rendición enviada con éxito:', respuesta.data);
 
     alert('Rendición enviada con éxito');
-    exportToExcel(); // Si esta función existe, descomentar
+    exportToExcel();
     resetForm();
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message);
-    alert(`Error: ${error.response?.data?.message || error.message}`);
+    alert(`Error: ${error.response?.data?.mensaje || error.message}`);
   } finally {
     loading.value = false;
   }
@@ -500,24 +524,24 @@ function resetForm() {
     lugar_actividad: '',
     fecha_actividad: '',
     detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
-    idresponsable_elegido: null,
+    idresponsable: null,
     //validacion_responsable: false,
-    idcoordinador_elegido: null,
+    idcoordinador: null,
     //validacion_coordinador: false,
-    idcontador_elegido: null,
+    idcontador: null,
     //validacion_contador: false,
-    idadministrador_elegido: null,
+    idadministrador: null,
     //validacion_administrador: false,
-    //id_rinde_cuentas: null,
+    //id_usuario: null,
     //id_actividad: null,
   });
 }
 
 function exportToExcel() {
-  const responsable = lista_responsables.value.find(user => user.id === formData.value.idresponsable_elegido);
-  const coordinador = lista_coordinadores.value.find(user => user.id === formData.value.idcoordinador_elegido);
-  const contador = lista_contadores.value.find(user => user.id === formData.value.idcontador_elegido);
-  const administrador = lista_administradores.value.find(user => user.id === formData.value.idadministrador_elegido);
+  const responsable = lista_responsables.value.find(user => user.id === formData.value.idresponsable);
+  const coordinador = lista_coordinadores.value.find(user => user.id === formData.value.idcoordinador);
+  const contador = lista_contadores.value.find(user => user.id === formData.value.idcontador);
+  const administrador = lista_administradores.value.find(user => user.id === formData.value.idadministrador);
   const mainData = [
     ["Formulario F-02:", "Rendicion de Cuenta"],
     [],

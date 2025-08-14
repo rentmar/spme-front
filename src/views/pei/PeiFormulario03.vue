@@ -188,7 +188,7 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="formData.idresponsable_elegido"
+                  v-model="formData.id_responsable"
                   bg-color="blue-lighten-5"
                   :items="responsablesList"
                   :item-title="getNombreCompleto"
@@ -208,7 +208,7 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="formData.idcoordinador_elegido"
+                  v-model="formData.id_coordinador"
                   bg-color="blue-lighten-5"
                   :items="coordinadoresList"
                   :item-title="getNombreCompleto"
@@ -266,30 +266,31 @@ const paymentMethods = ['Cuenta de Banco', 'Cheque'];
 const responsablesList = ref([]);
 const coordinadoresList = ref([]);
 const formData = ref({
-  descripcion_actividad: '',
   detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
   forma_pago: '',
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
-  idresponsable_elegido:null,
+  monto_solicitado: 0,
   validacion_responsable: false,
-  idcoordinador_elegido: null,
+  id_responsable:null,
   validacion_coordinador: false,
-  id_solicitante: 0,
+  id_coordinador: null,
+  id_usuario: 0,
   id_actividad: 0
+  //descripcion_actividad: '',
 });
 
 // Propiedades computadas
 const nombreCoordinadorElegido = computed(() => {
   const coordinador = coordinadoresList.value.find(
-    (user) => user.id === formData.value.idcoordinador_elegido
+    (user) => user.id === formData.value.id_coordinador
   );
   return coordinador ? getNombreCompleto(coordinador) : '';
 });
 
 const nombreResponsableElegido = computed(() => {
   const responsable = responsablesList.value.find(
-    (user) => user.id === formData.value.idresponsable_elegido
+    (user) => user.id === formData.value.id_responsable
   );
   return responsable ? getNombreCompleto(responsable) : '';
 });
@@ -386,7 +387,7 @@ function removeGasto(index) {
 async function submitForm() {
   loading.value = true;
   try {
-    formData.value.id_solicitante = usuario.value.id;
+    formData.value.id_usuario = usuario.value.id;
 
     //Propiedades del formulario que son obligatorias (validacion)
     const requiredFields = [
@@ -394,8 +395,8 @@ async function submitForm() {
       'detalle_destino_fondos',
       'forma_pago',
       'lugar_solicitud',
-      'idresponsable_elegido',
-      'idcoordinador_elegido',
+      'id_responsable',
+      'id_coordinador',
     ];
 
     for (const field of requiredFields) {
@@ -446,10 +447,10 @@ function resetForm() {
   fecha_solicitud: getCurrentDate(),
   monto_solicitado: 0,
   responsable_elegido: null,
-  idresponsable_elegido: null,
+  id_responsable: null,
   validacion_responsable: false,
   coordinador_elegido: null,
-  idcoordinador_elegido: null,
+  id_coordinador: null,
   validacion_coordinador: false,
   });
 }
