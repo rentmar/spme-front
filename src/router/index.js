@@ -137,7 +137,7 @@ const router = createRouter({
     {
       path: '/dashboard',
       name: 'dashboard',
-      component: HomeView,
+      component: () => import('@/views/DashBoardView.vue'),
     },
     {
       path: '/admin/auditoria',
