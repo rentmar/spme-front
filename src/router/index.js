@@ -74,6 +74,11 @@ const router = createRouter({
       component: () => import('@/views/proyecto/ProyectoNuevoView.vue'),
     },
     {
+      path: '/proyecto/actividades/tareas/',
+      name: 'proyectoActividadesTarea',
+      component: () => import('@/views/planeamiento/ActividadesListTareasView.vue'),
+    },
+    {
       path: '/planificacion',
       name: 'planificacionHome',
       component: () => import('@/views/HomeView.vue'),
@@ -102,7 +107,7 @@ const router = createRouter({
     {
       path: '/planificacion/cronogramas',
       name: 'cronogramas',
-      component: () => import('../views/AboutView.vue'),
+      component: () => import('@/views/planeamiento/ActividadesCronogramaView.vue'),
     },
     {
       path: '/usuario/perfil/',

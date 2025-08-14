@@ -3,7 +3,7 @@ import axios from 'axios'
 
 //Instancia Base
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: 'http://127.0.0.1:8000/api/',
   withCredentials: false,
   timeout: 10000,
   headers: {
@@ -13,7 +13,8 @@ const api = axios.create({
 
 //Instancia para planes
 const apiPlan = axios.create({
-  baseURL: import.meta.env.VITE_API_URL_PLAN,
+  //baseURL: import.meta.env.VITE_API_URL_PLAN,
+  baseURL: 'http://127.0.0.1:8000/api-plan/',
   withCredentials: false,
   timeout: 10000,
   headers: {

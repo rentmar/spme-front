@@ -138,6 +138,8 @@ const agregarKpi = async () => {
 const agregarIndicadorObjGeneral = async () => {
   const indicadorOg = {
     codigo: 'IND-OG',
+    descripcion: '',
+    definicion: '',
     redaccion: 'GUIA',
     fuente_verificacion: 'Fuentes de verificacion',
     target_poblacion: '',
@@ -146,7 +148,6 @@ const agregarIndicadorObjGeneral = async () => {
     target_q1: '',
     target_q2: '',
     target_q3: '',
-    target_q4: '',
     objetivo_general: idObjetivoGeneral,
   }
   //console.log(indicadorOg)
@@ -164,6 +165,8 @@ const agregarIndicadorObjGeneral = async () => {
         nodoProyecto: {
           id: indicadorObjGeneral.value.id,
           codigo: indicadorObjGeneral.value.codigo,
+          descripcion: indicadorObjGeneral.value.descripcion,
+          definicion: indicadorObjGeneral.value.definicion,
           redaccion: indicadorObjGeneral.value.redaccion,
           fuente_verificacion: indicadorObjGeneral.value.fuente_verificacion,
           target_poblacion: indicadorObjGeneral.value.target_poblacion,
@@ -172,7 +175,6 @@ const agregarIndicadorObjGeneral = async () => {
           target_q1: indicadorObjGeneral.value.target_q1,
           target_q2: indicadorObjGeneral.value.target_q2,
           target_q3: indicadorObjGeneral.value.target_q3,
-          target_q4: indicadorObjGeneral.value.target_q4,
           objetivo_general: indicadorObjGeneral.value.objetivo_general,
         },
       },

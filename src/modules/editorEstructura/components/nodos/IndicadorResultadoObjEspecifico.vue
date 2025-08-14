@@ -4,6 +4,9 @@
     <template #default>
       <div class="text-body-2">
         <div class="mb-1"><strong>Codigo:</strong> {{ data.nodoProyecto.codigo }}</div>
+        <div class="mb-1"><strong>Descripcion:</strong> {{ data.nodoProyecto.descripcion }}</div>
+        <div class="mb-1"><strong>Definicion:</strong> {{ data.nodoProyecto.definicion }}</div>
+
         <div class="mb-1"><strong>Redaccion:</strong> {{ data.nodoProyecto.redaccion }}</div>
         <div class="mb-1">
           <strong>Fuente de Verificacion:</strong> {{ data.nodoProyecto.fuente_verificacion }}
@@ -16,7 +19,6 @@
         <div class="mb-1"><strong>Target q1:</strong> {{ data.nodoProyecto.target_q1 }}</div>
         <div class="mb-1"><strong>Target q2:</strong> {{ data.nodoProyecto.target_q2 }}</div>
         <div class="mb-1"><strong>Target q3:</strong> {{ data.nodoProyecto.target_q3 }}</div>
-        <div class="mb-1"><strong>Target q4:</strong> {{ data.nodoProyecto.target_q4 }}</div>
       </div>
     </template>
 
