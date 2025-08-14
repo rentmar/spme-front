@@ -105,6 +105,72 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue'),
     },
     {
+      path: '/usuario/perfil/',
+      name: 'usuarioPerfil',
+      component: () => import('@/views/usuario/PerfilUsuarioView.vue'),
+    },
+    {
+      path: '/admin/usuariosDashboard/',
+      name: 'usuarioDashboard',
+      component: () => import('@/views/usuario/DashboardUsuarioView.vue'),
+    },
+    {
+      path: '/admin/usuarios/',
+      name: 'usuarios',
+      component: () => import('@/views/usuario/UserAdminView.vue'),
+    },
+    {
+      path: '/admin/roles',
+      name: 'roles',
+      component: () => import('@/views/usuario/RolUsuarioView.vue'),
+    },
+    {
+      path: '/admin/permisos',
+      name: 'permisos',
+      component: () => import('@/views/usuario/PermisosView.vue'),
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: HomeView,
+    },
+    {
+      path: '/admin/auditoria',
+      name: 'auditoria',
+      component: HomeView,
+    },
+    {
+      path: '/admin/configuracion',
+      name: 'settingsApp',
+      component: () => import('@/views/settings/SettingsView.vue'),
+    },
+    /****************** Notificaciones **********************/
+    {
+      path: '/notificaciones',
+      name: 'notificaciones',
+      component: HomeView,
+    },
+    {
+      path: '/notificaciones/configuracion',
+      name: 'notificaciones-configuracion',
+      component: HomeView,
+    },
+    {
+      path: '/admin/notificaciones',
+      name: 'admin-notificaciones',
+      component: HomeView,
+    },
+    {
+      path: '/admin/notificaciones/plantillas',
+      name: 'admin-notificaciones-plantillas',
+      component: HomeView,
+    },
+    {
+      path: '/admin/notificaciones/configuracion',
+      name: 'admin-notificaciones-configuracion',
+      component: HomeView,
+    },
+    {
       path: '/about',
       name: 'about',
       // route level code-splitting
@@ -120,6 +186,7 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/HelpView.vue'),
     },
+
     /*
     {
       path: '/about',

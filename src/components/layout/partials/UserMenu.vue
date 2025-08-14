@@ -60,7 +60,7 @@
         prepend-icon="mdi-account-edit"
         title="Mi perfil"
         value="profile"
-        to="/profile"
+        to="/usuario/perfil/"
         class="menu-item"
       />
 
