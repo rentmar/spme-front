@@ -257,6 +257,11 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
     },*/
+    {
+      path: '/solicitud-viajes/',
+      name: 'solicitudViajes',
+      component: () => import('@/views/pei/PeiComposableViajes.vue'),
+    },
   ],
 })
 
