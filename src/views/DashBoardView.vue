@@ -883,11 +883,15 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { useSnackbar } from '@/composables/useSnackbar'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
+import { useProyectoCrud } from '@/modules/proyecto/composables/useProyectoCrud'
 
 // Registrar componentes necesarios de Chart.js
 Chart.register(...registerables)
 
 const { successMsg, errorMsg } = useSnackbar()
+
+//Iniciar composables
+const { proyectos, obtenerProyectos } = useProyectoCrud()
 
 // Datos y estado
 const loading = ref(true)
@@ -929,7 +933,7 @@ const peiHeaders = [
 ]
 
 // Proyectos
-const proyectos = ref([])
+//const proyectos = ref([])
 const searchProyecto = ref('')
 const proyectoDialog = ref(false)
 const isEditingProyecto = ref(false)

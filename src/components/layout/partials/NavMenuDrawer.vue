@@ -2,12 +2,12 @@
 <template>
   <v-list density="compact" nav>
     <!-- Dashboard Principal -->
-    <v-list-item
+    <!-- <v-list-item
       prepend-icon="mdi-view-dashboard"
       title="Dashboard"
       value="dashboard"
       to="/dashboard"
-    ></v-list-item>
+    ></v-list-item> -->
 
     <v-list-item prepend-icon="mdi-home" title="Inicio" value="home" to="/"></v-list-item>
 
