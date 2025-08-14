@@ -89,6 +89,8 @@ const emit = defineEmits(['addIndicadorOE', 'addResultadoOE', 'addProductoOE', '
 const agregarIndicadorOE = async () => {
   const indicadorOe = {
     codigo: 'IND001-OESP01',
+    descripcion: '',
+    definicion: '',
     redaccion: 'GUIA',
     fuente_verificacion: '',
     target_poblacion: '',
@@ -113,6 +115,8 @@ const agregarIndicadorOE = async () => {
         nodoProyecto: {
           id: indicadorObjetivoEspecifico.value.id,
           codigo: indicadorObjetivoEspecifico.value.codigo,
+          descripcion: indicadorObjetivoEspecifico.value.descripcion,
+          definicion: indicadorObjetivoEspecifico.value.definicion,
           redaccion: indicadorObjetivoEspecifico.value.redaccion,
           fuente_verificacion: indicadorObjetivoEspecifico.value.fuente_verificacion,
           target_poblacion: indicadorObjetivoEspecifico.value.target_poblacion,

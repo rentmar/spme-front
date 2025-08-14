@@ -101,6 +101,8 @@ const emit = defineEmits([
 const agregarIndicadorResultadoOg = async () => {
   const indicadorResultadoOg = {
     codigo: 'IND00-R0-OG',
+    descripcion: '',
+    definicion: '',
     redaccion: 'GUIA',
     fuente_verificacion: 'Fuente Verificacion',
     target_poblacion: '',
@@ -109,7 +111,6 @@ const agregarIndicadorResultadoOg = async () => {
     target_q1: '',
     target_q2: '',
     target_q3: '',
-    target_q4: '',
     resultado_og: idCurrentNode,
   }
   //Crear el indicador resultado og
@@ -126,6 +127,8 @@ const agregarIndicadorResultadoOg = async () => {
         mapaNodoId: mapaNodoId.toString(),
         nodoProyecto: {
           id: indicadorResultadoObjGeneral.value.id,
+          descripcion: indicadorResultadoObjGeneral.value.descripcion,
+          definicion: indicadorResultadoObjGeneral.value.definicion,
           codigo: indicadorResultadoObjGeneral.value.codigo,
           redaccion: indicadorResultadoObjGeneral.value.redaccion,
           fuente_verificacion: indicadorResultadoObjGeneral.value.fuente_verificacion,
@@ -135,7 +138,6 @@ const agregarIndicadorResultadoOg = async () => {
           target_q1: indicadorResultadoObjGeneral.value.target_q1,
           target_q2: indicadorResultadoObjGeneral.value.target_q2,
           target_q3: indicadorResultadoObjGeneral.value.target_q3,
-          target_q4: indicadorResultadoObjGeneral.value.target_q4,
           resultado_og: indicadorResultadoObjGeneral.value.resultado_og,
         },
       },
@@ -186,26 +188,49 @@ const agregarProcesos = async () => {
 
 //Agregar actividad
 const agregarActividad = async () => {
+  // const act = {
+  //   codigo: 'ACT001',
+  //   descripcion: 'dedede create',
+  //   tipo: 'CSNS',
+  //   fecha_programada: null,
+  //   duracion: 4,
+  //   fecha_inicio: null,
+  //   fecha_cierre: null,
+  //   presupuesto: null,
+  //   presupuesto_pei: null,
+  //   estado: 'SPLAN',
+  //   procedencia_fondos: 'PROY',
+  //   objetivo_de_actividad: '',
+  //   descripcion_evaluacion: '',
+  //   justificacion_modificacion: '',
+  //   datos_actividad: null,
+  //   proceso: null,
+  //   resultado_og: idCurrentNode,
+  //   resultado_oe: null,
+  //   producto_oe: null,
+  // }
   const act = {
-    codigo: 'ACT001',
-    descripcion: 'dedede create',
-    tipo: 'CSNS',
+    codigo: 'ACT',
+    descripcion: '',
+    supuestos: '',
+    riesgos: '',
+    objetivo_de_actividad: '',
+    descripcion_evaluacion: '',
     fecha_programada: null,
-    duracion: 4,
     fecha_inicio: null,
     fecha_cierre: null,
     presupuesto: null,
-    presupuesto_pei: null,
-    estado: 'SPLAN',
-    procedencia_fondos: 'PROY',
-    objetivo_de_actividad: '',
-    descripcion_evaluacion: '',
-    justificacion_modificacion: '',
-    datos_actividad: null,
+    presupuestoGlobal: null,
+    procedencia_fondos: null,
+    estado: 'PLAN',
+    responsable: null,
     proceso: null,
     resultado_og: idCurrentNode,
     resultado_oe: null,
     producto_oe: null,
+    objetivo_pei: null,
+    indicador_pei: null,
+    tipo: [],
   }
   try {
     await crearActividad(act)

@@ -92,6 +92,8 @@ const emit = defineEmits(['addIndicadorOE', 'addResultadoOE', 'addProductoOE', '
 const agregarIndicadorOE = async () => {
   const indicadorOe = {
     codigo: 'IND001-OESP01',
+    descripcion: 'des test',
+    definicion: 'def test',
     redaccion: 'GUIA',
     fuente_verificacion: '',
     target_poblacion: '',
@@ -100,7 +102,6 @@ const agregarIndicadorOE = async () => {
     target_q1: '',
     target_q2: '',
     target_q3: '',
-    target_q4: '',
     objetivo_especifico: idCurrenNode.toString(),
   }
   try {
@@ -116,6 +117,8 @@ const agregarIndicadorOE = async () => {
         nodoProyecto: {
           id: indicadorObjetivoEspecifico.value.id,
           codigo: indicadorObjetivoEspecifico.value.codigo,
+          descripcion: indicadorObjetivoEspecifico.value.descripcion,
+          definicion: indicadorObjetivoEspecifico.value.definicion,
           redaccion: indicadorObjetivoEspecifico.value.redaccion,
           fuente_verificacion: indicadorObjetivoEspecifico.value.fuente_verificacion,
           target_poblacion: indicadorObjetivoEspecifico.value.target_poblacion,
@@ -124,7 +127,6 @@ const agregarIndicadorOE = async () => {
           target_q1: indicadorObjetivoEspecifico.value.target_q1,
           target_q2: indicadorObjetivoEspecifico.value.target_q2,
           target_q3: indicadorObjetivoEspecifico.value.target_q3,
-          target_q4: indicadorObjetivoEspecifico.value.target_q4,
           objetivo_especifico: indicadorObjetivoEspecifico.value.objetivo_especifico,
         },
       },
