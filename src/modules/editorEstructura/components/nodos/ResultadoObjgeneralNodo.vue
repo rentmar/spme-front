@@ -46,6 +46,7 @@
       <Handle type="source" position="bottom" :id="`source-${id}`" :style="handleStyle" />
     </template>
   </BaseNodo>
+  {{ proyectoEstructura.id }}
 </template>
 
 <script setup>
@@ -80,6 +81,8 @@ const { findNode } = useVueFlow()
 const currentNode = findNode(props.id)
 const idCurrentNode = currentNode.data.nodoProyecto.id
 // console.log(idCurrentNode)
+//identificador del proyecto
+const idProyecto = proyectoEstructura.value.id.toString()
 
 const handleStyle = {
   width: '12px',
@@ -189,25 +192,27 @@ const agregarProcesos = async () => {
 //Agregar actividad
 const agregarActividad = async () => {
   // const act = {
-  //   codigo: 'ACT001',
-  //   descripcion: 'dedede create',
-  //   tipo: 'CSNS',
+  //   codigo: 'ACT',
+  //   descripcion: '',
+  //   supuestos: '',
+  //   riesgos: '',
+  //   objetivo_de_actividad: '',
+  //   descripcion_evaluacion: '',
   //   fecha_programada: null,
-  //   duracion: 4,
   //   fecha_inicio: null,
   //   fecha_cierre: null,
   //   presupuesto: null,
-  //   presupuesto_pei: null,
-  //   estado: 'SPLAN',
-  //   procedencia_fondos: 'PROY',
-  //   objetivo_de_actividad: '',
-  //   descripcion_evaluacion: '',
-  //   justificacion_modificacion: '',
-  //   datos_actividad: null,
+  //   presupuestoGlobal: null,
+  //   procedencia_fondos: null,
+  //   estado: 'PLAN',
+  //   responsable: null,
   //   proceso: null,
   //   resultado_og: idCurrentNode,
   //   resultado_oe: null,
   //   producto_oe: null,
+  //   objetivo_pei: null,
+  //   indicador_pei: null,
+  //   tipo: [],
   // }
   const act = {
     codigo: 'ACT',
@@ -222,14 +227,15 @@ const agregarActividad = async () => {
     presupuesto: null,
     presupuestoGlobal: null,
     procedencia_fondos: null,
-    estado: 'PLAN',
-    responsable: null,
+    estado: 'CRD',
     proceso: null,
     resultado_og: idCurrentNode,
     resultado_oe: null,
     producto_oe: null,
     objetivo_pei: null,
     indicador_pei: null,
+    proyecto: idProyecto,
+    responsable: null,
     tipo: [],
   }
   try {
@@ -262,6 +268,8 @@ const agregarActividad = async () => {
           resultado_og: actividad.value.resultado_og,
           resultado_oe: actividad.value.resultado_oe,
           producto_oe: actividad.value.producto_oe,
+          responsable: actividad.value.responsable,
+          proyecto: actividad.value.proyecto,
         },
       },
     }

@@ -23,6 +23,7 @@
         v-bind="nodeProps"
         @addObjetivoGeneral="(payload) => ejecutarAccion('addObjetivoGeneral', payload)"
         @addObjetivoEspecifico="(payload) => ejecutarAccion('addObjetivoEspecifico', payload)"
+        @addEfecto="(payload) => ejecutarAccion('addEfecto', payload)"
       ></ProyectoNodo>
     </template>
     <!--Nodo Objetivo General-->
@@ -157,6 +158,10 @@
     <!-- Nodo Producto General -->
     <template #node-productogral="nodeProps">
       <ProductoNodo v-bind="nodeProps"></ProductoNodo>
+    </template>
+    <!-- Nodo Efecto Proyecto-->
+    <template #node-efecto="nodeProps">
+      <EfectoNodo v-bind="nodeProps"></EfectoNodo>
     </template>
 
     <Panel position="top-right" class="tool-panel">
@@ -306,7 +311,8 @@ import ActividadPoeNodo from './nodos/ActividadPoeNodo.vue'
 import ActividadRoeNodo from './nodos/ActividadRoeNodo.vue'
 import ProductoNodo from './nodos/ProductoNodo.vue'
 import ProcedenciaFondosLista from '@/modules/procedenciaFondos/components/ProcedenciaFondosLista.vue'
-//Manjeador de eventos
+import EfectoNodo from './nodos/EfectoNodo.vue'
+//Manejador de eventos
 import useNodeEvents from '../composables/useNodeEvents'
 //Exportaciones
 import { toJpeg, toPng, toSvg } from 'html-to-image'
@@ -456,6 +462,7 @@ const formulariosPorTipo = {
   ),
   actividad: defineAsyncComponent(() => import('./nodosFormularios/ActividadNodoForm.vue')),
   productogral: defineAsyncComponent(() => import('./nodosFormularios/ProductoGralNodo.vue')),
+  efecto: defineAsyncComponent(() => import('./nodosFormularios/EfectoNodoForm.vue')),
 
   //proyecto: defineAsyncComponent(() => import('./nodos/formularios/ProyectoForm.vue')),
   // Agrega más tipos según necesites

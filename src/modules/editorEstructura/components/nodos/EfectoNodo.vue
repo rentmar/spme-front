@@ -1,45 +1,34 @@
 <template>
-  <BaseNodo :id="id" :data="data" :show-delete="true" v-bind="$attrs">
+  <BaseNodo :id="id" :data="data" :show-delete="true" :show-menu="false" v-bind="$attrs">
     <!-- Contenido del nodo -->
     <template #default>
       <div class="text-body-2">
-        <div class="mb-1"><strong>Codigo:</strong> {{ data.nodoProyecto.codigo }}</div>
-        <div class="mb-1"><strong>Descripcion:</strong> {{ data.nodoProyecto.descripcion }}</div>
+        <div class="mb-1"><strong>Codigo:</strong> {{ data.nodoProyecto.nombre }}</div>
+        <div class="mb-1"><strong>Efecto:</strong> {{ data.nodoProyecto.contenido }}</div>
       </div>
     </template>
 
     <!-- Menú contextual -->
     <template #menu> </template>
     <template #handles>
-      <Handle type="target" position="top" :id="`source-${id}`" :style="handleStyle" />
-      <Handle type="source" position="bottom" :id="`source-${id}`" :style="handleStyle" />
+      <Handle type="source" position="top" :id="`source-${id}`" :style="handleStyle" />
     </template>
   </BaseNodo>
-  {{ data }}
 </template>
 
 <script setup>
 import BaseNodo from './BaseNodo.vue'
-import { Handle, useVueFlow } from '@vue-flow/core'
-import { inject } from 'vue'
+import { Handle } from '@vue-flow/core'
+import { useVueFlow } from '@vue-flow/core'
 
 const props = defineProps({
   id: { type: String, required: true },
   data: { type: Object, required: true },
 })
 
-//Composables
-
-//Id mapa de estructura
-const proyectoEstructura = inject('proyectoEstructura')
-// eslint-disable-next-line no-unused-vars
-const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
-
-//Datos del nodo
 const { findNode } = useVueFlow()
-const currentNode = findNode(props.id)
 // eslint-disable-next-line no-unused-vars
-const idCurrentNode = currentNode.data.nodoProyecto.id
+const currentNode = findNode(props.id)
 
 const handleStyle = {
   width: '12px',
@@ -47,6 +36,8 @@ const handleStyle = {
   background: '#555',
   borderRadius: '50%',
 }
+
+/* Funciones */
 </script>
 <style scoped>
 .custom-menu-item {

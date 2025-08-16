@@ -285,6 +285,11 @@ export default function useNodeEvents() {
       mensaje.value = 'Producto general creado'
       return result
     },
+    addEfecto: (payload) => {
+      const result = handleNodeCreation('efecto', 'Efecto', payload.sourceId, payload.meta)
+      mensaje.value = 'Efecto creado'
+      return result
+    },
   }
 
   //Funcion principal para ejecutar acciones
