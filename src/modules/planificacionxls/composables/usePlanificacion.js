@@ -9,6 +9,7 @@ const error = ref(null)
 const planes = ref([])
 const plan = ref(null)
 const planesPorProyecto = ref([])
+const contadorPlan = ref(null)
 
 export function usePlanificacion() {
   //fetch planes
@@ -108,12 +109,27 @@ export function usePlanificacion() {
     }
   }
 
+  //Contador de planes por proyecto
+  async function contarPlanPorIdProyecto(idProyecto) {
+    loading.value = true
+    try {
+      const respuesta = await planificacionServicios.contarPlanificacionesPorIdProyecto(idProyecto)
+      contadorPlan.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
     planes,
     plan,
     planesPorProyecto,
+    contadorPlan,
     cargarPlanes,
     cargarPlanPorId,
     crearPlan,
@@ -121,5 +137,6 @@ export function usePlanificacion() {
     delPlan,
     planesPorIdProyecto,
     planPorIdProyecto,
+    contarPlanPorIdProyecto,
   }
 }

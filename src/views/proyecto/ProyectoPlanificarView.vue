@@ -28,11 +28,16 @@
 
             <v-card-text class="contenedor-planificacion">
               <!-- Componente hijo con prop de carga -->
-              <PlanificacionXls
+              <!-- <PlanificacionXls
                 :proyecto="proyecto"
                 :proyecto-estructura="proyectoEstructura"
                 :cargando="!cargaCompleta"
-              />
+              /> -->
+              <PlanificacionActividadXls
+                :proyecto="proyecto"
+                :proyecto-estructura="proyectoEstructura"
+                :cargando="!cargaCompleta"
+              ></PlanificacionActividadXls>
             </v-card-text>
           </v-card>
         </v-col>
@@ -49,6 +54,7 @@ import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
 import PlanificacionXls from '@/modules/planificacionxls/components/PlanificacionXls.vue'
+import PlanificacionActividadXls from '@/modules/planificacionxls/components/PlanificacionActividadXls.vue'
 
 //Estado de carga
 const cargaCompleta = ref(false) //Cambiar a false en produccion

@@ -22,11 +22,43 @@ export function useUsuario() {
     }
   }
 
+  //Obtener todos los usuarios
+  async function obtenerUsuarios() {
+    loading.value = true
+    try {
+      const respuesta = await usuarioServicios.all()
+      usuarios.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Obtener todas las nicks de usuario
+  async function obtenerUsuariosNicks() {
+    loading.value = true
+    try {
+      const respuesta = await usuarioServicios.allnicks()
+      usuarios.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Fecth usuarios
+
+  //Carga de usuario por id
+
   return {
     loading, //ref
     error, //ref
     usuarios, //ref lista de kpis
     usuario, //ref un kpi por id
     informacionUsuarioPorNick, //func
+    obtenerUsuarios, //fund
+    obtenerUsuariosNicks, //func
   }
 }

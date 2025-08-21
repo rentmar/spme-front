@@ -444,6 +444,7 @@ const peiVigente = inject('peiVigente')
 //Obtener el id del proyecto de la ruta
 const route = useRoute()
 const idproyecto = route.params.id
+console.log(idproyecto)
 
 //Obtener el id del pei
 const idpei = peiVigente.value.id
@@ -467,7 +468,7 @@ const { currentPlanificacion, columnasEscondidas, loading, inicializado } =
   storeToRefs(planificacionStore)
 const { fetchPlanificacion } = planificacionStore
 
-console.log(columnasEscondidas.value.columns)
+//console.log(columnasEscondidas.value.columns)
 
 //Informacion para la tabla
 const tableData = ref([])

@@ -26,7 +26,7 @@
           <v-card-text class="pt-0 pb-4">
             <v-text-field
               v-model="searchQuery"
-              label="Buscar actividades por título"
+              label="Buscar actividades por nombre"
               prepend-inner-icon="mdi-magnify"
               variant="outlined"
               clearable
@@ -52,18 +52,19 @@
             <template v-for="actividad in actividadesPaginadas" :key="actividad.id">
               <v-list-item :value="actividad" class="mb-2">
                 <template v-slot:prepend>
-                  <v-avatar :color="getStatusColor(actividad.estado)" class="mr-4">
+                  <v-avatar :color="getStatusColor(actividad.estadoFrontend)" class="mr-4">
                     <v-icon dark>mdi-check-circle-outline</v-icon>
                   </v-avatar>
                 </template>
-                <v-list-item-title class="font-weight-bold">{{
-                  actividad.titulo
-                }}</v-list-item-title>
+                <v-list-item-title class="font-weight-bold">
+                  {{ actividad.nombreCorto || 'Actividad sin nombre' }}
+                </v-list-item-title>
                 <v-list-item-subtitle class="mt-1">
                   <div class="d-flex align-center">
-                    <v-chip small :color="getStatusColor(actividad.estado)" class="mr-2">
-                      {{ getEstadoTexto(actividad.estado) }}
+                    <v-chip small :color="getStatusColor(actividad.estadoFrontend)" class="mr-2">
+                      {{ getEstadoTexto(actividad.estadoFrontend) }}
                     </v-chip>
+                    <span class="text-caption text-grey">ID: {{ actividad.id }}</span>
                   </div>
                 </v-list-item-subtitle>
 
@@ -114,7 +115,9 @@
                   <v-card elevation="0" class="ml-10 mr-4 mb-4 bg-grey-lighten-4">
                     <v-card-text>
                       <div class="d-flex justify-space-between align-center mb-4">
-                        <span class="text-subtitle-1">Tareas de {{ actividad.titulo }}</span>
+                        <span class="text-subtitle-1"
+                          >Tareas de {{ actividad.nombreCorto || 'Actividad sin nombre' }}</span
+                        >
                         <v-btn
                           color="primary"
                           variant="text"
@@ -126,11 +129,15 @@
                       </div>
                       <v-list density="compact" class="py-0">
                         <v-list-item v-for="tarea in actividad.tareas" :key="tarea.id" class="mb-1">
-                          <v-list-item-title>{{ tarea.descripcion }}</v-list-item-title>
+                          <v-list-item-title>
+                            {{ tarea.titulo || tarea.descripcion || 'Tarea sin título' }}
+                          </v-list-item-title>
                           <template v-slot:prepend>
-                            <v-icon :color="getStatusColor(tarea.estado)"
-                              >mdi-checkbox-blank-circle</v-icon
+                            <v-icon
+                              :color="getStatusColor(mapEstadoBackendToFrontend(tarea.estado))"
                             >
+                              mdi-checkbox-blank-circle
+                            </v-icon>
                           </template>
                           <template v-slot:append>
                             <v-tooltip text="Editar tarea" location="top">
@@ -160,9 +167,9 @@
                           </template>
                         </v-list-item>
                         <v-list-item v-if="actividad.tareas.length === 0">
-                          <v-list-item-title class="text-grey text-caption"
-                            >No hay tareas para esta actividad</v-list-item-title
-                          >
+                          <v-list-item-title class="text-grey text-caption">
+                            No hay tareas para esta actividad
+                          </v-list-item-title>
                         </v-list-item>
                       </v-list>
                     </v-card-text>
@@ -230,9 +237,9 @@
                 <v-icon color="primary">mdi-clipboard-list-outline</v-icon>
               </template>
               <v-list-item-title>Total actividades</v-list-item-title>
-              <v-list-item-subtitle class="text-right">{{
-                filteredActividades.length
-              }}</v-list-item-subtitle>
+              <v-list-item-subtitle class="text-right">
+                {{ filteredActividades.length }}
+              </v-list-item-subtitle>
             </v-list-item>
             <v-list-item>
               <template v-slot:prepend>
@@ -266,9 +273,9 @@
         <v-card-text>
           <v-form ref="actividadFormRef">
             <v-text-field
-              v-model="actividadForm.titulo"
-              label="Título"
-              :rules="[(v) => !!v || 'El título es requerido']"
+              v-model="actividadForm.nombreCorto"
+              label="Nombre corto"
+              :rules="[(v) => !!v || 'El nombre es requerido']"
               variant="outlined"
               class="mt-4"
             ></v-text-field>
@@ -299,12 +306,18 @@
         <v-card-text>
           <v-form ref="tareaFormRef">
             <v-text-field
-              v-model="tareaForm.descripcion"
-              label="Descripción de la tarea"
-              :rules="[(v) => !!v || 'La descripción es requerida']"
+              v-model="tareaForm.titulo"
+              label="Título de la tarea"
+              :rules="[(v) => !!v || 'El título es requerido']"
               variant="outlined"
               class="mt-4"
             ></v-text-field>
+            <v-textarea
+              v-model="tareaForm.descripcion"
+              label="Descripción"
+              variant="outlined"
+              rows="2"
+            ></v-textarea>
             <v-select
               v-model="tareaForm.estado"
               :items="availableStatuses"
@@ -327,7 +340,9 @@
       <v-card>
         <v-card-title class="text-h5">Confirmar eliminación</v-card-title>
         <v-card-text>
-          ¿Estás seguro de que deseas eliminar la actividad "{{ actividadToDelete?.titulo }}"?
+          ¿Estás seguro de que deseas eliminar la actividad "{{
+            actividadToDelete?.nombreCorto || 'Sin nombre'
+          }}"?
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -341,7 +356,9 @@
       <v-card>
         <v-card-title class="text-h5">Confirmar eliminación de tarea</v-card-title>
         <v-card-text>
-          ¿Estás seguro de que deseas eliminar la tarea "{{ tareaToDelete?.descripcion }}"?
+          ¿Estás seguro de que deseas eliminar la tarea "{{
+            tareaToDelete?.titulo || tareaToDelete?.descripcion || 'Sin título'
+          }}"?
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -362,50 +379,9 @@
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue'
+import { useActividad } from '@/modules/proyecto/composables/useActividad'
 
-// --- DATA DUMMY ---
-const dummyData = [
-  {
-    id: 1,
-    titulo: 'Desarrollar módulo de autenticación',
-    estado: 'PR',
-    tareas: [
-      { id: 101, descripcion: 'Crear modelo de usuario', estado: 'CO' },
-      { id: 102, descripcion: 'Implementar lógica de login', estado: 'PR' },
-      { id: 103, descripcion: 'Diseñar interfaz de registro', estado: 'PE' },
-    ],
-  },
-  {
-    id: 2,
-    titulo: 'Diseñar la base de datos del proyecto',
-    estado: 'CO',
-    tareas: [
-      { id: 201, descripcion: 'Esquema de tablas', estado: 'CO' },
-      { id: 202, descripcion: 'Relaciones entre tablas', estado: 'CO' },
-    ],
-  },
-  {
-    id: 3,
-    titulo: 'Integración con API de pagos',
-    estado: 'PE',
-    tareas: [{ id: 301, descripcion: 'Investigar documentación de la API', estado: 'PE' }],
-  },
-  {
-    id: 4,
-    titulo: 'Preparar la documentación del usuario',
-    estado: 'PR',
-    tareas: [],
-  },
-  {
-    id: 5,
-    titulo: 'Revisar código de la versión 1.0',
-    estado: 'PE',
-    tareas: [
-      { id: 501, descripcion: 'Corrección de bugs menores', estado: 'PR' },
-      { id: 502, descripcion: 'Refactorización de funciones', estado: 'PE' },
-    ],
-  },
-]
+const { obtenerListaActividadesTareas, actividades: actividadesFromApi } = useActividad()
 
 // --- ESTADOS REACTIVOS ---
 const actividades = ref([])
@@ -421,13 +397,13 @@ const itemsPerPage = ref(10)
 
 // Diálogos y formularios de actividades
 const actividadDialog = ref(false)
-const actividadForm = ref({ id: null, titulo: '', estado: 'PR' })
+const actividadForm = ref({ id: null, nombreCorto: '', estado: 'PR' })
 const isEditandoActividad = ref(false)
 const actividadFormRef = ref(null)
 
 // Diálogos y formularios de tareas
 const tareaDialog = ref(false)
-const tareaForm = ref({ id: null, descripcion: '', estado: 'PE' })
+const tareaForm = ref({ id: null, titulo: '', descripcion: '', estado: 'PE' })
 const actividadIdParaTarea = ref(null)
 const isEditandoTarea = ref(false)
 const tareaFormRef = ref(null)
@@ -451,6 +427,22 @@ const availableStatuses = [
   { text: 'Completada', value: 'CO' },
 ]
 
+// Mapeo de estados del backend al frontend
+const mapEstadoBackendToFrontend = (estadoBackend) => {
+  const estadoMap = {
+    CRD: 'PE', // Creada -> Pendiente
+    PLAN: 'PE', // Planificada -> Pendiente
+    RETR: 'PR', // Retraso -> En Progreso
+    REPROG: 'PR', // Reprogramacion -> En Progreso
+    EJEC: 'PR', // En Ejecucion -> En Progreso
+    REP: 'PR', // En Reporte -> En Progreso
+    PEN: 'PE', // Pendiente -> Pendiente
+    EPROG: 'PR', // En Progreso -> En Progreso
+    COMPL: 'CO', // Completada -> Completada
+  }
+  return estadoMap[estadoBackend] || 'PE'
+}
+
 const getStatusColor = (status) => {
   switch (status) {
     case 'PE':
@@ -466,49 +458,86 @@ const getStatusColor = (status) => {
 
 const getEstadoTexto = (status) => {
   const estado = availableStatuses.find((s) => s.value === status)
-  return estado ? estado.text : ''
+  return estado ? estado.text : 'Desconocido'
 }
 
 // Carga inicial de datos
-onMounted(() => {
-  setTimeout(() => {
-    actividades.value = dummyData
-    loading.value = false
-    emptyResponse.value = actividades.value.length === 0
-  }, 1000) // Simulación de carga
+onMounted(async () => {
+  await cargar()
 })
+
+const cargar = async () => {
+  loading.value = true
+  try {
+    await obtenerListaActividadesTareas()
+
+    // Procesar los datos de la API
+    if (Array.isArray(actividadesFromApi.value)) {
+      actividades.value = actividadesFromApi.value.map((actividad) => ({
+        ...actividad,
+        estadoFrontend: mapEstadoBackendToFrontend(actividad.estado),
+        // Asegurar que tareas siempre sea un array
+        tareas: Array.isArray(actividad.tareas) ? actividad.tareas : [],
+      }))
+    } else {
+      actividades.value = []
+    }
+
+    emptyResponse.value = actividades.value.length === 0
+  } catch (error) {
+    console.error('Error al cargar actividades:', error)
+    actividades.value = []
+    emptyResponse.value = true
+  } finally {
+    loading.value = false
+  }
+}
 
 // Lógica de filtros y paginación
 const filteredActividades = computed(() => {
-  let filtered = actividades.value
+  if (!Array.isArray(actividades.value)) return []
+
+  let filtered = [...actividades.value]
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter((actividad) => actividad.titulo.toLowerCase().includes(query))
+    filtered = filtered.filter(
+      (actividad) => actividad.nombreCorto && actividad.nombreCorto.toLowerCase().includes(query),
+    )
   }
 
   if (statusFilters.value.length > 0) {
-    filtered = filtered.filter((actividad) => statusFilters.value.includes(actividad.estado))
+    filtered = filtered.filter((actividad) =>
+      statusFilters.value.includes(actividad.estadoFrontend),
+    )
   }
 
   return filtered
 })
 
 const actividadesPaginadas = computed(() => {
+  if (!Array.isArray(filteredActividades.value)) return []
+
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredActividades.value.slice(start, end)
 })
 
-const totalPages = computed(() => Math.ceil(filteredActividades.value.length / itemsPerPage.value))
+const totalPages = computed(() => {
+  if (!Array.isArray(filteredActividades.value)) return 0
+  return Math.ceil(filteredActividades.value.length / itemsPerPage.value)
+})
+
 const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
 const endItem = computed(() => {
+  if (!Array.isArray(filteredActividades.value)) return 0
   const end = currentPage.value * itemsPerPage.value
   return end > filteredActividades.value.length ? filteredActividades.value.length : end
 })
 
 const countByStatus = (status) => {
-  return filteredActividades.value.filter((a) => a.estado === status).length
+  if (!Array.isArray(filteredActividades.value)) return 0
+  return filteredActividades.value.filter((a) => a.estadoFrontend === status).length
 }
 
 const toggleExpanded = (id) => {
@@ -519,9 +548,13 @@ const toggleExpanded = (id) => {
 const openActividadDialog = (actividad = null) => {
   isEditandoActividad.value = !!actividad
   if (isEditandoActividad.value) {
-    Object.assign(actividadForm.value, actividad)
+    Object.assign(actividadForm.value, {
+      id: actividad.id,
+      nombreCorto: actividad.nombreCorto,
+      estado: actividad.estadoFrontend,
+    })
   } else {
-    Object.assign(actividadForm.value, { id: null, titulo: '', estado: 'PR' })
+    Object.assign(actividadForm.value, { id: null, nombreCorto: '', estado: 'PR' })
   }
   actividadDialog.value = true
 }
@@ -533,20 +566,22 @@ const saveActividad = async () => {
   if (isEditandoActividad.value) {
     const index = actividades.value.findIndex((a) => a.id === actividadForm.value.id)
     if (index !== -1) {
-      Object.assign(actividades.value[index], actividadForm.value)
+      actividades.value[index].nombreCorto = actividadForm.value.nombreCorto
+      actividades.value[index].estadoFrontend = actividadForm.value.estado
       snackbar.value = { show: true, text: 'Actividad editada con éxito', color: 'success' }
     }
   } else {
     const newId = Math.max(...actividades.value.map((a) => a.id), 0) + 1
     actividades.value.push({
-      ...actividadForm.value,
       id: newId,
+      nombreCorto: actividadForm.value.nombreCorto,
+      estado: 'CRD', // Estado por defecto del backend
+      estadoFrontend: actividadForm.value.estado,
       tareas: [],
     })
     snackbar.value = { show: true, text: 'Actividad creada con éxito', color: 'success' }
   }
   actividadDialog.value = false
-  // Limpiar formulario y revalidar para evitar errores en el siguiente uso
   await nextTick()
   actividadFormRef.value.reset()
 }
@@ -567,9 +602,14 @@ const openTareaDialog = (actividadId, tarea = null) => {
   isEditandoTarea.value = !!tarea
   actividadIdParaTarea.value = actividadId
   if (isEditandoTarea.value) {
-    Object.assign(tareaForm.value, tarea)
+    Object.assign(tareaForm.value, {
+      id: tarea.id,
+      titulo: tarea.titulo,
+      descripcion: tarea.descripcion,
+      estado: mapEstadoBackendToFrontend(tarea.estado),
+    })
   } else {
-    Object.assign(tareaForm.value, { id: null, descripcion: '', estado: 'PE' })
+    Object.assign(tareaForm.value, { id: null, titulo: '', descripcion: '', estado: 'PE' })
   }
   tareaDialog.value = true
 }
@@ -584,12 +624,34 @@ const saveTarea = async () => {
   if (isEditandoTarea.value) {
     const index = actividad.tareas.findIndex((t) => t.id === tareaForm.value.id)
     if (index !== -1) {
-      Object.assign(actividad.tareas[index], tareaForm.value)
+      Object.assign(actividad.tareas[index], {
+        titulo: tareaForm.value.titulo,
+        descripcion: tareaForm.value.descripcion,
+        estado:
+          tareaForm.value.estado === 'PE'
+            ? 'PEN'
+            : tareaForm.value.estado === 'PR'
+              ? 'EPROG'
+              : 'COMPL',
+      })
       snackbar.value = { show: true, text: 'Tarea editada con éxito', color: 'success' }
     }
   } else {
     const newId = Math.max(...actividad.tareas.map((t) => t.id), 0) + 1
-    actividad.tareas.push({ ...tareaForm.value, id: newId })
+    actividad.tareas.push({
+      id: newId,
+      titulo: tareaForm.value.titulo,
+      descripcion: tareaForm.value.descripcion,
+      estado:
+        tareaForm.value.estado === 'PE'
+          ? 'PEN'
+          : tareaForm.value.estado === 'PR'
+            ? 'EPROG'
+            : 'COMPL',
+      fecha_creacion: new Date().toISOString(),
+      fecha_limite: null,
+      presupuesto: null,
+    })
     snackbar.value = { show: true, text: 'Tarea creada con éxito', color: 'success' }
   }
   tareaDialog.value = false

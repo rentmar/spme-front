@@ -46,7 +46,6 @@
       <Handle type="source" position="bottom" :id="`source-${id}`" :style="handleStyle" />
     </template>
   </BaseNodo>
-  {{ proyectoEstructura.id }}
 </template>
 
 <script setup>
@@ -82,7 +81,7 @@ const currentNode = findNode(props.id)
 const idCurrentNode = currentNode.data.nodoProyecto.id
 // console.log(idCurrentNode)
 //identificador del proyecto
-const idProyecto = proyectoEstructura.value.id.toString()
+const idProyecto = proyectoEstructura.value.id
 
 const handleStyle = {
   width: '12px',
@@ -214,32 +213,64 @@ const agregarActividad = async () => {
   //   indicador_pei: null,
   //   tipo: [],
   // }
+  // const act = {
+  //   codigo: 'ACT',
+  //   descripcion: '',
+  //   supuestos: '',
+  //   riesgos: '',
+  //   objetivo_de_actividad: '',
+  //   descripcion_evaluacion: '',
+  //   fecha_programada: null,
+  //   fecha_inicio: null,
+  //   fecha_cierre: null,
+  //   presupuesto: null,
+  //   presupuestoGlobal: null,
+  //   procedencia_fondos: null,
+  //   estado: 'CRD',
+  //   proceso: null,
+  //   resultado_og: idCurrentNode,
+  //   resultado_oe: null,
+  //   producto_oe: null,
+  //   objetivo_pei: null,
+  //   indicador_pei: null,
+  //   proyecto: idProyecto,
+  //   responsable: null,
+  //   tipo: null,
+  // }
   const act = {
+    responsable: null,
+    proyecto: idProyecto.toString(),
     codigo: 'ACT',
+    nombreCorto: null,
     descripcion: '',
     supuestos: '',
     riesgos: '',
     objetivo_de_actividad: '',
     descripcion_evaluacion: '',
+    descripcion_tipo_actividad: null,
     fecha_programada: null,
     fecha_inicio: null,
     fecha_cierre: null,
     presupuesto: null,
     presupuestoGlobal: null,
+    totalReportado: null,
+    totalEjecutado: null,
+    saldo: null,
+    gradoEjecucion: null,
     procedencia_fondos: null,
     estado: 'CRD',
+    tipo: null,
     proceso: null,
-    resultado_og: idCurrentNode,
+    resultado_og: null,
     resultado_oe: null,
     producto_oe: null,
     objetivo_pei: null,
     indicador_pei: null,
-    proyecto: idProyecto,
-    responsable: null,
-    tipo: [],
   }
+  console.log(act)
   try {
     await crearActividad(act)
+    console.log('Actividad creada')
     console.log(actividad)
     const payload = {
       sourceId: currentNode.id.toString(),

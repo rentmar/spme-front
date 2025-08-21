@@ -270,7 +270,7 @@ const agregarActividad = async () => {
     indicador_pei: null,
     proyecto: idProyecto,
     responsable: null,
-    tipo: [],
+    tipo: null,
   }
   try {
     await crearActividad(act)
