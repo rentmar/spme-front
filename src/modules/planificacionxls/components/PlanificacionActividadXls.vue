@@ -75,114 +75,145 @@
           </v-tooltip>
         </v-toolbar>
 
-        <!-- Toolbar de información mejorado -->
-        <v-toolbar flat density="comfortable" class="details-toolbar" v-if="selectedRowData">
-          <div class="info-container">
+        <!-- Toolbar de información - Estilo Excel -->
+        <v-toolbar
+          flat
+          density="compact"
+          class="details-toolbar excel-style-toolbar"
+          v-if="selectedRowData"
+        >
+          <!-- Información en línea -->
+          <div class="info-container excel-info-container horizontal-layout">
             <!-- Información de la actividad -->
-            <div class="info-section">
-              <v-icon color="primary" class="mr-2">mdi-information-outline</v-icon>
-              <span class="info-text">
-                <strong>Actividad:</strong> {{ selectedRowData.nombreCorto }} ({{
-                  selectedRowData.codigo
-                }})
+            <div class="info-section excel-info-section horizontal-item">
+              <v-icon color="#0078D4" size="16" class="mr-1"
+                >mdi-checkbox-marked-circle-outline</v-icon
+              >
+              <span class="info-text excel-info-text">
+                <strong class="excel-label">Actividad:</strong>
+                <span class="excel-value">{{ selectedRowData.nombreCorto }}</span>
+                <span class="excel-code">({{ selectedRowData.codigo }})</span>
               </span>
             </div>
-
             <!-- Información de presupuesto -->
-            <div class="info-section">
-              <v-icon color="primary" class="mr-2">mdi-cash</v-icon>
-              <span class="info-text">
-                <strong>Presupuesto:</strong> {{ formatCurrency(selectedRowData.presupuesto) }}
+            <div class="info-section excel-info-section horizontal-item">
+              <v-icon color="#107C10" size="16" class="mr-1">mdi-currency-usd</v-icon>
+              <span class="info-text excel-info-text">
+                <strong class="excel-label">Presupuesto:</strong>
+                <span class="excel-value budget-value">{{
+                  formatCurrency(selectedRowData.presupuesto)
+                }}</span>
               </span>
             </div>
-
             <!-- Información de fecha de inicio -->
-            <div class="info-section">
-              <v-icon color="primary" class="mr-2">mdi-calendar-start</v-icon>
-              <span class="info-text">
-                <strong>Inicio:</strong> {{ formatDate(selectedRowData.fecha_inicio) }}
+            <div class="info-section excel-info-section horizontal-item">
+              <v-icon color="#E81123" size="16" class="mr-1">mdi-calendar-clock</v-icon>
+              <span class="info-text excel-info-text">
+                <strong class="excel-label">Inicio:</strong>
+                <span class="excel-value">{{ formatDate(selectedRowData.fecha_inicio) }}</span>
+              </span>
+            </div>
+            <!-- Información de fecha de cierre -->
+            <div
+              class="info-section excel-info-section horizontal-item"
+              v-if="selectedRowData.fecha_cierre"
+            >
+              <v-icon color="#FF8C00" size="16" class="mr-1">mdi-calendar-end</v-icon>
+              <span class="info-text excel-info-text">
+                <strong class="excel-label">Cierre:</strong>
+                <span class="excel-value">{{ formatDate(selectedRowData.fecha_cierre) }}</span>
               </span>
             </div>
           </div>
 
           <v-spacer></v-spacer>
 
-          <!-- Botonera de presupuesto -->
-          <div class="budget-buttons mr-2">
-            <v-tooltip text="Aumentar presupuesto" location="bottom">
-              <template v-slot:activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  variant="text"
-                  size="small"
-                  color="primary"
-                  @click="aumentarPresupuesto"
-                >
-                  <v-icon>mdi-plus-circle</v-icon>
-                </v-btn>
+          <!-- Botonera compacta estilo Excel -->
+          <div class="estructura-buttons excel-button-group horizontal-buttons">
+            <!-- Botón Presupuesto -->
+            <v-btn
+              color="#0078D4"
+              variant="flat"
+              size="small"
+              class="excel-button budget-button"
+              @click="mostrarModalPresupuesto"
+            >
+              <template v-slot:prepend>
+                <v-icon size="16">mdi-cash-multiple</v-icon>
               </template>
-            </v-tooltip>
+              Presupuesto
+            </v-btn>
 
-            <v-tooltip text="Disminuir presupuesto" location="bottom">
-              <template v-slot:activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  variant="text"
-                  size="small"
-                  color="primary"
-                  @click="disminuirPresupuesto"
-                >
-                  <v-icon>mdi-minus-circle</v-icon>
-                </v-btn>
+            <!-- Botón PEI -->
+            <v-btn
+              color="#107C10"
+              variant="flat"
+              size="small"
+              class="excel-button pei-button"
+              @click="abrirModalPei"
+            >
+              <template v-slot:prepend>
+                <v-icon size="16">mdi-chart-tree</v-icon>
               </template>
-            </v-tooltip>
+              PEI
+            </v-btn>
 
-            <v-tooltip text="Ajustar presupuesto manualmente" location="bottom">
-              <template v-slot:activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  variant="text"
-                  size="small"
-                  color="primary"
-                  @click="ajustarPresupuesto"
-                >
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
+            <!-- Botón Estructura (solo para nuevas actividades) -->
+            <v-btn
+              v-if="selectedRowData.id === 0"
+              color="#505A64"
+              variant="flat"
+              size="small"
+              class="excel-button structure-button"
+              @click="abrirModalEstructura"
+            >
+              <template v-slot:prepend>
+                <v-icon size="16">mdi-sitemap</v-icon>
               </template>
-            </v-tooltip>
+              Estructura
+            </v-btn>
+
+            <!----Componente Presupuesto-->
+            <ComponentPresupuesto
+              v-model="mostrarPresupuesto"
+              :presupuesto-total="selectedRowData.presupuesto"
+              :desglose-inicial="selectedRowData.procedencia_fondos"
+              @guardarDesglose="guardarDesglosePresupuesto"
+            ></ComponentPresupuesto>
           </div>
 
-          <!-- Botón de estructura (solo visible cuando id es 0) -->
-          <v-btn
-            v-if="selectedRowData.id === 0"
-            color="secondary"
-            variant="flat"
-            prepend-icon="mdi-file-tree"
-            @click="abrirModalEstructura"
-          >
-            Estructura
-          </v-btn>
-
-          <!-- Modal de estructura -->
-          <v-dialog v-model="modalEstructura" max-width="600">
+          <!--Estructura Proyecto-->
+          <v-dialog v-model="modalEstructura" transition="dialog-bottom-transition" fullscreen>
             <v-card>
-              <v-card-title class="d-flex justify-space-between align-center">
-                <span>Estructura de la Actividad</span>
-                <v-btn icon @click="modalEstructura = false">
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-              </v-card-title>
+              <v-toolbar>
+                <v-btn icon="mdi-close" @click="modalEstructura = false"></v-btn>
+
+                <v-toolbar-title>Estructura Proyecto </v-toolbar-title>
+
+                <v-toolbar-items>
+                  <v-btn text="Guardar" variant="text"></v-btn>
+                </v-toolbar-items>
+              </v-toolbar>
               <v-card-text>
-                <!-- Contenido del modal de estructura aquí -->
-                <p>
-                  Contenido del modal de estructura para la actividad:
-                  {{ selectedRowData.nombreCorto }}
-                </p>
+                <SeleccionEstructuraProyecto></SeleccionEstructuraProyecto>
               </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" @click="modalEstructura = false">Cerrar</v-btn>
-              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <!--Estructura Proyecto-->
+          <v-dialog v-model="modalPei" transition="dialog-bottom-transition" fullscreen>
+            <v-card>
+              <v-toolbar>
+                <v-btn icon="mdi-close" @click="modalPei = false"></v-btn>
+
+                <v-toolbar-title>Estructura PEi </v-toolbar-title>
+
+                <v-toolbar-items>
+                  <v-btn text="Guardar" variant="text"></v-btn>
+                </v-toolbar-items>
+              </v-toolbar>
+              <v-card-text>
+                <SeleccionEstructuraPei></SeleccionEstructuraPei>
+              </v-card-text>
             </v-card>
           </v-dialog>
         </v-toolbar>
@@ -218,12 +249,13 @@
           :columns="columns"
           :colHeaders="headers"
           :rowHeaders="true"
-          :height="400"
+          :height="1500"
           :contextMenu="true"
           :language="'es-Mx'"
           :afterChange="handleChange"
           :afterSelection="handleSelection"
           :licenseKey="'non-commercial-and-evaluation'"
+          :hiddenColumns="hiddenColumnsConfig"
         ></HotTable>
       </div>
 
@@ -269,6 +301,10 @@
       <v-btn variant="text" @click="snackbar.show = false">Cerrar</v-btn>
     </template>
   </v-snackbar>
+
+  {{ selectedRowData }}
+  <br /><br /><br />
+  {{ tableData }}
 </template>
 
 <script setup>
@@ -277,7 +313,7 @@ import { registerAllModules } from 'handsontable/registry'
 import { registerLanguageDictionary } from 'handsontable/i18n'
 import { esMX } from 'handsontable/i18n'
 import 'handsontable/dist/handsontable.full.css'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 import TrazadorActividad from './parciales/TrazadorActividad.vue'
@@ -287,6 +323,10 @@ import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { usePlanificacion } from '../composables/usePlanificacion'
 //Precargas
 import { SELECT_OPTIONS } from '@/utility/selectOptions'
+import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
+//Estructuras
+import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
+import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
 
 // Props del componente
 const props = defineProps({
@@ -329,6 +369,48 @@ const snackbar = ref({
   color: 'success',
 })
 
+/******************** PEI ******************************************/
+const modalPei = ref(false)
+const abrirModalPei = () => {
+  modalPei.value = true
+}
+/********************* Estructura ********************************/
+const modalEstructura = ref(false)
+const abrirModalEstructura = () => {
+  modalEstructura.value = true
+}
+/******************** Presupuesto *******************************/
+const mostrarPresupuesto = ref(false)
+const mostrarModalPresupuesto = () => {
+  mostrarPresupuesto.value = true
+}
+
+const guardarDesglosePresupuesto = (nuevoDesglose) => {
+  if (selectedRowData.value) {
+    const rowIndex = tableData.value.findIndex((row) => row.id === selectedRowData.value.id)
+
+    if (rowIndex !== -1) {
+      // Crear una nueva copia del array para mantener la reactividad
+      const updatedTableData = [...tableData.value]
+
+      // Actualizar solo el campo procedencia_fondos de la fila específica
+      updatedTableData[rowIndex] = {
+        ...updatedTableData[rowIndex], // Mantener todos los otros campos
+        procedencia_fondos: nuevoDesglose, // Actualizar solo este campo
+      }
+
+      // Asignar el nuevo array reactivo
+      tableData.value = updatedTableData
+
+      console.log('procedencia_fondos actualizado para fila:', rowIndex)
+    }
+  }
+
+  mostrarPresupuesto.value = false
+  //selectedRowData.value = null
+  mostrarMensaje('Desglose de presupuesto guardado correctamente', 'success')
+}
+/***************************************************************/
 /********** CONTROLES DE LA INTERFAZ EXCEL **************/
 const hotTable = ref(null)
 const sidePanelVisible = ref(false)
@@ -363,16 +445,64 @@ const obtenerConfiguracionTabla = () => {
 
 // Método para confirmar el guardado - ACTUALIZADO
 const confirmarGuardado = async () => {
+  // guardando.value = true
+  // try {
+  //   // Crear copia simple de los datos sin reactividad
+  //   const datosSimples = JSON.parse(JSON.stringify(tableData.value))
+
+  //   // Preparar la estructura que espera el backend
+  //   const datosEnvio = {
+  //     table_config: obtenerConfiguracionTabla(),
+  //     rows_data: datosSimples,
+  //     razon_cambio: 'Actualización de planificación',
+  //     usuario: 'admin',
+  //   }
+
+  //   // Guardar en el backend
+  //   await guardarActividadesBulk(idproyecto, datosEnvio)
+
+  //   // Mostrar mensaje de éxito
+  //   mostrarMensaje('Planificación guardada exitosamente', 'success')
+
+  //   // REFRESCAR LOS DATOS después de guardar
+  //   await refrescarDatos()
+  // } catch (error) {
+  //   console.error('Error:', error)
+  //   mostrarMensaje('Error al guardar: ' + error.message, 'error')
+  // } finally {
+  //   guardando.value = false
+  //   confirmacionModal.value = false
+  // }
+
   guardando.value = true
   try {
     // Crear copia simple de los datos sin reactividad
     const datosSimples = JSON.parse(JSON.stringify(tableData.value))
 
-    // Preparar la estructura que espera el backend
+    // Obtener datos anteriores (simplificado para pruebas)
+    //const datosAnteriores = await obtenerDatosAnterioresSimple(idproyecto)
+
+    // Determinar tipo de cambio básico
+    //const tipoCambio = datosAnteriores ? 'actualizacion' : 'creacion'
+
+    // Preparar la estructura que espera el backend (VERSIÓN SIMPLIFICADA)
     const datosEnvio = {
       table_config: obtenerConfiguracionTabla(),
       rows_data: datosSimples,
       razon_cambio: 'Actualización de planificación',
+      usuario: 'admin',
+
+      // DATOS MÍNIMOS para CambioPlanificacion
+      cambio_planificacion: {
+        tipo_cambio: 'creacion',
+        datos_anteriores: null, // Puede ser null
+        datos_nuevos: {
+          actividades: datosSimples,
+          total_actividades: datosSimples.length,
+        },
+        descripcion: 'Planificación guardada desde interfaz, razon de cambio',
+        realizado_por: 'admin',
+      },
     }
 
     // Guardar en el backend
@@ -446,10 +576,10 @@ const agregarNuevaActividad = () => {
     fecha_inicio: null,
     fecha_cierre: null,
     presupuesto: 0,
-    presupuestoGlobal: null,
-    totalReportado: null,
-    totalEjecutado: null,
-    saldo: null,
+    presupuestoGlobal: 0,
+    totalReportado: 0,
+    totalEjecutado: 0,
+    saldo: 0,
     gradoEjecucion: null,
     procedencia_fondos: null,
     estado: 'CRD',
@@ -495,6 +625,13 @@ const tipoActividad = SELECT_OPTIONS.tipo_actividad
 const tableData = ref([])
 const actividadesEnTabla = ref([])
 const inicializado = ref(true)
+
+//Esconder columnas
+const hiddenColumnsConfig = computed(() => {
+  return {
+    columns: [10], // Columnas 1, 3 y 7
+  }
+})
 
 //Username para carga
 const usernameDropdown = ref([])
@@ -542,6 +679,7 @@ const columns = ref([
       pattern: '0,0.00',
     },
   },
+  { data: 'procedencia_fondos' },
   {
     data: 'presupuestoGlobal',
     title: 'Presupuesto Global',
@@ -710,6 +848,8 @@ const contextMenuOptions = ref({
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: calc(100vh - 150px);
+  min-height: 600px;
 }
 
 .content-wrapper {
@@ -723,6 +863,7 @@ const contextMenuOptions = ref({
   min-width: 0;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .side-panel {
@@ -731,5 +872,192 @@ const contextMenuOptions = ref({
   max-width: 400px;
 }
 
-/* ... (mantener el resto de estilos igual) ... */
+/********* toolbar de actividad *********/
+/* Toolbar estilo Excel */
+.excel-style-toolbar {
+  background: linear-gradient(to bottom, #f3f3f3 0%, #e6e6e6 100%) !important;
+  border: 1px solid #d0d0d0 !important;
+  border-radius: 3px !important;
+  padding: 4px 8px !important;
+  min-height: 36px !important;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+/* Contenedor de información horizontal */
+.excel-info-container.horizontal-layout {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+
+.horizontal-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: white;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  min-height: 28px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.info-text.excel-info-text {
+  font-size: 12px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.excel-label {
+  color: #605e5c;
+  font-weight: 600;
+}
+
+.excel-value {
+  color: #323130;
+  font-weight: 400;
+}
+
+.excel-code {
+  color: #0078d4;
+  font-weight: 600;
+}
+
+.budget-value {
+  color: #107c10;
+  font-weight: 600;
+}
+
+/* Grupo de botones horizontal */
+.horizontal-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.excel-button {
+  min-width: auto !important;
+  height: 28px !important;
+  padding: 0 12px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.excel-button:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-1px);
+}
+
+.excel-button :deep(.v-btn__content) {
+  gap: 4px !important;
+}
+
+.excel-button :deep(.v-icon) {
+  margin-right: 4px !important;
+  margin-left: -2px !important;
+}
+
+/* Colores específicos para cada botón */
+.budget-button {
+  background: linear-gradient(to bottom, #0078d4 0%, #106ebe 100%) !important;
+  color: white !important;
+}
+
+.budget-button:hover {
+  background: linear-gradient(to bottom, #106ebe 0%, #005a9e 100%) !important;
+}
+
+.pei-button {
+  background: linear-gradient(to bottom, #107c10 0%, #0e6c0e 100%) !important;
+  color: white !important;
+}
+
+.pei-button:hover {
+  background: linear-gradient(to bottom, #0e6c0e 0%, #0d5c0d 100%) !important;
+}
+
+.structure-button {
+  background: linear-gradient(to bottom, #505a64 0%, #3b444b 100%) !important;
+  color: white !important;
+}
+
+.structure-button:hover {
+  background: linear-gradient(to bottom, #3b444b 0%, #2c3439 100%) !important;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 1200px) {
+  .excel-info-container.horizontal-layout {
+    gap: 8px;
+  }
+
+  .horizontal-item {
+    padding: 4px 8px;
+  }
+
+  .info-text.excel-info-text {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 900px) {
+  .excel-info-container.horizontal-layout {
+    gap: 6px;
+  }
+
+  .horizontal-item {
+    padding: 3px 6px;
+  }
+
+  .excel-button {
+    padding: 0 8px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* Scroll horizontal para pantallas muy pequeñas */
+.excel-info-container.horizontal-layout {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f0f0f0;
+}
+
+.excel-info-container.horizontal-layout::-webkit-scrollbar {
+  height: 4px;
+}
+
+.excel-info-container.horizontal-layout::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.excel-info-container.horizontal-layout::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+/* Efectos de focus para accesibilidad */
+.excel-button:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: 1px;
+}
+
+/* Mejor alineación vertical */
+.excel-style-toolbar {
+  align-items: center;
+}
+
+.horizontal-item {
+  align-items: center;
+}
 </style>

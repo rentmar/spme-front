@@ -20,7 +20,7 @@
           <PaginaTituloIcono :titulo="'planificacion'" :icon="'mdi-calendar'" />
           <ProyectoHeader v-if="proyecto" :proyecto="proyecto" />
 
-          <v-card class="mb-4" min-height="800">
+          <v-card class="mb-4" min-height="1000">
             <v-toolbar color="info" density="compact">
               <v-toolbar-title>PLANIFICACION</v-toolbar-title>
               <v-spacer></v-spacer>

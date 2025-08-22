@@ -1,572 +1,565 @@
 <template>
-  <div class="presupuesto-container">
-    <!-- Header del componente -->
-    <div class="presupuesto-header">
-      <v-icon color="#1F4E78" class="mr-2">mdi-calculator</v-icon>
-      <h3 class="header-title">CALCULADORA DE PRESUPUESTO</h3>
-      <v-chip color="#E3F2FD" text-color="#1F4E78" small class="ml-2">
-        Presupuesto total: {{ formatCurrency(presupuestoTotal) }}
-      </v-chip>
-    </div>
+  <v-dialog v-model="dialog" max-width="800" persistent scrollable>
+    <v-card class="elevation-4">
+      <v-toolbar color="primary" dark flat>
+        <v-toolbar-title class="text-h6 font-weight-medium">
+          <v-icon class="mr-2">mdi-cash-multiple</v-icon>
+          Desglose de Presupuesto
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn icon @click="closeDialog" variant="text">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
 
-    <!-- Fuentes de financiamiento desde API -->
-    <div class="fuentes-section">
-      <div class="section-header">
-        <v-icon color="#2E7D32" class="mr-2">mdi-bank</v-icon>
-        <h4 class="section-title">FUENTES REGISTRADAS</h4>
-        <v-chip color="#E8F5E9" text-color="#2E7D32" x-small class="ml-2">
-          {{ fuentesAPI.length }} disponibles
-        </v-chip>
-      </div>
-
-      <div class="fuentes-grid">
-        <v-card
-          v-for="fuente in fuentesAPI"
-          :key="fuente.id"
-          class="fuente-card"
-          variant="outlined"
-          @click="seleccionarFuenteAPI(fuente)"
+      <v-card-text class="pa-4">
+        <!-- Alerta de validación compacta -->
+        <v-alert
+          v-if="totalDesglose > currentRowTotal"
+          type="error"
+          class="mb-3"
+          density="compact"
+          icon="mdi-alert-circle-outline"
         >
-          <v-card-text class="pa-3">
-            <div class="fuente-content">
-              <v-icon
-                :color="fuenteSeleccionadaAPI?.id === fuente.id ? '#2E7D32' : '#666'"
-                class="mr-2"
-              >
-                {{
-                  fuenteSeleccionadaAPI?.id === fuente.id
-                    ? 'mdi-check-circle'
-                    : 'mdi-circle-outline'
-                }}
-              </v-icon>
-              <div class="fuente-info">
-                <div class="fuente-nombre">{{ fuente.nombre }}</div>
-                <div class="fuente-tipo">{{ fuente.tipo }}</div>
+          <strong>Exceso de presupuesto:</strong>
+          {{ formatCurrency(totalDesglose) }} > {{ formatCurrency(currentRowTotal) }}
+        </v-alert>
+
+        <!-- Resumen presupuestario compacto -->
+        <v-row class="mb-3" dense>
+          <v-col cols="12" md="3">
+            <div class="d-flex align-center pa-2 bg-grey-lighten-4 rounded">
+              <v-icon color="primary" size="small" class="mr-2">mdi-cash</v-icon>
+              <div>
+                <div class="text-caption text-medium-emphasis">Total</div>
+                <div class="text-body-2 font-weight-medium text-primary">
+                  {{ formatCurrency(currentRowTotal) }}
+                </div>
               </div>
             </div>
+          </v-col>
+
+          <v-col cols="12" md="3">
+            <div class="d-flex align-center pa-2 bg-grey-lighten-4 rounded">
+              <v-icon color="green" size="small" class="mr-2">mdi-chart-pie</v-icon>
+              <div>
+                <div class="text-caption text-medium-emphasis">Desglosado</div>
+                <div class="text-body-2 font-weight-medium text-green-darken-2">
+                  {{ formatCurrency(totalDesglose) }}
+                </div>
+              </div>
+            </div>
+          </v-col>
+
+          <v-col cols="12" md="3">
+            <div class="d-flex align-center pa-2 bg-grey-lighten-4 rounded">
+              <v-icon :color="saldoDisponible < 0 ? 'error' : 'success'" size="small" class="mr-2">
+                {{ saldoDisponible < 0 ? 'mdi-alert' : 'mdi-check-circle' }}
+              </v-icon>
+              <div>
+                <div class="text-caption text-medium-emphasis">Saldo</div>
+                <div
+                  :class="[
+                    'text-body-2 font-weight-medium',
+                    saldoDisponible < 0 ? 'text-error' : 'text-success',
+                  ]"
+                >
+                  {{ formatCurrency(saldoDisponible) }}
+                </div>
+              </div>
+            </div>
+          </v-col>
+
+          <v-col cols="12" md="3">
+            <div class="pa-2 bg-grey-lighten-4 rounded">
+              <div class="d-flex align-center mb-1">
+                <v-icon
+                  :color="porcentajeDesglose > 100 ? 'error' : 'primary'"
+                  size="small"
+                  class="mr-2"
+                >
+                  mdi-progress-clock
+                </v-icon>
+                <span class="text-caption text-medium-emphasis">Utilizado</span>
+              </div>
+              <v-progress-linear
+                :value="porcentajeDesglose"
+                height="8"
+                :color="porcentajeDesglose > 100 ? 'error' : 'primary'"
+                rounded
+              >
+                <template v-slot:default="{ value }">
+                  <strong class="text-caption">{{ Math.ceil(value) }}%</strong>
+                </template>
+              </v-progress-linear>
+            </div>
+          </v-col>
+        </v-row>
+
+        <v-divider class="my-3"></v-divider>
+
+        <!-- Resto del componente se mantiene igual -->
+        <!-- Agregar fuentes -->
+        <v-card variant="outlined" class="mb-4">
+          <v-card-title class="text-subtitle-1 font-weight-medium bg-grey-lighten-4">
+            <v-icon class="mr-2">mdi-plus-circle</v-icon>
+            Agregar Fuentes de Financiamiento
+          </v-card-title>
+          <v-card-text>
+            <!-- Selector de fuentes financieras -->
+            <v-row>
+              <v-col cols="12" md="8">
+                <v-autocomplete
+                  v-model="nuevaFuenteSeleccionada"
+                  :items="fuentesFinancierasDisponibles"
+                  label="Seleccionar fuente financiera existente"
+                  item-title="financiera"
+                  item-value="id"
+                  return-object
+                  clearable
+                  prepend-inner-icon="mdi-magnify"
+                  variant="outlined"
+                  density="comfortable"
+                ></v-autocomplete>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-btn
+                  color="primary"
+                  block
+                  :disabled="!nuevaFuenteSeleccionada"
+                  @click="agregarFuenteExistente"
+                  prepend-icon="mdi-check"
+                  variant="flat"
+                  size="large"
+                >
+                  Agregar
+                </v-btn>
+              </v-col>
+            </v-row>
+
+            <v-divider class="my-4">o</v-divider>
+
+            <!-- Agregar fuente manual -->
+            <v-row>
+              <v-col cols="12" md="5">
+                <v-text-field
+                  v-model="nuevaFuenteManual.nombre"
+                  label="Nombre de nueva fuente"
+                  clearable
+                  variant="outlined"
+                  density="comfortable"
+                  prepend-inner-icon="mdi-form-textbox"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="5">
+                <v-text-field
+                  v-model.number="nuevaFuenteManual.monto"
+                  type="number"
+                  label="Monto"
+                  min="0"
+                  :max="saldoDisponible"
+                  clearable
+                  variant="outlined"
+                  density="comfortable"
+                  prepend-inner-icon="mdi-currency-usd"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="2">
+                <v-btn
+                  color="secondary"
+                  block
+                  :disabled="!nuevaFuenteManual.nombre || !nuevaFuenteManual.monto"
+                  @click="agregarFuenteManual"
+                  prepend-icon="mdi-plus"
+                  variant="flat"
+                  size="large"
+                  class="h-100"
+                >
+                  Crear
+                </v-btn>
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
-      </div>
 
-      <!-- Controles para fuente API seleccionada -->
-      <div v-if="fuenteSeleccionadaAPI" class="controles-fuente">
-        <v-text-field
-          v-model.number="montoFuenteAPI"
-          type="number"
-          label="Monto a asignar"
-          variant="outlined"
-          density="compact"
-          :max="saldoDisponible"
-          :min="0"
-          prefix="$"
-          class="monto-input"
-        />
+        <!-- Tabla de desglose -->
+        <v-card variant="outlined">
+          <v-card-title class="text-subtitle-1 font-weight-medium bg-grey-lighten-4">
+            <v-icon class="mr-2">mdi-table</v-icon>
+            Desglose de Fuentes
+          </v-card-title>
+          <v-table density="comfortable" class="elevation-1">
+            <thead>
+              <tr class="bg-grey-lighten-3">
+                <th class="font-weight-medium text-left">Fuente de Financiamiento</th>
+                <th class="font-weight-medium text-right">Monto</th>
+                <th class="font-weight-medium text-right">%</th>
+                <th class="font-weight-medium text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, index) in currentBreakdown" :key="index" class="border-bottom">
+                <td class="text-left">
+                  <div class="d-flex align-center">
+                    <v-icon small class="mr-2" :color="item.esExistente ? 'primary' : 'secondary'">
+                      {{ item.esExistente ? 'mdi-database' : 'mdi-pencil' }}
+                    </v-icon>
+                    {{ item.nombre }}
+                  </div>
+                </td>
+                <td class="text-right">
+                  <v-text-field
+                    v-model.number="item.monto"
+                    type="number"
+                    density="compact"
+                    variant="underlined"
+                    hide-details
+                    :min="0"
+                    :max="currentRowTotal"
+                    @update:model-value="actualizarMonto(index)"
+                    class="mt-2"
+                  />
+                </td>
+                <td class="text-right">
+                  <span class="text-caption text-medium-emphasis">
+                    {{ calcularPorcentaje(item.monto) }}%
+                  </span>
+                </td>
+                <td class="text-center">
+                  <v-btn
+                    icon
+                    size="small"
+                    color="error"
+                    variant="text"
+                    @click="eliminarFuente(index)"
+                    title="Eliminar fuente"
+                  >
+                    <v-icon>mdi-delete-outline</v-icon>
+                  </v-btn>
+                </td>
+              </tr>
+              <tr class="bg-grey-lighten-4 font-weight-bold">
+                <td class="text-left">Total General</td>
+                <td class="text-right text-primary">{{ formatCurrency(totalDesglose) }}</td>
+                <td class="text-right text-primary">{{ porcentajeDesglose.toFixed(2) }}%</td>
+                <td class="text-center"></td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-card>
+      </v-card-text>
+
+      <v-divider></v-divider>
+
+      <v-card-actions class="pa-4 bg-grey-lighten-4">
+        <v-spacer></v-spacer>
         <v-btn
-          color="#1976D2"
-          variant="flat"
-          @click="agregarFuenteAPI"
-          :disabled="!montoFuenteAPI || montoFuenteAPI <= 0 || montoFuenteAPI > saldoDisponible"
-          class="ml-2"
+          @click="closeDialog"
+          variant="outlined"
+          color="grey-darken-2"
+          prepend-icon="mdi-close"
+          size="large"
         >
-          <v-icon left>mdi-plus</v-icon>
-          Agregar
+          Cancelar
         </v-btn>
-      </div>
-    </div>
-
-    <v-divider class="my-4"></v-divider>
-
-    <!-- Fuente manual -->
-    <div class="fuente-manual-section">
-      <div class="section-header">
-        <v-icon color="#FF9800" class="mr-2">mdi-pencil</v-icon>
-        <h4 class="section-title">AGREGAR FUENTE MANUAL</h4>
-      </div>
-
-      <div class="manual-controls">
-        <v-text-field
-          v-model="nuevaFuenteManual.nombre"
-          label="Nombre de la fuente"
-          variant="outlined"
-          density="compact"
-          placeholder="Ej: Recursos propios, Donación, etc."
-          class="nombre-input"
-        />
-
-        <v-text-field
-          v-model.number="nuevaFuenteManual.monto"
-          type="number"
-          label="Monto"
-          variant="outlined"
-          density="compact"
-          :max="saldoDisponible"
-          :min="0"
-          prefix="$"
-          class="monto-input"
-        />
-
         <v-btn
-          color="#FF9800"
+          color="primary"
+          @click="saveBreakdown"
+          :disabled="totalDesglose > currentRowTotal || totalDesglose === 0"
           variant="flat"
-          @click="agregarFuenteManual"
-          :disabled="
-            !nuevaFuenteManual.nombre ||
-            !nuevaFuenteManual.monto ||
-            nuevaFuenteManual.monto <= 0 ||
-            nuevaFuenteManual.monto > saldoDisponible
-          "
-          class="ml-2"
+          prepend-icon="mdi-content-save"
+          size="large"
         >
-          <v-icon left>mdi-plus</v-icon>
-          Agregar Manual
+          Guardar Desglose
         </v-btn>
-      </div>
-    </div>
-
-    <v-divider class="my-4"></v-divider>
-
-    <!-- Tabla de desglose presupuestario -->
-    <div class="tabla-presupuesto">
-      <div class="table-header">
-        <v-icon color="#1F4E78" class="mr-2">mdi-table</v-icon>
-        <h4 class="table-title">DESGLOSE DE PRESUPUESTO</h4>
-        <v-chip
-          :color="saldoDisponible >= 0 ? 'green-lighten-4' : 'red-lighten-4'"
-          small
-          class="ml-2"
-        >
-          Saldo: {{ formatCurrency(saldoDisponible) }}
-        </v-chip>
-      </div>
-
-      <v-table density="compact" class="presupuesto-table">
-        <thead>
-          <tr>
-            <th>Fuente de Financiamiento</th>
-            <th class="text-right">Monto Asignado</th>
-            <th class="text-right">% del Total</th>
-            <th class="text-center">Tipo</th>
-            <th class="text-center">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, index) in desglosePresupuesto" :key="index">
-            <td>
-              <div class="fuente-info">
-                <v-icon small :color="item.manual ? '#FF9800' : '#2E7D32'" class="mr-2">
-                  {{ item.manual ? 'mdi-pencil' : 'mdi-bank' }}
-                </v-icon>
-                {{ item.nombre }}
-              </div>
-            </td>
-            <td class="text-right">
-              <v-text-field
-                v-model.number="item.monto"
-                type="number"
-                variant="underlined"
-                density="compact"
-                hide-details
-                single-line
-                :min="0"
-                :max="presupuestoTotal"
-                @update:modelValue="actualizarMonto(index)"
-                class="monto-cell"
-              />
-            </td>
-            <td class="text-right percentage-cell">{{ calcularPorcentaje(item.monto) }}%</td>
-            <td class="text-center">
-              <v-chip :color="item.manual ? 'orange' : 'green'" small variant="flat">
-                {{ item.manual ? 'Manual' : 'Registrada' }}
-              </v-chip>
-            </td>
-            <td class="text-center">
-              <v-btn
-                icon
-                size="x-small"
-                color="error"
-                variant="text"
-                @click="eliminarFuente(index)"
-              >
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-            </td>
-          </tr>
-
-          <!-- Fila de totales -->
-          <tr class="total-row">
-            <td><strong>TOTAL ASIGNADO</strong></td>
-            <td class="text-right">
-              <strong>{{ formatCurrency(totalDesglose) }}</strong>
-            </td>
-            <td class="text-right">
-              <strong>{{ porcentajeTotal }}%</strong>
-            </td>
-            <td colspan="2"></td>
-          </tr>
-        </tbody>
-      </v-table>
-    </div>
-
-    <!-- Resumen y alertas -->
-    <div class="resumen-section">
-      <v-alert
-        :type="saldoDisponible < 0 ? 'error' : saldoDisponible === 0 ? 'success' : 'info'"
-        density="compact"
-      >
-        <div class="resumen-content">
-          <v-icon class="mr-2">
-            {{
-              saldoDisponible < 0
-                ? 'mdi-alert'
-                : saldoDisponible === 0
-                  ? 'mdi-check-circle'
-                  : 'mdi-information'
-            }}
-          </v-icon>
-          <span>
-            Saldo disponible:
-            <strong
-              :class="{
-                'text-error': saldoDisponible < 0,
-                'text-success': saldoDisponible === 0,
-                'text-info': saldoDisponible > 0,
-              }"
-            >
-              {{ formatCurrency(saldoDisponible) }}
-            </strong>
-          </span>
-          <span v-if="saldoDisponible < 0" class="ml-2">- ¡Presupuesto excedido!</span>
-          <span v-else-if="saldoDisponible === 0" class="ml-2"
-            >- Presupuesto completamente asignado</span
-          >
-          <span v-else class="ml-2">- Disponible para asignar</span>
-        </div>
-      </v-alert>
-    </div>
-  </div>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
 
+// Props (se mantiene igual)
 const props = defineProps({
-  presupuestoTotal: {
-    type: Number,
-    default: 0,
-    required: true,
+  modelValue: {
+    type: Boolean,
+    default: false,
   },
-  procedenciaActual: {
+  presupuestoTotal: {
+    type: [Number, String],
+    default: 0,
+  },
+  desgloseInicial: {
     type: Array,
     default: () => [],
   },
 })
 
-const emit = defineEmits(['presupuesto-actualizado'])
+console.log(props.desgloseInicial)
 
-// Datos dummy para fuentes de API
-const fuentesAPI = ref([
-  { id: 1, nombre: 'Fondos Propios', tipo: 'Recursos internos' },
-  { id: 2, nombre: 'Gobierno Central', tipo: 'Transferencia pública' },
-  { id: 3, nombre: 'Cooperación Internacional', tipo: 'Donación externa' },
-  { id: 4, nombre: 'Donaciones Privadas', tipo: 'Donación privada' },
-  { id: 5, nombre: 'Préstamos Bancarios', tipo: 'Financiamiento externo' },
-  { id: 6, nombre: 'Ingresos por Proyectos', tipo: 'Autogenerado' },
-  { id: 7, nombre: 'Municipalidad', tipo: 'Gobierno local' },
-  { id: 8, nombre: 'ONG Internacional', tipo: 'Cooperación' },
-])
+// Emits (se mantiene igual)
+const emit = defineEmits(['update:modelValue', 'guardarDesglose'])
 
-// Variables reactivas
-const fuenteSeleccionadaAPI = ref(null)
-const montoFuenteAPI = ref(0)
-const nuevaFuenteManual = ref({ nombre: '', monto: 0 })
-const desglosePresupuesto = ref([...props.procedenciaActual])
+// Data (se mantiene igual)
+const dialog = ref(false)
+const currentBreakdown = ref([])
+const nuevaFuenteSeleccionada = ref(null)
+const nuevaFuenteManual = ref({
+  nombre: '',
+  monto: 0,
+})
 
-// Computed properties
+// Inicializar composable
+const {
+  opcionesEntidadFinanciera: fuentesFinancierasDisponibles,
+  loading,
+  error,
+  fetchOptions,
+} = useProcedenciaFondos()
+
+// Computed (se mantiene igual)
+const currentRowTotal = computed(() => props.presupuestoTotal)
+
 const totalDesglose = computed(() => {
-  return desglosePresupuesto.value.reduce((sum, item) => sum + (Number(item.monto) || 0), 0)
+  return currentBreakdown.value.reduce((sum, item) => sum + (Number(item.monto) || 0), 0)
 })
 
 const saldoDisponible = computed(() => {
-  return props.presupuestoTotal - totalDesglose.value
+  return currentRowTotal.value - totalDesglose.value
 })
 
-const porcentajeTotal = computed(() => {
-  return props.presupuestoTotal > 0
-    ? ((totalDesglose.value / props.presupuestoTotal) * 100).toFixed(2)
-    : 0
+const porcentajeDesglose = computed(() => {
+  if (currentRowTotal.value === 0) return 0
+  return (totalDesglose.value / currentRowTotal.value) * 100
 })
 
-// Métodos
-const seleccionarFuenteAPI = (fuente) => {
-  fuenteSeleccionadaAPI.value = fuente
-  montoFuenteAPI.value = 0
+// Computed para verificar si una fuente ya existe
+const fuenteYaExiste = computed(() => {
+  return (nombre) => {
+    return currentBreakdown.value.some((item) => item.nombre.toLowerCase() === nombre.toLowerCase())
+  }
+})
+
+// Methods
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+  }).format(value)
 }
 
-const agregarFuenteAPI = () => {
-  if (fuenteSeleccionadaAPI.value && montoFuenteAPI.value > 0) {
-    // Verificar si ya existe esta fuente
-    const existe = desglosePresupuesto.value.find(
-      (item) => item.id === fuenteSeleccionadaAPI.value.id && !item.manual,
-    )
+const calcularPorcentaje = (monto) => {
+  if (currentRowTotal.value === 0) return 0
+  return ((monto / currentRowTotal.value) * 100).toFixed(2)
+}
 
-    if (existe) {
-      // Si existe, sumar al monto existente
-      existe.monto += Number(montoFuenteAPI.value)
-    } else {
-      // Si no existe, agregar nueva
-      desglosePresupuesto.value.push({
-        id: fuenteSeleccionadaAPI.value.id,
-        nombre: fuenteSeleccionadaAPI.value.nombre,
-        monto: Number(montoFuenteAPI.value),
-        manual: false,
-        tipo: fuenteSeleccionadaAPI.value.tipo,
-      })
+const agregarFuenteExistente = () => {
+  if (nuevaFuenteSeleccionada.value) {
+    const nombreFuente = nuevaFuenteSeleccionada.value.financiera
+
+    // Verificar si la fuente ya existe
+    if (fuenteYaExiste.value(nombreFuente)) {
+      // Mostrar mensaje de error (puedes usar un snackbar o alerta)
+      console.warn('Esta fuente de financiamiento ya ha sido agregada')
+      // Opcional: mostrar alerta al usuario
+      alert(`La fuente "${nombreFuente}" ya ha sido agregada al desglose.`)
+      nuevaFuenteSeleccionada.value = null
+      return
     }
 
-    resetearFormularioAPI()
-    emitUpdate()
+    currentBreakdown.value.push({
+      id: nuevaFuenteSeleccionada.value.id,
+      nombre: nombreFuente,
+      monto: 0,
+      esExistente: true,
+    })
+    nuevaFuenteSeleccionada.value = null
   }
 }
 
 const agregarFuenteManual = () => {
   if (nuevaFuenteManual.value.nombre && nuevaFuenteManual.value.monto > 0) {
-    desglosePresupuesto.value.push({
-      id: Date.now(), // ID único
-      nombre: nuevaFuenteManual.value.nombre,
-      monto: Number(nuevaFuenteManual.value.monto),
-      manual: true,
-      tipo: 'Manual',
-    })
+    const nombreFuente = nuevaFuenteManual.value.nombre
 
-    resetearFormularioManual()
-    emitUpdate()
+    // Verificar si la fuente ya existe
+    if (fuenteYaExiste.value(nombreFuente)) {
+      // Mostrar mensaje de error
+      console.warn('Esta fuente de financiamiento ya ha sido agregada')
+      alert(`La fuente "${nombreFuente}" ya ha sido agregada al desglose.`)
+      return
+    }
+
+    const monto = Math.min(nuevaFuenteManual.value.monto, saldoDisponible.value)
+    currentBreakdown.value.push({
+      id: Date.now(),
+      nombre: nombreFuente,
+      monto: monto,
+      esExistente: false,
+    })
+    nuevaFuenteManual.value = { nombre: '', monto: 0 }
   }
 }
 
 const eliminarFuente = (index) => {
-  desglosePresupuesto.value.splice(index, 1)
-  emitUpdate()
+  currentBreakdown.value.splice(index, 1)
 }
 
 const actualizarMonto = (index) => {
-  if (desglosePresupuesto.value[index].monto < 0) {
-    desglosePresupuesto.value[index].monto = 0
+  const item = currentBreakdown.value[index]
+  const maxPermitido = currentRowTotal.value - totalDesglose.value + (Number(item.monto) || 0)
+
+  if (item.monto > maxPermitido) {
+    item.monto = maxPermitido
   }
-  emitUpdate()
+
+  if (item.monto < 0) {
+    item.monto = 0
+  }
 }
 
-const calcularPorcentaje = (monto) => {
-  return props.presupuestoTotal > 0
-    ? ((Number(monto) / props.presupuestoTotal) * 100).toFixed(2)
-    : 0
+const saveBreakdown = () => {
+  if (totalDesglose.value <= currentRowTotal.value && totalDesglose.value > 0) {
+    emit('guardarDesglose', currentBreakdown.value)
+    closeDialog()
+  }
 }
 
-const resetearFormularioAPI = () => {
-  montoFuenteAPI.value = 0
+const closeDialog = () => {
+  dialog.value = false
+  emit('update:modelValue', false)
 }
 
-const resetearFormularioManual = () => {
+// const resetForm = () => {
+//   currentBreakdown.value = [...props.desgloseInicial]
+//   nuevaFuenteSeleccionada.value = null
+//   nuevaFuenteManual.value = { nombre: '', monto: 0 }
+// }
+const resetForm = () => {
+  console.log('Reseteando formulario con desgloseInicial:', props.desgloseInicial)
+
+  // Asegurarse de que desgloseInicial es un array válido antes de iterar
+  if (Array.isArray(props.desgloseInicial)) {
+    currentBreakdown.value = props.desgloseInicial.map((item) => ({
+      // Asegurar que cada item tenga la estructura esperada
+      id: item.id || Date.now() + Math.random(),
+      nombre: item.nombre || item.financiera || 'Fuente desconocida',
+      monto: Number(item.monto) || 0,
+      esExistente: item.esExistente !== undefined ? item.esExistente : true,
+    }))
+  } else {
+    // Si no es un array válido, inicializar como array vacío
+    currentBreakdown.value = []
+    console.warn('desgloseInicial no es un array válido:', props.desgloseInicial)
+  }
+
+  nuevaFuenteSeleccionada.value = null
   nuevaFuenteManual.value = { nombre: '', monto: 0 }
 }
 
-const emitUpdate = () => {
-  emit('presupuesto-actualizado', {
-    presupuesto_total: props.presupuestoTotal,
-    procedencia_fondos: [...desglosePresupuesto.value],
-  })
-}
+// Watchers (se mantienen igual)
+watch(
+  () => props.modelValue,
+  (val) => {
+    dialog.value = val
+    if (val) {
+      resetForm()
+    }
+  },
+)
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-  }).format(value || 0)
-}
-
-// Inicializar con datos actuales
-onMounted(() => {
-  if (props.procedenciaActual.length === 0) {
-    desglosePresupuesto.value = []
+watch(dialog, (val) => {
+  if (!val) {
+    closeDialog()
   }
 })
+
+watch(
+  () => props.desgloseInicial,
+  (newVal) => {
+    if (dialog.value) {
+      currentBreakdown.value = [...newVal]
+    }
+  },
+  { deep: true },
+)
+
+// watch(
+//   () => props.desgloseInicial,
+//   (newVal) => {
+//     console.log('Desglose inicial recibido:', newVal)
+//     if (dialog.value && newVal) {
+//       // Asegurarse de que es un array válido
+//       currentBreakdown.value = Array.isArray(newVal) ? [...newVal] : []
+//     }
+//   },
+//   { deep: true, immediate: true },
+// )
+
+/*************** Seccion Carga *******************/
+onMounted(async () => {
+  await carga()
+})
+
+// Funcion de carga
+const carga = async () => {
+  loading.value = true
+  try {
+    await fetchOptions()
+  } catch (err) {
+    error.value = err
+    console.error('Componente presupuesto, error carga de opciones', error)
+  } finally {
+    loading.value = false
+  }
+}
 </script>
-
 <style scoped>
-.presupuesto-container {
-  background: white;
+.v-table {
   border-radius: 8px;
-  padding: 20px;
-  border: 1px solid #e0e0e0;
-}
-
-.presupuesto-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #e3f2fd;
-}
-
-.header-title {
-  color: #1f4e78;
-  font-weight: 600;
-  margin: 0;
-}
-
-.fuentes-section,
-.fuente-manual-section {
-  margin-bottom: 20px;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.section-title {
-  color: #424242;
-  font-weight: 600;
-  margin: 0;
-  font-size: 1rem;
-}
-
-.fuentes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.fuente-card {
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-}
-
-.fuente-card:hover {
-  border-color: #1976d2;
-  transform: translateY(-2px);
-}
-
-.fuente-content {
-  display: flex;
-  align-items: center;
-}
-
-.fuente-info {
-  flex: 1;
-}
-
-.fuente-nombre {
-  font-weight: 500;
-  color: #424242;
-}
-
-.fuente-tipo {
-  font-size: 0.8rem;
-  color: #757575;
-}
-
-.controles-fuente,
-.manual-controls {
-  display: flex;
-  align-items: end;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.monto-input,
-.nombre-input {
-  flex: 1;
-  min-width: 150px;
-}
-
-.table-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.table-title {
-  color: #1f4e78;
-  font-weight: 600;
-  margin: 0;
-}
-
-.presupuesto-table {
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
   overflow: hidden;
 }
 
-.presupuesto-table th {
-  background: #f5f5f5 !important;
-  color: #1f4e78 !important;
-  font-weight: 600;
-  border-bottom: 2px solid #e0e0e0;
+.border-bottom {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-.presupuesto-table td {
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.monto-cell {
-  max-width: 120px;
-}
-
-.percentage-cell {
-  color: #666;
-  font-family: 'Courier New', monospace;
-  font-weight: 500;
-}
-
-.total-row {
-  background: #e8f5e8 !important;
-  font-weight: 600;
-}
-
-.total-row td {
-  border-top: 2px solid #4caf50;
-  border-bottom: none;
-}
-
-.resumen-section {
-  margin-top: 20px;
-}
-
-.resumen-content {
-  display: flex;
-  align-items: center;
+.h-100 {
+  height: 100%;
 }
 
 .text-error {
-  color: #d32f2f;
+  color: #f44336;
 }
 
 .text-success {
-  color: #2e7d32;
+  color: #4caf50;
 }
 
-.text-info {
+.text-primary {
   color: #1976d2;
 }
 
-/* Responsividad */
-@media (max-width: 768px) {
-  .fuentes-grid {
-    grid-template-columns: 1fr;
-  }
+:deep(.v-text-field .v-input__control) {
+  min-height: 40px;
+}
 
-  .controles-fuente,
-  .manual-controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
+:deep(.v-table .v-input__control) {
+  min-height: 40px;
+}
 
-  .monto-input,
-  .nombre-input {
-    min-width: auto;
-  }
+/* Estilos para la sección compacta */
+.compact-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fafafa;
+}
+
+.compact-item {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: #f5f5f5;
 }
 </style>
