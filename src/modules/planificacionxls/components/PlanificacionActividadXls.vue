@@ -75,9 +75,10 @@
           </v-tooltip>
         </v-toolbar>
 
-        <!--Toolbar de informacion-->
+        <!-- Toolbar de información mejorado -->
         <v-toolbar flat density="comfortable" class="details-toolbar" v-if="selectedRowData">
           <div class="info-container">
+            <!-- Información de la actividad -->
             <div class="info-section">
               <v-icon color="primary" class="mr-2">mdi-information-outline</v-icon>
               <span class="info-text">
@@ -87,13 +88,17 @@
               </span>
             </div>
 
+            <!-- Información de presupuesto -->
             <div class="info-section">
+              <v-icon color="primary" class="mr-2">mdi-cash</v-icon>
               <span class="info-text">
                 <strong>Presupuesto:</strong> {{ formatCurrency(selectedRowData.presupuesto) }}
               </span>
             </div>
 
+            <!-- Información de fecha de inicio -->
             <div class="info-section">
+              <v-icon color="primary" class="mr-2">mdi-calendar-start</v-icon>
               <span class="info-text">
                 <strong>Inicio:</strong> {{ formatDate(selectedRowData.fecha_inicio) }}
               </span>
@@ -102,24 +107,84 @@
 
           <v-spacer></v-spacer>
 
-          <v-card flat class="timeline-card">
-            <v-card-title class="pa-2 timeline-title">Detalle de Avance</v-card-title>
-            <v-card-text class="pa-2 timeline-content">
-              <v-timeline side="end" density="comfortable" class="py-0 custom-timeline">
-                <v-timeline-item
-                  v-for="(item, index) in timelineData"
-                  :key="index"
-                  :dot-color="item.color"
-                  size="default"
+          <!-- Botonera de presupuesto -->
+          <div class="budget-buttons mr-2">
+            <v-tooltip text="Aumentar presupuesto" location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  variant="text"
+                  size="small"
+                  color="primary"
+                  @click="aumentarPresupuesto"
                 >
-                  <div class="d-flex flex-column timeline-item-content">
-                    <span class="timeline-date">{{ item.date }}</span>
-                    <div class="timeline-description">{{ item.description }}</div>
-                  </div>
-                </v-timeline-item>
-              </v-timeline>
-            </v-card-text>
-          </v-card>
+                  <v-icon>mdi-plus-circle</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+
+            <v-tooltip text="Disminuir presupuesto" location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  variant="text"
+                  size="small"
+                  color="primary"
+                  @click="disminuirPresupuesto"
+                >
+                  <v-icon>mdi-minus-circle</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+
+            <v-tooltip text="Ajustar presupuesto manualmente" location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  variant="text"
+                  size="small"
+                  color="primary"
+                  @click="ajustarPresupuesto"
+                >
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+          </div>
+
+          <!-- Botón de estructura (solo visible cuando id es 0) -->
+          <v-btn
+            v-if="selectedRowData.id === 0"
+            color="secondary"
+            variant="flat"
+            prepend-icon="mdi-file-tree"
+            @click="abrirModalEstructura"
+          >
+            Estructura
+          </v-btn>
+
+          <!-- Modal de estructura -->
+          <v-dialog v-model="modalEstructura" max-width="600">
+            <v-card>
+              <v-card-title class="d-flex justify-space-between align-center">
+                <span>Estructura de la Actividad</span>
+                <v-btn icon @click="modalEstructura = false">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text>
+                <!-- Contenido del modal de estructura aquí -->
+                <p>
+                  Contenido del modal de estructura para la actividad:
+                  {{ selectedRowData.nombreCorto }}
+                </p>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" @click="modalEstructura = false">Cerrar</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-toolbar>
         <!-- Toolbar de actividades dinámicas -->
         <v-toolbar flat density="comfortable" class="activity-toolbar" v-if="!loadinActividades">
