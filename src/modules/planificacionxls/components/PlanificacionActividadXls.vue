@@ -301,10 +301,6 @@
       <v-btn variant="text" @click="snackbar.show = false">Cerrar</v-btn>
     </template>
   </v-snackbar>
-
-  {{ selectedRowData }}
-  <br /><br /><br />
-  {{ tableData }}
 </template>
 
 <script setup>
