@@ -1,397 +1,338 @@
-<template>
-  <v-container class="v-container v-locale--is-ltr">
-    <v-card class="pa-6">
-      <v-card-title class="text-h5 font-weight-bold">
-        Formulario F-01:<br> Solicitud de Fondos en Avance con Cargo a Rendición de Cuenta
-      </v-card-title>
-      <v-divider class="my-4"></v-divider>
-      <v-card-text>
-        <v-form ref="form" @submit.prevent="submitForm">
-          <div class="form-section">
-            <v-row>
-              <v-col cols="12" md="4">
-                <v-text-field v-model="formData.nombre" label="Nombre del Solicitante" required readonly></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field v-model="formData.paterno" label="Apellido paterno del Solicitante" required readonly></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field v-model="formData.materno" label="Apellido materno del Solicitante" required readonly></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field v-model="formData.documento_identidad" label="Carnet de Identidad" required readonly></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field v-model="formData.cargo" label="Cargo" required readonly></v-text-field>
-              </v-col>
-            </v-row>
-            <v-divider class="my-4"></v-divider>
-            <v-textarea v-model="formData.descripcion_actividad" label="Descripción de la Actividad" rows="3" required readonly></v-textarea>
-            <v-row>
-              <v-col cols="12" md="4">
-                <v-text-field v-model="formData.fecha_irealizacion" label="Inicio de Fecha de Realización" type="date" required readonly></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field v-model="formData.fecha_frealizacion" label="fin de Fecha de Realización" type="date" required readonly></v-text-field>
-              </v-col>
-            </v-row>
-            <v-textarea v-model="formData.objetivo_actividad" label="Objetivo de la Actividad" rows="3" required readonly></v-textarea>
-            <v-text-field v-model="formData.fuente_financiamiento" label="Fuente de Financiamiento" required readonly></v-text-field>
-          </div>
-          <v-divider class="my-4"></v-divider>
-          <div class="form-section">
-            <h3 class="mb-4">Detalle del Destino de Fondos</h3>
-            <div class="d-flex justify-space-between align-center mb-4">
-              <v-btn variant="flat" class="text-grey-darken-3 bg-white" rounded="lg" :elevation="3" @click="addGasto">
-                Agregar Gasto
-              </v-btn>
-              <v-chip class="text-subtitle-1" color="grey-darken-2" variant="outlined">
-                Monto Total Solicitado (Bs.): {{ totalMontoSolicitado }}
-              </v-chip>
-            </div>
-            <v-table>
-              <thead>
-                <tr>
-                  <th>Partida</th>
-                  <th>Descripción del Gasto</th>
-                  <th>Monto (Bs.)</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
-                  <td>
-                    <v-text-field v-model="gasto.partida" bg-color="blue-lighten-5" hide-details density="compact"></v-text-field>
-                  </td>
-                  <td>
-                    <v-text-field v-model="gasto.descripcion_gasto" bg-color="blue-lighten-5" hide-details density="compact"></v-text-field>
-                  </td>
-                  <td>
-                    <v-text-field v-model.number="gasto.monto" bg-color="blue-lighten-5" type="number" hide-details density="compact" min="0"></v-text-field>
-                  </td>
-                  <td>
-                    <v-btn variant="text" icon color="error" @click="removeGasto(index)">
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
-          </div>
-          <v-divider class="my-4"></v-divider>
-          <v-select v-model="formData.forma_pago" :items="paymentMethods" label="Forma de Pago" bg-color="blue-lighten-5" required class="mb-4"></v-select>
-          <div class="form-section">
-            <v-text-field v-model="formData.lugar_solicitud" bg-color="blue-lighten-5" label="Lugar de la Solicitud" required></v-text-field>
-            <v-text-field v-model="formData.fecha_solicitud" label="Fecha de la Solicitud" type="date" required readonly></v-text-field>
-          </div>
-          <v-divider class="my-4"></v-divider>
-          <div class="form-section">
-            <div class="text-subtitle-1 font-weight-bold mb-2">Firmas</div>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select v-model="formData.idresponsable" bg-color="blue-lighten-5" :items="responsablesList" :item-title="getNombreCompleto" item-value="id" label="Responsable del Cargo de Cuenta" required></v-select>
-              </v-col>
-              <v-col cols="12" md="6" class="d-flex align-center">
-                <v-checkbox v-model="formData.validacion_responsable" label="Aprobado por Responsable del Cargo de Cuenta" :disabled="isFrozen"></v-checkbox>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select v-model="formData.idcoordinador" bg-color="blue-lighten-5" :items="coordinadoresList" :item-title="getNombreCompleto" item-value="id" label="Coordinador" required></v-select>
-              </v-col>
-              <v-col cols="12" md="6" class="d-flex align-center">
-                <v-checkbox v-model="formData.validacion_coordinador" label="Aprobado por Coordinador" :disabled="isFrozen"></v-checkbox>
-              </v-col>
-            </v-row>
-          </div>
-          <div class="d-flex justify-end mt-4">
-            <v-btn color="error" class="mr-2" prepend-icon="mdi-backspace-outline" @click="resetForm">
-              Limpiar
-            </v-btn>
-            <v-btn color="primary" prepend-icon="mdi-file-document-arrow-right" type="submit" :loading="loading">
-              Enviar Solicitud
-            </v-btn>
-          </div>
-          <div v-if = !carga>
-            {{actividades}}
-          </div>
-        </v-form>
-      </v-card-text>
-    </v-card>
-  </v-container>
-</template>
-
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { formulariosServicios } from '@/modules/formularios/services/formulariosServices';
-import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
-import { useActividad } from '@/modules/proyecto/composables/useActividad.js'
-import axios from 'axios';
-import * as XLSX from 'xlsx';
-import { useRoute } from 'vue-router';
+import { ref, onMounted, computed, nextTick } from 'vue'
+import { useActividad } from '@/modules/proyecto/composables/useActividad'
 
-const route = useRoute();
-const idActividad = route.params.id || null;
-console.log('ID de Actividad desde la ruta:', idActividad);
+const { actividadesTareas, actividadTarea: actividadesFromApi } = useActividad()
 
-// Utilizando Composition API para una mejor organización
-const { usuario, informacionUsuarioPorNick } = useUsuario();
+// --- ESTADOS REACTIVOS ---
+const actividades = ref([])
+const loading = ref(true)
+const emptyResponse = ref(false)
+const searchQuery = ref('')
+const statusFilters = ref([])
+const expandedActividadId = ref(null)
 
-// Estado reactivo
-const loading = ref(false);
-const form = ref(null);
-const paymentMethods = ['Cuenta de Banco', 'Cheque'];
-const responsablesList = ref([]);
-const coordinadoresList = ref([]);
-const formData = ref({
-  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
-  forma_pago: '',
-  lugar_solicitud: '',
-  fecha_solicitud: getCurrentDate(),
-  monto_solicitado: 0,
-  validacion_responsable: false,
-  idresponsable: null,
-  validacion_coordinador: false,
-  idcoordinador: null,
-  id_usuario: 0,
-  id_actividad: 0
-});
-// Usamos el composable
-const {
-  loading: carga,
-  error,
-  actividades,
-  actividad,
-  cargarActividades,
-  cargarActividadPorId,
-  crearActividad,
-  updateActividad,
-  delActividad,
-} = useActividad()
+// Paginación
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
 
-// Propiedades computadas
-const nombreCoordinadorElegido = computed(() => {
-  const coordinador = coordinadoresList.value.find(
-    (user) => user.id === formData.value.idcoordinador
-  );
-  return coordinador ? getNombreCompleto(coordinador) : '';
-});
+// Diálogos y formularios de actividades
+const actividadDialog = ref(false)
+const actividadForm = ref({ id: null, nombreCorto: '', estado: 'PR' })
+const isEditandoActividad = ref(false)
+const actividadFormRef = ref(null)
 
-const nombreResponsableElegido = computed(() => {
-  const responsable = responsablesList.value.find(
-    (user) => user.id === formData.value.idresponsable
-  );
-  return responsable ? getNombreCompleto(responsable) : '';
-});
+// Diálogos y formularios de tareas
+const tareaDialog = ref(false)
+const tareaForm = ref({ id: null, titulo: '', descripcion: '', estado: 'PE' })
+const actividadIdParaTarea = ref(null)
+const isEditandoTarea = ref(false)
+const tareaFormRef = ref(null)
 
-const totalMontoSolicitado = computed(() => {
-  return formData.value.detalle_destino_fondos.reduce(
-    (total, gasto) => total + Number(gasto.monto || 0),
-    0
-  );
-});
+// Diálogos de eliminación
+const deleteActividadDialog = ref(false)
+const actividadToDelete = ref(null)
+const deleteTareaDialog = ref(false)
+const tareaToDelete = ref(null)
+const actividadIdParaEliminarTarea = ref(null)
 
-const nombreCompletoSolicitante = computed(() => {
-  const nombre = usuario.value?.nombre || '';
-  const paterno = usuario.value?.paterno || '';
-  const materno = usuario.value?.materno || '';
-  return `${nombre} ${paterno} ${materno}`.trim();
-});
+// Notificaciones
+const snackbar = ref({ show: false, text: '', color: 'success' })
 
-const isFrozen = computed(() => {
-  // Esta lógica puede ser ajustada según tus necesidades.
-  // Podrías basarla en el rol del usuario, si la solicitud ya fue enviada, etc.
-  return false;
-});
+// --- MÉTODOS Y COMPUTADAS ---
 
-// Métodos
-async function fetchActividades() {
-  try {
-    await cargarActividades()
-  } catch (err) {
-    console.error('Error al cargar actividades:', err)
+// Estados disponibles para actividades y tareas
+const availableStatuses = [
+  { text: 'Pendiente', value: 'PE' },
+  { text: 'En Progreso', value: 'PR' },
+  { text: 'Completada', value: 'CO' },
+]
+
+// Mapeo de estados del backend al frontend
+const mapEstadoBackendToFrontend = (estadoBackend) => {
+  const estadoMap = {
+    CRD: 'PE', // Creada -> Pendiente
+    PLAN: 'PE', // Planificada -> Pendiente
+    RETR: 'PR', // Retraso -> En Progreso
+    REPROG: 'PR', // Reprogramacion -> En Progreso
+    EJEC: 'PR', // En Ejecucion -> En Progreso
+    REP: 'PR', // En Reporte -> En Progreso
+    PEN: 'PE', // Pendiente -> Pendiente
+    EPROG: 'PR', // En Progreso -> En Progreso
+    COMPL: 'CO', // Completada -> Completada
   }
+  return estadoMap[estadoBackend] || 'PE'
 }
 
-function getNombreCompleto(user) {
-  return `${user.nombre} ${user.paterno} ${user.materno}`.trim();
+const mapEstadoFrontendToBackend = (estadoFrontend) => {
+  const estadoMap = {
+    PE: 'PEN',
+    PR: 'EPROG',
+    CO: 'COMPL',
+  };
+  return estadoMap[estadoFrontend] || 'PEN';
+};
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'PE':
+      return 'light-blue';
+    case 'PR':
+      return 'orange';
+    case 'CO':
+      return 'green';
+    default:
+      return 'grey';
+  }
+};
+
+const getEstadoTexto = (status) => {
+  const estado = availableStatuses.find((s) => s.value === status)
+  return estado ? estado.text : 'Desconocido'
 }
 
-function getCurrentDate() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+// Carga inicial de datos
+onMounted(async () => {
+  await cargar()
+})
 
-async function prefillFormData(nick) {
+const cargar = async () => {
+  loading.value = true
   try {
-    await informacionUsuarioPorNick({ usuario: nick });
-    if (usuario.value) {
-      formData.value.nombre = usuario.value.nombre || '';
-      formData.value.paterno = usuario.value.paterno || '';
-      formData.value.materno = usuario.value.materno || '';
-      formData.value.cargo = usuario.value.cargo || '';
-      formData.value.documento_identidad = usuario.value.ci || '';
-      formData.value.id_usuario = usuario.value.id || 0;
+    // Aquí simulamos la carga de datos de tu API
+    // (en el código original esto se hace con useActividad)
+    // Usamos el JSON que proporcionaste para el ejemplo
+    const dataFromApi = [
+        { "id": 1, "nombreCorto": "taller capacitacion", "estado": "PLAN", "tareas": [ { "id": 3, "titulo": "PEI 2023-2024", "descripcion": "descripcion de tarea2", "estado": "COMPL", "fecha_creacion": "2025-08-20T10:03:28.617170Z", "fecha_limite": "2025-08-20", "presupuesto": "6000.00" }, { "id": 1, "titulo": "Tarea pendiente 1", "descripcion": "Esta tarea está pendiente.", "estado": "PEN", "fecha_creacion": "2025-08-20T09:59:32.032115Z", "fecha_limite": null, "presupuesto": null } ] },
+        { "id": 2, "nombreCorto": "taller capacitacion1", "estado": "REPROG", "tareas": [ { "id": 4, "titulo": "PEI 2024-2025", "descripcion": "descripcion de tarea3", "estado": "PEN", "fecha_creacion": "2025-08-20T10:04:31.884197Z", "fecha_limite": "2025-08-15", "presupuesto": "7000.00" }, { "id": 2, "titulo": "PEI 2023-2024", "descripcion": "descripcion de tarea1", "estado": "EPROG", "fecha_creacion": "2025-08-20T10:02:51.344773Z", "fecha_limite": "2025-08-03", "presupuesto": "8000.00" } ] },
+        { "id": 3, "nombreCorto": "taller capacitacion2", "estado": "PLAN", "tareas": [] },
+        { "id": 4, "nombreCorto": "nombre corto en actividad1", "estado": "EJEC", "tareas": [] },
+        { "id": 5, "nombreCorto": "nombre corto en actividad1", "estado": "RETR", "tareas": [] }
+    ];
+
+    if (Array.isArray(dataFromApi)) {
+      actividades.value = dataFromApi.map((actividad) => ({
+        ...actividad,
+        estadoFrontend: mapEstadoBackendToFrontend(actividad.estado),
+        tareas: Array.isArray(actividad.tareas) ? actividad.tareas : [],
+      }))
+    } else {
+      actividades.value = []
     }
-  } catch (err) {
-    console.error('Error al pre-llenar los datos del usuario:', err);
-  }
-}
 
-async function fetchUsers() {
-  try {
-    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/listaUsuarios/');
-    const allUsers = response.data.usuarios;
-    responsablesList.value = allUsers.filter(user => user.rol === 'responsable');
-    coordinadoresList.value = allUsers.filter(user => user.rol === 'coordinador');
+    emptyResponse.value = actividades.value.length === 0
   } catch (error) {
-    console.error('Error al cargar la lista de usuarios:', error);
-    alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
+    console.error('Error al cargar actividades:', error)
+    actividades.value = []
+    emptyResponse.value = true
+  } finally {
+    loading.value = false
   }
 }
 
-async function fetchActivityData() {
-  try {
-    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/datos_actividad/');
-    if (response.data.desglosePresupuesto.length > 0) {
-      const activity = response.data.desglosePresupuesto[0];
-      formData.value.descripcion_actividad = activity.descripcion_actividad;
-      formData.value.objetivo_actividad = activity.objetivo_actividad;
-      formData.value.fecha_irealizacion = activity.fecha_iactividad;
-      formData.value.fecha_frealizacion = activity.fecha_factividad;
-      formData.value.fuente_financiamiento = activity.fuente_financiamiento;
-      formData.value.id_actividad = activity.id;
-    }
-  } catch (error) {
-    console.error('Error al cargar actividades:', error);
-    alert('No se pudieron cargar las actividades. Por favor recargue la página.');
+// Lógica de filtros y paginación
+const filteredActividades = computed(() => {
+  if (!Array.isArray(actividades.value)) return []
+
+  let filtered = [...actividades.value]
+
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(
+      (actividad) => actividad.nombreCorto && actividad.nombreCorto.toLowerCase().includes(query),
+    )
   }
-}
 
-function addGasto() {
-  formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 });
-}
-
-function removeGasto(index) {
-  if (formData.value.detalle_destino_fondos.length > 1) {
-    formData.value.detalle_destino_fondos.splice(index, 1);
+  if (statusFilters.value.length > 0) {
+    filtered = filtered.filter((actividad) =>
+      statusFilters.value.includes(actividad.estadoFrontend),
+    )
   }
+
+  return filtered
+})
+
+const actividadesPaginadas = computed(() => {
+  if (!Array.isArray(filteredActividades.value)) return []
+
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredActividades.value.slice(start, end)
+})
+
+const actividadesConTareasFiltradas = computed(() => {
+  return actividadesPaginadas.value.map(actividad => {
+    if (statusFilters.value.length === 0) {
+      return actividad;
+    }
+
+    const tareasFiltradas = actividad.tareas.filter(tarea => {
+      const estadoFrontendTarea = mapEstadoBackendToFrontend(tarea.estado);
+      return statusFilters.value.includes(estadoFrontendTarea);
+    });
+
+    return {
+      ...actividad,
+      tareas: tareasFiltradas
+    };
+  });
+});
+
+const totalPages = computed(() => {
+  if (!Array.isArray(filteredActividades.value)) return 0
+  return Math.ceil(filteredActividades.value.length / itemsPerPage.value)
+})
+
+const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
+const endItem = computed(() => {
+  if (!Array.isArray(filteredActividades.value)) return 0
+  const end = currentPage.value * itemsPerPage.value
+  return end > filteredActividades.value.length ? filteredActividades.value.length : end
+})
+
+const countByStatus = (status) => {
+  if (!Array.isArray(filteredActividades.value)) return 0
+  return filteredActividades.value.filter((a) => a.estadoFrontend === status).length
 }
 
-async function submitForm() {
-  loading.value = true;
-  try {
-    // Validar si el formulario está completo
-    if (!formData.value.lugar_solicitud || !formData.value.forma_pago || !formData.value.idresponsable || !formData.value.idcoordinador) {
-        throw new Error('Por favor, completa todos los campos obligatorios del formulario.');
-    }
+const toggleExpanded = (id) => {
+  expandedActividadId.value = expandedActividadId.value === id ? null : id
+}
 
-    if (totalMontoSolicitado.value <= 0) {
-        throw new Error('El monto total solicitado debe ser mayor a cero.');
-    }
+// --- CRUD ACTIVIDADES ---
+const openActividadDialog = (actividad = null) => {
+  isEditandoActividad.value = !!actividad
+  if (isEditandoActividad.value) {
+    Object.assign(actividadForm.value, {
+      id: actividad.id,
+      nombreCorto: actividad.nombreCorto,
+      estado: actividad.estadoFrontend,
+    })
+  } else {
+    Object.assign(actividadForm.value, { id: null, nombreCorto: '', estado: 'PR' })
+  }
+  actividadDialog.value = true
+}
 
-    const payload = {
-      detalle_destino_fondos: JSON.stringify(formData.value.detalle_destino_fondos),
-      forma_pago: paymentMethods.indexOf(formData.value.forma_pago) + 1,
-      lugar_solicitud: formData.value.lugar_solicitud,
-      fecha_solicitud: formData.value.fecha_solicitud,
-      monto_solicitado: totalMontoSolicitado.value,
-      validacion_responsable: formData.value.validacion_responsable,
-      id_responsable: formData.value.idresponsable,
-      validacion_coordinador: formData.value.validacion_coordinador,
-      id_coordinador: formData.value.idcoordinador,
-      id_usuario: formData.value.id_usuario,
-      id_actividad: formData.value.id_actividad,
+const saveActividad = async () => {
+  const { valid } = await actividadFormRef.value.validate()
+  if (!valid) return
+
+  if (isEditandoActividad.value) {
+    const index = actividades.value.findIndex((a) => a.id === actividadForm.value.id)
+    if (index !== -1) {
+      actividades.value[index].nombreCorto = actividadForm.value.nombreCorto
+      actividades.value[index].estadoFrontend = actividadForm.value.estado
+      snackbar.value = { show: true, text: 'Actividad editada con éxito', color: 'success' }
+    }
+  } else {
+    const newId = Math.max(...actividades.value.map((a) => a.id), 0) + 1
+    actividades.value.push({
+      id: newId,
+      nombreCorto: actividadForm.value.nombreCorto,
+      estado: mapEstadoFrontendToBackend(actividadForm.value.estado),
+      estadoFrontend: actividadForm.value.estado,
+      tareas: [],
+    })
+    snackbar.value = { show: true, text: 'Actividad creada con éxito', color: 'success' }
+  }
+  actividadDialog.value = false
+  await nextTick()
+  actividadFormRef.value.reset()
+}
+
+const confirmDeleteActividad = (actividad) => {
+  actividadToDelete.value = actividad
+  deleteActividadDialog.value = true
+}
+
+const deleteActividad = () => {
+  actividades.value = actividades.value.filter((a) => a.id !== actividadToDelete.value.id)
+  deleteActividadDialog.value = false
+  snackbar.value = { show: true, text: 'Actividad eliminada con éxito', color: 'success' }
+}
+
+// --- CRUD TAREAS ---
+const openTareaDialog = (actividadId, tarea = null) => {
+  isEditandoTarea.value = !!tarea
+  actividadIdParaTarea.value = actividadId
+  if (isEditandoTarea.value) {
+    Object.assign(tareaForm.value, {
+      id: tarea.id,
+      titulo: tarea.titulo,
+      descripcion: tarea.descripcion,
+      estado: mapEstadoBackendToFrontend(tarea.estado),
+    })
+  } else {
+    Object.assign(tareaForm.value, { id: null, titulo: '', descripcion: '', estado: 'PE' })
+  }
+  tareaDialog.value = true
+}
+
+// Función para guardar una nueva tarea o editar una existente
+const saveTarea = async () => {
+  // 1. Validar el formulario
+  const { valid } = await tareaFormRef.value.validate()
+  if (!valid) return
+
+  // 2. Encontrar la actividad a la que pertenece la tarea
+  const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
+  if (!actividad) {
+    snackbar.value = { show: true, text: 'Error: Actividad no encontrada', color: 'error' };
+    return;
+  }
+
+  // Lógica para editar una tarea
+  if (isEditandoTarea.value) {
+    const index = actividad.tareas.findIndex((t) => t.id === tareaForm.value.id)
+    if (index !== -1) {
+      Object.assign(actividad.tareas[index], {
+        titulo: tareaForm.value.titulo,
+        descripcion: tareaForm.value.descripcion,
+        estado: mapEstadoFrontendToBackend(tareaForm.value.estado),
+      })
+      snackbar.value = { show: true, text: 'Tarea editada con éxito', color: 'success' }
+    }
+  } else { // Lógica para crear una nueva tarea
+    // 3. Generar un nuevo ID único para la tarea
+    const newId = actividad.tareas.length > 0
+      ? Math.max(...actividad.tareas.map(t => t.id)) + 1
+      : 1;
+
+    // 4. Crear el nuevo objeto de tarea
+    const nuevaTarea = {
+      id: newId,
+      titulo: tareaForm.value.titulo,
+      descripcion: tareaForm.value.descripcion,
+      estado: mapEstadoFrontendToBackend(tareaForm.value.estado),
+      fecha_creacion: new Date().toISOString(),
+      fecha_limite: null,
+      presupuesto: null,
     };
 
-    // Aquí usamos la función del servicio importado
-    const respuesta = await formulariosServicios.crearSolitudFondos(payload);
-    console.log('Solicitud enviada con éxito:', respuesta.data);
-
-    // Puedes resetear el formulario y exportar el Excel después de un éxito
-    exportToExcel();
-    //resetForm();
-
-    alert('Solicitud enviada con éxito');
-  } catch (error) {
-    console.error('Error completo:', error.response?.data || error.message);
-    alert(`Error: ${error.response?.data?.mensaje || error.message}`);
-  } finally {
-    loading.value = false;
+    // 5. Agregar la nueva tarea al array de tareas de la actividad
+    actividad.tareas.push(nuevaTarea);
+    snackbar.value = { show: true, text: 'Tarea creada con éxito', color: 'success' }
   }
+
+  // 6. Cerrar el diálogo y limpiar el formulario
+  tareaDialog.value = false;
+  await nextTick();
+  tareaFormRef.value.reset();
 }
 
-function resetForm() {
-  Object.assign(formData.value, {
-    // Restablecer los datos del formulario a su estado inicial
-    detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
-    forma_pago: '',
-    lugar_solicitud: '',
-    fecha_solicitud: getCurrentDate(),
-    monto_solicitado: 0,
-    validacion_responsable: false,
-    idresponsable: null,
-    validacion_coordinador: false,
-    idcoordinador: null,
-    id_usuario: 0,
-    id_actividad: 0,
-  });
+const confirmDeleteTarea = (actividadId, tarea) => {
+  actividadIdParaEliminarTarea.value = actividadId
+  tareaToDelete.value = tarea
+  deleteTareaDialog.value = true
 }
 
-function exportToExcel() {
-  const mainData = [
-    ["Formulario F-01:", "Solicitud de Fondos en Avance con Cargo a Rendicion de Cuenta"],
-    [],
-    ["Nombre del Solicitante:", nombreCompletoSolicitante.value],
-    ["Documento de Identidad:", formData.value.documento_identidad],
-    ["Cargo:", formData.value.cargo],
-    ["Descripcion de Actividad:", formData.value.descripcion_actividad],
-    ["Inicio de Fecha de Actividad:", formData.value.fecha_irealizacion],
-    ["Fin de Fecha de Actividad:", formData.value.fecha_frealizacion],
-    ["Objetivo de la Actividad:", formData.value.objetivo_actividad],
-    ["Fuente de Financiamiento:", formData.value.fuente_financiamiento],
-    ["Forma de Pago", formData.value.forma_pago],
-    ["Lugar de Solicitud", formData.value.lugar_solicitud],
-    ["Fecha de Solicitud", getCurrentDate()],
-    ["Monto Total Solicitado (Bs.):", totalMontoSolicitado.value],
-    ["Responsable:", nombreResponsableElegido.value],
-    ["Coordinador:", nombreCoordinadorElegido.value],
-  ];
-
-  const expensesHeaders = ["Partida", "Descripción del Gasto", "Monto (Bs.)"];
-  const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
-    gasto.partida,
-    gasto.descripcion_gasto,
-    gasto.monto,
-  ]);
-
-  const wb = XLSX.utils.book_new();
-  const wsMain = XLSX.utils.aoa_to_sheet(mainData);
-  const wsExpenses = XLSX.utils.aoa_to_sheet([expensesHeaders, ...expensesData]);
-
-  XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud Principal');
-  XLSX.utils.book_append_sheet(wb, wsExpenses, 'Detalle de Gastos');
-
-  wsExpenses['!cols'] = [{ wch: 15 }, { wch: 40 }, { wch: 15 }];
-  XLSX.writeFile(wb, 'Solicitud_Fondos_F-01.xlsx');
+const deleteTarea = () => {
+  const actividad = actividades.value.find((a) => a.id === actividadIdParaEliminarTarea.value)
+  if (actividad) {
+    actividad.tareas = actividad.tareas.filter((t) => t.id !== tareaToDelete.value.id)
+    snackbar.value = { show: true, text: 'Tarea eliminada con éxito', color: 'success' }
+  }
+  deleteTareaDialog.value = false
 }
-
-// Ciclo de vida
-onMounted(async () => {
-  await fetchUsers();
-  await fetchActivityData();
-  await prefillFormData('ACarvajal');
-  await fetchActividades();
-  //await fetchActividad(idActividad);
-});
 </script>
-
-<style scoped>
-.v-card {
-  max-width: 900px;
-  margin: 0 auto;
-}
-</style>

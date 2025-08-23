@@ -8,6 +8,7 @@ const loading = ref(null)
 const error = ref(null)
 const actividades = ref([])
 const actividad = ref(null)
+const actividadTarea = ref([])
 
 export function useActividad() {
   //fecth kpis
@@ -77,12 +78,26 @@ export function useActividad() {
       loading.value = false
     }
   }
+async function actividadesTareas() {
+    loading.value = true
+    try {
+      const respuesta = await actividadServicios.listaActividadesTareas()
+      actividadTarea.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
 
   return {
     loading, //ref
     error, //ref
     actividades, //ref lista de kpis
     actividad, //ref un kpi por id
+    actividadTarea, //ref un kpi por id
+    actividadesTareas,
     cargarActividades,
     cargarActividadPorId,
     crearActividad,

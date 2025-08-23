@@ -51,4 +51,13 @@ export const actividadServicios = {
       throw error
     }
   },
+  listaActividadesTareas: async () => {
+    try {
+      const respuesta = await api.get(`/actividades-con-tareas/`);
+      return respuesta.data;
+    } catch (error) {
+      console.error('Axios: Error al obtener las tareas de la actividad id ', error);
+      throw error;
+    }
+  }
 }

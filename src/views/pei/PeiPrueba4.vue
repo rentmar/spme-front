@@ -518,6 +518,7 @@
               rows="2"
             ></v-textarea>
             <v-select
+              v-if="isEditandoTarea === true"
               v-model="tareaForm.estado"
               :items="availableStatusesTarea"
               item-title="text"
@@ -578,11 +579,13 @@
       </template>
     </v-snackbar>
   </v-container>
-  {{ actividadesPaginadas }}
+   {{ actividadesPaginadas }}
   {{ '******************' }}
   {{ actividadesFromApi }}
-    {{ '******************' }}
-    {{ expandedActividadId }}
+  {{ '******************' }}
+  {{ expandedActividadId }}
+  {{ '******************' }}
+  {{ isEditandoTarea }}
 
   {{ '*********************************************************************************************************' }}
 </template>
@@ -618,10 +621,10 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
 // Diálogos y formularios de actividades
-//const actividadDialog = ref(false)
-//const actividadForm = ref({ id: null, nombreCorto: '', estado: 'PR' })
-//const isEditandoActividad = ref(false)
-//const actividadFormRef = ref(null)
+const actividadDialog = ref(false)
+const actividadForm = ref({ id: null, nombreCorto: '', estado: 'PR' })
+const isEditandoActividad = ref(false)
+const actividadFormRef = ref(null)
 
 // Diálogos y formularios de tareas
 const tareaDialog = ref(false)
@@ -631,8 +634,8 @@ const isEditandoTarea = ref(false)
 const tareaFormRef = ref(null)
 
 // Diálogos de eliminación
-//const deleteActividadDialog = ref(false)
-//const actividadToDelete = ref(null)
+const deleteActividadDialog = ref(false)
+const actividadToDelete = ref(null)
 const deleteTareaDialog = ref(false)
 const tareaToDelete = ref(null)
 const actividadIdParaEliminarTarea = ref(null)
@@ -813,6 +816,24 @@ const actividadesPaginadas = computed(() => {
   return filteredActividades.value.slice(start, end)
 })
 
+const actividadesConTareasFiltradas = computed(() => {
+  return actividadesPaginadas.value.map(actividad => {
+    if (statusFilters.value.length === 0) {
+      return actividad;
+    }
+
+    const tareasFiltradas = actividad.tareas.filter(tarea => {
+      const estadoFrontendTarea = mapEstadoBackendToFrontend(tarea.estado);
+      return statusFilters.value.includes(estadoFrontendTarea);
+    });
+
+    return {
+      ...actividad,
+      tareas: tareasFiltradas
+    };
+  });
+});
+
 const totalPages = computed(() => {
   if (!Array.isArray(filteredActividades.value)) return 0
   return Math.ceil(filteredActividades.value.length / itemsPerPage.value)
@@ -909,6 +930,7 @@ const openTareaDialog = (actividadId, tarea = null) => {
    if (!valid) return
 
    const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
+   console.log('Actividad para tarea:', actividad)
    if (!actividad) return
 
    if (isEditandoTarea.value) {

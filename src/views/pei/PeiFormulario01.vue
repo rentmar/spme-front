@@ -26,17 +26,17 @@
               </v-col>
             </v-row>
             <v-divider class="my-4"></v-divider>
-            <v-textarea v-model="formData.descripcion_actividad" label="Descripción de la Actividad" rows="3" required readonly></v-textarea>
+            <v-textarea v-model="formData.descripcion_actividad" bg-color="blue-lighten-5" label="Descripción de la Actividad" rows="3" required></v-textarea>
             <v-row>
               <v-col cols="12" md="4">
-                <v-text-field v-model="formData.fecha_irealizacion" label="Inicio de Fecha de Realización" type="date" required readonly></v-text-field>
+                <v-text-field v-model="formData.fecha_irealizacion" bg-color="blue-lighten-5" label="Inicio de Fecha de Realización" type="date" required></v-text-field>
               </v-col>
               <v-col cols="12" md="4">
-                <v-text-field v-model="formData.fecha_frealizacion" label="fin de Fecha de Realización" type="date" required readonly></v-text-field>
+                <v-text-field v-model="formData.fecha_frealizacion" bg-color="blue-lighten-5" label="fin de Fecha de Realización" type="date" required></v-text-field>
               </v-col>
             </v-row>
-            <v-textarea v-model="formData.objetivo_actividad" label="Objetivo de la Actividad" rows="3" required readonly></v-textarea>
-            <v-text-field v-model="formData.fuente_financiamiento" label="Fuente de Financiamiento" required readonly></v-text-field>
+            <v-textarea v-model="formData.objetivo_actividad" bg-color="blue-lighten-5" label="Objetivo de la Actividad" rows="3" required></v-textarea>
+            <v-text-field v-model="formData.fuente_financiamiento" label="Fuente de Financiamiento" required></v-text-field>
           </div>
           <v-divider class="my-4"></v-divider>
           <div class="form-section">
@@ -116,12 +116,18 @@
       </v-card-text>
     </v-card>
   </v-container>
+   <!-- {{ usuario }}
+  {{ "******************" }}
+  {{ usuarios }} -->
+   {{ datosFormulario }}
+
+
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { formulariosServicios } from '@/modules/formularios/services/formulariosServices';
-import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
+//import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { useRoute } from 'vue-router';
@@ -131,7 +137,12 @@ const idActividad = route.params.id || null;
 console.log('ID de Actividad desde la ruta:', idActividad);
 
 // Utilizando Composition API para una mejor organización
-const { usuario, informacionUsuarioPorNick } = useUsuario();
+//const { usuarios, usuario, informacionUsuarioPorNick, listaUsuarios } = useUsuario();
+//variables para carga de datos
+const datosFormulario = ref(null);
+const error = ref(null);
+const isLoading = ref(false);
+
 
 // Estado reactivo
 const loading = ref(false);
@@ -152,6 +163,9 @@ const formData = ref({
   id_usuario: 0,
   id_actividad: 0
 });
+
+
+
 
 // Propiedades computadas
 const nombreCoordinadorElegido = computed(() => {
@@ -185,10 +199,18 @@ const nombreCompletoSolicitante = computed(() => {
 const isFrozen = computed(() => {
   // Esta lógica puede ser ajustada según tus necesidades.
   // Podrías basarla en el rol del usuario, si la solicitud ya fue enviada, etc.
-  return false;
+  return true;
 });
 
 // Métodos
+async function cargarUsuarios() {
+  try {
+    await listaUsuarios()
+  } catch (err) {
+    console.error('Error al cargar usuarios:', err)
+  }
+}
+
 function getNombreCompleto(user) {
   return `${user.nombre} ${user.paterno} ${user.materno}`.trim();
 }
@@ -223,6 +245,7 @@ async function fetchUsers() {
     const allUsers = response.data.usuarios;
     responsablesList.value = allUsers.filter(user => user.rol === 'responsable');
     coordinadoresList.value = allUsers.filter(user => user.rol === 'coordinador');
+    console.log('Responsables cargados:', response.data);
   } catch (error) {
     console.error('Error al cargar la lista de usuarios:', error);
     alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
@@ -246,6 +269,42 @@ async function fetchActivityData() {
     alert('No se pudieron cargar las actividades. Por favor recargue la página.');
   }
 }
+
+
+
+async function cargarDatos() {
+  isLoading.value = true;
+  error.value = null;
+  try {
+    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerDatosFormulario/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_actividad: 1,
+        usuario: 'chave',
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`);
+    }
+
+    const data = await response.json();
+    datosFormulario.value = data;
+    console.log('Datos cargados exitosamente:', datosFormulario.value);
+
+  } catch (err) {
+    error.value = err.message;
+    console.error('Ha ocurrido un error:', err);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+
 
 function addGasto() {
   formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 });
@@ -357,9 +416,12 @@ function exportToExcel() {
 
 // Ciclo de vida
 onMounted(async () => {
-  await fetchUsers();
-  await fetchActivityData();
-  await prefillFormData('ACarvajal');
+  //filtrarUsuariosPorCargo(usuarios)
+  //await fetchUsers(); //carga validadores desde mockwill funciona en rama oscar
+  //await fetchActivityData();  //carga datos de actividad funciona en rama oscar
+  //await prefillFormData('chave'); //no funciona en rama oscar
+  //await cargarUsuarios();//funciona en rama prototipo produce errores en rama oscar
+  await cargarDatos();
 });
 </script>
 
