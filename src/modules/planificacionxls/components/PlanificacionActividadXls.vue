@@ -322,6 +322,7 @@ import { SELECT_OPTIONS } from '@/utility/selectOptions'
 import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
 //Estructuras
 import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
+import ComponenteSeleccionarPei from './parciales/ComponenteSeleccionarPei.vue'
 import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
 
 // Props del componente
