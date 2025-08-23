@@ -119,9 +119,7 @@
    <!-- {{ usuario }}
   {{ "******************" }}
   {{ usuarios }} -->
-   <!-- {{ datosFormulario }} -->
-     {{ ActividadInformacion }}
-     {{ ProyectoHeader }}
+   {{ datosFormulario }}
 
 
 </template>
