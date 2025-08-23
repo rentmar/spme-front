@@ -55,6 +55,8 @@ const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
 const { findNode } = useVueFlow()
 const currentNode = findNode(props.id)
 const idCurrentNode = currentNode.data.nodoProyecto.id
+//identificador del proyecto
+const idProyecto = proyectoEstructura.value.id.toString()
 
 const emit = defineEmits(['addActividadProcesoResOG'])
 
@@ -62,25 +64,27 @@ const emit = defineEmits(['addActividadProcesoResOG'])
 //Editar el nodo
 const agregarActividad = async () => {
   // const act = {
-  //   codigo: 'ACT001',
-  //   descripcion: 'dedede create',
-  //   tipo: 'CSNS',
+  //   codigo: 'ACT',
+  //   descripcion: '',
+  //   supuestos: '',
+  //   riesgos: '',
+  //   objetivo_de_actividad: '',
+  //   descripcion_evaluacion: '',
   //   fecha_programada: null,
-  //   duracion: 4,
   //   fecha_inicio: null,
   //   fecha_cierre: null,
   //   presupuesto: null,
-  //   presupuesto_pei: null,
-  //   estado: 'SPLAN',
-  //   procedencia_fondos: 'PROY',
-  //   objetivo_de_actividad: '',
-  //   descripcion_evaluacion: '',
-  //   justificacion_modificacion: '',
-  //   datos_actividad: null,
+  //   presupuestoGlobal: null,
+  //   procedencia_fondos: null,
+  //   estado: 'PLAN',
+  //   responsable: null,
   //   proceso: idCurrentNode,
   //   resultado_og: null,
   //   resultado_oe: null,
   //   producto_oe: null,
+  //   objetivo_pei: null,
+  //   indicador_pei: null,
+  //   tipo: [],
   // }
   const act = {
     codigo: 'ACT',
@@ -95,23 +99,25 @@ const agregarActividad = async () => {
     presupuesto: null,
     presupuestoGlobal: null,
     procedencia_fondos: null,
-    estado: 'PLAN',
-    responsable: null,
+    estado: 'CRD',
     proceso: idCurrentNode,
     resultado_og: null,
     resultado_oe: null,
     producto_oe: null,
     objetivo_pei: null,
     indicador_pei: null,
-    tipo: [],
+    proyecto: idProyecto,
+    responsable: null,
+    tipo: null,
   }
+
   try {
     await crearActividad(act)
     console.log(actividad)
     const payload = {
       sourceId: currentNode.id.toString(),
       meta: {
-        label: 'Actividad Proc. Res. OE',
+        label: 'Actividad Proc. Res. OG',
         type: 'actividad',
         mapaNodoId: mapaNodoId.toString(),
         nodoProyecto: {
@@ -135,6 +141,8 @@ const agregarActividad = async () => {
           resultado_og: actividad.value.resultado_og,
           resultado_oe: actividad.value.resultado_oe,
           producto_oe: actividad.value.producto_oe,
+          responsable: actividad.value.responsable,
+          proyecto: actividad.value.proyecto,
         },
       },
     }

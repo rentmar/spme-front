@@ -11,6 +11,7 @@ export const usuarioServicios = {
       throw error
     }
   },
+
   /* Usuario por ID */
   usuarioPorId: async (id) => {
     try {
@@ -22,10 +23,14 @@ export const usuarioServicios = {
     }
   },
   usuariosTodos: async () => {
+
+  all: async () => {
+
     try {
       const respuesta = await api.get('/usr/usuarios/')
       return respuesta.data
     } catch (error) {
+
       console.error('Axios: error datos del usuario: ', error)
       throw error
     }
@@ -37,6 +42,17 @@ export const usuarioServicios = {
     } catch (error) {
       console.error('Axios: error al registrar el usuario ', error)
       throw error
+
+      console.error('Axios: error al fetch usuaurios', error)
+    }
+  },
+  allnicks: async () => {
+    try {
+      const respuesta = await api.get('/usuariosnick/')
+      return respuesta.data
+    } catch (error) {
+      console.log('Axios: error fecths nicks', error)
+
     }
   },
 }

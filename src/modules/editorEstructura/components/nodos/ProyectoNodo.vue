@@ -38,9 +38,16 @@
           <v-icon :icon="'mdi-bullseye-arrow'"></v-icon>
         </template>
       </v-list-item>
-      <!-- Editar el Nodo -->
+      <!-- Agregar Obj Especifico -->
       <v-list-item class="custom-menu-item" @click="agregarObjetivoEspecifico">
         <v-list-item-title>Agregar Objetivo Especifico</v-list-item-title>
+        <template v-slot:prepend>
+          <v-icon :icon="'mdi-target-variant'"></v-icon>
+        </template>
+      </v-list-item>
+      <!-- Agregar Efecto del Proyecto -->
+      <v-list-item class="custom-menu-item" @click="agregarEfecto">
+        <v-list-item-title>Agregar Efecto</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-target-variant'"></v-icon>
         </template>
@@ -60,6 +67,7 @@ import { reactive, inject, onMounted, computed } from 'vue'
 import { useObjetivoGeneralProyecto } from '@/modules/proyecto/composables/useObjetivoGeneralProyecto'
 import { useObjetivoEspecifico } from '@/modules/proyecto/composables/useObjetivoEspecifico'
 import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
+import { useEfecto } from '@/modules/proyecto/composables/useEfecto'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -77,6 +85,9 @@ const { objetivoGeneral, error, addObjetivoGeneral } = useObjetivoGeneralProyect
 const { objetivoEspecifico, crearObjetivoEspecifico } = useObjetivoEspecifico()
 const { cargarProcedencias, findProcedenciasByIds } = useProcedenciaFondos()
 
+//Composable de Efectos del proyecto
+const { efecto, crearEfecto } = useEfecto()
+
 const proyectoEstructura = inject('proyectoEstructura')
 
 const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
@@ -84,7 +95,7 @@ const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
 // console.log(mapaNodoId)
 
 //Eventos que el ProyectoNodo puede emitir
-const emit = defineEmits(['addObjetivoGeneral', 'addObjetivoEspecifico'])
+const emit = defineEmits(['addObjetivoGeneral', 'addObjetivoEspecifico', 'addEfecto'])
 
 //Agregar Objetivo General
 const agregarObjetivoGeneral = async () => {
@@ -155,6 +166,35 @@ const agregarObjetivoEspecifico = async () => {
     emit('addObjetivoEspecifico', payload)
   } catch (err) {
     console.log('Error ' + err)
+  }
+}
+
+//Agregar un nodo efecto
+const agregarEfecto = async () => {
+  const efectoNodo = {
+    contenido: 'Contenido del efecto',
+    proyecto: datosNodoProyecto.id.toString(),
+  }
+  try {
+    await crearEfecto(efectoNodo)
+    console.log(efecto)
+    const payload = {
+      sourceId: '1',
+      meta: {
+        label: 'Efecto',
+        type: 'efecto',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: efecto.value.id,
+          nombre: efecto.value.nombre,
+          contenido: efecto.value.contenido,
+          proyecto: efecto.value.proyecto,
+        },
+      },
+    }
+    emit('addEfecto', payload)
+  } catch (err) {
+    console.error('Error', err)
   }
 }
 

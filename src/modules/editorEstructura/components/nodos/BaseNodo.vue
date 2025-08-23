@@ -128,6 +128,7 @@ const iconoNodo = computed(() => {
       actividadrog: 'mdi-clock-outline',
       actividadpoe: 'mdi-clock-outline',
       actividadroe: 'mdi-clock-outline',
+      efecto: 'mdi-note',
     }[tipoNodo.value] || 'mdi-help-circle-outline'
   )
 })
@@ -158,6 +159,7 @@ const colorNodo = computed(() => {
       actividadrog: '#9C27B0',
       actividadpoe: '#9C27B0',
       actividadroe: '#9C27B0',
+      efecto: '#795548',
     }[tipoNodo.value] || '#BDBDBD'
   )
 })
@@ -165,7 +167,7 @@ const colorNodo = computed(() => {
 
 <style scoped>
 .nodo-base {
-  width: 600px;
+  width: 700px;
   min-height: 200px;
   border-radius: 12px;
   overflow: hidden;

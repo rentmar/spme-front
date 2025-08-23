@@ -31,6 +31,7 @@ export const SELECT_OPTIONS = {
     { valor: 'EP', etiqueta: 'En Planificacion' },
   ],
   tipo_actividad: [
+    'NODEF - No definido',
     'ACAP - Actividad de Capacitación',
     'PRIN - Proyecto de Investigación',
     'AOP - Actividad Operativa',

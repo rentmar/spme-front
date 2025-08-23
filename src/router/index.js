@@ -210,6 +210,17 @@ const router = createRouter({
       name: 'settingsApp',
       component: () => import('@/views/settings/SettingsView.vue'),
     },
+    /*************** ESTRUCTURACION ESPECIALES *****************/
+    {
+      path: '/programas/',
+      name: 'programasareasproyecto',
+      component: () => import('@/views/estructuracion/ProgramasAreasView.vue'),
+    },
+    {
+      path: '/programas/',
+      name: 'programasareasproyecto',
+      component: () => import('@/views/estructuracion/ProgramasAreasView.vue'),
+    },
     /****************** Notificaciones **********************/
     {
       path: '/notificaciones',

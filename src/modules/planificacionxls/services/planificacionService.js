@@ -71,6 +71,16 @@ export const planificacionServicios = {
       throw error
     }
   },
+  /* Conteo de planificador */
+  contarPlanificacionesPorIdProyecto: async (id) => {
+    try {
+      const respuesta = await api.get('/planificaciones/contar/?proyecto_id=' + id)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios:  ' + id, error)
+      throw error
+    }
+  },
   /********************* CONTEOS PARA CONFIGURACION DE COLUMNAS *******************************/
   getIndicadoresOgCount: async (proyectoId) => {
     const respuesta = await api.get('/proyectos/' + proyectoId + '/indicadores-og/count/')

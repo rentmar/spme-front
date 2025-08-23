@@ -59,6 +59,8 @@ const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
 const { findNode } = useVueFlow()
 const currentNode = findNode(props.id)
 const idCurrentNode = currentNode.data.nodoProyecto.id
+//identificador del proyecto
+const idProyecto = proyectoEstructura.value.id.toString()
 
 const handleStyle = {
   width: '12px',
@@ -142,15 +144,16 @@ const agregarActividades = async () => {
     presupuesto: null,
     presupuestoGlobal: null,
     procedencia_fondos: null,
-    estado: 'PLAN',
-    responsable: null,
-    proceso: idCurrentNode,
+    estado: 'CRD',
+    proceso: null,
     resultado_og: null,
     resultado_oe: null,
-    producto_oe: null,
+    producto_oe: idCurrentNode,
     objetivo_pei: null,
     indicador_pei: null,
-    tipo: [],
+    proyecto: idProyecto,
+    responsable: null,
+    tipo: null,
   }
   try {
     await crearActividad(act)
@@ -182,6 +185,8 @@ const agregarActividades = async () => {
           resultado_og: actividad.value.resultado_og,
           resultado_oe: actividad.value.resultado_oe,
           producto_oe: actividad.value.producto_oe,
+          responsable: actividad.value.responsable,
+          proyecto: actividad.value.proyecto,
         },
       },
     }
