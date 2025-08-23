@@ -7,7 +7,7 @@ const router = createRouter({
   routes: [
      {
       path: '/',
-      name: 'Login',
+      name: 'home',
       component: LoginView,
     },
     {
@@ -112,7 +112,7 @@ const router = createRouter({
     {
       path: '/planificacion/cronogramas',
       name: 'cronogramas',
-      component: () => import('@/views/planeamiento/ActividadesKantView.vue'),
+      component: () => import('@/views/planeamiento/ActividadesGantView.vue'),
     },
     {
       path: '/usuario/perfil/',
