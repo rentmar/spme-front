@@ -119,7 +119,9 @@
    <!-- {{ usuario }}
   {{ "******************" }}
   {{ usuarios }} -->
-   {{ datosFormulario }}
+   <!-- {{ datosFormulario }} -->
+     {{ ActividadInformacion }}
+     {{ ProyectoHeader }}
 
 
 </template>
@@ -128,6 +130,8 @@
 import { ref, onMounted, computed } from 'vue';
 import { formulariosServicios } from '@/modules/formularios/services/formulariosServices';
 //import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
+import { ActividadInformacion } from '@/components/ActividadInformacion.vue';
+import { ProyectoHeader } from '@/components/ProyectoHeader.vue';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { useRoute } from 'vue-router';

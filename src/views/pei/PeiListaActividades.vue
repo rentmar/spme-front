@@ -235,7 +235,107 @@
                             </v-icon>
                           </template>
 
-                          <template v-slot:append>
+                                          <!-- iconos de acciones -->
+                <template v-slot:append>
+                  <div class="d-flex">
+                    <!-- Solicitud de Fondos -->
+                    <v-tooltip text="Solicitud de Fondos" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-if="parseInt($route.query.showButton) === 1"
+                          v-bind="props"
+                          icon="mdi-file-document-edit-outline"
+                          variant="text"
+                          color="primary"
+                          :to="`/pei/formulario01/${actividad.id}`"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
+                    <!-- Solicitud de Reposición -->
+                    <v-tooltip text="Solicitud de Reposición" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-if="parseInt($route.query.showButton) === 1"
+                          v-bind="props"
+                          icon="mdi-file-document-edit-outline"
+                          variant="text"
+                          color="warning"
+                          :to="`/pei/formulario03/${actividad.id}`"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
+                    <!-- Rendición de cuentas -->
+                    <v-tooltip text="Rendición de Cuentas" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-if="parseInt($route.query.showButton) === 2"
+                          v-bind="props"
+                          icon="mdi-file-document-edit-outline"
+                          variant="text"
+                          color="error"
+                          :to="`/pei/formulario02/${actividad.id}`"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
+                    <!-- Solicitud de Viaje -->
+                    <v-tooltip text="Solicitud de Viaje" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-if="parseInt($route.query.showButton) === 1"
+                          v-bind="props"
+                          icon="mdi-file-document-edit-outline"
+                          variant="text"
+                          color="deep-purple"
+                          :to="`/pei/formulario05/${actividad.id}`"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
+                    <!-- Solicitud de Pago Directo -->
+                    <v-tooltip text="Solicitud de Pago Directo" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-if="parseInt($route.query.showButton) === 1"
+                          v-bind="props"
+                          icon="mdi-file-document-edit-outline"
+                          variant="text"
+                          color="teal-lighten-2"
+                          :to="`/pei/formulario08/${actividad.id}`"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
+                    <!-- Informe de Actividad -->
+                    <v-tooltip text="Informe de Actividad" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-if="parseInt($route.query.showButton) === 3"
+                          v-bind="props"
+                          icon="mdi-file-document-edit-outline"
+                          variant="text"
+                          color="info"
+                          :to="`/pei/formularioinf/${actividad.id}`"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
+                    <!-- Mostrar tareas -->
+                    <!-- <v-tooltip text="Mostrar tareas" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          icon="mdi-chevron-down"
+                          variant="text"
+                          color="info"
+                          @click.stop="toggleExpanded(actividad.id)"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip> -->
+                  </div>
+
                             <v-tooltip text="Editar tarea" location="top">
                               <template v-slot:activator="{ props }">
                                 <v-btn
