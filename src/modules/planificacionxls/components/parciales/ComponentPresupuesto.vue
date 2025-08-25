@@ -98,7 +98,6 @@
 
         <v-divider class="my-3"></v-divider>
 
-        <!-- Resto del componente se mantiene igual -->
         <!-- Agregar fuentes -->
         <v-card variant="outlined" class="mb-4">
           <v-card-title class="text-subtitle-1 font-weight-medium bg-grey-lighten-4">
@@ -278,10 +277,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
 
-// Props (se mantiene igual)
+// Props
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -297,12 +296,10 @@ const props = defineProps({
   },
 })
 
-console.log(props.desgloseInicial)
-
-// Emits (se mantiene igual)
+// Emits
 const emit = defineEmits(['update:modelValue', 'guardarDesglose'])
 
-// Data (se mantiene igual)
+// Data
 const dialog = ref(false)
 const currentBreakdown = ref([])
 const nuevaFuenteSeleccionada = ref(null)
@@ -319,11 +316,17 @@ const {
   fetchOptions,
 } = useProcedenciaFondos()
 
-// Computed (se mantiene igual)
-const currentRowTotal = computed(() => props.presupuestoTotal)
+// Computed
+const currentRowTotal = computed(() => {
+  const total = Number(props.presupuestoTotal) || 0
+  return isNaN(total) ? 0 : total
+})
 
 const totalDesglose = computed(() => {
-  return currentBreakdown.value.reduce((sum, item) => sum + (Number(item.monto) || 0), 0)
+  return currentBreakdown.value.reduce((sum, item) => {
+    const monto = Number(item.monto) || 0
+    return sum + (isNaN(monto) ? 0 : monto)
+  }, 0)
 })
 
 const saldoDisponible = computed(() => {
@@ -344,16 +347,18 @@ const fuenteYaExiste = computed(() => {
 
 // Methods
 const formatCurrency = (value) => {
+  const numValue = Number(value) || 0
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
     minimumFractionDigits: 0,
-  }).format(value)
+  }).format(numValue)
 }
 
 const calcularPorcentaje = (monto) => {
   if (currentRowTotal.value === 0) return 0
-  return ((monto / currentRowTotal.value) * 100).toFixed(2)
+  const numMonto = Number(monto) || 0
+  return ((numMonto / currentRowTotal.value) * 100).toFixed(2)
 }
 
 const agregarFuenteExistente = () => {
@@ -362,9 +367,6 @@ const agregarFuenteExistente = () => {
 
     // Verificar si la fuente ya existe
     if (fuenteYaExiste.value(nombreFuente)) {
-      // Mostrar mensaje de error (puedes usar un snackbar o alerta)
-      console.warn('Esta fuente de financiamiento ya ha sido agregada')
-      // Opcional: mostrar alerta al usuario
       alert(`La fuente "${nombreFuente}" ya ha sido agregada al desglose.`)
       nuevaFuenteSeleccionada.value = null
       return
@@ -386,8 +388,6 @@ const agregarFuenteManual = () => {
 
     // Verificar si la fuente ya existe
     if (fuenteYaExiste.value(nombreFuente)) {
-      // Mostrar mensaje de error
-      console.warn('Esta fuente de financiamiento ya ha sido agregada')
       alert(`La fuente "${nombreFuente}" ya ha sido agregada al desglose.`)
       return
     }
@@ -409,7 +409,8 @@ const eliminarFuente = (index) => {
 
 const actualizarMonto = (index) => {
   const item = currentBreakdown.value[index]
-  const maxPermitido = currentRowTotal.value - totalDesglose.value + (Number(item.monto) || 0)
+  const currentMonto = Number(item.monto) || 0
+  const maxPermitido = currentRowTotal.value - (totalDesglose.value - currentMonto) + currentMonto
 
   if (item.monto > maxPermitido) {
     item.monto = maxPermitido
@@ -422,7 +423,9 @@ const actualizarMonto = (index) => {
 
 const saveBreakdown = () => {
   if (totalDesglose.value <= currentRowTotal.value && totalDesglose.value > 0) {
-    emit('guardarDesglose', currentBreakdown.value)
+    // Crear una copia profunda para evitar problemas de referencia
+    const desgloseParaGuardar = JSON.parse(JSON.stringify(currentBreakdown.value))
+    emit('guardarDesglose', desgloseParaGuardar)
     closeDialog()
   }
 }
@@ -432,42 +435,41 @@ const closeDialog = () => {
   emit('update:modelValue', false)
 }
 
-// const resetForm = () => {
-//   currentBreakdown.value = [...props.desgloseInicial]
-//   nuevaFuenteSeleccionada.value = null
-//   nuevaFuenteManual.value = { nombre: '', monto: 0 }
-// }
 const resetForm = () => {
-  console.log('Reseteando formulario con desgloseInicial:', props.desgloseInicial)
+  // Limpiar y resetear el formulario correctamente
+  currentBreakdown.value = []
 
-  // Asegurarse de que desgloseInicial es un array válido antes de iterar
-  if (Array.isArray(props.desgloseInicial)) {
-    currentBreakdown.value = props.desgloseInicial.map((item) => ({
-      // Asegurar que cada item tenga la estructura esperada
-      id: item.id || Date.now() + Math.random(),
-      nombre: item.nombre || item.financiera || 'Fuente desconocida',
-      monto: Number(item.monto) || 0,
-      esExistente: item.esExistente !== undefined ? item.esExistente : true,
-    }))
-  } else {
-    // Si no es un array válido, inicializar como array vacío
-    currentBreakdown.value = []
-    console.warn('desgloseInicial no es un array válido:', props.desgloseInicial)
+  if (Array.isArray(props.desgloseInicial) && props.desgloseInicial.length > 0) {
+    // Procesar el desglose inicial para asegurar la estructura correcta
+    props.desgloseInicial.forEach((item) => {
+      if (item && (item.nombre || item.financiera)) {
+        currentBreakdown.value.push({
+          id: item.id || Date.now() + Math.random(),
+          nombre: item.nombre || item.financiera,
+          monto: Number(item.monto) || 0,
+          esExistente: item.esExistente !== undefined ? item.esExistente : true,
+        })
+      }
+    })
   }
 
   nuevaFuenteSeleccionada.value = null
   nuevaFuenteManual.value = { nombre: '', monto: 0 }
 }
 
-// Watchers (se mantienen igual)
+// Watchers
 watch(
   () => props.modelValue,
   (val) => {
     dialog.value = val
     if (val) {
-      resetForm()
+      // Usar nextTick para asegurar que el DOM esté listo
+      nextTick(() => {
+        resetForm()
+      })
     }
   },
+  { immediate: true },
 )
 
 watch(dialog, (val) => {
@@ -479,43 +481,31 @@ watch(dialog, (val) => {
 watch(
   () => props.desgloseInicial,
   (newVal) => {
-    if (dialog.value) {
-      currentBreakdown.value = [...newVal]
+    if (dialog.value && Array.isArray(newVal)) {
+      resetForm()
     }
   },
   { deep: true },
 )
 
-// watch(
-//   () => props.desgloseInicial,
-//   (newVal) => {
-//     console.log('Desglose inicial recibido:', newVal)
-//     if (dialog.value && newVal) {
-//       // Asegurarse de que es un array válido
-//       currentBreakdown.value = Array.isArray(newVal) ? [...newVal] : []
-//     }
-//   },
-//   { deep: true, immediate: true },
-// )
-
-/*************** Seccion Carga *******************/
+// Carga inicial
 onMounted(async () => {
   await carga()
 })
 
-// Funcion de carga
 const carga = async () => {
   loading.value = true
   try {
     await fetchOptions()
   } catch (err) {
     error.value = err
-    console.error('Componente presupuesto, error carga de opciones', error)
+    console.error('Componente presupuesto, error carga de opciones', err)
   } finally {
     loading.value = false
   }
 }
 </script>
+
 <style scoped>
 .v-table {
   border-radius: 8px;

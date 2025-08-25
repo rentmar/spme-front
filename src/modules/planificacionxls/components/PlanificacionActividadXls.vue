@@ -206,6 +206,8 @@
               </v-toolbar>
               <v-card-text style="height: calc(100vh - 64px); padding: 0">
                 <SeleccionEstructuraPei
+                  :objetivo-inicial="objetivoInicialId"
+                  :indicador-inicial="indicadorInicialId"
                   @guardar="manejarSeleccionPei"
                   @cerrar="modalPei = false"
                 ></SeleccionEstructuraPei>
@@ -371,7 +373,14 @@ const snackbar = ref({
 
 /******************** PEI ******************************************/
 const modalPei = ref(false)
+const objetivoInicialId = ref(null)
+const indicadorInicialId = ref(null)
 const abrirModalPei = () => {
+  // Cargar IDs actuales de la fila seleccionada
+  if (selectedRowData.value) {
+    objetivoInicialId.value = selectedRowData.value.objetivo_pei
+    indicadorInicialId.value = selectedRowData.value.indicador_pei
+  }
   modalPei.value = true
 }
 // Manejar la selección de PEI
@@ -392,7 +401,7 @@ const manejarSeleccionPei = (datosPei) => {
         hotTable.value.hotInstance.render()
       }
 
-      mostrarMensaje('Relacion al  PEI actualizada correctamente', 'success')
+      mostrarMensaje('Estructura PEI actualizada correctamente', 'success')
     }
   }
 
@@ -410,7 +419,6 @@ const abrirNuevaActividad = () => {
 }
 const cerrarNuevaActividad = () => {
   mostrarModalActividad.value = false
-  refrescarDatos()
 }
 /******************** Presupuesto *******************************/
 const mostrarPresupuesto = ref(false)
@@ -428,19 +436,28 @@ const guardarDesglosePresupuesto = (nuevoDesglose) => {
 
       // Actualizar solo el campo procedencia_fondos de la fila específica
       updatedTableData[rowIndex] = {
-        ...updatedTableData[rowIndex], // Mantener todos los otros campos
-        procedencia_fondos: nuevoDesglose, // Actualizar solo este campo
+        ...updatedTableData[rowIndex],
+        procedencia_fondos: Array.isArray(nuevoDesglose) ? [...nuevoDesglose] : nuevoDesglose,
       }
 
       // Asignar el nuevo array reactivo
       tableData.value = updatedTableData
 
-      console.log('procedencia_fondos actualizado para fila:', rowIndex)
+      // Forzar actualización de Handsontable
+      if (hotTable.value?.hotInstance) {
+        // Actualizar la celda específica
+        hotTable.value.hotInstance.setDataAtCell(rowIndex, 10, nuevoDesglose)
+
+        // Forzar re-renderizado completo
+        hotTable.value.hotInstance.render()
+        hotTable.value.hotInstance.deselectCell()
+
+        console.log('procedencia_fondos actualizado para fila:', rowIndex)
+      }
     }
   }
 
   mostrarPresupuesto.value = false
-  //selectedRowData.value = null
   mostrarMensaje('Desglose de presupuesto guardado correctamente', 'success')
 }
 /***************************************************************/
@@ -779,11 +796,13 @@ const columns = ref([
     data: 'objetivo_pei',
     title: 'Objetivo PEI',
     type: 'numeric',
+    readOnly: true,
   },
   {
     data: 'indicador_pei',
     title: 'Indicador PEI',
     type: 'numeric',
+    readOnly: true,
   },
 ])
 
