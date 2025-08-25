@@ -12,13 +12,6 @@
 
     <!-- Menú contextual -->
     <template #menu>
-      <!-- Agregar Indicador Objetivo General -->
-      <v-list-item class="custom-menu-item" @click="agregarIndicadorResultadoOg">
-        <v-list-item-title>Agregar Indicador Resultado OG</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-chart-line'"></v-icon>
-        </template>
-      </v-list-item>
       <!-- Agregar Proceso Objetivo General -->
       <v-list-item class="custom-menu-item" @click="agregarProcesos">
         <v-list-item-title>Agregar Procesos</v-list-item-title>
@@ -31,13 +24,6 @@
         <v-list-item-title>Agregar Actividad</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-clock-outline'"></v-icon>
-        </template>
-      </v-list-item>
-      <!-- Agregar Producto General -->
-      <v-list-item class="custom-menu-item" @click="agregarProductoGeneral">
-        <v-list-item-title>Agregar Producto</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-flag-checkered'"></v-icon>
         </template>
       </v-list-item>
     </template>

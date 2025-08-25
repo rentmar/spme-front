@@ -12,20 +12,6 @@
 
     <!-- Menú contextual -->
     <template #menu>
-      <!-- Agregar KPI -->
-      <v-list-item class="custom-menu-item" @click="agregarIndicadorResultadoOE">
-        <v-list-item-title>Agregar Indicador Resultado OE</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-chart-line-variant'"></v-icon>
-        </template>
-      </v-list-item>
-      <!-- Agregar Indicador Objetivo General -->
-      <v-list-item class="custom-menu-item" @click="agregarProductoResultadoOE">
-        <v-list-item-title>Agregar Producto de Resultado OE</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-chart-line'"></v-icon>
-        </template>
-      </v-list-item>
       <!-- Agregar Resultado Objetivo General -->
       <v-list-item class="custom-menu-item" @click="agregarProcesosResultadoOE">
         <v-list-item-title>Agregar Procesos para Resultado OE</v-list-item-title>
@@ -36,13 +22,6 @@
       <!-- Agregar Resultado Objetivo General -->
       <v-list-item class="custom-menu-item" @click="agregarActividad">
         <v-list-item-title>Agregar Actividad para Resultado OE</v-list-item-title>
-        <template v-slot:prepend>
-          <v-icon :icon="'mdi-flag-checkered'"></v-icon>
-        </template>
-      </v-list-item>
-      <!-- Agregar Producto General -->
-      <v-list-item class="custom-menu-item" @click="agregarProductoGeneral">
-        <v-list-item-title>Agregar Producto</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-flag-checkered'"></v-icon>
         </template>

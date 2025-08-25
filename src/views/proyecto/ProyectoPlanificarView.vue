@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, provide, readonly } from 'vue'
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
@@ -86,6 +86,8 @@ const {
 onMounted(async () => {
   await cargarDatos()
 })
+
+provide('proyectoEstructura', readonly(proyectoEstructuraNodos))
 
 //Watch para la carga completa
 watch(

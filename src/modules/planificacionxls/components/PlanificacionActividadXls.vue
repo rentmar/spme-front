@@ -30,7 +30,7 @@
             </template>
           </v-tooltip>
           <!--Reprogramar-->
-          <v-tooltip text="Reprogramar" location="bottom">
+          <!-- <v-tooltip text="Reprogramar" location="bottom">
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
@@ -41,29 +41,45 @@
                 <v-icon size="18">mdi-wrench-clock</v-icon>
               </v-btn>
             </template>
-          </v-tooltip>
+          </v-tooltip> -->
           <!--Nueva Actividad-->
           <v-tooltip text="Agregar nueva actividad" location="bottom">
             <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                variant="text"
-                class="toolbar-btn"
-                @click="agregarNuevaActividad"
-              >
+              <v-btn v-bind="props" variant="text" class="toolbar-btn" @click="abrirNuevaActividad">
                 <v-icon size="18">mdi-plus-outline</v-icon>
                 <v-icon size="18">mdi-clipboard-text-outline</v-icon>
               </v-btn>
             </template>
           </v-tooltip>
+
+          <v-dialog v-model="mostrarModalActividad" fullscreen>
+            <v-card>
+              <v-toolbar>
+                <v-btn icon="mdi-close" @click="cerrarNuevaActividad"></v-btn>
+
+                <v-toolbar-title>Agregar Nueva Actividad/Proceso </v-toolbar-title>
+
+                <v-toolbar-items>
+                  <!-- <v-btn text="Guardar" variant="text"></v-btn> -->
+                </v-toolbar-items>
+              </v-toolbar>
+              <v-card-text>
+                <v-card-text style="height: calc(100vh - 64px); padding: 0">
+                  <div style="width: 100%; height: 600px">
+                    <EditorEstructuraMainActividades></EditorEstructuraMainActividades>
+                  </div>
+                </v-card-text>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
           <!--Eliminar fila-->
-          <v-tooltip text="Eliminar fila seleccionada" location="bottom">
+          <!-- <v-tooltip text="Eliminar fila seleccionada" location="bottom">
             <template #activator="{ props }">
               <v-btn v-bind="props" variant="text" class="toolbar-btn" @click="eliminarFila">
                 <v-icon size="18">mdi-delete</v-icon>
               </v-btn>
             </template>
-          </v-tooltip>
+          </v-tooltip> -->
           <v-spacer></v-spacer>
           <!--Exportar a Excel-->
           <v-tooltip text="Exportar a Excel" location="bottom">
@@ -155,11 +171,11 @@
               <template v-slot:prepend>
                 <v-icon size="16">mdi-chart-tree</v-icon>
               </template>
-              PEI
+              Relacion con el PEI
             </v-btn>
 
             <!-- Botón Estructura (solo para nuevas actividades) -->
-            <v-btn
+            <!-- <v-btn
               v-if="selectedRowData.id === 0"
               color="#505A64"
               variant="flat"
@@ -171,7 +187,7 @@
                 <v-icon size="16">mdi-sitemap</v-icon>
               </template>
               Estructura
-            </v-btn>
+            </v-btn> -->
 
             <!----Componente Presupuesto-->
             <ComponentPresupuesto
@@ -181,44 +197,18 @@
               @guardarDesglose="guardarDesglosePresupuesto"
             ></ComponentPresupuesto>
           </div>
-
-          <!--Estructura Proyecto-->
-          <v-dialog v-model="modalEstructura" transition="dialog-bottom-transition" fullscreen>
-            <v-card>
-              <v-toolbar>
-                <v-btn icon="mdi-close" @click="modalEstructura = false"></v-btn>
-
-                <v-toolbar-title>Estructura Proyecto </v-toolbar-title>
-
-                <v-toolbar-items>
-                  <v-btn text="Guardar" variant="text"></v-btn>
-                </v-toolbar-items>
-              </v-toolbar>
-              <v-card-text>
-                <v-card-text style="height: calc(100vh - 64px); padding: 0">
-                  <div style="width: 100%; height: 600px">
-                    <SeleccionEstructuraProyecto></SeleccionEstructuraProyecto>
-                  </div>
-                </v-card-text>
-              </v-card-text>
-            </v-card>
-          </v-dialog>
-          <!--Estructura Proyecto-->
+          <!--Estructura Pei-->
           <v-dialog v-model="modalPei" transition="dialog-bottom-transition" fullscreen>
             <v-card>
               <v-toolbar>
                 <v-btn icon="mdi-close" @click="modalPei = false"></v-btn>
-
-                <v-toolbar-title>Estructura PEi </v-toolbar-title>
-
-                <v-toolbar-items>
-                  <v-btn text="Guardar" variant="text"></v-btn>
-                </v-toolbar-items>
+                <v-toolbar-title>Estructura PEI</v-toolbar-title>
               </v-toolbar>
               <v-card-text style="height: calc(100vh - 64px); padding: 0">
-                <div style="width: 100%; height: 100%">
-                  <SeleccionEstructuraPei></SeleccionEstructuraPei>
-                </div>
+                <SeleccionEstructuraPei
+                  @guardar="manejarSeleccionPei"
+                  @cerrar="modalPei = false"
+                ></SeleccionEstructuraPei>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -328,7 +318,8 @@ import { SELECT_OPTIONS } from '@/utility/selectOptions'
 import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
 //Estructuras
 import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
-import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
+//import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
+import EditorEstructuraMainActividades from '@/modules/editorEstructuraPlanificacion/components/EditorEstructuraMainActividades.vue'
 //Actividades Test
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { storeToRefs } from 'pinia'
@@ -383,10 +374,43 @@ const modalPei = ref(false)
 const abrirModalPei = () => {
   modalPei.value = true
 }
+// Manejar la selección de PEI
+const manejarSeleccionPei = (datosPei) => {
+  if (selectedRowData.value) {
+    const rowIndex = tableData.value.findIndex((row) => row.id === selectedRowData.value.id)
+
+    if (rowIndex !== -1) {
+      // Actualizar la fila con los datos de PEI
+      tableData.value[rowIndex] = {
+        ...tableData.value[rowIndex],
+        objetivo_pei: datosPei.objetivo_pei,
+        indicador_pei: datosPei.indicador_pei,
+      }
+
+      // Forzar actualización de Handsontable
+      if (hotTable.value?.hotInstance) {
+        hotTable.value.hotInstance.render()
+      }
+
+      mostrarMensaje('Relacion al  PEI actualizada correctamente', 'success')
+    }
+  }
+
+  modalPei.value = false
+}
 /********************* Estructura ********************************/
 const modalEstructura = ref(false)
 const abrirModalEstructura = () => {
   modalEstructura.value = true
+}
+
+const mostrarModalActividad = ref(false)
+const abrirNuevaActividad = () => {
+  mostrarModalActividad.value = true
+}
+const cerrarNuevaActividad = () => {
+  mostrarModalActividad.value = false
+  refrescarDatos()
 }
 /******************** Presupuesto *******************************/
 const mostrarPresupuesto = ref(false)
@@ -600,7 +624,9 @@ const agregarNuevaActividad = () => {
   //   indicador_pei: null,
   // })
   // mostrarMensaje('Nueva actividad agregada', 'info')
+
   modalEstructura.value = true
+  mostrarMensaje('Actividad')
 }
 
 const eliminarFila = async () => {
@@ -649,7 +675,7 @@ usernameDropdown.value = usuarios.value.map((item) => item.username)
 
 // Configuración de columnas
 const columns = ref([
-  { data: 'id', title: 'Id', type: 'numeric', width: 50 },
+  { data: 'id', title: 'Id', type: 'numeric', width: 50, readOnly: true },
   { data: 'codigo', title: 'Código', width: 100 },
   { data: 'nombreCorto', title: 'Nombre', width: 100 },
   {
@@ -746,6 +772,18 @@ const columns = ref([
       return td
     },
     editor: false,
+  },
+  //   objetivo_pei: null,
+  //   indicador_pei: null,
+  {
+    data: 'objetivo_pei',
+    title: 'Objetivo PEI',
+    type: 'numeric',
+  },
+  {
+    data: 'indicador_pei',
+    title: 'Indicador PEI',
+    type: 'numeric',
   },
 ])
 

@@ -1,6 +1,6 @@
 <template>
   <!-- Banner superior -->
-  <transition name="fade-slide-down">
+  <!-- <transition name="fade-slide-down">
     <div v-if="mostrarMensaje" class="banner-superior">
       <v-icon left small color="white">mdi-information</v-icon>
       <span class="ml-2">{{ mensajeRecibido }}</span>
@@ -8,7 +8,7 @@
         <v-icon small>mdi-close</v-icon>
       </v-btn>
     </div>
-  </transition>
+  </transition> -->
   <VueFlow ref="vueFlowRef" :nodes="nodos" :edges="conectores" :minZoom="0.1" :maxZoom="2">
     <div class="project-overlay">
       <div class="project-metadata">
@@ -164,85 +164,6 @@
       <EfectoNodo v-bind="nodeProps"></EfectoNodo>
     </template>
 
-    <Panel position="top-right" class="tool-panel">
-      <!-- Barra de título -->
-      <v-toolbar color="primary" density="compact" class="panel-header">
-        <v-toolbar-title class="text-white">Herramientas</v-toolbar-title>
-      </v-toolbar>
-
-      <!-- Barra de botones circulares -->
-      <v-toolbar density="compact" class="button-bar">
-        <v-tooltip
-          v-for="btn in toolbarButtons"
-          :key="btn.icon"
-          :text="btn.tooltip"
-          location="bottom"
-        >
-          <template v-slot:activator="{ props }">
-            <v-btn
-              v-bind="props"
-              :icon="btn.icon"
-              :color="btn.color"
-              variant="flat"
-              size="small"
-              class="ma-1 circular-btn"
-              @click="btn.action"
-            />
-          </template>
-        </v-tooltip>
-      </v-toolbar>
-
-      <!-- Panel de edición condicional -->
-      <v-expand-transition>
-        <v-card v-if="nodoSeleccionado" class="node-editor" elevation="8">
-          <v-toolbar color="primary" density="compact" class="panel-header">
-            <v-toolbar-title class="text-white">Editar Nodo</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn icon variant="text" @click="nodoSeleccionado = null" class="text-white">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-toolbar>
-
-          <v-card-text class="pa-4" style="max-height: 80vh; overflow: auto">
-            <component
-              :is="formularioActual"
-              v-if="formularioActual"
-              :node="nodoSeleccionado"
-              @guardar="actualizarNodo"
-              @cancelar="nodoSeleccionado = null"
-              @eliminar="eliminarNodo"
-            />
-
-            <v-alert v-else type="info">
-              No hay formulario disponible para este tipo de nodo
-            </v-alert>
-          </v-card-text>
-
-          <!-- <v-card-actions class="px-4 pb-4 pt-0">
-            <v-btn
-              color="primary"
-              variant="tonal"
-              size="small"
-              class="action-btn"
-              @click="editNode(nodoSeleccionado)"
-            >
-              <v-icon start size="small">mdi-pencil</v-icon>
-              Editar
-            </v-btn>
-            <v-btn
-              color="error"
-              variant="tonal"
-              size="small"
-              class="action-btn ml-2"
-              @click="deleteNode(nodoSeleccionado)"
-            >
-              <v-icon start size="small">mdi-delete</v-icon>
-              Eliminar
-            </v-btn> -->
-          <!-- </v-card-actions> -->
-        </v-card>
-      </v-expand-transition>
-    </Panel>
     <!-- <ControlMenuDiagrama></ControlMenuDiagrama> -->
     <Background variant="lines"></Background>
     <MiniMap pannable zoomable mask-color="rgb(0, 0, 0, 0.7)"></MiniMap>
