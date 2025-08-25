@@ -14,7 +14,7 @@
                 <v-select
                   v-model="objetivoSeleccionado"
                   :items="objetivosPei"
-                  item-title="nombre"
+                  item-title="descripcion"
                   item-value="id"
                   label="Objetivo PEI"
                   @update:modelValue="cargarIndicadores"
@@ -26,7 +26,7 @@
                 <v-select
                   v-model="indicadorSeleccionado"
                   :items="indicadoresPeiFiltrados"
-                  item-title="nombre"
+                  item-title="descripcion"
                   item-value="id"
                   label="Indicador PEI"
                   :disabled="!objetivoSeleccionado"
@@ -95,11 +95,11 @@
       </v-col>
     </v-row>
   </v-container>
-  {{ peiVigente }}
 </template>
 
 <script setup>
 import { ref, computed, onMounted, inject } from 'vue'
+import { usePeiCrud } from '@/modules/pei/composables/usePeiCrud'
 
 // Props para recibir IDs iniciales (números)
 const props = defineProps({
@@ -115,82 +115,86 @@ const props = defineProps({
 
 //El PEI vigente
 const peiVigente = inject('peiVigente')
+const idpei = 1
 
 // Emits para comunicación con el componente padre
 const emit = defineEmits(['guardar', 'cerrar'])
 
-// Datos de ejemplo - en una aplicación real estos vendrían de una API
-const objetivosPei = ref([
-  {
-    id: 1,
-    codigo: 'OBJ-PEI-001',
-    nombre: 'Mejorar la calidad educativa',
-    descripcion: 'Incrementar los indicadores de calidad en el sistema educativo',
-  },
-  {
-    id: 2,
-    codigo: 'OBJ-PEI-002',
-    nombre: 'Fortalecer la investigación',
-    descripcion: 'Promover proyectos de investigación científica y tecnológica',
-  },
-  {
-    id: 3,
-    codigo: 'OBJ-PEI-003',
-    nombre: 'Optimizar la gestión administrativa',
-    descripcion: 'Modernizar los procesos administrativos de la institución',
-  },
-])
+const { objetivosPei, indicadoresPei, obtenerObjetivosPeiPorIdPei, obtenerIndicadoresPeiPorIdPei } =
+  usePeiCrud()
 
-const indicadoresPei = ref([
-  {
-    id: 1,
-    objetivo_id: 1,
-    codigo: 'IND-PEI-001',
-    nombre: 'Tasa de retención estudiantil',
-    descripcion: 'Porcentaje de estudiantes que permanecen en el sistema',
-    meta: '95%',
-  },
-  {
-    id: 2,
-    objetivo_id: 1,
-    codigo: 'IND-PEI-002',
-    nombre: 'Resultados pruebas estandarizadas',
-    descripcion: 'Puntajes en pruebas nacionales e internacionales',
-    meta: 'Mejora del 10%',
-  },
-  {
-    id: 3,
-    objetivo_id: 2,
-    codigo: 'IND-PEI-003',
-    nombre: 'Proyectos de investigación',
-    descripcion: 'Número de proyectos de investigación registrados',
-    meta: '50 proyectos',
-  },
-  {
-    id: 4,
-    objetivo_id: 2,
-    codigo: 'IND-PEI-004',
-    nombre: 'Publicaciones indexadas',
-    descripcion: 'Cantidad de publicaciones en revistas indexadas',
-    meta: '100 publicaciones',
-  },
-  {
-    id: 5,
-    objetivo_id: 3,
-    codigo: 'IND-PEI-005',
-    nombre: 'Tiempo de respuesta',
-    descripcion: 'Tiempo promedio de respuesta a solicitudes',
-    meta: 'Reducir en 30%',
-  },
-  {
-    id: 6,
-    objetivo_id: 3,
-    codigo: 'IND-PEI-006',
-    nombre: 'Satisfacción usuaria',
-    descripcion: 'Nivel de satisfacción de usuarios con servicios',
-    meta: '90% de satisfacción',
-  },
-])
+// Datos de ejemplo - en una aplicación real estos vendrían de una API
+// const objetivosPei = ref([
+//   {
+//     id: 1,
+//     codigo: 'OBJ-PEI-001',
+//     nombre: 'Mejorar la calidad educativa',
+//     descripcion: 'Incrementar los indicadores de calidad en el sistema educativo',
+//   },
+//   {
+//     id: 2,
+//     codigo: 'OBJ-PEI-002',
+//     nombre: 'Fortalecer la investigación',
+//     descripcion: 'Promover proyectos de investigación científica y tecnológica',
+//   },
+//   {
+//     id: 3,
+//     codigo: 'OBJ-PEI-003',
+//     nombre: 'Optimizar la gestión administrativa',
+//     descripcion: 'Modernizar los procesos administrativos de la institución',
+//   },
+// ])
+
+// const indicadoresPei = ref([
+//   {
+//     id: 1,
+//     objetivo_id: 1,
+//     codigo: 'IND-PEI-001',
+//     nombre: 'Tasa de retención estudiantil',
+//     descripcion: 'Porcentaje de estudiantes que permanecen en el sistema',
+//     meta: '95%',
+//   },
+//   {
+//     id: 2,
+//     objetivo_id: 1,
+//     codigo: 'IND-PEI-002',
+//     nombre: 'Resultados pruebas estandarizadas',
+//     descripcion: 'Puntajes en pruebas nacionales e internacionales',
+//     meta: 'Mejora del 10%',
+//   },
+//   {
+//     id: 3,
+//     objetivo_id: 2,
+//     codigo: 'IND-PEI-003',
+//     nombre: 'Proyectos de investigación',
+//     descripcion: 'Número de proyectos de investigación registrados',
+//     meta: '50 proyectos',
+//   },
+//   {
+//     id: 4,
+//     objetivo_id: 2,
+//     codigo: 'IND-PEI-004',
+//     nombre: 'Publicaciones indexadas',
+//     descripcion: 'Cantidad de publicaciones en revistas indexadas',
+//     meta: '100 publicaciones',
+//   },
+//   {
+//     id: 5,
+//     objetivo_id: 3,
+//     codigo: 'IND-PEI-005',
+//     nombre: 'Tiempo de respuesta',
+//     descripcion: 'Tiempo promedio de respuesta a solicitudes',
+//     meta: 'Reducir en 30%',
+//   },
+//   {
+//     id: 6,
+//     objetivo_id: 3,
+//     codigo: 'IND-PEI-006',
+//     nombre: 'Satisfacción usuaria',
+//     descripcion: 'Nivel de satisfacción de usuarios con servicios',
+//     meta: '90% de satisfacción',
+//   },
+// ])
 
 // Variables reactivas
 const objetivoSeleccionado = ref(null)
@@ -210,11 +214,30 @@ const indicadorActual = computed(() => {
 // Indicadores filtrados por objetivo seleccionado
 const indicadoresPeiFiltrados = computed(() => {
   if (!objetivoSeleccionado.value) return []
-  return indicadoresPei.value.filter((ind) => ind.objetivo_id === objetivoSeleccionado.value.id)
+  return indicadoresPei.value.filter((ind) => ind.objetivo === objetivoSeleccionado.value.id)
 })
 
+//Funcion de carga
+const estaCargando = ref(null)
+const err = ref(null)
+
+const cargar = async () => {
+  estaCargando.value = true
+  try {
+    await Promise.all([
+      await obtenerObjetivosPeiPorIdPei(1),
+      await obtenerIndicadoresPeiPorIdPei(1),
+    ])
+  } catch (e) {
+    console.error(e)
+  } finally {
+    estaCargando.value = ref(false)
+  }
+}
+
 // Cargar datos iniciales cuando el componente se monta
-onMounted(() => {
+onMounted(async () => {
+  await cargar()
   // Si hay un objetivo inicial, seleccionarlo
   if (props.objetivoInicial) {
     objetivoSeleccionado.value = objetivosPei.value.find((obj) => obj.id === props.objetivoInicial)
