@@ -195,7 +195,11 @@
                 </v-toolbar-items>
               </v-toolbar>
               <v-card-text>
-                <SeleccionEstructuraProyecto></SeleccionEstructuraProyecto>
+                <v-card-text style="height: calc(100vh - 64px); padding: 0">
+                  <div style="width: 100%; height: 600px">
+                    <SeleccionEstructuraProyecto></SeleccionEstructuraProyecto>
+                  </div>
+                </v-card-text>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -211,8 +215,10 @@
                   <v-btn text="Guardar" variant="text"></v-btn>
                 </v-toolbar-items>
               </v-toolbar>
-              <v-card-text>
-                <SeleccionEstructuraPei></SeleccionEstructuraPei>
+              <v-card-text style="height: calc(100vh - 64px); padding: 0">
+                <div style="width: 100%; height: 100%">
+                  <SeleccionEstructuraPei></SeleccionEstructuraPei>
+                </div>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -322,8 +328,10 @@ import { SELECT_OPTIONS } from '@/utility/selectOptions'
 import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
 //Estructuras
 import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
-import ComponenteSeleccionarPei from './parciales/ComponenteSeleccionarPei.vue'
 import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
+//Actividades Test
+import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
+import { storeToRefs } from 'pinia'
 
 // Props del componente
 const props = defineProps({
@@ -347,6 +355,10 @@ registerLanguageDictionary(esMX)
 
 const route = useRoute()
 const idproyecto = route.params.id
+
+//Stores
+const proyectoStore = useProyectoStore()
+const { nodes, edges } = storeToRefs(proyectoStore)
 
 // Composables
 const {
@@ -556,38 +568,39 @@ const reprogramarPlanificacion = async () => {
 }
 
 const agregarNuevaActividad = () => {
-  tableData.value.push({
-    id: 0,
-    responsable: '',
-    proyecto: idproyecto,
-    codigo: 'ACT-',
-    nombreCorto: 'Actividad',
-    descripcion: 'Describir',
-    supuestos: '',
-    riesgos: '',
-    objetivo_de_actividad: '',
-    descripcion_evaluacion: '',
-    descripcion_tipo_actividad: null,
-    tipo: 'NODEF',
-    fecha_programada: null,
-    fecha_inicio: null,
-    fecha_cierre: null,
-    presupuesto: 0,
-    presupuestoGlobal: 0,
-    totalReportado: 0,
-    totalEjecutado: 0,
-    saldo: 0,
-    gradoEjecucion: null,
-    procedencia_fondos: null,
-    estado: 'CRD',
-    proceso: null,
-    resultado_og: null,
-    resultado_oe: null,
-    producto_oe: null,
-    objetivo_pei: null,
-    indicador_pei: null,
-  })
-  mostrarMensaje('Nueva actividad agregada', 'info')
+  // tableData.value.push({
+  //   id: 0,
+  //   responsable: '',
+  //   proyecto: idproyecto,
+  //   codigo: 'ACT-',
+  //   nombreCorto: 'Actividad',
+  //   descripcion: 'Describir',
+  //   supuestos: '',
+  //   riesgos: '',
+  //   objetivo_de_actividad: '',
+  //   descripcion_evaluacion: '',
+  //   descripcion_tipo_actividad: null,
+  //   tipo: 'NODEF',
+  //   fecha_programada: null,
+  //   fecha_inicio: null,
+  //   fecha_cierre: null,
+  //   presupuesto: 0,
+  //   presupuestoGlobal: 0,
+  //   totalReportado: 0,
+  //   totalEjecutado: 0,
+  //   saldo: 0,
+  //   gradoEjecucion: null,
+  //   procedencia_fondos: null,
+  //   estado: 'CRD',
+  //   proceso: null,
+  //   resultado_og: null,
+  //   resultado_oe: null,
+  //   producto_oe: null,
+  //   objetivo_pei: null,
+  //   indicador_pei: null,
+  // })
+  // mostrarMensaje('Nueva actividad agregada', 'info')
+  modalEstructura.value = true
 }
 
 const eliminarFila = async () => {
@@ -839,6 +852,19 @@ const contextMenuOptions = ref({
 </script>
 
 <style scoped>
+.flow-container {
+  width: 100%;
+  height: 600px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+/* Also ensure the vue-flow element itself gets dimensions */
+.vue-flow {
+  width: 100%;
+  height: 100%;
+}
+
 /* Estilos (mantener igual) */
 .hot-wrapper {
   margin: 16px 0;

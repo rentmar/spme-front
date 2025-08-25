@@ -16,6 +16,8 @@ export const useProyectoStore = defineStore('proyecto', () => {
   const proyectosPlanificacion = ref([]) //Almacena los proyectos en estado de Planificacion
   const proyecto_objgeneral_info = ref(null) //Proyecto - objetivo-general-info adicional
   const objetivosIndicadores = ref([])
+  const nodes = ref(null)
+  const edges = ref(null)
   const cargando = ref(false) //Indicador de carga
   const error = ref(null) //Mensaje de error
   /***  ACCIONES    ***/
@@ -66,6 +68,8 @@ export const useProyectoStore = defineStore('proyecto', () => {
     error.value = null
     try {
       proyectoEstructuraNodos.value = await proyectoServicios.estructuraNodosPorID(id)
+      nodes.value = proyectoEstructuraNodos.value.mapa_nodo.nodos
+      edges.value = proyectoEstructuraNodos.value.mapa_nodo.conexiones
     } catch (err) {
       error.value = err
     } finally {
@@ -124,6 +128,8 @@ export const useProyectoStore = defineStore('proyecto', () => {
     proyecto_objgeneral_info, //ref
     cargando, //ref
     error, //ref
+    nodes, //ref
+    edges, //ref
     obtenerProyectos, //accion
     obtenerProyectosPlanificacion, //accion, todos los proyectos en estado de planificacion
     obtenerProyectoPorId, //accion
