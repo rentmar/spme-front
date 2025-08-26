@@ -24,6 +24,7 @@
       <Handle type="source" position="bottom" :id="`source-${id}`" :style="handleStyle" />
     </template>
   </BaseNodo>
+  {{ data }}
 </template>
 
 <script setup>

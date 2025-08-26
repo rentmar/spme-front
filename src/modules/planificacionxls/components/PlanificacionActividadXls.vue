@@ -1,6 +1,9 @@
 <template>
   <div>
-    <TrazadorActividad></TrazadorActividad>
+    <TrazadorActividad
+      :tabla-data-disponible="tablaDataDisponible"
+      :actividad-id="82"
+    ></TrazadorActividad>
   </div>
   <div class="hot-wrapper" v-if="!isLoading">
     <div class="content-wrapper">
@@ -171,7 +174,20 @@
               <template v-slot:prepend>
                 <v-icon size="16">mdi-chart-tree</v-icon>
               </template>
-              Relacion con el PEI
+              PEI
+            </v-btn>
+            <!--Boton de ajuste de relaciones-->
+            <v-btn
+              color="#505A64"
+              variant="flat"
+              size="small"
+              class="excel-button structure-button"
+              @click="abrirModalEstructura"
+            >
+              <template v-slot:prepend>
+                <v-icon size="16">mdi-sitemap</v-icon>
+              </template>
+              Estructura
             </v-btn>
 
             <!-- Botón Estructura (solo para nuevas actividades) -->
@@ -197,12 +213,31 @@
               @guardarDesglose="guardarDesglosePresupuesto"
             ></ComponentPresupuesto>
           </div>
+          <!--Relacion de la actividad-->
+          <v-dialog v-model="modalEstructura" transition="dialog-bottom-transition" fullscreen>
+            <v-card>
+              <v-toolbar>
+                <v-btn icon="mdi-close" @click="modalEstructura = false"></v-btn>
+                <v-toolbar-title
+                  >Trazado de la Actividad: {{ selectedRowData.codigo }} -
+                  {{ selectedRowData.nombreCorto }}</v-toolbar-title
+                >
+              </v-toolbar>
+              <v-card-text>
+                <SeleccionEstructuraProyecto :actividad-id="selectedRowData.id">
+                </SeleccionEstructuraProyecto>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
           <!--Estructura Pei-->
           <v-dialog v-model="modalPei" transition="dialog-bottom-transition" fullscreen>
             <v-card>
               <v-toolbar>
                 <v-btn icon="mdi-close" @click="modalPei = false"></v-btn>
-                <v-toolbar-title>Estructura PEI</v-toolbar-title>
+                <v-toolbar-title
+                  >Estructura PEI: {{ selectedRowData.codigo }} -
+                  {{ selectedRowData.nombreCorto }}</v-toolbar-title
+                >
               </v-toolbar>
               <v-card-text style="height: calc(100vh - 64px); padding: 0">
                 <SeleccionEstructuraPei
@@ -307,7 +342,7 @@ import { registerAllModules } from 'handsontable/registry'
 import { registerLanguageDictionary } from 'handsontable/i18n'
 import { esMX } from 'handsontable/i18n'
 import 'handsontable/dist/handsontable.full.css'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 
 import TrazadorActividad from './parciales/TrazadorActividad.vue'
@@ -325,6 +360,7 @@ import EditorEstructuraMainActividades from '@/modules/editorEstructuraPlanifica
 //Actividades Test
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { storeToRefs } from 'pinia'
+import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
 
 // Props del componente
 const props = defineProps({
@@ -370,7 +406,9 @@ const snackbar = ref({
   message: '',
   color: 'success',
 })
-
+/******************** Trazador ****************************************/
+const trazadorRef = ref(null)
+const tablaDataDisponible = ref(false)
 /******************** PEI ******************************************/
 const modalPei = ref(false)
 const objetivoInicialId = ref(null)
@@ -804,6 +842,11 @@ const columns = ref([
     type: 'numeric',
     readOnly: true,
   },
+  {
+    data: 'rutaTrazadoIndicadores',
+    title: 'Ruta e indicadores',
+    readOnly: true,
+  },
 ])
 
 const headers = ref(true)
@@ -833,6 +876,17 @@ const accionBoton = (row) => {
   mostrarMensaje('Funcionalidad de medios de verificación', 'info')
 }
 
+// Cuando la tabla esté disponible (después de cargar datos)
+const onTablaCargada = () => {
+  // Esperar al siguiente tick para asegurar que el componente esté montado
+  nextTick(() => {
+    if (trazadorRef.value) {
+      // Indicar al componente TrazadorActividad que los datos están disponibles
+      trazadorRef.value.setTablaDataDisponible(true)
+    }
+  })
+}
+
 // Carga de datos
 const isLoading = ref(true)
 const err = ref(null)
@@ -849,6 +903,7 @@ const cargar = async () => {
     if (actividadesDisponibles.value && actividadesDisponibles.value.length > 0) {
       tableData.value = [...actividadesDisponibles.value]
       actividadesDisponibles.value = []
+      onTablaCargada()
     }
   } catch (e) {
     console.error('Error al cargar:', e)
@@ -856,6 +911,7 @@ const cargar = async () => {
     mostrarMensaje('Error al cargar actividades', 'error')
   } finally {
     isLoading.value = false
+    tablaDataDisponible.value = true
   }
 }
 
