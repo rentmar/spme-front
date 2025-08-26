@@ -270,6 +270,10 @@ const props = defineProps({
     type: Number,
     default: null,
   },
+  rutaTrazadoInicial: {
+    type: [Array, Object, String],
+    default: null,
+  },
 })
 
 // Composables
@@ -287,11 +291,24 @@ const rutaSeleccionada = ref(null)
 const nodoSeleccionado = ref(null)
 const indicadorSeleccionado = ref(null)
 const seleccionesGuardadas = ref([])
+const cargandoDatosIniciales = ref(false)
 
 // Computed properties
 const datosActividad = computed(() => {
   return datosAPI.value || null
 })
+
+// const nodosDisponibles = computed(() => {
+//   if (!rutaSeleccionada.value) return []
+
+//   // Filtrar para excluir el proyecto y la actividad actual
+//   return rutaSeleccionada.value.ruta
+//     .filter((nodo) => nodo.tipo !== 'Proyecto' && nodo.tipo !== 'Actividad')
+//     .map((nodo) => ({
+//       ...nodo,
+//       nombreCompleto: `${formatearTipo(nodo.tipo)}: ${nodo.codigo || nodo.id} - ${nodo.nombre || 'Sin nombre'}`,
+//     }))
+// })
 
 const nodosDisponibles = computed(() => {
   if (!rutaSeleccionada.value) return []
@@ -386,9 +403,11 @@ const eliminarSeleccion = (index) => {
   actualizarTableData()
 }
 
+// Modificar la función actualizarTableData para emitir el formato correcto
 const actualizarTableData = () => {
-  // Emitir evento con las selecciones actualizadas
-  emit('actualizar-ruta-trazado', seleccionesGuardadas.value)
+  // Emitir evento con las selecciones actualizadas en formato JSON string
+  const datosParaGuardar = JSON.stringify(seleccionesGuardadas.value)
+  emit('actualizar-ruta-trazado', datosParaGuardar)
 }
 
 // Funciones de utilidad
@@ -466,9 +485,14 @@ watch(errorAPI, (newVal) => {
   error.value = newVal
 })
 
+// Watchers
 watch(datosActividad, (newVal) => {
   if (newVal) {
     seleccionarRutaMasLarga()
+    // Cargar datos iniciales después de tener la ruta
+    if (props.rutaTrazadoInicial) {
+      cargarDatosIniciales()
+    }
   }
 })
 
@@ -489,6 +513,56 @@ const cargarDatos = async () => {
     // (esto dependerá de cómo estés manejando el estado persistente)
   } catch (err) {
     error.value = err.message
+  }
+}
+
+// Función para cargar datos iniciales si existen
+const cargarDatosIniciales = async () => {
+  if (!props.rutaTrazadoInicial) return
+
+  cargandoDatosIniciales.value = true
+
+  try {
+    // Parsear los datos iniciales si vienen como string
+    const datosIniciales =
+      typeof props.rutaTrazadoInicial === 'string'
+        ? JSON.parse(props.rutaTrazadoInicial)
+        : props.rutaTrazadoInicial
+
+    // Cargar las selecciones guardadas
+    if (Array.isArray(datosIniciales)) {
+      seleccionesGuardadas.value = datosIniciales
+
+      // Si hay selecciones, seleccionar la primera por defecto
+      if (datosIniciales.length > 0 && rutaSeleccionada.value) {
+        const primeraSeleccion = datosIniciales[0]
+
+        // Buscar el nodo correspondiente
+        const nodoCorrespondiente = rutaSeleccionada.value.ruta.find(
+          (nodo) =>
+            nodo.id === primeraSeleccion.nodo.id && nodo.tipo === primeraSeleccion.nodo.tipo,
+        )
+
+        if (nodoCorrespondiente) {
+          nodoSeleccionado.value = nodoCorrespondiente
+
+          // Buscar el indicador correspondiente
+          if (nodoCorrespondiente.indicadores) {
+            const indicadorCorrespondiente = nodoCorrespondiente.indicadores.find(
+              (ind) => ind.id === primeraSeleccion.indicador.id,
+            )
+
+            if (indicadorCorrespondiente) {
+              indicadorSeleccionado.value = indicadorCorrespondiente
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error al cargar datos iniciales:', error)
+  } finally {
+    cargandoDatosIniciales.value = false
   }
 }
 

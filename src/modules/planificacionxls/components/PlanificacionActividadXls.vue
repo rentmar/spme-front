@@ -226,6 +226,7 @@
               <v-card-text>
                 <SeleccionEstructuraProyecto
                   :actividad-id="selectedRowData.id"
+                  :ruta-trazado-inicial="selectedRowData.rutaTrazadoIndicadores"
                   @actualizar-ruta-trazado="actualizarRutaTrazado"
                 >
                 </SeleccionEstructuraProyecto>
