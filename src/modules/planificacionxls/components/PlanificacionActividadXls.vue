@@ -224,7 +224,10 @@
                 >
               </v-toolbar>
               <v-card-text>
-                <SeleccionEstructuraProyecto :actividad-id="selectedRowData.id">
+                <SeleccionEstructuraProyecto
+                  :actividad-id="selectedRowData.id"
+                  @actualizar-ruta-trazado="actualizarRutaTrazado"
+                >
                 </SeleccionEstructuraProyecto>
               </v-card-text>
             </v-card>
@@ -445,7 +448,7 @@ const manejarSeleccionPei = (datosPei) => {
 
   modalPei.value = false
 }
-/********************* Estructura ********************************/
+/********************* Estructura Nodos ********************************/
 const modalEstructura = ref(false)
 const abrirModalEstructura = () => {
   modalEstructura.value = true
@@ -458,6 +461,28 @@ const abrirNuevaActividad = () => {
 const cerrarNuevaActividad = () => {
   mostrarModalActividad.value = false
 }
+
+const actualizarRutaTrazado = (rutaTrazado) => {
+  if (selectedRowData.value) {
+    const rowIndex = tableData.value.findIndex((row) => row.id === selectedRowData.value.id)
+
+    if (rowIndex !== -1) {
+      // Actualizar la fila con la nueva ruta de trazado
+      tableData.value[rowIndex] = {
+        ...tableData.value[rowIndex],
+        rutaTrazadoIndicadores: rutaTrazado,
+      }
+
+      // Forzar actualización de Handsontable
+      if (hotTable.value?.hotInstance) {
+        hotTable.value.hotInstance.render()
+      }
+
+      mostrarMensaje('Ruta de trazado actualizada correctamente', 'success')
+    }
+  }
+}
+
 /******************** Presupuesto *******************************/
 const mostrarPresupuesto = ref(false)
 const mostrarModalPresupuesto = () => {

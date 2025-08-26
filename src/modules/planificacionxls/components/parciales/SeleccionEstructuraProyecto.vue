@@ -56,6 +56,19 @@
                         {{ obtenerIconoPorTipo(item.raw.tipo) }}
                       </v-icon>
                     </template>
+                    <template v-slot:append>
+                      <v-chip
+                        v-if="item.raw.indicadores && item.raw.indicadores.length > 0"
+                        size="small"
+                        color="green"
+                        text-color="white"
+                      >
+                        {{ item.raw.indicadores.length }} indicador(es)
+                      </v-chip>
+                      <v-chip v-else size="small" color="grey" text-color="white">
+                        Sin indicadores
+                      </v-chip>
+                    </template>
                   </v-list-item>
                 </template>
               </v-select>
@@ -69,6 +82,18 @@
                 {{ obtenerIconoPorTipo(nodoSeleccionado.tipo) }}
               </v-icon>
               Información del Nodo
+              <v-chip
+                v-if="nodoSeleccionado.indicadores && nodoSeleccionado.indicadores.length > 0"
+                size="small"
+                color="green"
+                text-color="white"
+                class="ml-2"
+              >
+                {{ nodoSeleccionado.indicadores.length }} indicador(es) disponible(s)
+              </v-chip>
+              <v-chip v-else size="small" color="grey" text-color="white" class="ml-2">
+                Sin indicadores
+              </v-chip>
             </v-card-title>
             <v-card-text>
               <v-row>
@@ -197,6 +222,9 @@
             <v-card-title class="bg-blue-lighten-4">
               <v-icon icon="mdi-check-all" class="mr-2"></v-icon>
               Selecciones Guardadas
+              <v-chip size="small" color="primary" text-color="white" class="ml-2">
+                {{ seleccionesGuardadas.length }} selección(es)
+              </v-chip>
             </v-card-title>
             <v-card-text>
               <v-list>
@@ -230,6 +258,7 @@
       </v-card-text>
     </v-card>
   </div>
+  {{ datosAPI }}
 </template>
 
 <script setup>
@@ -246,10 +275,8 @@ const props = defineProps({
 // Composables
 const {
   rutasDeLaActividadIndicador: datosAPI,
-  rutaDeLaActividadIndicador,
   loading: loadingAPI,
   error: errorAPI,
-  obtenerRutaActividadIndicador,
   obtenerAllRutaActividadIndicador,
 } = useTrazador()
 
