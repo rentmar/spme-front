@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div v-if="selectedRowData">
     <TrazadorActividad
       :tabla-data-disponible="tablaDataDisponible"
-      :actividad-id="78"
+      :actividad-id="selectedRowData.id"
     ></TrazadorActividad>
   </div>
   <div class="hot-wrapper" v-if="!isLoading">

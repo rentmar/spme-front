@@ -53,6 +53,7 @@
 
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue'
+import { useTrazador } from '../../composables/useTrazador'
 
 // Props - recibe el ID de la actividad
 const props = defineProps({
@@ -62,8 +63,15 @@ const props = defineProps({
   },
 })
 
+// Composables
+const {
+  rutasDeLaActividadIndicador: datosApi,
+  obtenerAllRutaActividadIndicador,
+  loading: isLoadingTrace,
+  error: errorTrace,
+} = useTrazador()
+
 // Estado reactivo
-const datosApi = ref(null)
 const loading = ref(false)
 const error = ref(null)
 
@@ -80,27 +88,6 @@ const rutaCompleta = computed(() => {
   // Seleccionar la primera ruta disponible
   return datosApi.value.rutas_posibles[0].ruta
 })
-
-// Función para obtener datos (simula una API call)
-const obtenerDatosActividad = async (id) => {
-  if (!id) return
-
-  loading.value = true
-  error.value = null
-
-  try {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 800))
-
-    // Usar datos dummy según el formato proporcionado
-    datosApi.value = datosDummy
-  } catch (err) {
-    error.value = err.message
-    datosApi.value = null
-  } finally {
-    loading.value = false
-  }
-}
 
 // Función para obtener el icono según el tipo
 const obtenerIcono = (tipo) => {
@@ -122,7 +109,7 @@ watch(
   () => props.actividadId,
   (newId) => {
     if (newId) {
-      obtenerDatosActividad(newId)
+      cargarDatos()
     } else {
       datosApi.value = null
     }
@@ -132,114 +119,28 @@ watch(
 // Cargar datos cuando el componente se monta
 onMounted(() => {
   if (props.actividadId) {
-    obtenerDatosActividad(props.actividadId)
+    cargarDatos()
   }
 })
 
-// ========== DATOS DUMMY ==========
-const datosDummy = {
-  actividad: {
-    id: 78,
-    codigo: 'ACT',
-    nombreCorto: null,
-  },
-  rutas_posibles: [
-    {
-      ruta_label: 'Ruta a través de Producto OE',
-      ruta: [
-        {
-          tipo: 'Actividad',
-          id: 78,
-          codigo: 'ACT',
-          nombre: null,
-          indicadores: [],
-        },
-        {
-          tipo: 'ProductoOE',
-          id: 11,
-          codigo: 'P00 -SO',
-          nombre: 'Producto OE',
-          indicadores: [],
-        },
-        {
-          tipo: 'ObjetivoEspecifico',
-          id: 4,
-          codigo: 'SPO1',
-          nombre: 'Objetivo Específico',
-          indicadores: [
-            {
-              tipo: 'IndicadorObjetivoEspecifico',
-              id: 5,
-              codigo: 'IND001-OESP01',
-              redaccion: 'GUIA',
-            },
-            {
-              tipo: 'IndicadorObjetivoEspecifico',
-              id: 6,
-              codigo: 'IND002-OESP01',
-              redaccion: 'GUIA',
-            },
-          ],
-        },
-        {
-          tipo: 'ObjetivoGeneral',
-          id: 7,
-          codigo: 'OO',
-          nombre: 'desc og',
-          indicadores: [
-            {
-              tipo: 'IndicadorObjetivoGeneral',
-              id: 1,
-              codigo: 'IND-OG',
-              redaccion: 'GUIA',
-            },
-          ],
-        },
-        {
-          tipo: 'Proyecto',
-          id: 7,
-          codigo: 'DEDEED',
-          nombre: 'Titulo',
-          estado: 'EP',
-          indicadores: [
-            {
-              tipo: 'IndicadorObjetivoGeneral',
-              id: 1,
-              codigo: 'IND-OG',
-              redaccion: 'GUIA',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      ruta_label: 'Ruta directa a Proyecto',
-      ruta: [
-        {
-          tipo: 'Actividad',
-          id: 78,
-          codigo: 'ACT',
-          nombre: null,
-          indicadores: [],
-        },
-        {
-          tipo: 'Proyecto',
-          id: 7,
-          codigo: 'DEDEED',
-          nombre: 'Titulo',
-          indicadores: [
-            {
-              tipo: 'IndicadorObjetivoGeneral',
-              id: 1,
-              codigo: 'IND-OG',
-              redaccion: 'GUIA',
-            },
-          ],
-        },
-      ],
-    },
-  ],
-  total_rutas: 2,
+// Llamada a la rest api
+const cargarDatos = async () => {
+  loading.value = true
+  error.value = null
+
+  try {
+    await obtenerAllRutaActividadIndicador(props.actividadId)
+
+    // Verificar si hay error del composable
+    if (errorTrace.value) {
+      error.value = errorTrace.value
+    }
+  } catch (e) {
+    error.value = e.message || 'Error al cargar los datos'
+    console.error('Error al cargar datos:', e)
+  } finally {
+    loading.value = false
+  }
 }
 
 // Mapeo de iconos por tipo
