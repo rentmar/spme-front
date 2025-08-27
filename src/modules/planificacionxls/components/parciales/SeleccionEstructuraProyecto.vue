@@ -258,7 +258,6 @@
       </v-card-text>
     </v-card>
   </div>
-  {{ datosAPI }}
 </template>
 
 <script setup>
@@ -297,18 +296,6 @@ const cargandoDatosIniciales = ref(false)
 const datosActividad = computed(() => {
   return datosAPI.value || null
 })
-
-// const nodosDisponibles = computed(() => {
-//   if (!rutaSeleccionada.value) return []
-
-//   // Filtrar para excluir el proyecto y la actividad actual
-//   return rutaSeleccionada.value.ruta
-//     .filter((nodo) => nodo.tipo !== 'Proyecto' && nodo.tipo !== 'Actividad')
-//     .map((nodo) => ({
-//       ...nodo,
-//       nombreCompleto: `${formatearTipo(nodo.tipo)}: ${nodo.codigo || nodo.id} - ${nodo.nombre || 'Sin nombre'}`,
-//     }))
-// })
 
 const nodosDisponibles = computed(() => {
   if (!rutaSeleccionada.value) return []
@@ -508,9 +495,6 @@ const cargarDatos = async () => {
 
   try {
     await obtenerAllRutaActividadIndicador(props.actividadId)
-
-    // Cargar selecciones previas si existen
-    // (esto dependerá de cómo estés manejando el estado persistente)
   } catch (err) {
     error.value = err.message
   }
@@ -529,35 +513,11 @@ const cargarDatosIniciales = async () => {
         ? JSON.parse(props.rutaTrazadoInicial)
         : props.rutaTrazadoInicial
 
-    // Cargar las selecciones guardadas
+    // Cargar las selecciones guardadas sin afectar los selectores
     if (Array.isArray(datosIniciales)) {
       seleccionesGuardadas.value = datosIniciales
-
-      // Si hay selecciones, seleccionar la primera por defecto
-      if (datosIniciales.length > 0 && rutaSeleccionada.value) {
-        const primeraSeleccion = datosIniciales[0]
-
-        // Buscar el nodo correspondiente
-        const nodoCorrespondiente = rutaSeleccionada.value.ruta.find(
-          (nodo) =>
-            nodo.id === primeraSeleccion.nodo.id && nodo.tipo === primeraSeleccion.nodo.tipo,
-        )
-
-        if (nodoCorrespondiente) {
-          nodoSeleccionado.value = nodoCorrespondiente
-
-          // Buscar el indicador correspondiente
-          if (nodoCorrespondiente.indicadores) {
-            const indicadorCorrespondiente = nodoCorrespondiente.indicadores.find(
-              (ind) => ind.id === primeraSeleccion.indicador.id,
-            )
-
-            if (indicadorCorrespondiente) {
-              indicadorSeleccionado.value = indicadorCorrespondiente
-            }
-          }
-        }
-      }
+      // No seleccionamos automáticamente ningún nodo o indicador
+      // Los selectores permanecerán en su estado inicial
     }
   } catch (error) {
     console.error('Error al cargar datos iniciales:', error)

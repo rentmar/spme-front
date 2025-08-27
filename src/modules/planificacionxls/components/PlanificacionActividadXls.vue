@@ -2,7 +2,7 @@
   <div>
     <TrazadorActividad
       :tabla-data-disponible="tablaDataDisponible"
-      :actividad-id="82"
+      :actividad-id="78"
     ></TrazadorActividad>
   </div>
   <div class="hot-wrapper" v-if="!isLoading">
