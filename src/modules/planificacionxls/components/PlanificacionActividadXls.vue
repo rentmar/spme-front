@@ -301,6 +301,7 @@
                 <SeleccionEstructuraPei
                   :objetivo-inicial="objetivoInicialId"
                   :indicador-inicial="indicadorInicialId"
+                  :factores-criticos-iniciales="selectedRowData.factoresCriticos"
                   @guardar="manejarSeleccionPei"
                   @cerrar="modalPei = false"
                 ></SeleccionEstructuraPei>
