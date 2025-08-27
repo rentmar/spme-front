@@ -490,6 +490,7 @@ const manejarSeleccionPei = (datosPei) => {
         ...tableData.value[rowIndex],
         objetivo_pei: datosPei.objetivo_pei,
         indicador_pei: datosPei.indicador_pei,
+        factoresCriticos: datosPei.factoresCriticos,
       }
 
       // Forzar actualización de Handsontable
@@ -927,6 +928,7 @@ const columns = ref([
     title: 'Ruta e indicadores',
     readOnly: true,
   },
+  { data: 'factoresCriticos', title: 'Factores criticos', readOnly: true },
 ])
 
 const headers = ref(true)
