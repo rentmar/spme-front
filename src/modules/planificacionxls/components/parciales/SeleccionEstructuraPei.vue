@@ -38,7 +38,7 @@
               </v-col>
               <v-col cols="12" md="4">
                 <v-select
-                  v-model="factoresCriticosSeleccionados"
+                  v-model="factoresCriticosSeleccionadosIds"
                   :items="factoresCriticosFiltrados"
                   item-title="factor_critico"
                   item-value="id"
@@ -48,13 +48,14 @@
                   chips
                   clearable
                   :loading="estaCargando"
+                  @update:modelValue="actualizarFactoresSeleccionados"
                 >
                   <template v-slot:selection="{ item, index }">
                     <v-chip v-if="index < 2" class="ma-1" color="orange-lighten-3" small>
                       <span>{{ item.title }}</span>
                     </v-chip>
                     <span v-if="index === 2" class="text-grey text-caption align-self-center ml-2">
-                      (+{{ factoresCriticosSeleccionados.length - 2 }} más)
+                      (+{{ factoresCriticosSeleccionadosIds.length - 2 }} más)
                     </span>
                   </template>
                 </v-select>
@@ -129,7 +130,7 @@
               </v-col>
             </v-row>
 
-            <!-- Lista detallada de factores críticos seleccionados -->
+            <!-- Lista detallada de factores críticos seleccionados con notas -->
             <v-row v-if="factoresCriticosSeleccionados.length > 0">
               <v-col cols="12">
                 <v-card variant="outlined">
@@ -144,23 +145,41 @@
                   <v-card-text>
                     <v-list density="comfortable">
                       <v-list-item
-                        v-for="factorId in factoresCriticosSeleccionados"
-                        :key="factorId"
-                        class="mb-2"
+                        v-for="(factor, index) in factoresCriticosSeleccionados"
+                        :key="factor.id"
+                        class="mb-4"
                       >
                         <template v-slot:prepend>
                           <v-icon color="orange-darken-2">mdi-check-circle</v-icon>
                         </template>
-                        <v-list-item-title>
-                          {{ obtenerNombreFactor(factorId) }}
+
+                        <v-list-item-title class="mb-2">
+                          <strong>{{ factor.nombre }}</strong>
+                          <v-chip size="small" color="blue-lighten-4" class="ml-2">
+                            Obj. {{ factor.objetivo_especifico }}
+                          </v-chip>
                         </v-list-item-title>
+
+                        <v-list-item-subtitle class="mt-2">
+                          <v-textarea
+                            v-model="factor.nota"
+                            label="Nota del factor crítico"
+                            variant="outlined"
+                            rows="2"
+                            auto-grow
+                            clearable
+                            :placeholder="`Agregar nota para ${factor.nombre}`"
+                            @update:modelValue="actualizarNotaFactor(factor.id, $event)"
+                          ></v-textarea>
+                        </v-list-item-subtitle>
+
                         <template v-slot:append>
                           <v-btn
                             icon
                             size="small"
                             variant="text"
                             color="error"
-                            @click="removerFactorCritico(factorId)"
+                            @click="removerFactorCritico(factor.id)"
                           >
                             <v-icon>mdi-close</v-icon>
                           </v-btn>
@@ -223,6 +242,7 @@ const { objetivosPei, indicadoresPei, obtenerObjetivosPeiPorIdPei, obtenerIndica
 // Variables reactivas
 const objetivoSeleccionado = ref(null)
 const indicadorSeleccionado = ref(null)
+const factoresCriticosSeleccionadosIds = ref([])
 const factoresCriticosSeleccionados = ref([])
 const estaCargando = ref(false)
 const err = ref(null)
@@ -273,9 +293,8 @@ const factoresCriticosFiltrados = computed(() => {
 const textoFactoresSeleccionados = computed(() => {
   if (factoresCriticosSeleccionados.value.length === 0) return ''
 
-  const factores = factoresCriticosSeleccionados.value.map((id) => {
-    const factor = todosLosFactoresCriticos.value.find((f) => f.id === id)
-    return factor ? factor.factor_critico : ''
+  const factores = factoresCriticosSeleccionados.value.map((factor) => {
+    return factor.nombre
   })
 
   return factores.join(', ')
@@ -298,6 +317,35 @@ const indicadoresPeiFiltrados = computed(() => {
   return indicadoresPei.value.filter((ind) => ind.objetivo === objetivoSeleccionado.value.id)
 })
 
+// Actualizar la lista de factores seleccionados con estructura JSON
+const actualizarFactoresSeleccionados = (newIds) => {
+  factoresCriticosSeleccionadosIds.value = newIds
+
+  // Crear array con estructura JSON completa
+  factoresCriticosSeleccionados.value = newIds.map((id) => {
+    const factorExistente = factoresCriticosSeleccionados.value.find((f) => f.id === id)
+    if (factorExistente) {
+      return factorExistente
+    }
+
+    const factorOriginal = todosLosFactoresCriticos.value.find((f) => f.id === id)
+    return {
+      id: factorOriginal.id,
+      nombre: factorOriginal.factor_critico,
+      objetivo_especifico: factorOriginal.objetivo_especifico,
+      nota: '',
+    }
+  })
+}
+
+// Actualizar nota de un factor específico
+const actualizarNotaFactor = (factorId, nuevaNota) => {
+  const factor = factoresCriticosSeleccionados.value.find((f) => f.id === factorId)
+  if (factor) {
+    factor.nota = nuevaNota
+  }
+}
+
 // Obtener nombre del factor crítico por ID
 const obtenerNombreFactor = (factorId) => {
   const factor = todosLosFactoresCriticos.value.find((f) => f.id === factorId)
@@ -306,8 +354,11 @@ const obtenerNombreFactor = (factorId) => {
 
 // Remover factor crítico de la selección
 const removerFactorCritico = (factorId) => {
-  factoresCriticosSeleccionados.value = factoresCriticosSeleccionados.value.filter(
+  factoresCriticosSeleccionadosIds.value = factoresCriticosSeleccionadosIds.value.filter(
     (id) => id !== factorId,
+  )
+  factoresCriticosSeleccionados.value = factoresCriticosSeleccionados.value.filter(
+    (factor) => factor.id !== factorId,
   )
 }
 
@@ -327,6 +378,7 @@ const cargar = async () => {
 // Cargar indicadores y factores cuando se selecciona un objetivo
 const cargarIndicadoresYFactores = () => {
   indicadorSeleccionado.value = null
+  factoresCriticosSeleccionadosIds.value = []
   factoresCriticosSeleccionados.value = []
 }
 
@@ -351,7 +403,27 @@ onMounted(async () => {
 
     // Si hay factores críticos iniciales, seleccionarlos
     if (props.factoresCriticosIniciales && props.factoresCriticosIniciales.length > 0) {
-      factoresCriticosSeleccionados.value = [...props.factoresCriticosIniciales]
+      // Convertir array de IDs a estructura JSON completa
+      factoresCriticosSeleccionados.value = props.factoresCriticosIniciales
+        .map((factor) => {
+          if (typeof factor === 'object' && factor !== null) {
+            return factor // Ya está en formato JSON
+          } else {
+            // Es solo un ID, buscar el factor completo
+            const factorCompleto = todosLosFactoresCriticos.value.find((f) => f.id === factor)
+            return factorCompleto
+              ? {
+                  id: factorCompleto.id,
+                  nombre: factorCompleto.factor_critico,
+                  objetivo_especifico: factorCompleto.objetivo_especifico,
+                  nota: '',
+                }
+              : null
+          }
+        })
+        .filter(Boolean)
+
+      factoresCriticosSeleccionadosIds.value = factoresCriticosSeleccionados.value.map((f) => f.id)
     }
   }
 })
@@ -371,7 +443,7 @@ const guardarSeleccion = () => {
     emit('guardar', {
       objetivo_pei: objetivoId,
       indicador_pei: indicadorId,
-      factoresCriticos: factoresCriticosSeleccionados.value,
+      factoresCriticos: factoresCriticosSeleccionados.value, // Enviar JSON completo
     })
   } else if (!objetivoId && !indicadorId) {
     // Si ambos son nulos, emitir valores nulos
@@ -409,5 +481,6 @@ const cerrarModal = () => {
 .v-list-item {
   border: 1px solid #e0e0e0;
   border-radius: 4px;
+  padding: 12px;
 }
 </style>
