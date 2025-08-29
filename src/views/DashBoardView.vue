@@ -1052,7 +1052,156 @@ const tipoIndicadorOptions = [
   { title: 'Avance', value: 'Avance' },
 ]
 
-// Datos dummy
+// Datos dummy - Variables separadas
+const listaPeis = [
+  {
+    id: 1,
+    titulo: 'PEI 2023-2026',
+    descripcion: 'Plan Estratégico Institucional para el periodo 2023-2026',
+    fecha_inicio: '2023-01-01',
+    fecha_fin: '2026-12-31',
+    esta_vigente: true,
+    creado_el: '2022-11-15T10:30:00Z',
+    modificado_el: '2023-05-20T08:15:00Z',
+  },
+  {
+    id: 2,
+    titulo: 'PEI 2020-2022',
+    descripcion: 'Plan Estratégico Institucional para el periodo 2020-2022',
+    fecha_inicio: '2020-01-01',
+    fecha_fin: '2022-12-31',
+    esta_vigente: false,
+    creado_el: '2019-10-10T09:20:00Z',
+    modificado_el: '2022-12-31T23:59:00Z',
+  },
+  {
+    id: 3,
+    titulo: 'PEI 2017-2019',
+    descripcion: 'Plan Estratégico Institucional para el periodo 2017-2019',
+    fecha_inicio: '2017-01-01',
+    fecha_fin: '2019-12-31',
+    esta_vigente: false,
+    creado_el: '2016-11-30T14:45:00Z',
+    modificado_el: '2019-12-31T23:59:00Z',
+  },
+]
+
+const listaProyectos = [
+  {
+    id: 1,
+    codigo: 'PROJ-2023-001',
+    titulo: 'Modernización de Sistemas Informáticos',
+    descripcion: 'Proyecto para actualizar los sistemas informáticos de la institución',
+    estado: 'PL',
+    fecha_creacion: '2023-01-15T08:00:00Z',
+    fecha_inicio: '2023-03-01',
+    fecha_finalizacion: '2023-12-15',
+    presupuesto: 250000,
+    pei: 1,
+    instancia_gestora: [1, 2],
+    procedencia_fondos: [1],
+  },
+  {
+    id: 2,
+    codigo: 'PROJ-2023-002',
+    titulo: 'Capacitación Docente',
+    descripcion: 'Programa de capacitación continua para el personal docente',
+    estado: 'EP',
+    fecha_creacion: '2023-02-10T10:30:00Z',
+    fecha_inicio: '2023-05-01',
+    fecha_finalizacion: '2023-11-30',
+    presupuesto: 120000,
+    pei: 1,
+    instancia_gestora: [2],
+    procedencia_fondos: [2, 3],
+  },
+  {
+    id: 3,
+    codigo: 'PROJ-2022-015',
+    titulo: 'Infraestructura Educativa',
+    descripcion: 'Construcción y remodelación de espacios educativos',
+    estado: 'ES',
+    fecha_creacion: '2022-09-05T14:20:00Z',
+    fecha_inicio: '2023-01-15',
+    fecha_finalizacion: '2023-10-31',
+    presupuesto: 500000,
+    pei: 2,
+    instancia_gestora: [1, 3],
+    procedencia_fondos: [1, 2],
+  },
+]
+
+const listaActividades = [
+  {
+    id: 1,
+    codigo: 'ACT-001',
+    descripcion: 'Taller de capacitación en nuevas tecnologías',
+    tipo: 'ACAP',
+    estado: 'COMP',
+    fecha_inicio: '2023-03-15',
+    fecha_cierre: '2023-03-17',
+    presupuesto: 5000,
+    objetivo_de_actividad: 'Capacitar al personal en el uso de nuevas herramientas tecnológicas',
+    descripcion_evaluacion: 'Evaluación mediante pruebas prácticas y cuestionarios',
+    proceso: 1,
+  },
+  {
+    id: 2,
+    codigo: 'ACT-002',
+    descripcion: 'Adquisición de equipos informáticos',
+    tipo: 'AOP',
+    estado: 'EJEC',
+    fecha_inicio: '2023-04-01',
+    fecha_cierre: '2023-06-30',
+    presupuesto: 150000,
+    objetivo_de_actividad: 'Actualizar el parque tecnológico de la institución',
+    descripcion_evaluacion: 'Verificación de especificaciones técnicas y pruebas de funcionamiento',
+    proceso: 2,
+  },
+  {
+    id: 3,
+    codigo: 'ACT-003',
+    descripcion: 'Investigación de mercado de soluciones tecnológicas',
+    tipo: 'PRIN',
+    estado: 'PLAN',
+    fecha_inicio: '2023-05-10',
+    fecha_cierre: '2023-05-30',
+    presupuesto: 8000,
+    objetivo_de_actividad: 'Identificar las mejores soluciones tecnológicas disponibles',
+    descripcion_evaluacion: 'Análisis comparativo de propuestas',
+    proceso: 3,
+  },
+]
+
+const listaIndicadores = [
+  {
+    id: 1,
+    codigo: 'IND-001',
+    descripcion: 'Porcentaje de docentes capacitados en nuevas tecnologías',
+    tipo: 'Proporcion',
+    numerador: 'Número de docentes capacitados',
+    denominador: 'Total de docentes',
+    objetivo_general: 1,
+  },
+  {
+    id: 2,
+    codigo: 'IND-002',
+    descripcion: 'Avance en la implementación del nuevo sistema informático',
+    tipo: 'Avance',
+    resultado_og: 1,
+  },
+  {
+    id: 3,
+    codigo: 'IND-003',
+    descripcion: 'Porcentaje de equipos actualizados',
+    tipo: 'Proporcion',
+    numerador: 'Equipos actualizados',
+    denominador: 'Total de equipos',
+    objetivo_especifico: 2,
+  },
+]
+
+// Datos dummy para selects
 const instanciasGestoras = ref([
   { id: 1, codigo: 'IG-001', instancia: 'Dirección General' },
   { id: 2, codigo: 'IG-002', instancia: 'Gerencia de Proyectos' },
@@ -1524,158 +1673,11 @@ const viewIndicadorDetails = (indicador) => {
 
 // Cargar datos iniciales
 const loadInitialData = () => {
-  // Datos dummy para PEIs
-  peis.value = [
-    {
-      id: 1,
-      titulo: 'PEI 2023-2026',
-      descripcion: 'Plan Estratégico Institucional para el periodo 2023-2026',
-      fecha_inicio: '2023-01-01',
-      fecha_fin: '2026-12-31',
-      esta_vigente: true,
-      creado_el: '2022-11-15T10:30:00Z',
-      modificado_el: '2023-05-20T08:15:00Z',
-    },
-    {
-      id: 2,
-      titulo: 'PEI 2020-2022',
-      descripcion: 'Plan Estratégico Institucional para el periodo 2020-2022',
-      fecha_inicio: '2020-01-01',
-      fecha_fin: '2022-12-31',
-      esta_vigente: false,
-      creado_el: '2019-10-10T09:20:00Z',
-      modificado_el: '2022-12-31T23:59:00Z',
-    },
-    {
-      id: 3,
-      titulo: 'PEI 2017-2019',
-      descripcion: 'Plan Estratégico Institucional para el periodo 2017-2019',
-      fecha_inicio: '2017-01-01',
-      fecha_fin: '2019-12-31',
-      esta_vigente: false,
-      creado_el: '2016-11-30T14:45:00Z',
-      modificado_el: '2019-12-31T23:59:00Z',
-    },
-  ]
-
-  // Datos dummy para Proyectos
-  proyectos.value = [
-    {
-      id: 1,
-      codigo: 'PROJ-2023-001',
-      titulo: 'Modernización de Sistemas Informáticos',
-      descripcion: 'Proyecto para actualizar los sistemas informáticos de la institución',
-      estado: 'PL',
-      fecha_creacion: '2023-01-15T08:00:00Z',
-      fecha_inicio: '2023-03-01',
-      fecha_finalizacion: '2023-12-15',
-      presupuesto: 250000,
-      pei: 1,
-      instancia_gestora: [1, 2],
-      procedencia_fondos: [1],
-    },
-    {
-      id: 2,
-      codigo: 'PROJ-2023-002',
-      titulo: 'Capacitación Docente',
-      descripcion: 'Programa de capacitación continua para el personal docente',
-      estado: 'EP',
-      fecha_creacion: '2023-02-10T10:30:00Z',
-      fecha_inicio: '2023-05-01',
-      fecha_finalizacion: '2023-11-30',
-      presupuesto: 120000,
-      pei: 1,
-      instancia_gestora: [2],
-      procedencia_fondos: [2, 3],
-    },
-    {
-      id: 3,
-      codigo: 'PROJ-2022-015',
-      titulo: 'Infraestructura Educativa',
-      descripcion: 'Construcción y remodelación de espacios educativos',
-      estado: 'ES',
-      fecha_creacion: '2022-09-05T14:20:00Z',
-      fecha_inicio: '2023-01-15',
-      fecha_finalizacion: '2023-10-31',
-      presupuesto: 500000,
-      pei: 2,
-      instancia_gestora: [1, 3],
-      procedencia_fondos: [1, 2],
-    },
-  ]
-
-  // Datos dummy para Actividades
-  actividades.value = [
-    {
-      id: 1,
-      codigo: 'ACT-001',
-      descripcion: 'Taller de capacitación en nuevas tecnologías',
-      tipo: 'ACAP',
-      estado: 'COMP',
-      fecha_inicio: '2023-03-15',
-      fecha_cierre: '2023-03-17',
-      presupuesto: 5000,
-      objetivo_de_actividad: 'Capacitar al personal en el uso de nuevas herramientas tecnológicas',
-      descripcion_evaluacion: 'Evaluación mediante pruebas prácticas y cuestionarios',
-      proceso: 1,
-    },
-    {
-      id: 2,
-      codigo: 'ACT-002',
-      descripcion: 'Adquisición de equipos informáticos',
-      tipo: 'AOP',
-      estado: 'EJEC',
-      fecha_inicio: '2023-04-01',
-      fecha_cierre: '2023-06-30',
-      presupuesto: 150000,
-      objetivo_de_actividad: 'Actualizar el parque tecnológico de la institución',
-      descripcion_evaluacion:
-        'Verificación de especificaciones técnicas y pruebas de funcionamiento',
-      proceso: 2,
-    },
-    {
-      id: 3,
-      codigo: 'ACT-003',
-      descripcion: 'Investigación de mercado de soluciones tecnológicas',
-      tipo: 'PRIN',
-      estado: 'PLAN',
-      fecha_inicio: '2023-05-10',
-      fecha_cierre: '2023-05-30',
-      presupuesto: 8000,
-      objetivo_de_actividad: 'Identificar las mejores soluciones tecnológicas disponibles',
-      descripcion_evaluacion: 'Análisis comparativo de propuestas',
-      proceso: 3,
-    },
-  ]
-
-  // Datos dummy para Indicadores
-  indicadores.value = [
-    {
-      id: 1,
-      codigo: 'IND-001',
-      descripcion: 'Porcentaje de docentes capacitados en nuevas tecnologías',
-      tipo: 'Proporcion',
-      numerador: 'Número de docentes capacitados',
-      denominador: 'Total de docentes',
-      objetivo_general: 1,
-    },
-    {
-      id: 2,
-      codigo: 'IND-002',
-      descripcion: 'Avance en la implementación del nuevo sistema informático',
-      tipo: 'Avance',
-      resultado_og: 1,
-    },
-    {
-      id: 3,
-      codigo: 'IND-003',
-      descripcion: 'Porcentaje de equipos actualizados',
-      tipo: 'Proporcion',
-      numerador: 'Equipos actualizados',
-      denominador: 'Total de equipos',
-      objetivo_especifico: 2,
-    },
-  ]
+  // Asignar datos dummy desde las variables
+  peis.value = [...listaPeis]
+  proyectos.value = [...listaProyectos]
+  actividades.value = [...listaActividades]
+  indicadores.value = [...listaIndicadores]
 
   loading.value = false
 }

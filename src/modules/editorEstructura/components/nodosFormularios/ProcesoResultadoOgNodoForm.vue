@@ -55,6 +55,7 @@
       </v-card>
     </v-dialog>
   </v-form>
+  {{}}
 </template>
 
 <script setup>
@@ -111,11 +112,19 @@ watch(
 // Método para guardar (Create/Update)
 const guardar = async () => {
   try {
-    const idkpi = formData.value.nodoProyecto.id
-    console.log(idkpi)
+    const proceso = formData.value.nodoProyecto.id
+    console.log('INICIO')
+    console.log('proceso-id-base.datos')
+    console.log(proceso)
     const idDiagrama = proyecto.value.mapa_nodo.id
+    console.log('id-diagrama')
+    console.log(idDiagrama)
+    console.log('Formdata.value.id')
+    console.log(formData.value.id)
+    console.log('Proyecto')
     console.log(proyecto)
-    await updateProceso(idkpi, formData.value.nodoProyecto)
+
+    await updateProceso(proceso, formData.value.nodoProyecto)
     updateNode(formData.value.id, formData.value)
     await actualizarNodosEdges(idDiagrama, getNodes.value, getEdges.value)
     emit('guardar')

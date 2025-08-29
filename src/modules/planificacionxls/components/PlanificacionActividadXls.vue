@@ -67,22 +67,20 @@
                 </v-toolbar-items>
               </v-toolbar>
               <v-card-text>
-                <v-card-text style="height: calc(100vh - 64px); padding: 0">
-                  <div style="width: 100%; height: 600px">
+                <v-card-text>
+                  <SeleccionEstructuraActividad
+                    :proyecto-data="props.proyectoEstructura"
+                    @crear-actividad="crearActividadPlan"
+                  ></SeleccionEstructuraActividad>
+
+                  <!--Editor grafico de actividades-->
+                  <!-- <div style="width: 100%; height: 600px">
                     <EditorEstructuraMainActividades></EditorEstructuraMainActividades>
-                  </div>
+                  </div> -->
                 </v-card-text>
               </v-card-text>
             </v-card>
           </v-dialog>
-          <!--Eliminar fila-->
-          <!-- <v-tooltip text="Eliminar fila seleccionada" location="bottom">
-            <template #activator="{ props }">
-              <v-btn v-bind="props" variant="text" class="toolbar-btn" @click="eliminarFila">
-                <v-icon size="18">mdi-delete</v-icon>
-              </v-btn>
-            </template>
-          </v-tooltip> -->
           <v-spacer></v-spacer>
           <!--Exportar a Excel-->
           <v-tooltip text="Exportar a Excel" location="bottom">
@@ -149,47 +147,6 @@
 
           <!-- Botonera compacta estilo Excel -->
           <div class="estructura-buttons excel-button-group horizontal-buttons">
-            <!-- Botón Presupuesto -->
-            <!-- <v-btn
-              color="#0078D4"
-              variant="flat"
-              size="small"
-              class="excel-button budget-button"
-              @click="mostrarModalPresupuesto"
-            >
-              <template v-slot:prepend>
-                <v-icon size="16">mdi-cash-multiple</v-icon>
-              </template>
-              Presupuesto
-            </v-btn> -->
-
-            <!-- Botón PEI -->
-            <!-- <v-btn
-              color="#107C10"
-              variant="flat"
-              size="small"
-              class="excel-button pei-button"
-              @click="abrirModalPei"
-            >
-              <template v-slot:prepend>
-                <v-icon size="16">mdi-chart-tree</v-icon>
-              </template>
-              PEI
-            </v-btn> -->
-            <!--Boton de ajuste de relaciones-->
-            <!-- <v-btn
-              color="#505A64"
-              variant="flat"
-              size="small"
-              class="excel-button structure-button"
-              @click="abrirModalEstructura"
-            >
-              <template v-slot:prepend>
-                <v-icon size="16">mdi-sitemap</v-icon>
-              </template>
-              Estructura
-            </v-btn> -->
-
             <v-tooltip text="Ajustar Presupuesto de la Actividad" location="bottom">
               <template v-slot:activator="{ props }">
                 <v-btn
@@ -243,21 +200,6 @@
                 </v-btn>
               </template>
             </v-tooltip>
-
-            <!-- Botón Estructura (solo para nuevas actividades) -->
-            <!-- <v-btn
-              v-if="selectedRowData.id === 0"
-              color="#505A64"
-              variant="flat"
-              size="small"
-              class="excel-button structure-button"
-              @click="abrirModalEstructura"
-            >
-              <template v-slot:prepend>
-                <v-icon size="16">mdi-sitemap</v-icon>
-              </template>
-              Estructura
-            </v-btn> -->
 
             <!----Componente Presupuesto-->
             <ComponentPresupuesto
@@ -414,8 +356,7 @@ import { SELECT_OPTIONS } from '@/utility/selectOptions'
 import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
 //Estructuras
 import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
-//import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
-import EditorEstructuraMainActividades from '@/modules/editorEstructuraPlanificacion/components/EditorEstructuraMainActividades.vue'
+import SeleccionEstructuraActividad from './parciales/SeleccionEstructuraActividad.vue'
 //Actividades Test
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { storeToRefs } from 'pinia'
@@ -456,7 +397,7 @@ const {
   guardarActividadesBulk,
   loading: loadinActividades,
 } = useActividad()
-const { usuarios } = useUsuario()
+const { usuarios, obtenerUsuarios, loading: loadingUsuarios } = useUsuario()
 const { contadorPlan, contarPlanPorIdProyecto } = usePlanificacion()
 
 // Snackbar para mensajes
@@ -611,6 +552,13 @@ const obtenerConfiguracionTabla = () => {
     exportado_el: new Date().toISOString(),
     version_ui: '1.0',
   }
+}
+
+//Guardar procedencia
+const crearActividadPlan = async () => {
+  mostrarMensaje('Actividad creada exitosamente', 'success')
+  refrescarDatos()
+  cerrarNuevaActividad()
 }
 
 // Método para confirmar el guardado - ACTUALIZADO

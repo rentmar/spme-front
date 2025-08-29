@@ -13,7 +13,12 @@
 
     <v-list-group value="estructuracion">
       <template v-slot:activator="{ props }">
-        <v-list-item v-bind="props" prepend-icon="mdi-sitemap" title="Estructuración"></v-list-item>
+        <v-list-item
+          v-bind="props"
+          prepend-icon="mdi-sitemap"
+          title="Estructuración"
+          to="/estructura/inicio"
+        ></v-list-item>
       </template>
 
       <v-list-item
@@ -53,6 +58,7 @@
           v-bind="props"
           prepend-icon="mdi-calendar-month"
           title="Planificación"
+          to="/planificacion/inicio"
         ></v-list-item>
       </template>
 
@@ -80,7 +86,12 @@
 
     <v-list-group value="monitoreo">
       <template v-slot:activator="{ props }">
-        <v-list-item v-bind="props" prepend-icon="mdi-chart-line" title="Monitoreo"></v-list-item>
+        <v-list-item
+          v-bind="props"
+          prepend-icon="mdi-chart-line"
+          title="Monitoreo"
+          to="/monitoreo/inicio"
+        ></v-list-item>
       </template>
 
       <v-list-item
@@ -104,6 +115,30 @@
         to=""
       ></v-list-item>
     </v-list-group>
+    <!-- Reportes -->
+    <v-list-group value="reporte">
+      <template v-slot:activator="{ props }">
+        <v-list-item
+          v-bind="props"
+          prepend-icon="mdi-chart-bar"
+          title="Reportes y Análisis"
+          to="/reporte/inicio"
+        ></v-list-item>
+      </template>
+      <v-list-item
+        prepend-icon="mdi-view-dashboard"
+        title="Dashboard Principal"
+        value="main-dashboard"
+        to="/"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-chart-line"
+        title="Reportes"
+        value="actividades-reports"
+        to="/reportes/estructura"
+      ></v-list-item>
+    </v-list-group>
 
     <!-- Administración de Usuarios -->
     <v-list-group value="admin">
@@ -111,7 +146,8 @@
         <v-list-item
           v-bind="props"
           prepend-icon="mdi-account-cog"
-          title="Administración"
+          title="Usuarios"
+          to="/usuarios/inicio"
         ></v-list-item>
       </template>
 
@@ -153,7 +189,12 @@
 
     <v-list-group value="notifications">
       <template v-slot:activator="{ props }">
-        <v-list-item v-bind="props" prepend-icon="mdi-bell" title="Notificaciones"></v-list-item>
+        <v-list-item
+          v-bind="props"
+          prepend-icon="mdi-bell"
+          title="Notificaciones"
+          to="/notificaciones/inicio"
+        ></v-list-item>
       </template>
 
       <v-list-item

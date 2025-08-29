@@ -202,16 +202,43 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/HelpView.vue'),
     },
-
-    /*
+    /*************************** REPORTES ****************************/
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },*/
+      path: '/reportes/estructura',
+      name: 'reportesEstructura',
+      component: () => import('@/views/reportes/ProyectoEstructuraView.vue'),
+    },
+    /************************** Rutas limpias para Headers *******************/
+    {
+      path: '/estructura/inicio',
+      name: 'homeEstructura',
+      component: () => import('@/views/HomeView.vue'),
+    },
+    {
+      path: '/planificacion/inicio',
+      name: 'homePlanificacion',
+      component: () => import('@/views/HomeView.vue'),
+    },
+    {
+      path: '/monitoreo/inicio',
+      name: 'homeMonitoreo',
+      component: () => import('@/views/HomeView.vue'),
+    },
+    {
+      path: '/reporte/inicio',
+      name: 'homeReporte',
+      component: () => import('@/views/HomeView.vue'),
+    },
+    {
+      path: '/usuarios/inicio',
+      name: 'homeUsuariosInicio',
+      component: () => import('@/views/HomeView.vue'),
+    },
+    {
+      path: '/notificaciones/inicio',
+      name: 'homeNotificaciones',
+      component: () => import('@/views/HomeView.vue'),
+    },
   ],
 })
 

@@ -22,7 +22,7 @@ const color = ref('info')
 const icon = ref('mdi-information')
 const timeout = ref(4000)
 
-const showMessage = (msg, type, duration) => {
+const showMessage = (msg, type, duration, msgLocation = 'center') => {
   const types = {
     success: { color: 'success', icon: 'mdi-check-circle' },
     error: { color: 'error', icon: 'mdi-alert-circle' },
@@ -34,6 +34,7 @@ const showMessage = (msg, type, duration) => {
   color.value = types[type].color
   icon.value = types[type].icon
   timeout.value = duration
+  location.value = msgLocation
   visible.value = true
 }
 

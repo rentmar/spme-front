@@ -39,12 +39,13 @@
         </template>
       </v-list-item>
       <!-- Agregar Obj Especifico -->
+      <!--
       <v-list-item class="custom-menu-item" @click="agregarObjetivoEspecifico">
         <v-list-item-title>Agregar Objetivo Especifico</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-target-variant'"></v-icon>
         </template>
-      </v-list-item>
+      </v-list-item>-->
       <!-- Agregar Efecto del Proyecto -->
       <v-list-item class="custom-menu-item" @click="agregarEfecto">
         <v-list-item-title>Agregar Efecto</v-list-item-title>
