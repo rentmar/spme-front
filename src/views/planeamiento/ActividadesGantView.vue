@@ -12,8 +12,10 @@ export default {
       xInicial: 10,
       y: 10,
       dialog: false,
-      selectedActividad: null,
-      filteredState: null,
+      selectedActividad: 1234,
+      filtroEstado: null,
+      itemsPerPage: 10,
+      currentPage: 1,
       meses: [
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
@@ -90,6 +92,27 @@ export default {
           descripcion: "elaboracion C",
           estado: "Reprogramacion"
         },
+         {
+          codigo: 12262,
+          fechaini: "2025-05-01",
+          fechafin: "2025-05-31",
+          descripcion: "elaboracion C",
+          estado: "Reprogramacion"
+        },
+         {
+          codigo: 12264,
+          fechaini: "2025-05-01",
+          fechafin: "2025-05-31",
+          descripcion: "elaboracion C",
+          estado: "Reprogramacion"
+        },
+         {
+          codigo: 1226,
+          fechaini: "2025-05-01",
+          fechafin: "2025-05-31",
+          descripcion: "elaboracion C",
+          estado: "Reprogramacion"
+        },
         {
           codigo: 13431226,
           fechaini: "2025-02-01",
@@ -99,6 +122,29 @@ export default {
         }
       ]
     };
+  },
+  computed: {
+    estadosParaFiltro() {
+      const estados = this.actividades.map(act => act.estado);
+      return [...new Set(estados)];
+    },
+
+    actividadesFiltradas() {
+      if (!this.filtroEstado) {
+        return this.actividades;
+      }
+      return this.actividades.filter(act => act.estado === this.filtroEstado);
+    },
+
+    actividadesPaginadas() {
+      const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+      const endIndex = startIndex + this.itemsPerPage;
+      return this.actividadesFiltradas.slice(startIndex, endIndex);
+    },
+
+    totalPaginas() {
+      return Math.ceil(this.actividadesFiltradas.length / this.itemsPerPage);
+    }
   },
   methods: {
     posicionEnEscalaGrafica(fecha) {
@@ -133,32 +179,24 @@ export default {
       </v-toolbar-title>
     </v-toolbar>
 
-    <div class="legend-container">
-      <div class="legend-item">
-          <div class="legend-color" style="background-color: #64b5f6;"></div>
-          <span>Planificación</span>
-      </div>
-       <div class="legend-item">
-          <div class="legend-color" style="background-color: #ffa726;"></div>
-          <span>En Ejecucion</span>
-      </div>
-      <div class="legend-item">
-          <div class="legend-color" style="background-color: #81c784;"></div>
-          <span>En Reporte</span>
-      </div>
-      <div class="legend-item">
-          <div class="legend-color" style="background-color: #4db6ac;"></div>
-          <span>Finalizado</span>
-      </div>
-      <div class="legend-item">
-          <div class="legend-color" style="background-color: #ff0000;"></div>
-          <span>Retrasado</span>
-      </div>
-      <div class="legend-item">
-          <div class="legend-color" style="background-color: #ffd54f;"></div>
-          <span>Reprogramacion</span>
-      </div>
-  </div>
+   <v-row class="mt-4 align-center" >
+      <v-col cols="12" sm="8" md="9">
+        <div class="legend-container">
+          <div class="legend-item" v-for="(color, estado) in colores" :key="estado">
+            <div class="legend-color" :style="{ backgroundColor: color }"></div>
+            <span>{{ estado.replace(/_/g, ' ') }}</span>
+          </div>
+        </div>
+      </v-col>
+      <v-col cols="12" sm="4" md="3">
+        <v-select
+          label="Filtrar por Estado"
+          :items="estadosParaFiltro"
+          v-model="filtroEstado"
+          clearable
+        ></v-select>
+      </v-col>
+    </v-row>
 
     <v-row class="mt-4">
       <v-col cols="12" md="3">
@@ -175,7 +213,7 @@ export default {
       </v-col>
 
       <v-col cols="12" md="9">
-        <svg id="fondo" :viewBox="`0 0 ${xInicial + (ancho + espacio) * cantidad} ${y + altolbl + 12 * alto}`">
+        <svg id="fondo" :viewBox="`0 0 ${xInicial + (ancho + espacio) * cantidad} ${y + altolbl + actividadesPaginadas.length * alto}`">
           <g v-for="i in cantidad" :key="i">
             <rect :x="xInicial + (i - 1) * (ancho + espacio)"
               :y="y"
@@ -193,42 +231,57 @@ export default {
                   {{ meses[i - 2] }}
             </text>
           </g>
-          <g v-for="(actividad, fila) in actividades" :key="actividad.codigo">
-              <rect
-                v-for="i in cantidad"
-                :key="actividad.codigo + '-' + i"
-                :x="xInicial + (i - 1) * (ancho + espacio)"
-                :y="y + altolbl + fila * (alto + 10) + 5"
-                :width="ancho"
-                :height="alto"
-                :stroke="color"
-                :fill="color"
-              />
-            <text
-                :x="15"
-                :y="y + altolbl + fila * (alto + 10) + alto / 2 + 5"
-                text-anchor="start"
-                fill="#333"
-                font-size="13"
-                font-family="Arial"
-                alignment-baseline="middle"
-                dominant-baseline="middle"
-              >
-                {{ actividad.descripcion }}
-              </text>
+          <g v-for="(actividad, fila) in actividadesPaginadas" :key="actividad.codigo">
             <rect
-                @click="showActividadDetails(actividad)"
-                  :x="127 + posicionEnEscalaGrafica(actividad.fechaini)"
-                  :y="y + altolbl + fila * (alto + 10) + 5 "
-                  :width="posicionEnEscalaGrafica(actividad.fechafin) - posicionEnEscalaGrafica(actividad.fechaini)"
-                  :height="alto"
-                  :fill="colores[actividad.estado]"
-                  :stroke="colores[actividad.estado]"
-                  opacity="0.5"
-                />
-            </g>
+              v-for="i in cantidad"
+              :key="actividad.codigo + '-' + i"
+              :x="xInicial + (i - 1) * (ancho + espacio)"
+              :y="y + altolbl + fila * (alto + 10) + 5"
+              :width="ancho"
+              :height="alto"
+              :stroke="color"
+              :fill="color"
+            />
+            <text
+              :x="15"
+              :y="y + altolbl + fila * (alto + 10) + alto / 2 + 5"
+              text-anchor="start"
+              fill="#333"
+              font-size="13"
+              font-family="Arial"
+              alignment-baseline="middle"
+              dominant-baseline="middle"
+            >
+              {{ actividad.descripcion }}
+            </text>
+            <rect
+              @click="showActividadDetails(actividad)"
+              :x="127 + posicionEnEscalaGrafica(actividad.fechaini)"
+              :y="y + altolbl + fila * (alto + 10) + 5"
+              :width="posicionEnEscalaGrafica(actividad.fechafin) - posicionEnEscalaGrafica(actividad.fechaini)"
+              :height="alto"
+              :fill="colores[actividad.estado]"
+              :stroke="colores[actividad.estado]"
+              opacity="0.5"
+            />
+          </g>
         </svg>
       </v-col>
+    </v-row>
+    <v-row class="mt-4 justify-center">
+      <v-btn
+        @click="currentPage--"
+        :disabled="currentPage === 1"
+        class="mr-2"
+      >
+        Anterior
+      </v-btn>
+      <v-btn
+        @click="currentPage++"
+        :disabled="currentPage === totalPaginas"
+      >
+        Siguiente
+      </v-btn>
     </v-row>
   </v-container>
 </template>
