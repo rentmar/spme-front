@@ -200,167 +200,161 @@
               </v-list-item>
 
               <!-- Tarjeta de detalles desplegable -->
-               <!--<v-list-item :value="actividad" class="mb-2">-->
               <v-expand-transition>
-  <div v-if="expandedActividadId === actividad.id">
-    <v-list-item :value="`detalle-${actividad.id}`" class="mb-2">
-      <v-card elevation="0" class="ml-10 mr-4 mb-4 bg-grey-lighten-4">
-        <v-card-text class="pt-4">
-          <!-- Modificación aquí: Se crea un nuevo div para agrupar los botones y alinearlos a la derecha. -->
-          <div class="d-flex justify-space-between align-center mb-4">
-            <span class="text-subtitle-1">Tareas para {{ actividad.codigo }}</span>
-
-            <!-- Nuevo contenedor para agrupar todos los botones -->
-            <div class="d-flex align-center">
-              <!-- Botón "+Añadir tarea" -->
-              <v-btn
-                color="primary"
-                variant="text"
-                @click="openTareaDialog(actividad.id)">
-                <v-icon left>mdi-plus</v-icon>
-                Añadir tarea
-              </v-btn>
-            </div>
-          </div>
-          <!--<v-list-item v-for="tarea in actividad.tareas" :key="tarea.id" class="mb-1">-->
-          <v-list density="compact" class="py-0">
-            <v-list-item v-for="tarea in actividad.tareas" :key="`tarea-${actividad.id}-${tarea.id}`" class="mb-1">
-              <v-list-item-title>
-                {{ tarea.titulo || tarea.descripcion || 'Tarea sin título' }}
-              </v-list-item-title>
-              <template v-slot:prepend>
-                <v-icon
-                  :color="getStatusColorTarea(tarea.estado)">
-                  mdi-checkbox-blank-circle
-                </v-icon>
-              </template>
-              <template v-slot:append>
+                <div v-if="expandedActividadId === actividad.id">
+                  <v-list-item :value="`detalle-${actividad.id}`" class="mb-2">
+                    <v-card elevation="0" class="ml-10 mr-4 mb-4 bg-grey-lighten-4">
+                      <v-card-text class="pt-4">
+                        <div class="d-flex justify-space-between align-center mb-4">
+                          <span class="text-subtitle-1">Tareas para {{ actividad.codigo }}</span>
+                          <div class="d-flex align-center">
+                            <v-btn
+                              color="primary"
+                              variant="text"
+                              @click="openTareaDialog(actividad.id)">
+                              <v-icon left>mdi-plus</v-icon>
+                              Añadir tarea
+                            </v-btn>
+                          </div>
+                        </div>
+                        <v-list density="compact" class="py-0">
+                          <v-list-item v-for="tarea in actividad.tareas" :key="`tarea-${actividad.id}-${tarea.id}`" class="mb-1">
+                            <v-list-item-title>
+                              {{ tarea.titulo || tarea.descripcion || 'Tarea sin título' }}
+                            </v-list-item-title>
+                            <template v-slot:prepend>
+                              <v-icon
+                                :color="getStatusColorTarea(tarea.estado)">
+                                mdi-checkbox-blank-circle
+                              </v-icon>
+                            </template>
+                            <template v-slot:append>
                               <!-- Solicitud de Fondos -->
-              <v-tooltip text="Solicitud de Fondos" location="top">
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-if="parseInt($route.query.showButton) === 1"
-                    v-bind="props"
-                    icon="mdi-file-document-edit-outline"
-                    variant="text"
-                    color="primary"
-                    :to="`/monitoreo/formulario01/${actividad.id}?tarea_id=${tarea.id}`"
-                    @click.stop
-                  ></v-btn>
-                </template>
-              </v-tooltip>
+                              <v-tooltip text="Solicitud de Fondos" location="top">
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    v-if="parseInt($route.query.showButton) === 1"
+                                    v-bind="props"
+                                    icon="mdi-file-document-edit-outline"
+                                    variant="text"
+                                    color="primary"
+                                    :to="`/monitoreo/formulario01/${actividad.id}?tarea_id=${tarea.id}`"
+                                    @click.stop
+                                  ></v-btn>
+                                </template>
+                              </v-tooltip>
 
-              <!-- Solicitud de Reposición -->
-              <v-tooltip text="Solicitud de Reposición" location="top">
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-if="parseInt($route.query.showButton) === 1"
-                    v-bind="props"
-                    icon="mdi-file-document-edit-outline"
-                    variant="text"
-                    color="warning"
-                    :to="`/monitoreo/formulario03/${actividad.id}?tarea_id=${tarea.id}`"
-                    @click.stop
-                  ></v-btn>
-                </template>
-              </v-tooltip>
+                              <!-- Solicitud de Reposición -->
+                              <v-tooltip text="Solicitud de Reposición" location="top">
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    v-if="parseInt($route.query.showButton) === 1"
+                                    v-bind="props"
+                                    icon="mdi-file-document-edit-outline"
+                                    variant="text"
+                                    color="warning"
+                                    :to="`/monitoreo/formulario03/${actividad.id}?tarea_id=${tarea.id}`"
+                                    @click.stop
+                                  ></v-btn>
+                                </template>
+                              </v-tooltip>
 
-              <!-- Rendición de cuentas -->
-              <v-tooltip text="Rendición de Cuentas" location="top">
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-if="parseInt($route.query.showButton) === 2"
-                    v-bind="props"
-                    icon="mdi-file-document-edit-outline"
-                    variant="text"
-                    color="error"
-                    :to="`/monitoreo/formulario02/${actividad.id}?tarea_id=${tarea.id}`"
-                    @click.stop
-                  ></v-btn>
-                </template>
-              </v-tooltip>
+                              <!-- Rendición de cuentas -->
+                              <v-tooltip text="Rendición de Cuentas" location="top">
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    v-if="parseInt($route.query.showButton) === 2"
+                                    v-bind="props"
+                                    icon="mdi-file-document-edit-outline"
+                                    variant="text"
+                                    color="error"
+                                    :to="`/monitoreo/formulario02/${actividad.id}?tarea_id=${tarea.id}`"
+                                    @click.stop
+                                  ></v-btn>
+                                </template>
+                              </v-tooltip>
 
-              <!-- Solicitud de Viaje -->
-              <v-tooltip text="Solicitud de Viaje" location="top">
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-if="parseInt($route.query.showButton) === 1"
-                    v-bind="props"
-                    icon="mdi-file-document-edit-outline"
-                    variant="text"
-                    color="deep-purple"
-                    :to="`/monitoreo/formulario05/${actividad.id}?tarea_id=${tarea.id}`"
-                    @click.stop
-                  ></v-btn>
-                </template>
-              </v-tooltip>
+                              <!-- Solicitud de Viaje -->
+                              <v-tooltip text="Solicitud de Viaje" location="top">
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    v-if="parseInt($route.query.showButton) === 1"
+                                    v-bind="props"
+                                    icon="mdi-file-document-edit-outline"
+                                    variant="text"
+                                    color="deep-purple"
+                                    :to="`/monitoreo/formulario05/${actividad.id}?tarea_id=${tarea.id}`"
+                                    @click.stop
+                                  ></v-btn>
+                                </template>
+                              </v-tooltip>
 
-              <!-- Solicitud de Pago Directo -->
-              <v-tooltip text="Solicitud de Pago Directo" location="top">
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-if="parseInt($route.query.showButton) === 1"
-                    v-bind="props"
-                    icon="mdi-file-document-edit-outline"
-                    variant="text"
-                    color="teal-lighten-2"
-                    :to="`/monitoreo/formulario08/${actividad.id}?tarea_id=${tarea.id}`"
-                    @click.stop
-                  ></v-btn>
-                </template>
-              </v-tooltip>
+                              <!-- Solicitud de Pago Directo -->
+                              <v-tooltip text="Solicitud de Pago Directo" location="top">
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    v-if="parseInt($route.query.showButton) === 1"
+                                    v-bind="props"
+                                    icon="mdi-file-document-edit-outline"
+                                    variant="text"
+                                    color="teal-lighten-2"
+                                    :to="`/monitoreo/formulario08/${actividad.id}?tarea_id=${tarea.id}`"
+                                    @click.stop
+                                  ></v-btn>
+                                </template>
+                              </v-tooltip>
 
-              <!-- Informe de Actividad -->
-              <v-tooltip text="Informe de Actividad" location="top">
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-if="parseInt($route.query.showButton) === 3"
-                    v-bind="props"
-                    icon="mdi-file-document-edit-outline"
-                    variant="text"
-                    color="info"
-                    :to="`/monitoreo/formularioinf/${actividad.id}?tarea_id=${tarea.id}`"
-                    @click.stop
-                  ></v-btn>
-                </template>
-              </v-tooltip>
-                <v-tooltip text="Editar tarea" location="top">
-                  <template v-slot:activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      icon="mdi-pencil"
-                      variant="text"
-                      color="warning"
-                      size="small"
-                      @click.stop="openTareaDialog(actividad.id, tarea)"
-                    ></v-btn>
-                  </template>
-                </v-tooltip>
-                <v-tooltip text="Eliminar tarea" location="top">
-                  <template v-slot:activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      icon="mdi-delete"
-                      variant="text"
-                      color="error"
-                      size="small"
-                      @click.stop="confirmDeleteTarea(actividad.id, tarea)"
-                    ></v-btn>
-                  </template>
-                </v-tooltip>
-              </template>
-            </v-list-item>
-            <v-list-item v-if="actividad.tareas.length === 0">
-              <v-list-item-title class="text-grey text-caption">
-                No hay tareas para esta actividad
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-      </v-card>
-    </v-list-item>
-  </div>
-</v-expand-transition>
+                              <!-- Informe de Actividad -->
+                              <v-tooltip text="Informe de Actividad" location="top">
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    v-if="parseInt($route.query.showButton) === 3"
+                                    v-bind="props"
+                                    icon="mdi-file-document-edit-outline"
+                                    variant="text"
+                                    color="info"
+                                    :to="`/monitoreo/formularioinf/${actividad.id}?tarea_id=${tarea.id}`"
+                                    @click.stop
+                                  ></v-btn>
+                                </template>
+                              </v-tooltip>
+                              <v-tooltip text="Editar tarea" location="top">
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    v-bind="props"
+                                    icon="mdi-pencil"
+                                    variant="text"
+                                    color="warning"
+                                    size="small"
+                                    @click.stop="openTareaDialog(actividad.id, tarea)"
+                                  ></v-btn>
+                                </template>
+                              </v-tooltip>
+                              <v-tooltip text="Eliminar tarea" location="top">
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    v-bind="props"
+                                    icon="mdi-delete"
+                                    variant="text"
+                                    color="error"
+                                    size="small"
+                                    @click.stop="confirmDeleteTarea(actividad.id, tarea)"
+                                  ></v-btn>
+                                </template>
+                              </v-tooltip>
+                            </template>
+                          </v-list-item>
+                          <v-list-item v-if="actividad.tareas.length === 0">
+                            <v-list-item-title class="text-grey text-caption">
+                              No hay tareas para esta actividad
+                            </v-list-item-title>
+                          </v-list-item>
+                        </v-list>
+                      </v-card-text>
+                    </v-card>
+                  </v-list-item>
+                </div>
+              </v-expand-transition>
             </template>
 
             <v-list-item v-if="filteredActividades.length === 0 && !loading">
@@ -445,7 +439,6 @@
               <v-list-item-title>Finalizado</v-list-item-title>
               <v-list-item-subtitle class="text-right"> {{ countByStatus('FIN') }} </v-list-item-subtitle>
             </v-list-item>
-
           </v-list>
         </v-card>
       </v-col>
@@ -458,7 +451,7 @@
           :title="isEditandoTarea ? 'Editar Tarea' : 'Nueva Tarea'"
         ></v-toolbar>
         <v-card-text>
-          <v-form ref="tareaFormRef">
+          <v-form ref="tareaFormRef" @submit.prevent="saveTarea">
             <v-text-field
               v-model="tareaForm.titulo"
               label="Título de la tarea"
@@ -490,7 +483,7 @@
       </v-card>
     </v-dialog>
 
-        <v-dialog v-model="deleteTareaDialog" max-width="400">
+    <v-dialog v-model="deleteTareaDialog" max-width="400">
       <v-card>
         <v-card-title class="text-h5">Confirmar eliminación de tarea</v-card-title>
         <v-card-text>
@@ -500,7 +493,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-           <v-btn color="grey" @click="deleteTareaDialog = false">Cancelar</v-btn>
+          <v-btn color="grey" @click="deleteTareaDialog = false">Cancelar</v-btn>
           <v-btn color="error" @click="deleteTarea">Eliminar</v-btn>
         </v-card-actions>
       </v-card>
@@ -513,16 +506,12 @@
       </template>
     </v-snackbar>
   </v-container>
-  <!-- {{ actividades }} -->
-  <!-- {{ '****************' }}
-  {{ actividadesPaginadas }} -->
 </template>
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue'
 import { useActividad } from '@/modules/proyecto/composables/useActividad'
 
-//updateActividad(id, data)
 const {
   actividadesTareas,
   actividadTarea: actividadesFromApi,
@@ -530,11 +519,9 @@ const {
   crearTareaEnActividad,
   actualizarTareaEnActividad,
   eliminarTareaDeActividad,
-  tareaActual,
 } = useActividad()
 
 // --- ESTADOS REACTIVOS ---
-//const actividades = ref([])
 const loading = ref(true)
 const emptyResponse = ref(false)
 const searchQuery = ref('')
@@ -547,7 +534,7 @@ const itemsPerPage = ref(10)
 
 // Diálogos y formularios de tareas
 const tareaDialog = ref(false)
-const tareaForm = ref({ id: null, titulo: '', descripcion: '', estado: 'PE' })
+const tareaForm = ref({ id: null, titulo: '', descripcion: '', estado: 'PEN' })
 const actividadIdParaTarea = ref(null)
 const isEditandoTarea = ref(false)
 const tareaFormRef = ref(null)
@@ -557,9 +544,9 @@ const deleteTareaDialog = ref(false)
 const tareaToDelete = ref(null)
 const actividadIdParaEliminarTarea = ref(null)
 const procedenciaFilter = ref(null)
+
 // Notificaciones
 const snackbar = ref({ show: false, text: '', color: 'success' })
-const dialogNuevaActividad = ref(false)
 
 // Procedencia de fondos
 const procedenciaFondos = [
@@ -577,6 +564,7 @@ const availableStatuses = [
   { value: 'REP', text: 'En Reporte' },
   { value: 'FIN', text: 'Finalizado' },
 ]
+
 const availableStatusesTarea = [
   { text: 'Pendiente', value: 'PEN' },
   { text: 'En Progreso', value: 'EPROG' },
@@ -588,35 +576,32 @@ const availableStatusesTarea = [
 // Mapeo de estados del backend al frontend
 const mapEstadoBackendToFrontend = (estadoBackend) => {
   const estadoMap = {
-    CRD: 'PE', // Creada -> Pendiente
-    PLAN: 'PE', // Planificada -> Pendiente
-    RETR: 'PR', // Retraso -> En Progreso
-    REPROG: 'PR', // Reprogramacion -> En Progreso
-    EJEC: 'PR', // En Ejecucion -> En Progreso
-    REP: 'PR', // En Reporte -> En Progreso
-    PEN: 'PEN', // Pendiente -> Pendiente
-    EPROG: 'EPROG', // En Progreso -> En Progreso
-    COMPL: 'COMPL', // Completada -> Completada
+    CRD: 'PE',
+    PLAN: 'PE',
+    RETR: 'PR',
+    REPROG: 'PR',
+    EJEC: 'PR',
+    REP: 'PR',
+    FIN: 'CO'
   }
+
+  // Si es un estado de tarea, devolverlo sin cambios
+  if (['PEN', 'EPROG', 'COMPL'].includes(estadoBackend)) {
+    return estadoBackend
+  }
+
   return estadoMap[estadoBackend] || 'PE'
 }
 
 const getStatusColor = (status) => {
   switch (status) {
-    case 'PLAN':
-      return 'light-blue'
-    case 'RETR':
-      return 'red'
-    case 'REPROG':
-      return 'yellow'
-    case 'EJEC':
-      return 'orange'
-    case 'REP':
-      return 'light-green'
-    case 'FIN':
-      return 'green'
-    default:
-      return 'grey'
+    case 'PLAN': return 'light-blue'
+    case 'RETR': return 'red'
+    case 'REPROG': return 'yellow'
+    case 'EJEC': return 'orange'
+    case 'REP': return 'light-green'
+    case 'FIN': return 'green'
+    default: return 'grey'
   }
 }
 
@@ -628,14 +613,12 @@ const getEstadoTexto = (status) => {
 // Carga inicial de datos
 onMounted(async () => {
   await cargar()
-  //await cargarActividades()
 })
 
 const cargar = async () => {
   loading.value = true
   try {
-    await actividadesTareas() //carga actividadTarea
-    console.log('actividades ok', actividadesFromApi)
+    await actividadesTareas()
 
     // Procesar los datos de la API
     if (Array.isArray(actividadesFromApi.value)) {
@@ -649,7 +632,7 @@ const cargar = async () => {
               estadoFrontend: mapEstadoBackendToFrontend(tarea.estado)
             }))
           : [],
-              }))
+      }))
     } else {
       actividades.value = []
     }
@@ -659,7 +642,7 @@ const cargar = async () => {
     console.error('Error al cargar actividades:', error)
     actividades.value = []
     emptyResponse.value = true
-        mostrarSnackbar('Error al cargar actividades: ' + (error.message || 'Error desconocido'), 'error')
+    mostrarSnackbar('Error al cargar actividades: ' + (error.message || 'Error desconocido'), 'error')
   } finally {
     loading.value = false
   }
@@ -706,7 +689,6 @@ const filteredActividades = computed(() => {
 
 const actividadesPaginadas = computed(() => {
   if (!Array.isArray(filteredActividades.value)) return []
-
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredActividades.value.slice(start, end)
@@ -735,7 +717,6 @@ const toggleExpanded = (id) => {
 
 // --- CRUD TAREAS ---
 const openTareaDialog = (actividadId, tarea = null) => {
-  console.log('mensaje2',tarea)
   isEditandoTarea.value = !!tarea
   actividadIdParaTarea.value = actividadId
   if (isEditandoTarea.value) {
@@ -746,46 +727,36 @@ const openTareaDialog = (actividadId, tarea = null) => {
       estado: mapEstadoBackendToFrontend(tarea.estado),
     })
   } else {
-    Object.assign(tareaForm.value, { id: null, titulo: '', descripcion: '', estado: 'PE' })
+    Object.assign(tareaForm.value, { id: null, titulo: '', descripcion: '', estado: 'PEN' })
   }
   tareaDialog.value = true
 }
 
- const saveTarea = async () => {
-   const { valid } = await tareaFormRef.value.validate()  //solo valida {valid} = { valid:true/false }
-   if (!valid) return
+const saveTarea = async () => {
+  const { valid } = await tareaFormRef.value.validate()
+  if (!valid) return
 
   loading.value = true
-    try {
-    // Mapear estado del frontend al backend
-    const estadoBackend =
-      tareaForm.value.estado === 'PE' ? 'PEN' :
-      tareaForm.value.estado === 'PR' ? 'EPROG' :
-      tareaForm.value.estado === 'CO' ? 'COMPL' : 'PEN'
-
+  try {
     const tareaData = {
-         titulo: tareaForm.value.titulo,
-         descripcion: tareaForm.value.descripcion,
-         estado: estadoBackend
+      titulo: tareaForm.value.titulo,
+      descripcion: tareaForm.value.descripcion,
+      estado: tareaForm.value.estado,
     }
 
     let resultado
 
     if (isEditandoTarea.value) {
-      // ACTUALIZAR TAREA EXISTENTE EN LA BASE DE DATOS//tareaActual o tareasActividad
       resultado = await actualizarTareaEnActividad(
         actividadIdParaTarea.value,
         tareaForm.value.id,
         tareaData
       )
-      console.log('tarea actualizada', tareaActual) //aviso 2
 
-      // Actualizar en la lista local de actividades
       const actividad = actividades.value.find(a => a.id === actividadIdParaTarea.value)
       if (actividad && actividad.tareas) {
         const tareaIndex = actividad.tareas.findIndex(t => t.id === tareaForm.value.id)
         if (tareaIndex !== -1) {
-          // Mapear estado del backend al frontend para la UI
           const tareaActualizada = {
             ...resultado,
             estadoFrontend: mapEstadoBackendToFrontend(resultado.estado)
@@ -794,22 +765,15 @@ const openTareaDialog = (actividadId, tarea = null) => {
         }
       }
 
-      snackbar.value = {
-        show: true,
-        text: 'Tarea actualizada con éxito en la base de datos',
-        color: 'success'
-      }
+      mostrarSnackbar('Tarea actualizada con éxito', 'success')
     } else {
-          // CREAR NUEVA TAREA EN LA BASE DE DATOS //guarda en tareaActual o tareasActividad
       resultado = await crearTareaEnActividad(actividadIdParaTarea.value, tareaData)
 
-      // Agregar a la lista local de actividades
       const actividad = actividades.value.find(a => a.id === actividadIdParaTarea.value)
       if (actividad) {
         if (!actividad.tareas) {
           actividad.tareas = []
         }
-        // Mapear estado del backend al frontend para la UI
         const nuevaTarea = {
           ...resultado,
           estadoFrontend: mapEstadoBackendToFrontend(resultado.estado)
@@ -817,27 +781,21 @@ const openTareaDialog = (actividadId, tarea = null) => {
         actividad.tareas.push(nuevaTarea)
       }
 
-      snackbar.value = {
-        show: true,
-        text: 'Tarea creada con éxito en la base de datos',
-        color: 'success'
-      }
-   }
-   tareaDialog.value = false
-   await nextTick()
-   tareaFormRef.value.reset()
+      mostrarSnackbar('Tarea creada con éxito', 'success')
+    }
 
   } catch (error) {
     console.error('Error al guardar tarea:', error)
-    snackbar.value = {
-      show: true,
-      text: 'Error al guardar tarea: ' + (error.response?.data?.message || error.message || 'Error desconocido'),
-      color: 'error'
-    }
+    mostrarSnackbar('Error al guardar tarea: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error')
   } finally {
     loading.value = false
+    tareaDialog.value = false
+    await nextTick()
+    if (tareaFormRef.value) {
+      tareaFormRef.value.reset()
+    }
   }
- }
+}
 
 const confirmDeleteTarea = (actividadId, tarea) => {
   actividadIdParaEliminarTarea.value = actividadId
@@ -846,55 +804,36 @@ const confirmDeleteTarea = (actividadId, tarea) => {
 }
 
 const deleteTarea = async () => {
-  // Mostrar indicador de carga
   loading.value = true
-
   try {
-    // ELIMINAR DE LA BASE DE DATOS//tareasActividad
     await eliminarTareaDeActividad(actividadIdParaEliminarTarea.value, tareaToDelete.value.id)
 
-    // Eliminar de la lista local
     const actividad = actividades.value.find(a => a.id === actividadIdParaEliminarTarea.value)
     if (actividad && actividad.tareas) {
       actividad.tareas = actividad.tareas.filter(t => t.id !== tareaToDelete.value.id)
     }
 
-    snackbar.value = {
-      show: true,
-      text: 'Tarea eliminada con éxito de la base de datos',
-      color: 'success'
-    }
-    deleteTareaDialog.value = false
+    mostrarSnackbar('Tarea eliminada con éxito', 'success')
 
   } catch (error) {
     console.error('Error al eliminar tarea:', error)
-    snackbar.value = {
-      show: true,
-      text: 'Error al eliminar tarea: ' + (error.response?.data?.message || error.message || 'Error desconocido'),
-      color: 'error'
-    }
+    mostrarSnackbar('Error al eliminar tarea: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error')
   } finally {
     loading.value = false
+    deleteTareaDialog.value = false
   }
 }
 
 // Funciones auxiliares
 const getTipoIcon = (status) => {
   switch (status) {
-    case 'PLAN':
-      return 'mdi-calendar-check-outline'
-    case 'RETR':
-      return 'mdi-calendar-alert'
-    case 'REPROG':
-      return 'mdi-calendar-refresh'
-    case 'EJEC':
-      return 'mdi-calendar-arrow-right'
-    case 'REP':
-      return 'mdi-calendar-edit'
-    case 'FIN':
-      return 'mdi-calendar-done'
-    default:
-      return 'mdi-help-circle'
+    case 'PLAN': return 'mdi-calendar-check-outline'
+    case 'RETR': return 'mdi-calendar-alert'
+    case 'REPROG': return 'mdi-calendar-refresh'
+    case 'EJEC': return 'mdi-calendar-arrow-right'
+    case 'REP': return 'mdi-calendar-edit'
+    case 'FIN': return 'mdi-calendar-done'
+    default: return 'mdi-help-circle'
   }
 }
 
@@ -910,14 +849,10 @@ const getProcedenciaTexto = (procedencia) => {
 
 const getStatusColorTarea = (status) => {
   switch (status) {
-    case 'PEN':
-      return 'grey'
-    case 'EPROG':
-      return 'warning'
-    case 'COMPL':
-      return 'success'
-    default:
-      return 'grey'
+    case 'PEN': return 'grey'
+    case 'EPROG': return 'warning'
+    case 'COMPL': return 'success'
+    default: return 'grey'
   }
 }
 
@@ -926,7 +861,6 @@ const formatDate = (dateString) => {
   const date = new Date(dateString)
   return date.toLocaleDateString('es-ES')
 }
-
 </script>
 
 <style scoped>
