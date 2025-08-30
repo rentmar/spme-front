@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="!store.loading">
     <!-- Selector de nodo -->
     <v-select
       v-model="selectedNodeId"
@@ -83,19 +83,28 @@
       </v-list-item>
     </v-list>
   </div>
+  {{}}
 </template>
 
 <script setup>
-import { ref, watch, computed, onUnmounted } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useProyectoEstructuraStore } from '../store/useProyectoEstructuraStore'
+import { useDiagramaCrud } from '@/modules/editorEstructura/composables/useDiagramaCrud'
 const store = useProyectoEstructuraStore()
 const selectedNodeId = ref(null)
 const nodeIdTiempoReal = ref(null)
 const relaciones = ref([])
 const loading = ref(false)
 
-onUnmounted(async () => {
-  await store.obtenerDiagramaPorId(5)
+onMounted(async () => {
+  store.loading = true
+  try {
+    await store.obtenerDiagramaPorId(5)
+  } catch (e) {
+    console.error(e)
+  } finally {
+    store.loading = false
+  }
 })
 
 // 1. Uso directo de la función en un método

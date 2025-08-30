@@ -13,72 +13,90 @@
       </div>
     </v-overlay>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <template v-if="!loading">
-      <v-row>
-        <v-col cols="12">
-          <PaginaTituloIcono
-            :titulo="'GESTIÓN DE PROGRAMAS Y ÁREAS'"
-            :icon="'mdi-folder-multiple'"
-          />
+    <v-row v-if="!loading">
+      <v-col cols="12">
+        <PaginaTituloIcono :titulo="'GESTIÓN DE PROGRAMAS/ÁREAS'" :icon="'mdi-folder-multiple'" />
+        <v-breadcrumbs :items="['Dashboard', 'Programas y Áreas']" class="px-0"></v-breadcrumbs>
+      </v-col>
 
-          <!-- Tarjetas resumen -->
-          <v-row class="mb-6">
-            <v-col cols="12" md="4">
-              <v-card class="summary-card" color="primary" variant="tonal">
-                <v-card-text>
-                  <div class="d-flex justify-space-between align-center">
-                    <div>
-                      <div class="text-h6">Áreas</div>
-                      <div class="text-h4 mt-2">{{ summary.areas }}</div>
-                    </div>
-                    <v-icon size="48">mdi-domain</v-icon>
+      <!-- Acciones rápidas -->
+      <v-col cols="12">
+        <v-card elevation="2" rounded="lg">
+          <v-toolbar color="primary" density="compact">
+            <v-toolbar-title class="text-white">Acciones Rápidas</v-toolbar-title>
+          </v-toolbar>
+          <v-card-text class="pa-4">
+            <v-slide-group show-arrows>
+              <v-slide-group-item v-for="(action, i) in quickActions" :key="i">
+                <v-card
+                  :color="action.color"
+                  class="ma-2"
+                  height="120"
+                  width="160"
+                  @click="action.click"
+                >
+                  <div
+                    class="d-flex flex-column fill-height justify-center align-center text-center pa-4"
+                  >
+                    <v-icon size="32" dark>{{ action.icon }}</v-icon>
+                    <span class="text-white mt-2">{{ action.title }}</span>
                   </div>
-                </v-card-text>
-              </v-card>
-            </v-col>
+                </v-card>
+              </v-slide-group-item>
+            </v-slide-group>
+          </v-card-text>
+        </v-card>
+      </v-col>
 
-            <v-col cols="12" md="4">
-              <v-card class="summary-card" color="secondary" variant="tonal">
-                <v-card-text>
-                  <div class="d-flex justify-space-between align-center">
-                    <div>
-                      <div class="text-h6">Programas</div>
-                      <div class="text-h4 mt-2">{{ summary.programas }}</div>
-                    </div>
-                    <v-icon size="48">mdi-folder-multiple-outline</v-icon>
-                  </div>
-                </v-card-text>
-              </v-card>
-            </v-col>
+      <!-- Cards de métricas -->
+      <v-col cols="12" md="3" v-for="(metric, index) in metrics" :key="index">
+        <v-card elevation="2" rounded="lg">
+          <v-card-text class="pa-4">
+            <div class="d-flex align-center">
+              <v-avatar :color="metric.color" size="48" class="mr-4">
+                <v-icon dark>{{ metric.icon }}</v-icon>
+              </v-avatar>
+              <div>
+                <div class="text-subtitle-2 text-medium-emphasis">{{ metric.title }}</div>
+                <div class="text-h5 font-weight-bold">{{ metric.value }}</div>
+                <v-chip
+                  v-if="metric.trend"
+                  small
+                  :color="metric.trend > 0 ? 'success' : 'error'"
+                  class="mt-1"
+                >
+                  <v-icon small>{{ metric.trend > 0 ? 'mdi-arrow-up' : 'mdi-arrow-down' }}</v-icon>
+                  {{ Math.abs(metric.trend) }}%
+                </v-chip>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
 
-            <v-col cols="12" md="4">
-              <v-card class="summary-card" color="success" variant="tonal">
-                <v-card-text>
-                  <div class="d-flex justify-space-between align-center">
-                    <div>
-                      <div class="text-h6">Proyectos Asociados</div>
-                      <div class="text-h4 mt-2">{{ summary.proyectosAsociados }}</div>
-                    </div>
-                    <v-icon size="48">mdi-briefcase-check</v-icon>
-                  </div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
-
-          <!-- Pestañas principales -->
+      <!-- Pestañas principales -->
+      <v-col cols="12">
+        <v-card elevation="2" rounded="lg">
           <v-tabs v-model="tab" color="primary" grow>
-            <v-tab value="areas">Áreas</v-tab>
-            <v-tab value="programas">Programas</v-tab>
-            <v-tab value="asignacion">Asignación de Proyectos</v-tab>
+            <v-tab value="areas">
+              <v-icon left>mdi-domain</v-icon>
+              Áreas
+            </v-tab>
+            <v-tab value="programas">
+              <v-icon left>mdi-folder-multiple</v-icon>
+              Programas
+            </v-tab>
+            <v-tab value="asignacion">
+              <v-icon left>mdi-link</v-icon>
+              Asignación
+            </v-tab>
           </v-tabs>
 
           <v-window v-model="tab">
             <!-- Pestaña Áreas -->
             <v-window-item value="areas">
-              <v-card variant="outlined" class="mt-4">
-                <div class="d-flex justify-space-between align-center pa-4">
+              <v-card-text class="pa-4">
+                <div class="d-flex justify-space-between align-center mb-4">
                   <v-text-field
                     v-model="searchArea"
                     label="Buscar áreas"
@@ -155,13 +173,13 @@
                     </div>
                   </template>
                 </v-data-table>
-              </v-card>
+              </v-card-text>
             </v-window-item>
 
             <!-- Pestaña Programas -->
             <v-window-item value="programas">
-              <v-card variant="outlined" class="mt-4">
-                <div class="d-flex justify-space-between align-center pa-4">
+              <v-card-text class="pa-4">
+                <div class="d-flex justify-space-between align-center mb-4">
                   <div class="d-flex align-center" style="width: 100%">
                     <v-select
                       v-model="programaFilters.area"
@@ -256,13 +274,13 @@
                     </div>
                   </template>
                 </v-data-table>
-              </v-card>
+              </v-card-text>
             </v-window-item>
 
             <!-- Pestaña Asignación de Proyectos -->
             <v-window-item value="asignacion">
-              <v-card variant="outlined" class="mt-4">
-                <div class="d-flex justify-space-between align-center pa-4">
+              <v-card-text class="pa-4">
+                <div class="d-flex justify-space-between align-center mb-4">
                   <div class="d-flex align-center" style="width: 100%">
                     <v-select
                       v-model="asignacionFilters.programa"
@@ -334,12 +352,12 @@
                     </div>
                   </template>
                 </v-data-table>
-              </v-card>
+              </v-card-text>
             </v-window-item>
           </v-window>
-        </v-col>
-      </v-row>
-    </template>
+        </v-card>
+      </v-col>
+    </v-row>
 
     <!-- Diálogos -->
     <!-- Diálogo Área -->
@@ -498,16 +516,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- Diálogos de confirmación de eliminación -->
-    <ConfirmDeleteDialog
-      v-model="confirmDeleteAreaDialog"
-      :item="areaToDelete"
-      title="Confirmar eliminación de área"
-      message="¿Está seguro que desea eliminar esta área?"
-      @confirm="deleteArea"
-      :loading="deletingArea"
-    />
-
     <ConfirmDeleteDialog
       v-model="confirmDeleteProgramaDialog"
       :item="programaToDelete"
@@ -532,14 +540,82 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useSnackbar } from '@/composables/useSnackbar'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
-import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog.vue'
+import ConfirmDeleteDialog from '@/modules/proyecto/components/partials/ConfirmDeleteDialog.vue'
+import { useProgramas } from '@/modules/programas/composables/useProgramas'
 
+//Iniciar composables
 const { successMsg, errorMsg } = useSnackbar()
+const {
+  programas: listaProgramasRest,
+  loading: loadProgs,
+  error: errorProgs,
+  cargarProgramas,
+} = useProgramas()
 
 // Datos y estado
 const loading = ref(true)
 const tableLoading = ref(false)
 const tab = ref('areas')
+
+// Métricas
+const metrics = ref([
+  {
+    title: 'Áreas Totales',
+    value: '3',
+    icon: 'mdi-domain',
+    color: 'primary',
+    trend: 0,
+  },
+  {
+    title: 'Programas Activos',
+    value: '3',
+    icon: 'mdi-folder-multiple',
+    color: 'success',
+    trend: 5,
+  },
+  {
+    title: 'Proyectos Asignados',
+    value: '12',
+    icon: 'mdi-briefcase-check',
+    color: 'info',
+    trend: 12,
+  },
+  {
+    title: 'Sin Asignar',
+    value: '8',
+    icon: 'mdi-briefcase-remove',
+    color: 'warning',
+    trend: -3,
+  },
+])
+
+// Acciones rápidas
+const quickActions = ref([
+  {
+    title: 'Nuevo Programa',
+    icon: 'mdi-folder-plus',
+    color: 'secondary',
+    click: () => openProgramaDialog(),
+  },
+  {
+    title: 'Asignar Proyectos',
+    icon: 'mdi-link-plus',
+    color: 'success',
+    click: () => openAsignacionDialog(),
+  },
+  {
+    title: 'Reporte General',
+    icon: 'mdi-chart-bar',
+    color: 'info',
+    click: () => generateReport(),
+  },
+  {
+    title: 'Exportar Datos',
+    icon: 'mdi-database-export',
+    color: 'warning',
+    click: () => exportData(),
+  },
+])
 
 // Resumen
 const summary = ref({
@@ -868,6 +944,21 @@ const getEstadoText = (estado) => {
   return texts[estado] || estado
 }
 
+// Funciones para acciones rápidas
+const generateReport = () => {
+  console.log('Generando reporte general...')
+  successMsg('Reporte generado correctamente')
+}
+
+const exportData = () => {
+  console.log('Exportando datos...')
+  successMsg('Datos exportados correctamente')
+}
+
+const openSettings = () => {
+  console.log('Abriendo configuración...')
+}
+
 // Área methods
 const openAreaDialog = () => {
   currentArea.value = {
@@ -933,6 +1024,11 @@ const deleteArea = async () => {
   } finally {
     deletingArea.value = false
   }
+}
+
+const viewAreaDetails = (area) => {
+  console.log('Ver detalles del área:', area)
+  // Implementar vista de detalles
 }
 
 // Programa methods
@@ -1002,6 +1098,11 @@ const deletePrograma = async () => {
   } finally {
     deletingPrograma.value = false
   }
+}
+
+const viewProgramaDetails = (programa) => {
+  console.log('Ver detalles del programa:', programa)
+  // Implementar vista de detalles
 }
 
 // Asignación methods
@@ -1087,7 +1188,7 @@ const loadInitialData = () => {
 }
 
 // Ciclo de vida
-onMounted(() => {
+onMounted(async () => {
   loadInitialData()
 })
 
@@ -1100,16 +1201,6 @@ const required = (v) => !!v || 'Campo requerido'
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px 16px;
-}
-
-.summary-card {
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.summary-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .v-card {
@@ -1128,5 +1219,44 @@ const required = (v) => !!v || 'Campo requerido'
   .programas-container {
     padding: 16px 12px;
   }
+
+  .v-data-table {
+    overflow-x: auto;
+  }
+}
+
+/* Estilos para las tablas */
+:deep(.v-data-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.v-data-table-header) {
+  background-color: #f5f5f5;
+}
+
+:deep(.v-data-table-header th) {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+/* Mejora la apariencia de los chips */
+.v-chip {
+  font-weight: 500;
+}
+
+/* Ajustes para los diálogos */
+.v-dialog .v-card {
+  border-radius: 12px;
+}
+
+.v-dialog .v-card-title {
+  background-color: rgb(var(--v-theme-primary));
+  color: white;
+  padding: 16px 24px;
+}
+
+.v-dialog .v-card-actions {
+  padding: 16px 24px;
 }
 </style>

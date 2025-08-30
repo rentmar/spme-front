@@ -153,12 +153,7 @@ const router = createRouter({
     {
       path: '/programas/',
       name: 'programasareasproyecto',
-      component: () => import('@/views/estructuracion/ProgramasAreasView.vue'),
-    },
-    {
-      path: '/programas/',
-      name: 'programasareasproyecto',
-      component: () => import('@/views/estructuracion/ProgramasAreasView.vue'),
+      component: () => import('@/views/programas/ProgramasAreasView.vue'),
     },
     /****************** Notificaciones **********************/
     {

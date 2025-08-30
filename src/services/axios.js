@@ -32,6 +32,18 @@ const apiUsuarios = axios.create({
   },
 })
 
+//Instancia para programas
+//Instancia para planes
+const apiProg = axios.create({
+  //baseURL: import.meta.env.VITE_API_URL_PLAN,
+  baseURL: import.meta.env.VITE_API_URL_PROGS,
+  withCredentials: false,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
 //Interceptor comun para ambas instancias
 const errorInterceptor = (error) => {
   console.error('Error en petición:', error.response?.data || error.message)
@@ -41,6 +53,7 @@ const errorInterceptor = (error) => {
 api.interceptors.response.use((response) => response, errorInterceptor)
 apiPlan.interceptors.response.use((response) => response, errorInterceptor)
 apiUsuarios.interceptors.response.use((response) => response, errorInterceptor)
+apiProg.interceptors.response.use((response) => response, errorInterceptor)
 // Interceptor para manejar errores globales
 // api.interceptors.response.use(
 //   (response) => response,
@@ -50,4 +63,4 @@ apiUsuarios.interceptors.response.use((response) => response, errorInterceptor)
 //   },
 // )
 export default api
-export { api, apiPlan, apiUsuarios }
+export { api, apiPlan, apiUsuarios, apiProg }
