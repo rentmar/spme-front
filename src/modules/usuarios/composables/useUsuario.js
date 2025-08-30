@@ -22,50 +22,18 @@ export function useUsuario() {
     }
   }
 
-<<<<<<< HEAD
-  //Datos de usuario por id
-  async function usuarioPorIdentificador(id) {
-    loading.value = true
-    try {
-      const respuesta = await usuarioServicios.usuarioPorId(id)
-      usuario.value = respuesta
-      return respuesta
-    } catch (err) {
-      error.value = err
-    } finally {
-      loading.value = false
-    }
-  }
-
-  //Lista de usuarios
-  async function listaUsuarios() {
-    loading.value = true
-    try {
-      const respuesta = await usuarioServicios.usuariosTodos()
-      usuarios.value = respuesta
-      return respuesta
-
   //Obtener todos los usuarios
   async function obtenerUsuarios() {
     loading.value = true
     try {
       const respuesta = await usuarioServicios.all()
       usuarios.value = respuesta
-
     } catch (err) {
       error.value = err
     } finally {
       loading.value = false
     }
   }
-
-
-  async function crearUsuario(datosUsuario) {
-    loading.value = true
-    try {
-      const respuesta = await usuarioServicios.regUsuario(datosUsuario)
-      usuarios.value = respuesta
-      return respuesta
 
   //Obtener todas las nicks de usuario
   async function obtenerUsuariosNicks() {
@@ -73,7 +41,6 @@ export function useUsuario() {
     try {
       const respuesta = await usuarioServicios.allnicks()
       usuarios.value = respuesta
-
     } catch (err) {
       error.value = err
     } finally {
@@ -81,11 +48,9 @@ export function useUsuario() {
     }
   }
 
-
   //Fecth usuarios
 
   //Carga de usuario por id
-
 
   return {
     loading, //ref
@@ -93,13 +58,7 @@ export function useUsuario() {
     usuarios, //ref lista de kpis
     usuario, //ref un kpi por id
     informacionUsuarioPorNick, //func
-
-    usuarioPorIdentificador, //func
-    listaUsuarios, //func
-    crearUsuario, //func
-
     obtenerUsuarios, //fund
     obtenerUsuariosNicks, //func
-
   }
 }

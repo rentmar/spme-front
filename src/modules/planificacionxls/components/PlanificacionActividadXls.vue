@@ -195,7 +195,11 @@
                 </v-toolbar-items>
               </v-toolbar>
               <v-card-text>
-                <SeleccionEstructuraProyecto></SeleccionEstructuraProyecto>
+                <v-card-text style="height: calc(100vh - 64px); padding: 0">
+                  <div style="width: 100%; height: 600px">
+                    <SeleccionEstructuraProyecto></SeleccionEstructuraProyecto>
+                  </div>
+                </v-card-text>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -211,8 +215,10 @@
                   <v-btn text="Guardar" variant="text"></v-btn>
                 </v-toolbar-items>
               </v-toolbar>
-              <v-card-text>
-                <SeleccionEstructuraPei></SeleccionEstructuraPei>
+              <v-card-text style="height: calc(100vh - 64px); padding: 0">
+                <div style="width: 100%; height: 100%">
+                  <SeleccionEstructuraPei></SeleccionEstructuraPei>
+                </div>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -301,6 +307,7 @@
       <v-btn variant="text" @click="snackbar.show = false">Cerrar</v-btn>
     </template>
   </v-snackbar>
+  {{ tableData }}
 </template>
 
 <script setup>
@@ -322,8 +329,8 @@ import { SELECT_OPTIONS } from '@/utility/selectOptions'
 import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
 //Estructuras
 import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
-import ComponenteSeleccionarPei from './parciales/ComponenteSeleccionarPei.vue'
 import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
+//Actividades Test
 
 // Props del componente
 const props = defineProps({
@@ -839,6 +846,19 @@ const contextMenuOptions = ref({
 </script>
 
 <style scoped>
+.flow-container {
+  width: 100%;
+  height: 600px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+/* Also ensure the vue-flow element itself gets dimensions */
+.vue-flow {
+  width: 100%;
+  height: 100%;
+}
+
 /* Estilos (mantener igual) */
 .hot-wrapper {
   margin: 16px 0;

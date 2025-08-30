@@ -52,45 +52,34 @@ export const actividadServicios = {
     }
   },
 
-  listaActividadesTareas: async () => {
-    try {
-      const respuesta = await api.get(`/actividades-con-tareas/`);
-      return respuesta.data;
-    } catch (error) {
-      console.error('Axios: Error al obtener las tareas de la actividad id ', error);
-      throw error;
-    }
-  }
+   listaActividadesTareas: async () => {
+     try {
+       const respuesta = await api.get(`/actividades-con-tareas/`);
+       return respuesta.data;
+     } catch (error) {
+       console.error('Axios: Error al obtener las tareas de la actividad id ', error);
+       throw error;
+     }
+   },
 
   /*Actividades por id de proyecto*/
-  allPorIdProyecto: async (id) => {
-    try {
-      const respuesta = await api.get('/actividades/proyecto/' + id + '/')
-      //console.log(respuesta)
-      return respuesta.data
-    } catch (err) {
-      console.log('Axios: fetch error actividades del proyecto id:' + id, err)
-    }
-  },
+  // allPorIdProyecto: async (id) => {
+  //   try {
+  //     const respuesta = await api.get('/actividades/proyecto/' + id + '/')
+  //     //console.log(respuesta)
+  //     return respuesta.data
+  //   } catch (err) {
+  //     console.log('Axios: fetch error actividades del proyecto id:' + id, err)
+  //   }
+  // },
   /* Guardar Actividades - Metodo Bulk */
-  guardarBulk: async (id, data) => {
-    try {
-      const respuesta = await api.post('/actividades/procesar-bulk/' + id + '/', data)
-      return respuesta
-    } catch (error) {
-      console.error('Axios: No se guardo el conjunto de actividades', error)
-      throw error
-    }
-  },
-  /* Lista de actividades y tareas */
-  listaActividadesTareas: async () => {
-    try {
-      const respuesta = await api.get('/actividades-con-tareas/')
-      //console.log(respuesta)
-      return respuesta.data
-    } catch (err) {
-      console.log('Axios: fetch actividades tareas', err)
-    }
-  },
-
+  // guardarBulk: async (id, data) => {
+  //   try {
+  //     const respuesta = await api.post('/actividades/procesar-bulk/' + id + '/', data)
+  //     return respuesta
+  //   } catch (error) {
+  //     console.error('Axios: No se guardo el conjunto de actividades', error)
+  //     throw error
+  //   }
+  // },
 }
