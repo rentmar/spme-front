@@ -34,9 +34,7 @@ export const useProyectoEstructuraStore = defineStore('proyectoHandleEstructura'
 
   //getters: Encontrar nodo por id
   const encontrarNodoPorID = computed(() => {
-    // Return a function that performs the find operation.
     return (id) => {
-      // Add a null check to ensure nodes.value is an array before trying to find an element.
       if (!nodes.value) {
         return undefined
       }
@@ -76,8 +74,6 @@ export const useProyectoEstructuraStore = defineStore('proyectoHandleEstructura'
     return 'Relación desconocida'
   }
 
-  // En tu store (useProyectoEstructuraStore.js)
-
   // Nuevo getter computado
   const relacionesConDescripcion = computed(() => {
     if (!edges.value || !nodes.value) {
@@ -104,12 +100,10 @@ export const useProyectoEstructuraStore = defineStore('proyectoHandleEstructura'
       return []
     }
 
-    // Filtra las aristas donde el nodo de origen o destino coincida con el ID
     const relacionesFiltradas = edges.value.filter(
       (edge) => edge.source === nodeId || edge.target === nodeId,
     )
 
-    // Mapea las relaciones filtradas para agregarles la descripción
     return relacionesFiltradas.map((edge) => {
       const sourceNode = nodes.value.find((n) => n.id === edge.source)
       const targetNode = nodes.value.find((n) => n.id === edge.target)
@@ -120,11 +114,141 @@ export const useProyectoEstructuraStore = defineStore('proyectoHandleEstructura'
       return {
         id: edge.id,
         descripcion: `${sourceLabel} → ${targetLabel}`,
-        // Añade el tipo de conexión (saliente o entrante) para una mejor visualización
         tipo: edge.source === nodeId ? 'saliente' : 'entrante',
       }
     })
   }
+
+  // FUNCIÓN PARA MODIFICAR NODOS
+  function modificarNodo(nodoId, modificaciones) {
+    loading.value = true
+    error.value = null
+
+    try {
+      // Buscar el nodo por ID
+      const nodoIndex = nodes.value.findIndex((nodo) => nodo.id === nodoId)
+
+      if (nodoIndex === -1) {
+        throw new Error(`Nodo con ID ${nodoId} no encontrado`)
+      }
+
+      // Extraer el nodo y crear una copia para modificar
+      const nodoOriginal = nodes.value[nodoIndex]
+      const nodoModificado = JSON.parse(JSON.stringify(nodoOriginal))
+
+      // Aplicar las modificaciones
+      aplicarModificaciones(nodoModificado, modificaciones)
+
+      // Reemplazar el nodo en el array original
+      nodes.value[nodoIndex] = nodoModificado
+
+      // Actualizar conexiones si es necesario
+      actualizarConexiones(nodoId, nodoModificado)
+
+      // Actualizar el diagrama completo
+      if (diagrama.value) {
+        const diagramaIndex = diagrama.value.nodos.findIndex((nodo) => nodo.id === nodoId)
+        if (diagramaIndex !== -1) {
+          diagrama.value.nodos[diagramaIndex] = nodoModificado
+          diagrama.value.actualizado = new Date().toISOString()
+          diagrama.value.sincronizado = false
+        }
+      }
+
+      return nodoModificado
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Función auxiliar para aplicar modificaciones
+  function aplicarModificaciones(nodo, modificaciones) {
+    function aplicarRecursivo(objeto, mods) {
+      for (const [key, value] of Object.entries(mods)) {
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+          if (!objeto[key]) objeto[key] = {}
+          aplicarRecursivo(objeto[key], value)
+        } else {
+          objeto[key] = value
+        }
+      }
+    }
+
+    aplicarRecursivo(nodo, modificaciones)
+  }
+
+  // Función para actualizar conexiones
+  function actualizarConexiones(nodoId, nodoModificado) {
+    edges.value.forEach((conexion) => {
+      if (conexion.source === nodoId && conexion.sourceNode) {
+        conexion.sourceNode = nodoModificado
+      }
+      if (conexion.target === nodoId && conexion.targetNode) {
+        conexion.targetNode = nodoModificado
+      }
+    })
+  }
+
+  // Función para buscar nodos por criterios
+  function buscarNodos(criterio) {
+    if (!nodes.value) return []
+
+    if (typeof criterio === 'function') {
+      return nodes.value.filter(criterio)
+    }
+
+    return nodes.value.filter((nodo) => {
+      return Object.entries(criterio).every(([key, value]) => {
+        const keys = key.split('.')
+        let obj = nodo
+        for (const k of keys) {
+          if (obj && typeof obj === 'object' && k in obj) {
+            obj = obj[k]
+          } else {
+            return false
+          }
+        }
+        return obj === value
+      })
+    })
+  }
+  // En tu store, añade estas funciones:
+
+  function extraerNodosPorIds(ids) {
+    if (!nodes.value || !Array.isArray(ids)) return []
+
+    return ids
+      .map((id) => {
+        const nodo = nodes.value.find((n) => n.id === id)
+        return nodo ? JSON.parse(JSON.stringify(nodo)) : null
+      })
+      .filter((nodo) => nodo !== null)
+  }
+
+  function extraerNodosPorTipo(tipo) {
+    if (!nodes.value) return []
+
+    return nodes.value
+      .filter((nodo) => nodo.data?.type === tipo)
+      .map((nodo) => JSON.parse(JSON.stringify(nodo)))
+  }
+
+  function extraerNodosPorCriterio(criterio) {
+    const nodosFiltrados = buscarNodos(criterio)
+    return nodosFiltrados.map((nodo) => JSON.parse(JSON.stringify(nodo)))
+  }
+
+  // Agregar al return
+  // return {
+  //   // ... otras funciones
+  //   extraerNodoPorId,
+  //   extraerNodosPorIds,
+  //   extraerNodosPorTipo,
+  //   extraerNodosPorCriterio,
+  // }
 
   return {
     //Estados
@@ -144,5 +268,11 @@ export const useProyectoEstructuraStore = defineStore('proyectoHandleEstructura'
     getRelacionDescripcion,
     relacionesConDescripcion,
     obtenerRelacionesDeNodo,
+    // Nuevas funciones
+    modificarNodo,
+    buscarNodos,
+    extraerNodosPorIds,
+    extraerNodosPorTipo,
+    extraerNodosPorCriterio,
   }
 })
