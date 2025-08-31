@@ -1,7 +1,12 @@
 <template>
-  <v-container>
+  <v-container class="solicitud-fondos-container">
     <!-- Overlay de carga -->
-    <v-overlay :model-value="cargandoGeneral" class="align-center justify-center" persistent>
+    <v-overlay
+      :model-value="cargandoGeneral"
+      class="align-center justify-center"
+      persistent
+      opacity="0.8"
+    >
       <div class="text-center">
         <v-progress-circular
           indeterminate
@@ -14,109 +19,82 @@
     </v-overlay>
 
     <div v-if="!cargandoGeneral">
-      <v-row>
-        <v-col cols="12" md="12" lg="12">
-          <PaginaTituloIcono
-            titulo="SOLICITUD DE FONDOS EN AVANCE"
-            subtitulo="Formulario F-01 - Con cargo a rendición de cuenta"
-            icon="mdi-cash-plus"
-            icon-color="primary"
-          ></PaginaTituloIcono>
-        </v-col>
-      </v-row>
+      <!--Titulo de la pagina-->
+      <PaginaTituloIcono
+        :titulo="'Solicitud de Fondos'"
+        :icon="'mdi-cash-check'"
+      ></PaginaTituloIcono>
+      <!--Encabezado del Proyecto-->
+      <ProyectoIdHeader
+        v-if="datosFormulario"
+        :proyecto-id="datosFormulario.actividad.proyecto"
+      ></ProyectoIdHeader>
+      <br />
+      <!--Encabezado de la Actividad-->
+      <ActividadInformacion
+        v-if="datosFormulario.actividad"
+        :actividad="datosFormulario.actividad"
+      />
 
       <v-row>
         <!-- Panel lateral de información -->
         <v-col cols="12" md="4" lg="3">
           <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="primary" density="compact">
-              <v-toolbar-title class="text-white text-caption">
-                <v-icon small class="mr-2">mdi-information</v-icon>
-                Información General
-              </v-toolbar-title>
+              <v-toolbar-title class="text-white">Información General</v-toolbar-title>
             </v-toolbar>
-            <v-card-text class="pa-3">
+            <v-card-text class="pa-4">
+              <!-- <div class="info-item mb-3">
+                <div class="text-subtitle-2 text-medium-emphasis">Proyecto:</div>
+                <div class="text-body-1 font-weight-medium">{{ proyectoData.codigo }}</div>
+              </div> -->
               <div class="info-item mb-3">
-                <div class="text-caption text-medium-emphasis">Proyecto:</div>
-                <div class="text-body-2 font-weight-medium">PROY-2023-015</div>
-              </div>
-              <div class="info-item mb-3">
-                <div class="text-caption text-medium-emphasis">Actividad:</div>
-                <div class="text-body-2 font-weight-medium">Capacitación técnica</div>
-              </div>
-              <div class="info-item mb-3">
-                <div class="text-caption text-medium-emphasis">Estado:</div>
-                <v-chip color="warning" size="small" class="mt-1">
-                  <v-icon small class="mr-1">mdi-progress-clock</v-icon>
-                  Pendiente
-                </v-chip>
-              </div>
-              <div class="info-item">
-                <div class="text-caption text-medium-emphasis">Fecha solicitud:</div>
-                <div class="text-body-2 font-weight-medium">
-                  {{ new Date().toLocaleDateString() }}
+                <div class="text-subtitle-2 text-medium-emphasis">Actividad:</div>
+                <div class="text-body-1 font-weight-medium">
+                  {{ datosFormulario.actividad.nombreCorto }}
                 </div>
               </div>
+              <div class="info-item mb-3">
+                <div class="text-subtitle-2 text-medium-emphasis">Estado:</div>
+                <v-chip color="warning" size="small" class="mt-1">
+                  <v-icon small class="mr-1">mdi-progress-clock</v-icon>
+                  {{ datosFormulario.actividad.estado }}
+                </v-chip>
+              </div>
+              <!-- <div class="info-item">
+                <div class="text-subtitle-2 text-medium-emphasis">Fecha solicitud:</div>
+                <div class="text-body-1 font-weight-medium">
+                  {{ new Date().toLocaleDateString() }}
+                </div>
+              </div> -->
             </v-card-text>
           </v-card>
 
           <!-- Tarjeta de resumen rápido -->
           <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
-              <v-toolbar-title class="text-white text-caption">
-                <v-icon small class="mr-2">mdi-chart-box</v-icon>
-                Resumen Rápido
-              </v-toolbar-title>
+              <v-toolbar-title class="text-white">Resumen Rápido</v-toolbar-title>
             </v-toolbar>
-            <v-card-text class="pa-3">
+            <v-card-text class="pa-4">
               <div class="d-flex justify-space-between align-center mb-2">
-                <span class="text-caption">Monto solicitado:</span>
-                <span class="text-body-2 font-weight-bold text-primary">Bs. 0.00</span>
+                <span class="text-subtitle-2 text-medium-emphasis">Monto solicitado:</span>
+                <span class="text-body-1 font-weight-bold text-primary"
+                  >Bs. {{ totalMontoSolicitado.toLocaleString() }}</span
+                >
               </div>
               <div class="d-flex justify-space-between align-center mb-2">
-                <span class="text-caption">Items de gasto:</span>
-                <span class="text-body-2 font-weight-medium">0</span>
+                <span class="text-subtitle-2 text-medium-emphasis">Items de gasto:</span>
+                <span class="text-body-1 font-weight-medium">{{
+                  formData.detalle_destino_fondos.length
+                }}</span>
               </div>
               <v-divider class="my-2"></v-divider>
               <div class="d-flex justify-space-between align-center">
-                <span class="text-caption">Presupuesto disponible:</span>
-                <span class="text-body-2 font-weight-medium text-success">Bs. 2,500.00</span>
+                <span class="text-subtitle-2 text-medium-emphasis">Presupuesto disponible:</span>
+                <span class="text-body-1 font-weight-medium text-success"
+                  >Bs. {{ actividadData.presupuesto.toLocaleString() }}</span
+                >
               </div>
-            </v-card-text>
-          </v-card>
-
-          <!-- Acciones rápidas -->
-          <v-card elevation="2" rounded="lg">
-            <v-toolbar color="info" density="compact">
-              <v-toolbar-title class="text-white text-caption">
-                <v-icon small class="mr-2">mdi-lightning-bolt</v-icon>
-                Acciones Rápidas
-              </v-toolbar-title>
-            </v-toolbar>
-            <v-card-text class="pa-3">
-              <v-btn
-                block
-                color="primary"
-                variant="flat"
-                size="small"
-                class="mb-2"
-                prepend-icon="mdi-plus"
-              >
-                Nuevo Gasto
-              </v-btn>
-              <v-btn
-                block
-                color="secondary"
-                variant="outlined"
-                size="small"
-                class="mb-2"
-                prepend-icon="mdi-content-save"
-              >
-                Guardar Borrador
-              </v-btn>
-              <v-btn block color="error" variant="outlined" size="small" prepend-icon="mdi-delete">
-                Cancelar
-              </v-btn>
             </v-card-text>
           </v-card>
         </v-col>
@@ -132,218 +110,914 @@
             </v-toolbar>
 
             <v-card-text class="pa-4">
-              <!-- Sección 1: Información del Solicitante -->
-              <div class="form-section mb-6">
-                <h3 class="text-h6 mb-4 primary--text">
-                  <v-icon color="primary" class="mr-2">mdi-account</v-icon>
-                  Información del Solicitante
-                </h3>
-                <v-row>
-                  <v-col cols="12" md="6">
-                    <v-text-field
-                      label="Nombre completo"
+              <v-form ref="form" @submit.prevent="submitForm">
+                <!-- Sección 1: Información del Solicitante -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-account</v-icon>
+                    Información del Solicitante
+                  </h3>
+                  <v-row>
+                    <v-col cols="12" md="4">
+                      <v-text-field
+                        v-model="formData.nombre"
+                        label="Nombre del Solicitante"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="4">
+                      <v-text-field
+                        v-model="formData.paterno"
+                        label="Apellido paterno del Solicitante"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="4">
+                      <v-text-field
+                        v-model="formData.materno"
+                        label="Apellido materno del Solicitante"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="4">
+                      <v-text-field
+                        v-model="formData.documento_identidad"
+                        label="Carnet de Identidad"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="4">
+                      <v-text-field
+                        v-model="formData.cargo"
+                        label="Cargo"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <!-- Sección 2: Información de la Actividad -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-calendar-text</v-icon>
+                    Información de la Actividad
+                  </h3>
+                  <v-textarea
+                    v-model="formData.descripcion_actividad"
+                    label="Descripción de la Actividad"
+                    variant="outlined"
+                    rows="3"
+                    bg-color="blue-lighten-5"
+                    readonly
+                  ></v-textarea>
+                  <v-row>
+                    <v-col cols="12" md="4">
+                      <v-text-field
+                        v-model="formData.fecha_irealizacion"
+                        label="Inicio de Fecha de Realización"
+                        type="date"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="4">
+                      <v-text-field
+                        v-model="formData.fecha_frealizacion"
+                        label="Fin de Fecha de Realización"
+                        type="date"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                  <v-textarea
+                    v-model="formData.objetivo_actividad"
+                    label="Objetivo de la Actividad"
+                    variant="outlined"
+                    rows="3"
+                    bg-color="blue-lighten-5"
+                    readonly
+                  ></v-textarea>
+                  <v-text-field
+                    v-model="formData.fuente_financiamiento"
+                    label="Fuente de Financiamiento"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <!-- Sección 3: Detalle de Gastos -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-cash</v-icon>
+                    Detalle de Gastos Solicitados
+                  </h3>
+
+                  <v-alert type="info" variant="tonal" class="mb-4">
+                    <template v-slot:prepend>
+                      <v-icon color="info">mdi-information</v-icon>
+                    </template>
+                    Agregue todos los gastos asociados a la actividad. Especifique partida,
+                    descripción y monto.
+                  </v-alert>
+
+                  <div class="d-flex justify-space-between align-center mb-4">
+                    <v-btn
+                      color="primary"
                       variant="outlined"
-                      density="compact"
-                      bg-color="grey-lighten-4"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field
-                      label="Cargo"
-                      variant="outlined"
-                      density="compact"
-                      bg-color="grey-lighten-4"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field
-                      label="CI"
-                      variant="outlined"
-                      density="compact"
-                      bg-color="grey-lighten-4"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field
-                      label="Unidad/Departamento"
-                      variant="outlined"
-                      density="compact"
-                      bg-color="grey-lighten-4"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-              </div>
+                      prepend-icon="mdi-plus"
+                      @click="addGasto"
+                    >
+                      Agregar Item
+                    </v-btn>
+                    <v-chip class="text-subtitle-1" color="primary" variant="outlined">
+                      Monto Total Solicitado (Bs.): {{ totalMontoSolicitado.toLocaleString() }}
+                    </v-chip>
+                  </div>
 
-              <v-divider class="my-6"></v-divider>
+                  <v-table class="elevation-1 rounded-lg mb-4 users-table">
+                    <thead>
+                      <tr>
+                        <th class="text-subtitle-2 font-weight-bold">Partida</th>
+                        <th class="text-subtitle-2 font-weight-bold">Descripción</th>
+                        <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
+                        <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
+                        <td>
+                          <v-text-field
+                            v-model="gasto.partida"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            bg-color="blue-lighten-5"
+                            placeholder="1.1.1"
+                          ></v-text-field>
+                        </td>
+                        <td>
+                          <v-text-field
+                            v-model="gasto.descripcion_gasto"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            bg-color="blue-lighten-5"
+                            placeholder="Descripción del gasto"
+                          ></v-text-field>
+                        </td>
+                        <td>
+                          <v-text-field
+                            v-model.number="gasto.monto"
+                            type="number"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            bg-color="blue-lighten-5"
+                            placeholder="0.00"
+                            min="0"
+                          ></v-text-field>
+                        </td>
+                        <td class="text-center">
+                          <v-btn
+                            icon
+                            color="error"
+                            size="small"
+                            variant="text"
+                            @click="removeGasto(index)"
+                          >
+                            <v-icon>mdi-delete</v-icon>
+                          </v-btn>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                </div>
 
-              <!-- Sección 2: Detalle de Gastos -->
-              <div class="form-section mb-6">
-                <h3 class="text-h6 mb-4 primary--text">
-                  <v-icon color="primary" class="mr-2">mdi-cash</v-icon>
-                  Detalle de Gastos Solicitados
-                </h3>
+                <v-divider class="my-4"></v-divider>
 
-                <v-alert type="info" variant="tonal" class="mb-4">
-                  <template v-slot:prepend>
-                    <v-icon color="info">mdi-information</v-icon>
-                  </template>
-                  Agregue todos los gastos asociados a la actividad. Especifique partida,
-                  descripción y monto.
-                </v-alert>
+                <!-- Sección 4: Información Adicional -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-information</v-icon>
+                    Información Adicional
+                  </h3>
 
-                <v-table class="elevation-1 rounded-lg mb-4">
-                  <thead>
-                    <tr>
-                      <th class="text-left font-weight-bold">Partida</th>
-                      <th class="text-left font-weight-bold">Descripción</th>
-                      <th class="text-left font-weight-bold">Monto (Bs.)</th>
-                      <th class="text-center font-weight-bold">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(item, index) in itemsGasto" :key="index">
-                      <td>
-                        <v-text-field
-                          v-model="item.partida"
-                          variant="outlined"
-                          density="compact"
-                          hide-details
-                          placeholder="1.1.1"
-                        ></v-text-field>
-                      </td>
-                      <td>
-                        <v-text-field
-                          v-model="item.descripcion"
-                          variant="outlined"
-                          density="compact"
-                          hide-details
-                          placeholder="Descripción del gasto"
-                        ></v-text-field>
-                      </td>
-                      <td>
-                        <v-text-field
-                          v-model="item.monto"
-                          type="number"
-                          variant="outlined"
-                          density="compact"
-                          hide-details
-                          placeholder="0.00"
-                        ></v-text-field>
-                      </td>
-                      <td class="text-center">
-                        <v-btn icon color="error" size="small" variant="text">
-                          <v-icon>mdi-delete</v-icon>
-                        </v-btn>
-                      </td>
-                    </tr>
-                  </tbody>
-                </v-table>
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="formData.forma_pago"
+                        :items="formasPagoOptions"
+                        item-title="formaPago"
+                        item-value="id"
+                        label="Forma de Pago"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-select>
+                      <v-text-field
+                        v-model="formData.lugar_solicitud"
+                        label="Lugar de la Solicitud"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="formData.fecha_solicitud"
+                        label="Fecha de la Solicitud"
+                        type="date"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </div>
 
-                <v-btn
-                  color="primary"
-                  variant="outlined"
-                  prepend-icon="mdi-plus"
-                  @click="agregarItemGasto"
-                >
-                  Agregar Item
-                </v-btn>
-              </div>
+                <v-divider class="my-4"></v-divider>
 
-              <v-divider class="my-6"></v-divider>
+                <!-- Sección 5: Firmas -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Firmas y Validaciones
+                  </h3>
 
-              <!-- Sección 3: Información Adicional -->
-              <div class="form-section mb-6">
-                <h3 class="text-h6 mb-4 primary--text">
-                  <v-icon color="primary" class="mr-2">mdi-calendar-text</v-icon>
-                  Información Adicional
-                </h3>
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="formData.idresponsable"
+                        :items="responsablesList"
+                        :item-title="getNombreCompleto"
+                        item-value="id"
+                        label="Responsable del Cargo de Cuenta"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-select>
+                    </v-col>
+                    <v-col cols="12" md="6" class="d-flex align-center">
+                      <v-checkbox
+                        v-model="formData.validacion_responsable"
+                        label="Aprobado por Responsable del Cargo de Cuenta"
+                        :disabled="isFrozen"
+                      ></v-checkbox>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="formData.idcoordinador"
+                        :items="coordinadoresList"
+                        :item-title="getNombreCompleto"
+                        item-value="id"
+                        label="Coordinador"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-select>
+                    </v-col>
+                    <v-col cols="12" md="6" class="d-flex align-center">
+                      <v-checkbox
+                        v-model="formData.validacion_coordinador"
+                        label="Aprobado por Coordinador"
+                        :disabled="isFrozen"
+                      ></v-checkbox>
+                    </v-col>
+                  </v-row>
+                </div>
 
-                <v-row>
-                  <v-col cols="12" md="6">
-                    <v-textarea
-                      label="Justificación de la solicitud"
-                      variant="outlined"
-                      rows="3"
-                      placeholder="Describa brevemente la necesidad de los fondos solicitados..."
-                    ></v-textarea>
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field
-                      label="Lugar de ejecución"
-                      variant="outlined"
-                      placeholder="Ciudad, Departamento"
-                    ></v-text-field>
-                    <v-select
-                      label="Forma de pago preferida"
-                      :items="['Transferencia bancaria', 'Cheque', 'Efectivo']"
-                      variant="outlined"
-                    ></v-select>
-                  </v-col>
-                </v-row>
-              </div>
-
-              <!-- Botones de acción -->
-              <div class="d-flex justify-end gap-3 mt-8">
-                <v-btn color="error" variant="outlined" size="large" prepend-icon="mdi-cancel">
-                  Cancelar
-                </v-btn>
-                <v-btn
-                  color="secondary"
-                  variant="outlined"
-                  size="large"
-                  prepend-icon="mdi-content-save"
-                >
-                  Guardar Borrador
-                </v-btn>
-                <v-btn color="primary" variant="flat" size="large" prepend-icon="mdi-send">
-                  Enviar Solicitud
-                </v-btn>
-              </div>
+                <!-- Botones de acción -->
+                <div class="d-flex justify-end gap-3 mt-8">
+                  <v-btn color="error" variant="outlined" size="large" prepend-icon="mdi-cancel">
+                    Cancelar
+                  </v-btn>
+                  <v-btn
+                    color="secondary"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-backspace-outline"
+                    @click="resetForm"
+                  >
+                    Limpiar
+                  </v-btn>
+                  <v-btn
+                    color="primary"
+                    variant="flat"
+                    size="large"
+                    prepend-icon="mdi-send"
+                    type="submit"
+                    :loading="loading"
+                  >
+                    Enviar Solicitud
+                  </v-btn>
+                </div>
+              </v-form>
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
     </div>
   </v-container>
+  {{ datosFormulario }}
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
+import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
+import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import * as XLSX from 'xlsx'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
+const idActividad = route.params.id || null
+const idTarea = route.query.tarea_id || null
+console.log('ID de Actividad desde la ruta:', idActividad)
+console.log('ID de Tarea:', idTarea)
+
+//variables para carga de datos
+const datosFormulario = ref(null)
+const error = ref(null)
+const isLoading = ref(false)
+
+// Estado reactivo
 const cargandoGeneral = ref(true)
-const itemsGasto = ref([{ partida: '', descripcion: '', monto: '' }])
+const loading = ref(false)
+const form = ref(null)
+const responsablesList = ref([])
+const coordinadoresList = ref([])
 
-const agregarItemGasto = () => {
-  itemsGasto.value.push({ partida: '', descripcion: '', monto: '' })
+const formData = ref({
+  // Campos del usuario (se llenarán automáticamente)
+  nombre: '',
+  paterno: '',
+  materno: '',
+  cargo: '',
+  documento_identidad: '',
+  // Campos de la actividad
+  descripcion_actividad: '',
+  objetivo_actividad: '',
+  fecha_irealizacion: '',
+  fecha_frealizacion: '',
+  fuente_financiamiento: '',
+  id_actividad: 0,
+  id_usuario: 0,
+  // Resto de campos del formulario
+  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+  forma_pago: null,
+  lugar_solicitud: '',
+  fecha_solicitud: getCurrentDate(),
+  monto_solicitado: 0,
+  validacion_responsable: false,
+  idresponsable: null,
+  validacion_coordinador: false,
+  idcoordinador: null,
+})
+
+// const proyectoData = ref({
+//   titulo: 'Formulario F-01: Solicitud de Fondos',
+//   codigo: 'F-01',
+//   estado: 'en_proceso',
+//   fecha_inicio: new Date().toISOString().split('T')[0],
+//   fecha_finalizacion: new Date().toISOString().split('T')[0],
+//   creado_por: 'Usuario Actual',
+//   presupuesto: '0.00',
+//   instancia_gestora: [],
+//   pei: null,
+// })
+
+const actividadData = ref({
+  codigo: 'ACT-2023-005',
+  descripcion: 'Capacitación en gestión de proyectos para equipos técnicos',
+  estado: 'EJEC',
+  tipo: [{ nombre: 'Actividad de Capacitación' }, { nombre: 'Actividad de Articulación' }],
+  fecha_programada: '2023-05-15',
+  fecha_cierre: '2023-06-30',
+  responsable: { nombre: 'María González' },
+  presupuesto: 2500,
+})
+
+// Propiedades computadas
+const nombreCoordinadorElegido = computed(() => {
+  const coordinador = coordinadoresList.value.find(
+    (user) => user.id === formData.value.idcoordinador,
+  )
+  return coordinador ? getNombreCompleto(coordinador) : ''
+})
+
+const nombreResponsableElegido = computed(() => {
+  const responsable = responsablesList.value.find(
+    (user) => user.id === formData.value.idresponsable,
+  )
+  return responsable ? getNombreCompleto(responsable) : ''
+})
+
+const totalMontoSolicitado = computed(() => {
+  return formData.value.detalle_destino_fondos.reduce(
+    (total, gasto) => total + Number(gasto.monto || 0),
+    0,
+  )
+})
+
+const nombreCompletoSolicitante = computed(() => {
+  return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
+})
+
+const isFrozen = computed(() => {
+  return true
+})
+
+// ✅ WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
+watch(
+  datosFormulario,
+  (newVal) => {
+    if (newVal && newVal.usuario) {
+      console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
+
+      const usuario = newVal.usuario
+
+      // Llenar campos del usuario
+      formData.value.nombre = usuario.nombre || ''
+      formData.value.paterno = usuario.paterno || ''
+      formData.value.materno = usuario.materno || ''
+      formData.value.cargo = usuario.cargo || ''
+      formData.value.documento_identidad = usuario.ci || ''
+      formData.value.id_usuario = usuario.id || 0
+
+      // Llenar campos de la actividad si existen
+      if (newVal.actividad) {
+        console.log('Auto-llenando datos de actividad:', newVal.actividad)
+
+        formData.value.descripcion_actividad = newVal.actividad.descripcion || ''
+        formData.value.objetivo_actividad = newVal.actividad.objetivo_de_actividad || ''
+        formData.value.fecha_irealizacion = newVal.actividad.fecha_inicio || ''
+        formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
+        formData.value.id_actividad = newVal.actividad.id || 0
+        formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
+
+        if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
+          console.log('Formas de pago disponibles:', newVal.formaPago)
+        }
+
+        // También actualizar actividadData para el componente ActividadInformacion
+        actividadData.value = {
+          ...actividadData.value,
+          descripcion: newVal.actividad.descripcion || actividadData.value.descripcion,
+          fecha_programada: newVal.actividad.fecha_inicio || actividadData.value.fecha_programada,
+          fecha_cierre: newVal.actividad.fecha_cierre || actividadData.value.fecha_cierre,
+        }
+      }
+
+      // Llenar lista de validadores si existen
+      if (newVal.validadores && Array.isArray(newVal.validadores)) {
+        console.log('Cargando validadores:', newVal.validadores)
+        responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
+        coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
+      }
+    }
+  },
+  { deep: true },
+)
+
+const formasPagoOptions = computed(() => {
+  if (datosFormulario.value && datosFormulario.value.formaPago) {
+    return datosFormulario.value.formaPago
+  }
+  return []
+})
+
+// 6. Para la función exportToExcel, necesitas obtener el texto de la forma de pago:
+const formasPagoTexto = computed(() => {
+  if (formData.value.forma_pago && formasPagoOptions.value.length > 0) {
+    const formaPago = formasPagoOptions.value.find((fp) => fp.id === formData.value.forma_pago)
+    return formaPago ? formaPago.formaPago : ''
+  }
+  return ''
+})
+
+// Métodos
+function getNombreCompleto(user) {
+  return `${user.nombre} ${user.paterno} ${user.materno}`.trim()
 }
 
-onMounted(() => {
-  // Simular carga de datos
-  setTimeout(() => {
+function getCurrentDate() {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+async function cargarDatos() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/obtener-datos-formulario/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_actividad: idActividad,
+        usuario: 'admin',
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+      )
+    }
+
+    const data = await response.json()
+    datosFormulario.value = data
+    console.log('Datos cargados exitosamente:', datosFormulario.value)
+  } catch (err) {
+    error.value = err.message
+    console.error('Ha ocurrido un error:', err)
+  } finally {
+    isLoading.value = false
     cargandoGeneral.value = false
-  }, 1500)
+  }
+}
+
+function addGasto() {
+  formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 })
+}
+
+function removeGasto(index) {
+  if (formData.value.detalle_destino_fondos.length > 1) {
+    formData.value.detalle_destino_fondos.splice(index, 1)
+  }
+}
+
+async function submitForm() {
+  loading.value = true
+  try {
+    // Validar si el formulario está completo
+    if (
+      !formData.value.lugar_solicitud ||
+      !formData.value.forma_pago ||
+      !formData.value.idresponsable ||
+      !formData.value.idcoordinador
+    ) {
+      throw new Error('Por favor, completa todos los campos obligatorios del formulario.')
+    }
+    if (totalMontoSolicitado.value <= 0) {
+      throw new Error('El monto total solicitado debe ser mayor a cero.')
+    }
+    // Transformar los datos al formato esperado por el endpoint
+    const payload = {
+      detalle_destino_fondos: JSON.stringify({
+        items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          concepto: gasto.descripcion_gasto,
+          monto: Number(gasto.monto),
+        })),
+      }),
+      forma_pago: formData.value.forma_pago,
+      lugar_solicitud: formData.value.lugar_solicitud,
+      fecha_solicitud: formData.value.fecha_solicitud,
+      monto_solicitado: totalMontoSolicitado.value,
+      validacion_responsable: formData.value.validacion_responsable,
+      id_responsable: formData.value.idresponsable,
+      validacion_coordinador: formData.value.validacion_coordinador,
+      id_coordinador: formData.value.idcoordinador,
+      id_usuario: formData.value.id_usuario,
+      actividad: {
+        id_actividad: formData.value.id_actividad,
+        descripcion_actividad: formData.value.descripcion_actividad,
+        objetivo_actividad: formData.value.objetivo_actividad,
+      },
+      id_tarea: idTarea || null,
+    }
+
+    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/crear-solicitud-fondos/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
+    exportToExcel()
+    const data = await response.json()
+    console.log('Respuesta del servidor:', data)
+    return data
+  } catch (error) {
+    console.error('Error completo:', error.response?.data || error.message)
+    alert(`Error: ${error.response?.data?.mensaje || error.message}`)
+  } finally {
+    loading.value = false
+  }
+}
+
+function resetForm() {
+  Object.assign(formData.value, {
+    detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+    forma_pago: '',
+    lugar_solicitud: '',
+    fecha_solicitud: getCurrentDate(),
+    monto_solicitado: 0,
+    validacion_responsable: false,
+    idresponsable: null,
+    validacion_coordinador: false,
+    idcoordinador: null,
+    id_usuario: 0,
+    id_actividad: 0,
+  })
+}
+
+function exportToExcel() {
+  // 1. Crear datos principales con formato de formulario
+  const mainData = [
+    ['FORMULARIO F-01: SOLICITUD DE FONDOS EN AVANCE CON CARGO A RENDICIÓN DE CUENTA', '', '', ''],
+    [''],
+    ['INFORMACIÓN DEL SOLICITANTE', '', '', ''],
+    ['Nombre Completo:', nombreCompletoSolicitante.value, '', ''],
+    ['Documento de Identidad:', formData.value.documento_identidad, '', ''],
+    ['Cargo:', formData.value.cargo, '', ''],
+    [''],
+    ['INFORMACIÓN DE LA ACTIVIDAD', '', '', ''],
+    ['Descripción:', formData.value.descripcion_actividad, '', ''],
+    [
+      'Fecha Inicio:',
+      formData.value.fecha_irealizacion,
+      'Fecha Fin:',
+      formData.value.fecha_frealizacion,
+    ],
+    ['Objetivo:', formData.value.objetivo_actividad, '', ''],
+    ['Fuente de Financiamiento:', formData.value.fuente_financiamiento, '', ''],
+    [''],
+    ['INFORMACIÓN DE LA SOLICITUD', '', '', ''],
+    ['Forma de Pago:', formasPagoTexto.value, '', ''],
+    ['Lugar de Solicitud:', formData.value.lugar_solicitud, '', ''],
+    ['Fecha de Solicitud:', getCurrentDate1(), '', ''],
+    ['Monto Total Solicitado:', `Bs. ${totalMontoSolicitado.value.toLocaleString()}`, '', ''],
+    [''],
+    ['FIRMAS Y VALIDACIONES', '', '', ''],
+    [
+      'Responsable:',
+      nombreResponsableElegido.value,
+      'Aprobado:',
+      formData.value.validacion_responsable ? '✓' : '✗',
+    ],
+    [
+      'Coordinador:',
+      nombreCoordinadorElegido.value,
+      'Aprobado:',
+      formData.value.validacion_coordinador ? '✓' : '✗',
+    ],
+    [''],
+    ['DETALLE DEL DESTINO DE FONDOS', '', '', ''],
+  ]
+
+  // 2. Encabezados de la tabla de gastos
+  const expensesHeaders = ['PARTIDA', 'DESCRIPCIÓN DEL GASTO', 'MONTO (BS.)', 'OBSERVACIONES']
+
+  // 3. Datos de gastos
+  const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
+    gasto.partida,
+    gasto.descripcion_gasto,
+    gasto.monto,
+    '',
+  ])
+
+  // 4. Total al final de la tabla
+  const totalRow = ['TOTAL', '', totalMontoSolicitado.value, '']
+
+  // 5. Crear workbook
+  const wb = XLSX.utils.book_new()
+
+  // 6. Hoja principal con formato de formulario
+  const wsMain = XLSX.utils.aoa_to_sheet([...mainData, expensesHeaders, ...expensesData, totalRow])
+
+  // 7. Aplicar estilos y formatos
+  applyExcelStyles(
+    wsMain,
+    mainData.length,
+    expensesData.length,
+    formData.value.descripcion_actividad,
+    formData.value.objetivo_actividad,
+  )
+
+  // 8. Agregar hoja al workbook y guardar
+  XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud de Fondos')
+  XLSX.writeFile(wb, `Solicitud_Fondos_F-01_${getCurrentDate1()}.xlsx`)
+}
+
+function applyExcelStyles(
+  worksheet,
+  mainDataRows,
+  expensesRows,
+  descripcionActividad,
+  objetivoActividad,
+) {
+  if (!worksheet['!merges']) worksheet['!merges'] = []
+
+  // Fusionar celdas para títulos y secciones
+  worksheet['!merges'].push(
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } },
+    { s: { r: 7, c: 0 }, e: { r: 7, c: 3 } },
+    { s: { r: 12, c: 0 }, e: { r: 12, c: 3 } },
+    { s: { r: 18, c: 0 }, e: { r: 18, c: 3 } },
+    { s: { r: 21 + mainDataRows, c: 0 }, e: { r: 21 + mainDataRows, c: 3 } },
+  )
+
+  // Configurar anchos de columnas
+  worksheet['!cols'] = [{ wch: 30 }, { wch: 40 }, { wch: 20 }, { wch: 25 }]
+
+  // Aplicar formatos a celdas específicas
+  Object.keys(worksheet).forEach((cellAddress) => {
+    if (cellAddress !== '!ref' && cellAddress !== '!merges' && cellAddress !== '!cols') {
+      const cell = worksheet[cellAddress]
+      const cellRef = XLSX.utils.decode_cell(cellAddress)
+
+      // Estilo para títulos y encabezados de sección
+      if (
+        cellRef.r === 0 ||
+        cellRef.r === 2 ||
+        cellRef.r === 7 ||
+        cellRef.r === 12 ||
+        cellRef.r === 18 ||
+        cellRef.r === 21 + mainDataRows
+      ) {
+        cell.s = {
+          font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 14 },
+          fill: { fgColor: { rgb: '4472C4' } },
+          alignment: { horizontal: 'center', vertical: 'center' },
+        }
+      }
+
+      // Estilo para etiquetas
+      else if (cellRef.c === 0 && cellRef.r > 0 && cellRef.r < 21 + mainDataRows) {
+        cell.s = {
+          font: { bold: true, color: { rgb: '000000' } },
+          fill: { fgColor: { rgb: 'D9E1F2' } },
+        }
+      }
+
+      // Estilo para encabezados de tabla
+      else if (cellRef.r === 22 + mainDataRows) {
+        cell.s = {
+          font: { bold: true, color: { rgb: 'FFFFFF' } },
+          fill: { fgColor: { rgb: '5B9BD5' } },
+          alignment: { horizontal: 'center' },
+        }
+      }
+
+      // Estilo para la fila total
+      else if (cellRef.r === 23 + mainDataRows + expensesRows) {
+        cell.s = {
+          font: { bold: true },
+          fill: { fgColor: { rgb: 'F2F2F2' } },
+        }
+      }
+
+      // Formato de moneda para columna de montos (columna C)
+      else if (
+        cellRef.c === 2 &&
+        cellRef.r >= 23 + mainDataRows &&
+        cellRef.r <= 22 + mainDataRows + expensesRows
+      ) {
+        cell.z = '"Bs." #,##0.00'
+      }
+
+      // Formato de fecha para celdas de fecha
+      else if (
+        (cell.v && typeof cell.v === 'string' && cell.v.match(/\d{4}-\d{2}-\d{2}/)) ||
+        (cellRef.c === 2 && cellRef.r === 9)
+      ) {
+        cell.z = 'dd/mm/yyyy'
+      }
+
+      // Estilo específico para la celda de descripción de actividad (B9)
+      if (cellRef.r === 8 && cellRef.c === 1) {
+        if (!cell.s) cell.s = {}
+        cell.s.alignment = cell.s.alignment || {}
+        cell.s.alignment.wrapText = true
+        cell.s.alignment.vertical = 'top'
+      }
+
+      // Estilo específico para la celda de objetivo de actividad (B11)
+      if (cellRef.r === 10 && cellRef.c === 1) {
+        if (!cell.s) cell.s = {}
+        cell.s.alignment = cell.s.alignment || {}
+        cell.s.alignment.wrapText = true
+        cell.s.alignment.vertical = 'top'
+      }
+    }
+  })
+
+  // Agregar bordes a la tabla de gastos
+  const tableStartRow = 22 + mainDataRows
+  const tableEndRow = 23 + mainDataRows + expensesRows
+
+  for (let r = tableStartRow; r <= tableEndRow; r++) {
+    for (let c = 0; c < 4; c++) {
+      const cellAddress = XLSX.utils.encode_cell({ r, c })
+      if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: '' }
+      if (!worksheet[cellAddress].s) worksheet[cellAddress].s = {}
+      worksheet[cellAddress].s.border = {
+        top: { style: 'thin', color: { rgb: '000000' } },
+        right: { style: 'thin', color: { rgb: '000000' } },
+        bottom: { style: 'thin', color: { rgb: '000000' } },
+        left: { style: 'thin', color: { rgb: '000000' } },
+      }
+    }
+  }
+
+  // Ajustar altura de filas para las celdas con texto largo
+  if (!worksheet['!rows']) worksheet['!rows'] = []
+
+  // Ajustar altura de la fila de descripción (fila 9)
+  if (descripcionActividad && descripcionActividad.length > 100) {
+    worksheet['!rows'][8] = { hpt: 60 }
+  }
+
+  // Ajustar altura de la fila de objetivo (fila 11)
+  if (objetivoActividad && objetivoActividad.length > 100) {
+    worksheet['!rows'][10] = { hpt: 60 }
+  }
+}
+
+function getCurrentDate1() {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${day}/${month}/${year}`
+}
+
+// Ciclo de vida
+onMounted(async () => {
+  await cargarDatos()
 })
 </script>
 
 <style scoped>
-.v-container {
+.solicitud-fondos-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px 16px;
 }
 
+.v-card {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.v-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
 .form-section {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   padding: 24px;
-  border-radius: 12px;
+  border-radius: 8px;
   margin-bottom: 24px;
   border: 1px solid #e0e0e0;
 }
 
 .form-section h3 {
   color: #1976d2;
-  border-bottom: 3px solid #1976d2;
+  border-bottom: 2px solid #1976d2;
   padding-bottom: 12px;
   margin-bottom: 20px;
   font-weight: 600;
@@ -352,29 +1026,27 @@ onMounted(() => {
 }
 
 .info-item {
-  padding: 4px 0;
+  padding: 8px 0;
 }
 
 .gap-3 {
   gap: 12px;
 }
 
-/* Mejora la apariencia de las tarjetas */
-.v-card {
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+.users-table {
+  width: 100%;
 }
 
-.v-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+.users-table th {
+  background-color: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 /* Ajustes responsivos */
 @media (max-width: 960px) {
-  .v-container {
+  .solicitud-fondos-container {
     padding: 16px 12px;
   }
 
@@ -401,13 +1073,6 @@ onMounted(() => {
   .form-section {
     padding: 16px;
   }
-}
-
-/* Animaciones suaves */
-.v-card,
-.v-btn,
-.v-icon {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Mejora el aspecto de la tabla */
