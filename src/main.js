@@ -11,7 +11,7 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
-//import './mocks/api-mock.js' // Importa el mock. comentar cuando este listo la API real will
+import './mocks/api-mock.js' // Importa el mock. comentar cuando este listo la API real will
 //import './mocks/api-mock0.js' // Importa el mock. comentar cuando este listo la API real will
 
 //VUe Flow
