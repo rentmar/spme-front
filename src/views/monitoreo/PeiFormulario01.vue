@@ -447,7 +447,6 @@
       </v-row>
     </div>
   </v-container>
-  {{ datosFormulario }}
 </template>
 
 <script setup>
@@ -648,7 +647,7 @@ async function cargarDatos() {
       },
       body: JSON.stringify({
         id_actividad: idActividad,
-        usuario: 'admin',
+        usuario: 'chave',
       }),
     })
 
