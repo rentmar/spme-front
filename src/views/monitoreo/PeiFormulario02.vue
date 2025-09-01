@@ -1,4 +1,6 @@
 <template>
+   <ProyectoHeader :proyecto="proyectoData" :activar-detalles="false" :activar-editar="false"/>
+  <ActividadInformacion :actividad="actividadData" class="mx-auto" style="max-width: 900px;"/>
   <div class="v-container v-locale--is-ltr">
     <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
       <div class="v-card-title text-h5 font-weight-bold">
@@ -27,7 +29,7 @@
               </v-col>
               <v-col cols="12" md="4">
                 <v-text-field
-                  v-model="formData.documento_identidad_beneficiario"
+                  v-model="formData.documento_identidad"
                   label="Documento de Identidad"
                   required
                   readonly
@@ -41,7 +43,7 @@
 
             <v-row>
               <v-col cols="12" sm="6" md="4">
-                <v-text-field v-model="formData.formulario_numero" label="Formulario Número" required readonly></v-text-field>
+                <v-text-field v-model="formData.formulario_numero" label="Formulario Número" bg-color="blue-lighten-5" required></v-text-field>
               </v-col>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field v-model="formData.cpte_diario" label="Cpte. Diario" bg-color="blue-lighten-5" required></v-text-field>
@@ -57,14 +59,14 @@
               </v-col>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field
-                  v-model="formData.monto_asignado"
+                  v-model="formData.total_reportado"
                   label="Monto Asignado (Bs.)"
                   readonly
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field
-                  v-model="formData.monto_gastado"
+                  v-model="totalMontoGastado"
                   label="Monto Descargado (Bs.)"
                   readonly
                 ></v-text-field>
@@ -197,85 +199,37 @@
             <br>
             <v-row>
               <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.idresponsable"
-                  :items="lista_responsables"
-                  bg-color="blue-lighten-5"
-                  item-title="getNombreCompleto"
-                  item-value="id"
-                  label="Responsable del Cargo de Cuenta"
-                  required
-                ></v-select>
+                <v-select v-model="formData.idresponsable" bg-color="blue-lighten-5" :items="responsablesList" :item-title="getNombreCompleto" item-value="id" label="Responsable del Cargo de Cuenta" required></v-select>
               </v-col>
               <v-col cols="12" md="6">
-                <v-checkbox
-                  v-model="formData.validacion_responsable"
-                  label="Aprobado por Responsable del Cargo de Cuenta"
-                  :disabled="!isAdmin"
-                ></v-checkbox>
+                <v-checkbox v-model="formData.validacion_responsable" label="Aprobado por Responsable del Cargo de Cuenta" :disabled="isFrozen"></v-checkbox>
               </v-col>
             </v-row>
 
             <v-row>
               <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.idcoordinador"
-                  :items="lista_coordinadores"
-                  bg-color="blue-lighten-5"
-                  item-title="getNombreCompleto"
-                  item-value="id"
-                  label="Coordinador"
-                  required
-                ></v-select>
+                <v-select v-model="formData.idcoordinador" bg-color="blue-lighten-5" :items="coordinadoresList" :item-title="getNombreCompleto" item-value="id" label="Coordinador" required></v-select>
               </v-col>
               <v-col cols="12" md="6">
-                <v-checkbox
-                  v-model="formData.validacion_coordinador"
-                  label="Aprobado por Coordinador"
-                  :disabled="!isAdmin"
-                ></v-checkbox>
+                 <v-checkbox v-model="formData.validacion_coordinador" label="Aprobado por Coordinador" :disabled="isFrozen"></v-checkbox>
               </v-col>
             </v-row>
 
             <v-row>
               <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.idcontador"
-                  :items="lista_contadores"
-                  bg-color="blue-lighten-5"
-                  item-title="getNombreCompleto"
-                  item-value="id"
-                  label="Contador"
-                  required
-                ></v-select>
+                <v-select v-model="formData.idcontador" bg-color="blue-lighten-5" :items="contadoresList" :item-title="getNombreCompleto" item-value="id" label="Contador" required></v-select>
               </v-col>
               <v-col cols="12" md="6">
-                <v-checkbox
-                  v-model="formData.validacion_contador"
-                  label="Aprobado por Contador"
-                  :disabled="!isAdmin"
-                ></v-checkbox>
+                <v-checkbox v-model="formData.validacion_contador" label="Aprobado por Contador" :disabled="isFrozen"></v-checkbox>
               </v-col>
             </v-row>
 
             <v-row>
               <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.idadministrador"
-                  :items="lista_administradores"
-                  bg-color="blue-lighten-5"
-                  item-title="getNombreCompleto"
-                  item-value="id"
-                  label="Administrador"
-                  required
-                ></v-select>
+                <v-select v-model="formData.idadministrador" bg-color="blue-lighten-5" :items="administradoresList" :item-title="getNombreCompleto" item-value="id" label="Administrador" required></v-select>
               </v-col>
               <v-col cols="12" md="6">
-                <v-checkbox
-                  v-model="formData.validacion_administrador"
-                  label="Aprobado por Administrador"
-                  :disabled="!isAdmin"
-                ></v-checkbox>
+                <v-checkbox v-model="formData.validacion_administrador" label="Aprobado por Administrador" :disabled="isFrozen"></v-checkbox>
               </v-col>
             </v-row>
           </div>
@@ -292,59 +246,96 @@
       </div>
     </div>
   </div>
+   <!-- {{ "******************" }}
+  {{ datosFormulario }} -->
 </template>
 
 <script setup>
-import * as XLSX from 'xlsx';
+
 import { ref, onMounted, computed, watch } from 'vue';
-import axios from 'axios';
-import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
+import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue';
+import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+
+
+import * as XLSX from 'xlsx';
+import { useRoute } from 'vue-router';
+const route = useRoute();
+const idActividad = route.params.id || null;
+const idTarea = route.query.tarea_id || null;
+console.log('ID de Actividad desde la ruta:', idActividad);
+console.log('ID de Tarea:', idTarea);
 import { formulariosServicios } from '@/modules/formularios/services/formulariosServices';
 
-const { usuario, informacionUsuarioPorNick } = useUsuario();
+const datosFormulario = ref(null);
+const error = ref([null]);
+const isLoading =ref([false]);
+const responsablesList = ref([]);
+const coordinadoresList = ref([]);
+const contadoresList = ref([]);
+const administradoresList = ref([]);
 
 // Variables de estado
 const loading = ref(false);
-const isAdmin = ref(false); // Definir el estado isAdmin
+//const isAdmin = ref(false); // Definir el estado isAdmin
 const lista_responsables = ref([]);
 const lista_coordinadores = ref([]);
 const lista_contadores = ref([]);
 const lista_administradores = ref([]);
+
 const formData = ref({
-  //nombre: '',
-  //paterno: '',
-  //materno: '',
-  //cargo: '',
-  //documento_identidad_beneficiario: '',
-  //formulario_numero: '',
-  cpte_diario: '',
-  fecha_desembolso: '',
-  monto_asignado: 0,//
-  monto_descargado: 0,//
-  saldo: 0,//
+// Campos del usuario (se llenarán automáticamente)
+  nombre: '',
+  paterno: '',
+  materno: '',
+  cargo: '',
+  documento_identidad: '',
+// Campos de la actividad
+  formulario_numero: '',
+  descripcion_actividad: '',
+  objetivo_actividad: '',
+  fecha_irealizacion: '',
+  fecha_frealizacion: '',
+  total_reportado:'',
+  fuente_financiamiento: '',
+  id_actividad: 0,
+  id_usuario: 0,
+// Resto de campos del formulario
   detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
-  validacion_contador: false,
-  idcontador: null,
+  forma_pago: null,
+  lugar_solicitud: '',
+  fecha_solicitud: getCurrentDate(),
+  monto_solicitado: 0,
   validacion_responsable: false,
-  idresponsable: null,//para enviar datos al backend
+  idresponsable: null,
   validacion_coordinador: false,
   idcoordinador: null,
-  validacion_administrador: false,
-  idadministrador: null,
-  id_usuario: null,
-  id_actividad: null,
+});
 
-
-
-  // descripcion: '',
-  // lugar_actividad: '',
-  // fecha_actividad: '',
-
+const proyectoData = ref({
+  titulo: 'Formulario F-02: Rendicion de Cuentas',
+  codigo: 'F-02',
+  estado: 'en_proceso', // o el estado que corresponda
+  fecha_inicio: new Date().toISOString().split('T')[0],
+  fecha_finalizacion: new Date().toISOString().split('T')[0],
+  creado_por: 'Usuario Actual', // o el nombre correspondiente
+  presupuesto: '0.00', // o el presupuesto correspondiente
+  instancia_gestora: [], // array de IDs de instancias gestoras si las tienes
+  pei: null // ID del PEI si corresponde
+});
+const actividadData = ref({
+  codigo: 'ACT-2023-005',
+  descripcion: 'Capacitación en gestión de proyectos para equipos técnicos',
+  estado: 'EJEC',
+  tipo: [{ nombre: 'Actividad de Capacitación' }, { nombre: 'Actividad de Articulación' }],
+  fecha_programada: '2023-05-15',
+  fecha_cierre: '2023-06-30',
+  responsable: { nombre: 'María González' },
+  presupuesto: 2500,
 });
 
 // Propiedades computadas
 const saldoPorReembolsar = computed(() => {
-  const montoAsignado = Number(formData.value.monto_asignado) || 0;
+  const montoAsignado = Number(formData.value.total_reportado) || 0;
   const montoGastado = Number(totalMontoGastado.value) || 0;
   return (montoAsignado - montoGastado).toFixed(2);
 });
@@ -356,10 +347,71 @@ const totalMontoGastado = computed(() => {
   ).toFixed(2);
 });
 
-// Watcher para actualizar monto_gastado en formData
-watch(totalMontoGastado, (newValue) => {
-  formData.value.monto_gastado = Number(newValue);
+const isFrozen = computed(() => {
+  // Esta lógica puede ser ajustada según tus necesidades.
+  // Podrías basarla en el rol del usuario, si la solicitud ya fue enviada, etc.
+  return true;
 });
+
+// ✅ WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
+watch(datosFormulario, (newVal) => {
+  if (newVal && newVal.usuario) {
+    console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario);
+
+    const usuario = newVal.usuario;
+
+    // Llenar campos del usuario
+    formData.value.nombre = usuario.nombre || '';
+    formData.value.paterno = usuario.paterno || '';
+    formData.value.materno = usuario.materno || '';
+    formData.value.cargo = usuario.cargo || '';
+    formData.value.documento_identidad = usuario.ci || '';
+    formData.value.id_usuario = usuario.id || 0;
+
+    // Llenar campos de la actividad si existen
+    if (newVal.actividad) {
+      console.log('Auto-llenando datos de actividad:', newVal.actividad);
+
+      formData.value.descripcion_actividad = newVal.actividad.descripcion || '';
+      formData.value.objetivo_actividad = newVal.actividad.objetivo_de_actividad || '';
+      formData.value.fecha_irealizacion = newVal.actividad.fecha_inicio || '';
+      formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || '';
+      formData.value.id_actividad = newVal.actividad.id || 0;
+      formData.value.total_reportado = newVal.actividad.totalReportado || '';
+      formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || '';
+      //formData.value.forma_pago = newVal.formaPago || '';
+    if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
+      console.log('Formas de pago disponibles:', newVal.formaPago);
+      // Si quieres preseleccionar la primera opción por defecto:
+      // formData.value.forma_pago1 = newVal.formaPago[0]?.id || null;
+    };
+      // También actualizar actividadData para el componente ActividadInformacion
+      actividadData.value = {
+        ...actividadData.value,
+        descripcion: newVal.actividad.descripcion || actividadData.value.descripcion,
+        fecha_programada: newVal.actividad.fecha_inicio || actividadData.value.fecha_programada,
+        fecha_cierre: newVal.actividad.fecha_cierre || actividadData.value.fecha_cierre
+      };
+    }
+
+    // Llenar lista de validadores si existen
+    if (newVal.validadores && Array.isArray(newVal.validadores)) {
+      console.log('Cargando validadores:', newVal.validadores);
+      // responsablesList.value = newVal.validadores;
+      // coordinadoresList.value = newVal.validadores;
+      responsablesList.value = newVal.validadores.filter(user => user.cargo === 'responsable');
+      coordinadoresList.value = newVal.validadores.filter(user => user.cargo === 'coordinador');
+      contadoresList.value = newVal.validadores.filter(user => user.cargo === 'contador');
+      administradoresList.value = newVal.validadores.filter(user => user.cargo === 'administrador');
+    }
+
+    // Llenar formas de pago si existen
+    if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
+      console.log('Formas de pago disponibles:', newVal.formaPago);
+      // Si necesitas actualizar paymentMethods
+    }
+  }
+}, { deep: true });
 
 
 // Métodos
@@ -367,57 +419,43 @@ function getNombreCompleto(user) {
   return `${user.nombre || ''} ${user.paterno || ''} ${user.materno || ''}`.trim();
 }
 
-const nombreCompletoSolicitante = computed(() => {
-  const nombre = usuario.value?.nombre || '';
-  const paterno = usuario.value?.paterno || '';
-  const materno = usuario.value?.materno || '';
-  return `${nombre} ${paterno} ${materno}`.trim();
-});
+function getCurrentDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
-async function prefillFormData() {
+async function cargarDatos() {
+  isLoading.value = true;
+  error.value = null;
   try {
-    await informacionUsuarioPorNick({ usuario: 'ACarvajal' }); // Asume que 'ACarvajal' es el nick del usuario logueado
-    if (usuario.value) {
-      formData.value.nombre = usuario.value.nombre || '';
-      formData.value.paterno = usuario.value.paterno || '';
-      formData.value.materno = usuario.value.materno || '';
-      formData.value.cargo = usuario.value.cargo || '';
-      formData.value.documento_identidad_beneficiario = usuario.value.ci || '';
-      //formData.value.id_usuario = usuario.value.id || null;
-      //isAdmin.value = usuario.value.rol === 'administrador'; // Establece isAdmin
+      const response = await fetch('http://127.0.0.1:8000/api/monitoreo/obtener-datos-formulario/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_actividad: idActividad,
+        usuario: 'chave',
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`);
     }
+
+    const data = await response.json();
+    datosFormulario.value = data;
+    console.log('Datos cargados exitosamente:', datosFormulario.value);
+
   } catch (err) {
-    console.error('Error al pre-llenar los datos del usuario:', err);
-  }
-}
-
-async function cargarUsuarios() {
-  try {
-    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/listaUsuarios/');
-    const allUsers = response.data.usuarios;
-    lista_responsables.value = allUsers.filter(user => user.rol === 'responsable').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-    lista_coordinadores.value = allUsers.filter(user => user.rol === 'coordinador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-    lista_contadores.value = allUsers.filter(user => user.rol === 'contador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-    lista_administradores.value = allUsers.filter(user => user.rol === 'administrador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-  } catch (error) {
-    console.error('Error al cargar usuarios:', error);
-    alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
-  }
-}
-
-async function cargarCargoCuenta() {
-  try {
-    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/cargo_cuenta/');
-    if (response.data.cuenta && response.data.cuenta.length > 0) {
-      const activity = response.data.cuenta[0];
-      formData.value.formulario_numero = activity.formulario_numero;
-      formData.value.monto_asignado = activity.monto;
-      formData.value.fuente_financiamiento = activity.fuente_financiamiento;
-      formData.value.id_actividad = activity.id;
-    }
-  } catch (error) {
-    console.error('Error al cargar cargo de cuenta:', error);
-    alert('No se pudieron cargar los cargos de cuenta. Por favor recargue la página.');
+    error.value = err.message;
+    console.error('Ha ocurrido un error:', err);
+  } finally {
+    isLoading.value = false;
   }
 }
 
@@ -461,6 +499,8 @@ async function submitForm() {
     // Preparar payload para la rendición de cuentas con todos los campos necesarios
     const payload = {
       // Campos de la rendición de cuentas
+      //id_usuario:
+      num_formulario: formData.value.formulario_numero,
       cpte_diario: formData.value.cpte_diario,
       fecha_desembolso: formData.value.fecha_desembolso,
       descripcion: formData.value.descripcion,
@@ -487,7 +527,7 @@ async function submitForm() {
       id_administrador: formData.value.idadministrador,
 
       // ID del usuario
-      id_usuario: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
+      //id_usuario: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
     };
 
     console.log('Payload a enviar:', payload);
@@ -509,31 +549,16 @@ async function submitForm() {
 
 function resetForm() {
   Object.assign(formData.value, {
-    //nombre: '',
-    //paterno: '',
-    //materno: '',
-    //cargo: '',
-    //documento_identidad_beneficiario: '',
-    //formulario_numero: '',
     cpte_diario: '',
     fecha_desembolso: '',
-    //monto_asignado: 0,
-    //monto_gastado: 0,
-    //fuente_financiamiento: '',
     descripcion: '',
     lugar_actividad: '',
     fecha_actividad: '',
     detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
     idresponsable: null,
-    //validacion_responsable: false,
     idcoordinador: null,
-    //validacion_coordinador: false,
     idcontador: null,
-    //validacion_contador: false,
     idadministrador: null,
-    //validacion_administrador: false,
-    //id_usuario: null,
-    //id_actividad: null,
   });
 }
 
@@ -558,10 +583,6 @@ function exportToExcel() {
     ["Descripcion de Actividad:", formData.value.descripcion],
     ["Lugar de Actividad:", formData.value.lugar_actividad],
     ["Fecha de Realizacion de Actividad:", formData.value.fecha_actividad],
-    //["Forma de Pago", formData.value.forma_pago],
-    //["Lugar de Solicitud", formData.value.lugar_solicitud],
-    //["Fecha de Solicitud", getCurrentDate()],
-    //["Monto Total Solicitado (Bs.):", totalMontoSolicitado.value],
     ["Responsable:", responsable ? getNombreCompleto(responsable) : ''],
     ["Coordinador:", coordinador ? getNombreCompleto(coordinador) : ''],
     ["Contador:", contador ? getNombreCompleto(contador) : ''],
@@ -586,11 +607,8 @@ function exportToExcel() {
   XLSX.writeFile(wb, 'Rendicion_Cuentas_F-02.xlsx');
 }
 
-// Hooks de ciclo de vida
-onMounted(() => {
-  prefillFormData();
-  cargarUsuarios();
-  cargarCargoCuenta();
+onMounted(async () => {
+  await cargarDatos();
 });
 </script>
 
