@@ -81,6 +81,47 @@
               </v-card-text>
             </v-card>
           </v-dialog>
+          <v-tooltip text="Agregar nueva actividad Variante" location="bottom">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                variant="text"
+                class="toolbar-btn"
+                @click="abrirNuevaActividadVariante"
+              >
+                <v-icon size="18">mdi-plus-outline</v-icon>
+                <v-icon size="18">mdi-clipboard-text-outline</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+
+          <v-dialog v-model="mostrarModalActividadVariante" fullscreen>
+            <v-card>
+              <v-toolbar>
+                <v-btn icon="mdi-close" @click="cerrarNuevaActividadVariante"></v-btn>
+
+                <v-toolbar-title>Agregar Nueva Actividad/Proceso </v-toolbar-title>
+
+                <v-toolbar-items>
+                  <!-- <v-btn text="Guardar" variant="text"></v-btn> -->
+                </v-toolbar-items>
+              </v-toolbar>
+              <v-card-text>
+                <v-card-text>
+                  <SeleccionEstructuraActividad
+                    :proyecto-data="props.proyectoEstructura"
+                    @crear-actividad="crearActividadPlan"
+                  ></SeleccionEstructuraActividad>
+
+                  <!--Editor grafico de actividades-->
+                  <!-- <div style="width: 100%; height: 600px">
+                    <EditorEstructuraMainActividades></EditorEstructuraMainActividades>
+                  </div> -->
+                </v-card-text>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+
           <v-spacer></v-spacer>
           <!--Exportar a Excel-->
           <v-tooltip text="Exportar a Excel" location="bottom">
@@ -452,6 +493,7 @@ const abrirModalEstructura = () => {
   modalEstructura.value = true
 }
 
+//Agregar nueva actividad
 const mostrarModalActividad = ref(false)
 const abrirNuevaActividad = () => {
   mostrarModalActividad.value = true
@@ -460,6 +502,16 @@ const cerrarNuevaActividad = () => {
   mostrarModalActividad.value = false
 }
 
+//Agregar nueva actividad variante
+const mostrarModalActividadVariante = ref(false)
+const abrirNuevaActividadVariante = () => {
+  mostrarModalActividadVariante.value = true
+}
+const cerrarNuevaActividadVariante = () => {
+  mostrarModalActividadVariante.value = false
+}
+
+//Actualizar la ruta de trazado
 const actualizarRutaTrazado = (rutaTrazado) => {
   if (selectedRowData.value) {
     const rowIndex = tableData.value.findIndex((row) => row.id === selectedRowData.value.id)

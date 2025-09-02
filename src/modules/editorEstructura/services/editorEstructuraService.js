@@ -49,4 +49,13 @@ export const diagramaEstructuraCrud = {
       throw error
     }
   },
+  obtenerPorIdProyecto: async (id) => {
+    try {
+      const respuesta = await api.get('/proyectos/diagrama/' + id + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error, instancia gestora con ID: ' + id, error)
+      throw error
+    }
+  },
 }

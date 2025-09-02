@@ -43,12 +43,13 @@ export const useProyectoEstructuraStore = defineStore('proyectoHandleEstructura'
   })
 
   //Iniciar el composable
-  const { diagramaProyecto, obtenerDiagrama } = useDiagramaCrud()
+  const { diagramaProyecto, obtenerDiagramaPorIdProyecto } = useDiagramaCrud()
 
   //MODIFICADORES
   //Carga de datos desde la rest api
   async function obtenerDiagramaPorId(id) {
-    await obtenerDiagrama(id)
+    //await obtenerDiagrama(id)
+    await obtenerDiagramaPorIdProyecto(id)
     diagrama.value = diagramaProyecto.value
     if (diagramaProyecto) {
       nodes.value = diagramaProyecto.value.nodos

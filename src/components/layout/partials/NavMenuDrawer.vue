@@ -107,22 +107,25 @@
     <!-- Reportes -->
     <v-list-group value="reporte">
       <template v-slot:activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          prepend-icon="mdi-chart-bar"
-          title="Reportes y Análisis"
-        ></v-list-item>
+        <v-list-item v-bind="props" prepend-icon="mdi-chart-bar" title="Reportes"></v-list-item>
       </template>
       <v-list-item
         prepend-icon="mdi-view-dashboard"
-        title="Dashboard Principal"
-        value="main-dashboard"
-        to="/"
+        title="Por Proyecto"
+        value="reporte-proyecto"
+        to="/reporte/proyectos"
       ></v-list-item>
 
       <v-list-item
         prepend-icon="mdi-chart-line"
-        title="Reportes"
+        title="Por Actividad"
+        value="reporte-actividades"
+        to="/reporte/actividades"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-chart-line"
+        title="Reporte Estructura Pruebas"
         value="actividades-reports"
         to="/reportes/estructura"
       ></v-list-item>

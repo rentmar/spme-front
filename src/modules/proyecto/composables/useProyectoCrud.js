@@ -14,7 +14,9 @@ export function useProyectoCrud() {
   const obtenerProyectos = async () => {
     loading.value = true
     try {
-      proyectos.value = await proyectoServicios.obtenerTodos()
+      const respuesta = await proyectoServicios.obtenerTodos()
+      console.log(respuesta)
+      proyectos.value = respuesta
     } catch (err) {
       error.value = err
     } finally {

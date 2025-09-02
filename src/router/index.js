@@ -225,6 +225,21 @@ const router = createRouter({
       component: () => import('@/views/HomeView.vue'),
     },
     {
+      path: '/reporte/proyectos',
+      name: 'reporteListaProyectos',
+      component: () => import('@/views/reportes/ProyectoReportesListaProyectos.vue'),
+    },
+    {
+      path: '/reporte/proyectos/:id/',
+      name: 'reporteProyecto',
+      component: () => import('@/views/reportes/ReporteProyectoView.vue'),
+    },
+    {
+      path: '/reporte/actividades',
+      name: 'reporteListaActividades',
+      component: () => import('@/views/reportes/ActividadReporteListaActividades.vue'),
+    },
+    {
       path: '/usuarios/inicio',
       name: 'homeUsuariosInicio',
       component: () => import('@/views/HomeView.vue'),
