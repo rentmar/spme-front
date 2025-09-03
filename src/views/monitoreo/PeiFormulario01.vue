@@ -185,7 +185,7 @@
                     variant="outlined"
                     rows="3"
                     bg-color="blue-lighten-5"
-                    readonly
+                    required
                   ></v-textarea>
                   <v-row>
                     <v-col cols="12" md="4">
@@ -217,7 +217,7 @@
                     variant="outlined"
                     rows="3"
                     bg-color="blue-lighten-5"
-                    readonly
+                    required
                   ></v-textarea>
                   <v-text-field
                     v-model="formData.fuente_financiamiento"
@@ -227,6 +227,18 @@
                     bg-color="grey-lighten-4"
                     readonly
                   ></v-text-field>
+
+                                      <v-col cols="12" md="4">
+                      <v-text-field
+                        v-model="formData.fecha_frealizacion1"
+                        label="Fecha de ejecucion de actividad"
+                        type="date"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -447,7 +459,7 @@
       </v-row>
     </div>
   </v-container>
-  {{ datosFormulario }}
+  <!-- {{ datosFormulario }} -->
 </template>
 
 <script setup>
@@ -648,7 +660,7 @@ async function cargarDatos() {
       },
       body: JSON.stringify({
         id_actividad: idActividad,
-        usuario: 'admin',
+        usuario: 'chave',
       }),
     })
 
@@ -735,7 +747,6 @@ async function submitForm() {
     exportToExcel()
     const data = await response.json()
     console.log('Respuesta del servidor:', data)
-    return data
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message)
     alert(`Error: ${error.response?.data?.mensaje || error.message}`)
@@ -746,6 +757,8 @@ async function submitForm() {
 
 function resetForm() {
   Object.assign(formData.value, {
+    descripcion_actividad: '',
+    objetivo_actividad: '',
     detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
     forma_pago: '',
     lugar_solicitud: '',

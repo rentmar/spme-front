@@ -27,7 +27,7 @@
               </v-col>
               <v-col cols="12" md="4">
                 <v-text-field
-                  v-model="formData.documento_identidad_beneficiario"
+                  v-model="formData.documento_identidad"
                   label="Documento de Identidad"
                   required
                   readonly
@@ -41,7 +41,7 @@
 
             <v-row>
               <v-col cols="12" sm="6" md="4">
-                <v-text-field v-model="formData.formulario_numero" label="Formulario Número" required readonly></v-text-field>
+                <v-text-field v-model="formData.formulario_numero" label="Formulario Número" bg-color="blue-lighten-5" required></v-text-field>
               </v-col>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field v-model="formData.cpte_diario" label="Cpte. Diario" bg-color="blue-lighten-5" required></v-text-field>
@@ -199,13 +199,30 @@
               <v-col cols="12" md="6">
                 <v-select
                   v-model="formData.idresponsable"
-                  :items="lista_responsables"
+                  :items="responsablesList"
+                  :item-title="getNombreCompleto"
                   bg-color="blue-lighten-5"
-                  item-title="getNombreCompleto"
                   item-value="id"
                   label="Responsable del Cargo de Cuenta"
                   required
                 ></v-select>
+
+
+
+                      <!-- <v-select
+                        v-model="formData.idcoordinador"
+                        :items="coordinadoresList"
+                        :item-title="getNombreCompleto"
+                        item-value="id"
+                        label="Coordinador"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-select> -->
+
+
+
+
               </v-col>
               <v-col cols="12" md="6">
                 <v-checkbox
@@ -220,9 +237,9 @@
               <v-col cols="12" md="6">
                 <v-select
                   v-model="formData.idcoordinador"
-                  :items="lista_coordinadores"
+                  :items="coordinadoresList"
                   bg-color="blue-lighten-5"
-                  item-title="getNombreCompleto"
+                  :item-title="getNombreCompleto"
                   item-value="id"
                   label="Coordinador"
                   required
@@ -241,9 +258,9 @@
               <v-col cols="12" md="6">
                 <v-select
                   v-model="formData.idcontador"
-                  :items="lista_contadores"
+                  :items="contadoresList"
                   bg-color="blue-lighten-5"
-                  item-title="getNombreCompleto"
+                  :item-title="getNombreCompleto"
                   item-value="id"
                   label="Contador"
                   required
@@ -262,9 +279,9 @@
               <v-col cols="12" md="6">
                 <v-select
                   v-model="formData.idadministrador"
-                  :items="lista_administradores"
+                  :items="administradoresList"
                   bg-color="blue-lighten-5"
-                  item-title="getNombreCompleto"
+                  :item-title="getNombreCompleto"
                   item-value="id"
                   label="Administrador"
                   required
@@ -292,14 +309,26 @@
       </div>
     </div>
   </div>
+   {{ datosFormulario }}
+   {{ "*******" }}
+   {{ formData }}
 </template>
 
 <script setup>
-import * as XLSX from 'xlsx';
+
 import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
 import { formulariosServicios } from '@/modules/formularios/services/formulariosServices';
+import * as XLSX from 'xlsx'
+import { useRoute } from 'vue-router'
+
+
+const route = useRoute()
+const idActividad = route.params.id || null
+const idTarea = route.query.tarea_id || null
+console.log('ID de Actividad desde la ruta:', idActividad)
+console.log('ID de Tarea:', idTarea)
 
 const { usuario, informacionUsuarioPorNick } = useUsuario();
 
@@ -310,37 +339,89 @@ const lista_responsables = ref([]);
 const lista_coordinadores = ref([]);
 const lista_contadores = ref([]);
 const lista_administradores = ref([]);
+
+//variables para carga de datos
+const datosFormulario = ref(null)
+const error = ref(null)
+const isLoading = ref(false)
+
+// Estado reactivo
+const cargandoGeneral = ref(true)
+//const loading = ref(false)
+const form = ref(null)
+const responsablesList = ref([])
+const coordinadoresList = ref([])
+const contadoresList = ref([])
+const administradoresList = ref([])
+
 const formData = ref({
-  //nombre: '',
-  //paterno: '',
-  //materno: '',
-  //cargo: '',
-  //documento_identidad_beneficiario: '',
-  //formulario_numero: '',
-  cpte_diario: '',
-  fecha_desembolso: '',
-  monto_asignado: 0,//
-  monto_descargado: 0,//
-  saldo: 0,//
-  detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
-  validacion_contador: false,
-  idcontador: null,
+  // Campos del usuario (se llenarán automáticamente)
+  nombre: '',
+  paterno: '',
+  materno: '',
+  cargo: '',
+  documento_identidad: '',
+  // Campos de la actividad
+  descripcion_actividad: '',
+  objetivo_actividad: '',
+  fecha_irealizacion: '',
+  fecha_frealizacion: '',
+  fuente_financiamiento: '',
+  id_actividad: 0,
+  id_usuario: 0,
+  // Resto de campos del formulario
+  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+  forma_pago: null,
+  lugar_solicitud: '',
+  fecha_solicitud: getCurrentDate(),
+  monto_solicitado: 0,
   validacion_responsable: false,
-  idresponsable: null,//para enviar datos al backend
+  idresponsable: null,
   validacion_coordinador: false,
   idcoordinador: null,
-  validacion_administrador: false,
-  idadministrador: null,
-  id_usuario: null,
-  id_actividad: null,
+})
+// const formData = ref({
+//   nombre: '',
+//   paterno: '',
+//   materno: '',
+//   cargo: '',
+//   documento_identidad_beneficiario: '',
+//   //formulario_numero: '',
+//   cpte_diario: '',
+//   fecha_desembolso: '',
+//   monto_asignado: 0,//
+//   monto_descargado: 0,//
+//   saldo: 0,//
+//   detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
+//   validacion_contador: false,
+//   idcontador: null,
+//   validacion_responsable: false,
+//   idresponsable: null,//para enviar datos al backend
+//   validacion_coordinador: false,
+//   idcoordinador: null,
+//   validacion_administrador: false,
+//   idadministrador: null,
+//   id_usuario: null,
+//   id_actividad: null,
 
 
 
-  // descripcion: '',
-  // lugar_actividad: '',
-  // fecha_actividad: '',
+//   // descripcion: '',
+//   // lugar_actividad: '',
+//   // fecha_actividad: '',
 
-});
+// });
+
+const actividadData = ref({
+  codigo: 'ACT-2023-005',
+  descripcion: 'Capacitación en gestión de proyectos para equipos técnicos',
+  estado: 'EJEC',
+  tipo: [{ nombre: 'Actividad de Capacitación' }, { nombre: 'Actividad de Articulación' }],
+  fecha_programada: '2023-05-15',
+  fecha_cierre: '2023-06-30',
+  responsable: { nombre: 'María González' },
+  presupuesto: 2500,
+})
 
 // Propiedades computadas
 const saldoPorReembolsar = computed(() => {
@@ -357,10 +438,63 @@ const totalMontoGastado = computed(() => {
 });
 
 // Watcher para actualizar monto_gastado en formData
-watch(totalMontoGastado, (newValue) => {
-  formData.value.monto_gastado = Number(newValue);
-});
+// watch(totalMontoGastado, (newValue) => {
+//   formData.value.monto_gastado = Number(newValue);
+// });
 
+// ✅ WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
+watch(
+  datosFormulario,
+  (newVal) => {
+    if (newVal && newVal.usuario) {
+      console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
+
+      const usuario = newVal.usuario
+
+      // Llenar campos del usuario
+      formData.value.nombre = usuario.nombre || ''
+      formData.value.paterno = usuario.paterno || ''
+      formData.value.materno = usuario.materno || ''
+      formData.value.cargo = usuario.cargo || ''
+      formData.value.documento_identidad = usuario.ci || ''
+      formData.value.id_usuario = usuario.id || 0
+
+      // Llenar campos de la actividad si existen
+      if (newVal.actividad) {
+        console.log('Auto-llenando datos de actividad:', newVal.actividad)
+
+        formData.value.descripcion_actividad = newVal.actividad.descripcion || ''
+        formData.value.objetivo_actividad = newVal.actividad.objetivo_de_actividad || ''
+        formData.value.fecha_irealizacion = newVal.actividad.fecha_inicio || ''
+        formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
+        formData.value.id_actividad = newVal.actividad.id || 0
+        formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
+
+        if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
+          console.log('Formas de pago disponibles:', newVal.formaPago)
+        }
+
+        // También actualizar actividadData para el componente ActividadInformacion
+        actividadData.value = {
+          ...actividadData.value,
+          descripcion: newVal.actividad.descripcion || actividadData.value.descripcion,
+          fecha_programada: newVal.actividad.fecha_inicio || actividadData.value.fecha_programada,
+          fecha_cierre: newVal.actividad.fecha_cierre || actividadData.value.fecha_cierre,
+        }
+      }
+
+      // Llenar lista de validadores si existen
+      if (newVal.validadores && Array.isArray(newVal.validadores)) {
+        console.log('Cargando validadores:', newVal.validadores)
+        responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
+        coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
+        contadoresList.value = newVal.validadores.filter((user) => user.cargo === 'contador')
+        administradoresList.value = newVal.validadores.filter((user) => user.cargo === 'administrador')
+      }
+    }
+  },
+  { deep: true },
+)
 
 // Métodos
 function getNombreCompleto(user) {
@@ -391,33 +525,75 @@ async function prefillFormData() {
   }
 }
 
-async function cargarUsuarios() {
-  try {
-    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/listaUsuarios/');
-    const allUsers = response.data.usuarios;
-    lista_responsables.value = allUsers.filter(user => user.rol === 'responsable').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-    lista_coordinadores.value = allUsers.filter(user => user.rol === 'coordinador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-    lista_contadores.value = allUsers.filter(user => user.rol === 'contador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-    lista_administradores.value = allUsers.filter(user => user.rol === 'administrador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-  } catch (error) {
-    console.error('Error al cargar usuarios:', error);
-    alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
-  }
+// async function cargarUsuarios() {
+//   try {
+//     const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/listaUsuarios/');
+//     const allUsers = response.data.usuarios;
+//     lista_responsables.value = allUsers.filter(user => user.rol === 'responsable').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
+//     lista_coordinadores.value = allUsers.filter(user => user.rol === 'coordinador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
+//     lista_contadores.value = allUsers.filter(user => user.rol === 'contador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
+//     lista_administradores.value = allUsers.filter(user => user.rol === 'administrador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
+//   } catch (error) {
+//     console.error('Error al cargar usuarios:', error);
+//     alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
+//   }
+// }
+
+// async function cargarCargoCuenta() {
+//   try {
+//     const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/cargo_cuenta/');
+//     if (response.data.cuenta && response.data.cuenta.length > 0) {
+//       const activity = response.data.cuenta[0];
+//       formData.value.formulario_numero = activity.formulario_numero;
+//       formData.value.monto_asignado = activity.monto;
+//       formData.value.fuente_financiamiento = activity.fuente_financiamiento;
+//       formData.value.id_actividad = activity.id;
+//     }
+//   } catch (error) {
+//     console.error('Error al cargar cargo de cuenta:', error);
+//     alert('No se pudieron cargar los cargos de cuenta. Por favor recargue la página.');
+//   }
+// }
+
+function getCurrentDate() {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
-async function cargarCargoCuenta() {
+async function cargarDatos() {
+  isLoading.value = true
+  error.value = null
   try {
-    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/cargo_cuenta/');
-    if (response.data.cuenta && response.data.cuenta.length > 0) {
-      const activity = response.data.cuenta[0];
-      formData.value.formulario_numero = activity.formulario_numero;
-      formData.value.monto_asignado = activity.monto;
-      formData.value.fuente_financiamiento = activity.fuente_financiamiento;
-      formData.value.id_actividad = activity.id;
+    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/obtener-datos-formulario/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_actividad: idActividad,
+        usuario: 'chave',
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+      )
     }
-  } catch (error) {
-    console.error('Error al cargar cargo de cuenta:', error);
-    alert('No se pudieron cargar los cargos de cuenta. Por favor recargue la página.');
+
+    const data = await response.json()
+    datosFormulario.value = data
+    console.log('Datos cargados exitosamente:', datosFormulario.value)
+  } catch (err) {
+    error.value = err.message
+    console.error('Ha ocurrido un error:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
   }
 }
 
@@ -588,9 +764,10 @@ function exportToExcel() {
 
 // Hooks de ciclo de vida
 onMounted(() => {
-  prefillFormData();
-  cargarUsuarios();
-  cargarCargoCuenta();
+  //prefillFormData();
+  //cargarUsuarios();
+  //cargarCargoCuenta();
+  cargarDatos()
 });
 </script>
 
