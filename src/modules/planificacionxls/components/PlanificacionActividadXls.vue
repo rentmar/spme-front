@@ -108,15 +108,9 @@
               </v-toolbar>
               <v-card-text>
                 <v-card-text>
-                  <SeleccionEstructuraActividad
-                    :proyecto-data="props.proyectoEstructura"
-                    @crear-actividad="crearActividadPlan"
-                  ></SeleccionEstructuraActividad>
-
-                  <!--Editor grafico de actividades-->
-                  <!-- <div style="width: 100%; height: 600px">
-                    <EditorEstructuraMainActividades></EditorEstructuraMainActividades>
-                  </div> -->
+                  <div style="width: 100%; height: 1000px">
+                    <DiagramaPlanificacion :idproyecto="1"></DiagramaPlanificacion>
+                  </div>
                 </v-card-text>
               </v-card-text>
             </v-card>
@@ -398,6 +392,7 @@ import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
 //Estructuras
 import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
 import SeleccionEstructuraActividad from './parciales/SeleccionEstructuraActividad.vue'
+import DiagramaPlanificacion from './DiagramaPlanificacion.vue'
 //Actividades Test
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { storeToRefs } from 'pinia'

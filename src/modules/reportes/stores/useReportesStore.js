@@ -1,84 +1,74 @@
 // stores/useReportesStore.js
 import { defineStore } from 'pinia'
-import { ref, reactive } from 'vue'
+import { ref, computed } from 'vue'
+import { useDiagramaCrud } from '@/modules/editorEstructura/composables/useDiagramaCrud'
 
 export const useReportesStore = defineStore('reportes', () => {
-  //Variables de estado
-  const proyecto = ref(null)
-  const detallesReporte = reactive({
-    objetivosGenerales: [],
-    objetivosEspecificos: [],
-    resultados: [],
-    productos: [],
-    procesos: [],
-    actividades: [],
-    indicadores: [],
+  //Estados
+  const loading = ref(false)
+  const error = ref(null)
+  const nodes = ref([])
+  const edges = ref([])
+  const diagramaPlanificacion = ref([])
+  const filtroTipo = ref('all')
+
+  //getters: Propiedades calculadas
+  const allNodes = computed(() => nodes.value)
+  const allEdges = computed(() => edges.value)
+
+  //getters: Tipos de nodos disponibles
+  const tiposDisponibles = computed(() => {
+    const types = new Set(nodes.value.map((node) => node.type))
+    return ['all', ...Array.from(types)]
   })
 
-  //Cargar datos de reporte
-  const cargarDatosReporte = (flowData) => {
-    //Limpiar el estado actual
-    proyecto.value = null
-    detallesReporte.objetivosGenerales = []
-    detallesReporte.objetivosEspecificos = []
-    detallesReporte.resultados = []
-    detallesReporte.productos = []
-    detallesReporte.procesos = []
-    detallesReporte.actividades = []
-    detallesReporte.indicadores = []
-
-    if (!flowData || !flowData.nodos) {
-      console.error('Datos del diagrama no válidos.')
-      return
-    }
-
-    // 2. Procesar los nodos y llenar las arrays
-    flowData.nodos.forEach((nodo) => {
-      const datos = nodo.data.nodoProyecto
-
-      switch (nodo.type) {
-        case 'proyecto':
-          proyecto.value = datos
-          break
-        case 'objetivogeneral':
-          detallesReporte.objetivosGenerales.push(datos)
-          break
-        case 'objetivoespecificoog':
-          detallesReporte.objetivosEspecificos.push(datos)
-          break
-        case 'resultadooe':
-        case 'resultadoog':
-          detallesReporte.resultados.push(datos)
-          break
-        case 'productooe':
-        case 'productoroe':
-          detallesReporte.productos.push(datos)
-          break
-        case 'procesoroe':
-        case 'procesopoe':
-        case 'procesorog':
-          detallesReporte.procesos.push(datos)
-          break
-        case 'actividad':
-          detallesReporte.actividades.push(datos)
-          break
-        case 'indicadoroe':
-        case 'indicadorrog':
-        case 'indicadorog':
-        case 'indicadorroe':
-          detallesReporte.indicadores.push(datos)
-          break
+  //getters: Encontrar nodo por id
+  const encontrarNodoPorID = computed(() => {
+    return (id) => {
+      if (!nodes.value) {
+        return undefined
       }
-    })
+      return nodes.value.find((node) => node.id === id)
+    }
+  })
+
+  //Iniciar el composable
+  const { diagramaProyecto, obtenerDiagramaPorIdProyecto, obtenerDiagrama } = useDiagramaCrud()
+  //MODIFICADORES
+  //Obtiene el diagrama usando el id del nodo
+  async function obtenerDiagramaPorId(id) {
+    await obtenerDiagrama(id)
+    diagramaPlanificacion.value = diagramaProyecto.value
+    if (diagramaProyecto) {
+      nodes.value = diagramaProyecto.value.nodos
+      edges.value = diagramaProyecto.value.conexiones
+    }
+  }
+  //Obtiene el digrama usando el id de proyecto
+  async function obtenerDiagramaPorIdProy(id) {
+    //await obtenerDiagrama(id)
+    await obtenerDiagramaPorIdProyecto(id)
+    diagramaPlanificacion.value = diagramaProyecto.value
+    if (diagramaProyecto) {
+      nodes.value = diagramaProyecto.value.nodos
+      edges.value = diagramaProyecto.value.conexiones
+    }
   }
 
-  // --- GETTERS (Propiedades computadas, si se necesitaran) ---
-  // No se necesitan aquí, ya que el estado se devuelve directamente.
-
-  // --- EXPORTAR (lo que otros componentes pueden usar) ---
   return {
-    proyecto,
-    detallesReporte,
-    cargarDatosReporte,
+    //Estados
+    loading,
+    error,
+    nodes,
+    edges,
+    diagramaPlanificacion,
+    allNodes,
+    allEdges,
+    filtroTipo,
+    encontrarNodoPorID,
+    tiposDisponibles,
+    //Funciones
+    obtenerDiagramaPorId,
+    obtenerDiagramaPorIdProy,
   }
 })

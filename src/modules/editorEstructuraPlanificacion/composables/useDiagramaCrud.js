@@ -63,6 +63,18 @@ export function useDiagramaCrud() {
     }
   }
 
+  //Obtener un diagrama por id de proyecto
+  const obtenerDiagramaPorIdProyecto = async (id) => {
+    loading.value = true
+    try {
+      diagramaProyecto.value = await diagramaEstructuraCrud.obtenerPorIdProyecto(id)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     diagramasProyecto,
     diagramaProyecto,
@@ -71,6 +83,7 @@ export function useDiagramaCrud() {
     obtenerDiagramas,
     obtenerDiagrama,
     actualizarDiagrama,
+    obtenerDiagramaPorIdProyecto,
     actualizarNodosEdges,
   }
 }

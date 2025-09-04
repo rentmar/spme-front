@@ -826,7 +826,7 @@ const isAppLoading = ref(true)
 const cargarDatos = async () => {
   isAppLoading.value = true
   try {
-    await Promise.all([store.obtenerDiagramaPorId(idproyecto), obtenerProyecto(idproyecto)])
+    await Promise.all([store.obtenerDiagramaPorIdProy(idproyecto), obtenerProyecto(idproyecto)])
     successMsg('Carga exitosa', 4000, 'center')
 
     // Verificar que el store tenga los métodos necesarios
