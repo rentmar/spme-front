@@ -7,18 +7,21 @@ const router = createRouter({
   routes: [
      {
       path: '/',
-      name: 'home',
+      name: 'Login',
       component: LoginView,
+      meta: { requiresAuth: false}
     },
     {
       path: '/home',
       name: 'home',
       component: HomeView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/profile',
       name: 'perfil',
       component: HomeView,
+      meta: { requiresAuth: true, requiredRole: 'admin' },
     },
     {
       path: '/pei',
@@ -113,6 +116,7 @@ const router = createRouter({
       path: '/planificacion/cronogramas',
       name: 'cronogramas',
       component: () => import('@/views/planeamiento/ActividadesGantView.vue'),
+      meta: { requiresAuth: true, requiredRole: 'B' },
     },
     {
       path: '/usuario/perfil/',
@@ -209,25 +213,35 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from) => {
+router.beforeEach((to, from, next) => {
   const userStore = useUserStore();
 
-  // Check if the route requires authentication
+  // Cargar datos del usuario desde sessionStorage si no están en memoria
+  if (!userStore.userData) {
+    userStore.loadFromSession();
+  }
+
+  // Verificar autenticación
   if (to.meta.requiresAuth && !userStore.isAuthenticated) {
-    // If not authenticated, redirect to the login page
-    return { name: 'login' };
+    next('/');
+    return;
   }
 
-  // Check if the user has the required role
-  if (to.meta.requiredRole) {
-    // Make sure to handle both string and array of roles
-    const requiredRoles = Array.isArray(to.meta.requiredRole) ? to.meta.requiredRole : [to.meta.requiredRole];
-
-    if (!requiredRoles.includes(userStore.userRole)) {
-      // If the user's role is not in the allowed roles, redirect to a forbidden page or home
-      return { name: 'home' }; // Or a specific 'forbidden' route
-    }
+  // Verificar rol requerido
+  if (to.meta.requiredRole && !userStore.hasRole(to.meta.requiredRole)) {
+    console.warn(`Acceso denegado. Se requiere rol: ${to.meta.requiredRole}`);
+    next('/home');
+    return;
   }
+
+  // Verificar múltiples roles
+  if (to.meta.requiredRoles && !userStore.hasAnyRole(to.meta.requiredRoles)) {
+    console.warn(`Acceso denegado. Se requiere uno de estos roles: ${to.meta.requiredRoles.join(', ')}`);
+    next('/home');
+    return;
+  }
+
+  next();
 });
 
-export default router
+export default router;

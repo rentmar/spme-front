@@ -107,8 +107,6 @@ export default {
         this.datos = response.data;
         this.estados = this.datos.estados;
         this.actividades = this.datos.actividades;
-        console.log('estados:', this.datos.estados);
-        console.log('actividades:', this.datos.actividades);
       } catch (error) {
         this.error = error.response?.data?.message || error.message;
       } finally {

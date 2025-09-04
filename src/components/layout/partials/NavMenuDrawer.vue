@@ -63,7 +63,7 @@
         to="/planificacion/actividades"
       ></v-list-item>
 
-      <v-list-item
+      <v-list-item  v-if="hasRole('B')"
         prepend-icon="mdi-chart-timeline-variant"
         title="Cronogramas"
         value="planning-schedules"
@@ -213,9 +213,15 @@
 <script setup>
 // Puedes agregar lógica aquí para controlar qué elementos del menú se muestran
 // basado en los permisos del usuario
-import { ref } from 'vue'
-const userIsAdmin = ref(true)
+import { ref, computed } from 'vue'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore();
 const unreadNotificationsCount = ref(0)
+
+const userIsAdmin = ref(true)
+const hasRole = (role) => userStore.hasRole(role)
+const hasAnyRole = (roles) => userStore.hasAnyRole(roles)
 </script>
 
 <style scoped>
