@@ -7,6 +7,7 @@ import { instanciaGestoraServicio } from '../services/instanciaGestoraService'
 
 //Estados
 const instancias = ref([]) //Lista reactiva global
+const opcionesInstanciaGestora = ref([])
 const loading = ref(false)
 const error = ref(false)
 
@@ -72,15 +73,32 @@ export function useInstanciaGestora() {
     return instanciasParaChips.value.filter((inst) => idsArray.includes(inst.id))
   }
 
+  //Poblar select con instancias gestoras
+  const fetchOptionsInstancias = async (transformFn = (item) => item) => {
+    loading.value = true
+    error.value = null
+    try {
+      const data = await instanciaGestoraServicio.obtenerTodo()
+      opcionesInstanciaGestora.value = data.map((item) => transformFn(item))
+    } catch (err) {
+      error.value = err.message || 'Error al cargar las opciones'
+      console.error('Error fetching options:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     instancias, //todas las instacias
     loading, //Bandera de carga
     error, //Error
     instanciasParaChips, // Formato listo para chips
+    opcionesInstanciaGestora,
     cargarInstancias, //Funcion de carga de todas las instancias
     agregarInstancia, //Agregar nuva instancia
     actualizarInstancia, //Actualiza una instancia
     eliminarInstancia, //Elimina una instancia
     getInstanciasByIds, // Obtener nombres por IDs
+    fetchOptionsInstancias,
   }
 }

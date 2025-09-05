@@ -51,6 +51,17 @@
               <v-btn icon size="small" @click="cargarDatos" variant="text" color="white">
                 <v-icon>mdi-refresh</v-icon>
               </v-btn>
+               <v-btn
+                color="success"
+                prepend-icon="mdi-cloud-upload"
+                :loading="iSguardandoDiagrama"
+                @click="guardarDiagrama"
+                variant="flat"
+                class="ml-2"
+              >
+                Aplicar Cambios
+              </v-btn>
+
             </v-toolbar>
             <v-card-text class="pa-4">
               <div v-if="!store.diagrama" class="text-center py-8">
@@ -227,6 +238,26 @@
                     </v-btn>
                   </div>
                 </v-form>
+              </div>
+              <div v-else class="text-center text-medium-emphasis py-8">
+                <v-icon size="48" color="grey-lighten-1">mdi-select-search</v-icon>
+                <p class="mt-2 text-body-1">Seleccione un nodo para editarlo</p>
+                <p class="text-caption">Haga clic en cualquier nodo de la lista</p>
+              </div>
+            </v-card-text>
+            <v-card-text class="pa-4">
+              <!-- Panel de edición del nodo seleccionado -->
+              <div v-if="nodoSeleccionado" class="edicion-panel">
+                <component
+                :is="formularioActual"
+                v-if="formularioActual&&nodoSeleccionado"
+                :node="nodoSeleccionado"
+                @guardar="guardarCambios"
+                @cancelar="deseleccionarNodo"
+                @eliminar="eliminarNodo"
+              />
+              NODO SELECCCIONADO VISTA PADRE <br></br>
+              {{ nodoSeleccionado }}
               </div>
               <div v-else class="text-center text-medium-emphasis py-8">
                 <v-icon size="48" color="grey-lighten-1">mdi-select-search</v-icon>
@@ -565,11 +596,13 @@
       </v-dialog>
     </div>
   </v-container>
+  {{ store.tiposDisponibles }}
+  <br><br><br>
   {{ store.diagrama }}
 </template>
 
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, ref, computed, watch, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
@@ -580,9 +613,11 @@ import { useProyectoEstructuraStore } from '@/modules/estructuraProyecto/store/u
 //Snackbars
 import { useSnackbar } from '@/composables/useSnackbar'
 
+
 // Inicializar las rutas y obtener el id de proyecto
 const ruta = useRoute()
 const idproyecto = ruta.params.id
+
 
 //Iniciar el store
 const store = useProyectoEstructuraStore()
@@ -655,7 +690,7 @@ function obtenerConexionesNodo(nodoId) {
 // Inicializar el composable proyecto
 const { proyecto, obtenerProyecto } = useProyectoCrud()
 //Iniciar el composable de los mensajes
-const { successMsg, errorMsg } = useSnackbar()
+const { successMsg, errorMsg, infoMsg } = useSnackbar()
 
 // Watch para detectar cambios en el nodo seleccionado
 watch(nodoSeleccionado, (newVal) => {
@@ -673,12 +708,15 @@ watch(nodoSeleccionado, (newVal) => {
 function seleccionarNodo(nodo) {
   // Forzar la reactividad asignando un nuevo objeto
   nodoSeleccionado.value = { ...nodo }
+  console.log('Nodo seleccionado:')
+  console.log(nodoSeleccionado)
 }
 
 // Deseleccionar el nodo
 function deseleccionarNodo() {
   nodoSeleccionado.value = null
   nodoEditado.value = null
+
 }
 
 // Ver detalles de una relación
@@ -732,39 +770,44 @@ function limpiarFiltros() {
 }
 
 // Guardar los cambios del nodo
-async function guardarCambios() {
+async function guardarCambios(payload) {
   if (!nodoSeleccionado.value || !nodoEditado.value) return
 
   guardando.value = true
 
   try {
+    console.log(payload)
+    const modificaciones = {payload}
+    await store.modificarNodo(nodoSeleccionado.value.id, modificaciones)
+    successMsg('Operacion exitosa')
+    deseleccionarNodo()
     // Preparar las modificaciones
-    const modificaciones = {
-      data: {
-        label: nodoEditado.value.data.label,
-        // Incluir otros campos específicos si existen
-        ...(nodoEditado.value.data.datosNodo && {
-          datosNodo: {
-            titulo: nodoEditado.value.data.datosNodo.titulo,
-          },
-        }),
-        ...(nodoEditado.value.data.nodoProyecto && {
-          nodoProyecto: {
-            descripcion: nodoEditado.value.data.nodoProyecto.descripcion,
-          },
-        }),
-      },
-      position: {
-        x: nodoEditado.value.position.x,
-        y: nodoEditado.value.position.y,
-      },
-    }
+    // const modificaciones = {
+    //   data: {
+    //     label: nodoEditado.value.data.label,
+    //     // Incluir otros campos específicos si existen
+    //     ...(nodoEditado.value.data.datosNodo && {
+    //       datosNodo: {
+    //         titulo: nodoEditado.value.data.datosNodo.titulo,
+    //       },
+    //     }),
+    //     ...(nodoEditado.value.data.nodoProyecto && {
+    //       nodoProyecto: {
+    //         descripcion: nodoEditado.value.data.nodoProyecto.descripcion,
+    //       },
+    //     }),
+    //   },
+    //   position: {
+    //     x: nodoEditado.value.position.x,
+    //     y: nodoEditado.value.position.y,
+    //   },
+    // }
 
     // Llamar a la función del store para modificar el nodo
-    await store.modificarNodo(nodoSeleccionado.value.id, modificaciones)
+    //await store.modificarNodo(nodoSeleccionado.value.id, modificaciones)
 
-    successMsg('Nodo modificado exitosamente', 3000)
-    deseleccionarNodo()
+    //successMsg('Nodo modificado exitosamente', 3000)
+    //deseleccionarNodo()
   } catch (error) {
     console.error('Error al guardar cambios:', error)
     errorMsg('Error al guardar cambios', 3000)
@@ -772,6 +815,41 @@ async function guardarCambios() {
     guardando.value = false
   }
 }
+/*****************ENVIAR DATOS AL REST API****************************/
+const iSguardandoDiagrama = ref(false)
+const guardarDiagrama = async () => {
+  //iSguardandoDiagrama.value = true
+  const datosDiagrama = {
+    iddiagrama: store.diagrama.id,
+    codigoProyecto: store.diagrama.codigoProyecto,
+    nodos: store.diagrama.nodos,
+    conexiones: store.diagrama.conexiones,
+    proyecto_id: store.diagrama.proyecto,
+  }
+  console.log('datos de envio')
+  console.log(datosDiagrama)
+
+}
+
+/*****************FORMULARIOS*****************************************/
+const eliminarNodo = () => {
+  console.log('ELiminar nodo')
+}
+const formularioActual = computed(() => {
+  if (!nodoSeleccionado.value) return null
+  return formulariosPorTipo[nodoSeleccionado.value.type] || null
+})
+
+//Formularios para los nodos
+const formulariosPorTipo = {
+  proyecto: defineAsyncComponent(
+    () =>
+      import(
+        '@/modules/estructuraProyecto/components/formularios/ProyectoFormularioEstructura.vue'
+      ),
+  ),
+}
+/******************HELPERS****************************************/
 
 // Helper para obtener color según tipo de nodo
 function getColorForType(type) {
