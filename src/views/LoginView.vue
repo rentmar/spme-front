@@ -55,8 +55,10 @@ const btnlogin = async () => {
       password: password.value
     });
     if (response.data.validacion === true) {
-      const userRole = response.data.role;
-      userStore.setUserData(userRole);
+       userStore.setUserData({
+        usuario: response.data.usuario,
+        rol: response.data.rol
+      });
       router.push('/home');
     } else {
       displayAlert(response.data.mensaje, 'danger');

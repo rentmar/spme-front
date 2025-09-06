@@ -87,7 +87,12 @@
 </template>
 
 <script setup>
-import { defineEmits } from 'vue'
+// import { defineEmits } from 'vue'
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/user';
+
+const router = useRouter();
+const userStore = useUserStore();
 
 defineProps({
   user: {
@@ -102,11 +107,16 @@ defineProps({
   },
 })
 
-const emit = defineEmits(['logout'])
+// const emit = defineEmits(['logout'])
 
+// const handleLogout = () => {
+//   emit('logout')
+// }
 const handleLogout = () => {
-  emit('logout')
-}
+  userStore.clearUserData();
+  router.push('/');
+};
+
 </script>
 
 <style scoped>

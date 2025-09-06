@@ -1,6 +1,11 @@
 <script setup>
 import { inject } from 'vue'
+import { useUserStore } from '@/stores/user';
+import { computed } from 'vue';
 
+const userStore = useUserStore();
+const userName = computed(() => userStore.usuario);
+const userRole = computed(() => userStore.rol);
 const peiVigente = inject('peiVigente')
 </script>
 
@@ -10,5 +15,6 @@ const peiVigente = inject('peiVigente')
 
     <div class="mt-3">Home</div>
     <p>{{ peiVigente }}</p>
+    <p>Bienvenido, {{ userName }} rol: {{ userRole }}</p>
   </v-container>
 </template>
