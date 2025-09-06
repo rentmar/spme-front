@@ -92,6 +92,7 @@ export default {
       this.error = null;
 
       try {
+       // const token = this.userStore.token;
         const response = await axios.post(
           'http://127.0.0.1:8000/actividades_api/obtenerActividadesGantt/',
           {
@@ -99,7 +100,8 @@ export default {
           },
           {
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              //'Authorization': `Bearer ${token}`
             }
           }
         );
