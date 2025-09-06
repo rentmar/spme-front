@@ -51,7 +51,7 @@
               <v-btn icon size="small" @click="cargarDatos" variant="text" color="white">
                 <v-icon>mdi-refresh</v-icon>
               </v-btn>
-               <v-btn
+              <v-btn
                 color="success"
                 prepend-icon="mdi-cloud-upload"
                 :loading="iSguardandoDiagrama"
@@ -61,7 +61,6 @@
               >
                 Aplicar Cambios
               </v-btn>
-
             </v-toolbar>
             <v-card-text class="pa-4">
               <div v-if="!store.diagrama" class="text-center py-8">
@@ -166,98 +165,20 @@
                 Editar Nodo
               </v-toolbar-title>
             </v-toolbar>
-            <v-card-text class="pa-4">
-              <!-- Panel de edición del nodo seleccionado -->
-              <div v-if="nodoSeleccionado" class="edicion-panel">
-                <h3 class="text-h6 mb-4">
-                  <v-icon color="primary" class="mr-2">mdi-pencil</v-icon>
-                  Editando: {{ nodoSeleccionado.data?.label }}
-                </h3>
 
-                <v-form @submit.prevent="guardarCambios">
-                  <v-text-field
-                    v-model="nodoEditado.data.label"
-                    label="Label"
-                    variant="outlined"
-                    density="comfortable"
-                    class="mb-3"
-                  ></v-text-field>
-
-                  <v-row>
-                    <v-col cols="6">
-                      <v-text-field
-                        v-model.number="nodoEditado.position.x"
-                        label="Posición X"
-                        type="number"
-                        variant="outlined"
-                        density="comfortable"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="6">
-                      <v-text-field
-                        v-model.number="nodoEditado.position.y"
-                        label="Posición Y"
-                        type="number"
-                        variant="outlined"
-                        density="comfortable"
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-
-                  <!-- Campos específicos según el tipo de nodo -->
-                  <v-text-field
-                    v-if="nodoEditado.data.datosNodo"
-                    v-model="nodoEditado.data.datosNodo.titulo"
-                    label="Título"
-                    variant="outlined"
-                    density="comfortable"
-                    class="mb-3"
-                  ></v-text-field>
-
-                  <v-textarea
-                    v-if="nodoEditado.data.nodoProyecto"
-                    v-model="nodoEditado.data.nodoProyecto.descripcion"
-                    label="Descripción"
-                    variant="outlined"
-                    density="comfortable"
-                    rows="3"
-                    class="mb-3"
-                  ></v-textarea>
-
-                  <div class="d-flex gap-2">
-                    <v-btn
-                      type="submit"
-                      color="primary"
-                      :loading="guardando"
-                      prepend-icon="mdi-content-save"
-                    >
-                      Guardar Cambios
-                    </v-btn>
-                    <v-btn color="secondary" @click="deseleccionarNodo" prepend-icon="mdi-close">
-                      Cancelar
-                    </v-btn>
-                  </div>
-                </v-form>
-              </div>
-              <div v-else class="text-center text-medium-emphasis py-8">
-                <v-icon size="48" color="grey-lighten-1">mdi-select-search</v-icon>
-                <p class="mt-2 text-body-1">Seleccione un nodo para editarlo</p>
-                <p class="text-caption">Haga clic en cualquier nodo de la lista</p>
-              </div>
-            </v-card-text>
             <v-card-text class="pa-4">
               <!-- Panel de edición del nodo seleccionado -->
               <div v-if="nodoSeleccionado" class="edicion-panel">
                 <component
-                :is="formularioActual"
-                v-if="formularioActual&&nodoSeleccionado"
-                :node="nodoSeleccionado"
-                @guardar="guardarCambios"
-                @cancelar="deseleccionarNodo"
-                @eliminar="eliminarNodo"
-              />
-              NODO SELECCCIONADO VISTA PADRE <br></br>
-              {{ nodoSeleccionado }}
+                  :is="formularioActual"
+                  v-if="formularioActual && nodoSeleccionado"
+                  :node="nodoSeleccionado"
+                  @guardar="guardarCambios"
+                  @cancelar="deseleccionarNodo"
+                  @eliminar="eliminarNodo"
+                />
+                NODO SELECCCIONADO VISTA PADRE <br />
+                {{ nodoSeleccionado }}
               </div>
               <div v-else class="text-center text-medium-emphasis py-8">
                 <v-icon size="48" color="grey-lighten-1">mdi-select-search</v-icon>
@@ -596,8 +517,8 @@
       </v-dialog>
     </div>
   </v-container>
-  {{ store.tiposDisponibles }}
-  <br><br><br>
+  {{ proyecto }}
+  <br /><br /><br />
   {{ store.diagrama }}
 </template>
 
@@ -612,15 +533,17 @@ import { useProyectoCrud } from '@/modules/proyecto/composables/useProyectoCrud'
 import { useProyectoEstructuraStore } from '@/modules/estructuraProyecto/store/useProyectoEstructuraStore'
 //Snackbars
 import { useSnackbar } from '@/composables/useSnackbar'
-
+import { useDiagramaCrud } from '@/modules/editorEstructura/composables/useDiagramaCrud'
 
 // Inicializar las rutas y obtener el id de proyecto
 const ruta = useRoute()
 const idproyecto = ruta.params.id
 
-
 //Iniciar el store
 const store = useProyectoEstructuraStore()
+
+//Iniciaro el composable
+const { actualizarEstructuraPorDiagrama } = useDiagramaCrud()
 
 //Estados del nodo
 const nodoSeleccionado = ref(null)
@@ -690,7 +613,7 @@ function obtenerConexionesNodo(nodoId) {
 // Inicializar el composable proyecto
 const { proyecto, obtenerProyecto } = useProyectoCrud()
 //Iniciar el composable de los mensajes
-const { successMsg, errorMsg, infoMsg } = useSnackbar()
+const { successMsg, errorMsg } = useSnackbar()
 
 // Watch para detectar cambios en el nodo seleccionado
 watch(nodoSeleccionado, (newVal) => {
@@ -716,7 +639,6 @@ function seleccionarNodo(nodo) {
 function deseleccionarNodo() {
   nodoSeleccionado.value = null
   nodoEditado.value = null
-
 }
 
 // Ver detalles de una relación
@@ -777,7 +699,7 @@ async function guardarCambios(payload) {
 
   try {
     console.log(payload)
-    const modificaciones = {payload}
+    const modificaciones = { payload }
     await store.modificarNodo(nodoSeleccionado.value.id, modificaciones)
     successMsg('Operacion exitosa')
     deseleccionarNodo()
@@ -818,17 +740,23 @@ async function guardarCambios(payload) {
 /*****************ENVIAR DATOS AL REST API****************************/
 const iSguardandoDiagrama = ref(false)
 const guardarDiagrama = async () => {
-  //iSguardandoDiagrama.value = true
+  iSguardandoDiagrama.value = true
+  const iddiagrama = store.diagrama.id
   const datosDiagrama = {
-    iddiagrama: store.diagrama.id,
     codigoProyecto: store.diagrama.codigoProyecto,
     nodos: store.diagrama.nodos,
     conexiones: store.diagrama.conexiones,
-    proyecto_id: store.diagrama.proyecto,
   }
   console.log('datos de envio')
   console.log(datosDiagrama)
-
+  try {
+    await actualizarEstructuraPorDiagrama(iddiagrama, datosDiagrama)
+    successMsg('Datos actualizados')
+  } catch (error) {
+    console.error(error)
+  } finally {
+    iSguardandoDiagrama.value = false
+  }
 }
 
 /*****************FORMULARIOS*****************************************/
@@ -846,6 +774,18 @@ const formulariosPorTipo = {
     () =>
       import(
         '@/modules/estructuraProyecto/components/formularios/ProyectoFormularioEstructura.vue'
+      ),
+  ),
+  objetivogeneral: defineAsyncComponent(
+    () =>
+      import(
+        '@/modules/estructuraProyecto/components/formularios/ObjetivoGralFormularioEstructura.vue'
+      ),
+  ),
+  objetivoespecificoog: defineAsyncComponent(
+    () =>
+      import(
+        '@/modules/estructuraProyecto/components/formularios/ObjetivoEspecFormularioEstructura.vue'
       ),
   ),
 }

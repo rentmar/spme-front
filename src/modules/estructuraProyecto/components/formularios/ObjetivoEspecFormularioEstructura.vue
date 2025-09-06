@@ -1,7 +1,7 @@
 <template>
   <v-form @submit.prevent="guardar">
     <v-text-field
-      v-model="formData.data.datosNodo.codigo"
+      v-model="formData.data.nodoProyecto.codigo"
       variant="outlined"
       label="Código"
       outlined
@@ -9,79 +9,36 @@
       clearable
       :rules="[(v) => !!v || 'Código requerido']"
     />
-    <v-text-field
-      v-model="formData.data.datosNodo.titulo"
-      variant="outlined"
-      label="Titulo"
-      outlined
-      dense
-      clearable
-    />
     <v-textarea
-      v-model="formData.data.datosNodo.descripcion"
+      v-model="formData.data.nodoProyecto.descripcion"
       variant="outlined"
       label="Descripcion"
       outlined
       dense
       clearable
-    />
+      rows="3"
+    ></v-textarea>
 
-    <v-text-field
-      label="Fecha de inicio"
-      v-model="formData.data.datosNodo.fecha_inicio"
-      type="date"
+    <v-textarea
+      v-model="formData.data.nodoProyecto.supuestos"
       variant="outlined"
-    ></v-text-field>
-
-    <v-text-field
-      label="Fecha de finalizacion"
-      v-model="formData.data.datosNodo.fecha_finalizacion"
-      type="date"
-      variant="outlined"
-    ></v-text-field>
-
-    <v-select
-      v-model="formData.data.datosNodo.instancia_gestora"
-      variant="outlined"
-      :items="opcionesInstanciaGestora"
-      multiple
-      chips
-      item-value="id"
-      item-title="instancia"
-      label="Instancia gestora"
-      clearable
-    ></v-select>
-
-    <v-text-field
-      v-model="formData.data.datosNodo.presupuesto"
-      variant="outlined"
-      label="Presupuesto"
+      label="Supuestos"
       outlined
       dense
       clearable
-    />
+      rows="3"
+    ></v-textarea>
 
-    <v-select
-      v-model="formData.data.datosNodo.estado"
+    <v-textarea
+      v-model="formData.data.nodoProyecto.riesgos"
       variant="outlined"
-      :items="estadoProyecto"
-      item-value="valor"
-      item-title="etiqueta"
-      label="Estado del Proyecto"
+      label="Riesgos"
+      outlined
+      dense
       clearable
-    ></v-select>
+      rows="3"
+    ></v-textarea>
 
-    <v-select
-      v-model="formData.data.datosNodo.procedencia_fondos"
-      variant="outlined"
-      :items="opcionesEntidadFinanciera"
-      item-value="id"
-      item-title="financiera"
-      label="Procedencia de Fondos"
-      multiple
-      chips
-      clearable
-    ></v-select>
     <div class="d-flex gap-2">
       <v-btn type="submit" color="primary" :loading="guardando" prepend-icon="mdi-content-save">
         Guardar Cambios
@@ -92,10 +49,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { SELECT_OPTIONS } from '@/utility/selectOptions'
-import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
-import { useInstanciaGestora } from '@/modules/instanciaGestora/composables/useInstanciaGestora'
+import { ref } from 'vue'
 
 //Props del componente
 const props = defineProps({
@@ -114,13 +68,6 @@ const props = defineProps({
   },
 })
 
-//Estado
-const estadoProyecto = SELECT_OPTIONS.estado
-
-//Iniciarar composables
-const { fetchOptions, opcionesEntidadFinanciera } = useProcedenciaFondos()
-const { fetchOptionsInstancias, opcionesInstanciaGestora } = useInstanciaGestora()
-
 //Definir señales
 const emit = defineEmits(['guardar', 'cancelar'])
 
@@ -135,23 +82,6 @@ const guardar = async () => {
 
 const cancelar = async () => {
   emit('cancelar')
-}
-
-//Cargar informacion para el llenado
-onMounted(async () => {
-  cargarDatos()
-})
-
-const isLoading = ref(false)
-const cargarDatos = async () => {
-  isLoading.value = true
-  try {
-    await Promise.all([fetchOptions(), fetchOptionsInstancias()])
-  } catch (err) {
-    console.error(err)
-  } finally {
-    isLoading.value = false
-  }
 }
 </script>
 

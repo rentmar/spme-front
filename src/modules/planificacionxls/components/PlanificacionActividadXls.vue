@@ -370,6 +370,7 @@
       <v-btn variant="text" @click="snackbar.show = false">Cerrar</v-btn>
     </template>
   </v-snackbar>
+  {{ storePlanificacion.listaUsuarios }}
 </template>
 
 <script setup>
@@ -395,6 +396,7 @@ import SeleccionEstructuraActividad from './parciales/SeleccionEstructuraActivid
 import DiagramaPlanificacion from './DiagramaPlanificacion.vue'
 //Actividades Test
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
+import { usePlanificacionStore } from '../store/usePlanificacionStore'
 import { storeToRefs } from 'pinia'
 import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
 
@@ -425,6 +427,7 @@ const idproyecto = route.params.id
 const proyectoStore = useProyectoStore()
 const { nodes, edges } = storeToRefs(proyectoStore)
 
+const storePlanificacion = usePlanificacionStore()
 // Composables
 const {
   actividades: actividadesDisponibles,
@@ -976,6 +979,8 @@ const cargar = async () => {
       cargarActividadesPorIdProyecto(idproyecto),
       contarPlanPorIdProyecto(idproyecto),
     ])
+
+    await obtenerUsuarios()
 
     // COMPROBADOR: Solo cargar tableData si hay actividades disponibles
     if (actividadesDisponibles.value && actividadesDisponibles.value.length > 0) {

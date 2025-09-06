@@ -53,11 +53,15 @@
         <v-col cols="12" sm="6">
           <div class="d-flex align-center mb-2">
             <v-icon icon="mdi-calendar" class="mr-2" size="small"></v-icon>
-            <span><strong>Fecha inicio:</strong> {{ formatDate(proyecto.fecha_inicio) }}</span>
+            <span
+              ><strong>Fecha inicio:</strong>{{ formatDate(props.proyecto.fecha_inicio) }}
+            </span>
           </div>
           <div class="d-flex align-center mb-2">
             <v-icon icon="mdi-calendar-end" class="mr-2" size="small"></v-icon>
-            <span><strong>Fecha fin:</strong> {{ formatDate(proyecto.fecha_finalizacion) }}</span>
+            <span
+              ><strong>Fecha fin:</strong> {{ formatDate(props.proyecto.fecha_finalizacion) }}</span
+            >
           </div>
         </v-col>
         <v-col cols="12" sm="6">

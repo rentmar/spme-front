@@ -1,4 +1,4 @@
-import api from '@/services/axios'
+import { api, apiProy } from '@/services/axios'
 
 export const diagramaEstructuraCrud = {
   /* Obtener todos los proyectos */
@@ -55,6 +55,18 @@ export const diagramaEstructuraCrud = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error, instancia gestora con ID: ' + id, error)
+      throw error
+    }
+  },
+  actualizarEstructuraPorIdDiagrama: async (id, data) => {
+    try {
+      const respuesta = await apiProy.put(
+        '/proyectos/diagrama/' + id + '/actualizar-estructura/',
+        data,
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Fallo al actualizar el diagrama con ID: ' + id, error)
       throw error
     }
   },
