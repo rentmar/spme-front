@@ -825,7 +825,23 @@ const columns = ref([
     title: 'Responsable',
     type: 'dropdown',
     width: 110,
-    source: ['admin', 'oscar'],
+    source: function (query, process) {
+      // Asegúrate de que el store tenga los usuarios cargados
+      const usernames = storePlanificacion.listaUsuariosCompleta
+        .filter((user) => user.is_active !== false)
+        .map((user) => user.username)
+        .filter((username) => username)
+        .sort()
+
+      if (query) {
+        const filtered = usernames.filter((username) =>
+          username.toLowerCase().includes(query.toLowerCase()),
+        )
+        process(filtered)
+      } else {
+        process(usernames)
+      }
+    },
   },
   {
     data: 'fecha_inicio',
@@ -980,7 +996,7 @@ const cargar = async () => {
       contarPlanPorIdProyecto(idproyecto),
     ])
 
-    await obtenerUsuarios()
+    await storePlanificacion.obtenerListaUsuarios()
 
     // COMPROBADOR: Solo cargar tableData si hay actividades disponibles
     if (actividadesDisponibles.value && actividadesDisponibles.value.length > 0) {
@@ -1000,6 +1016,11 @@ const cargar = async () => {
 
 onMounted(() => {
   cargar()
+  // Verificar después de un tiempo que los usuarios se cargaron
+  setTimeout(() => {
+    console.log('Usuarios en store:', storePlanificacion.listaUsuariosCompleta)
+    console.log('Usernames para dropdown:', storePlanificacion.usernamesParaDropdown)
+  }, 2000)
 })
 
 /*************** Manejo de cambios *************************/

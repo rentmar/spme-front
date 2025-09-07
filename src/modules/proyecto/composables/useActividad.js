@@ -27,7 +27,7 @@ export function useActividad() {
     }
   }
 
-  //fetch kpi por id
+  //fetch actividad por id
   async function cargarActividadPorId(id) {
     loading.value = true
     try {

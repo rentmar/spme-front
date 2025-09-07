@@ -39,5 +39,6 @@ export const SELECT_OPTIONS = {
     'PDES - Proyecto de Desarrollo',
     'AINC - Actividad de Incidencia',
     'AART - Actividad de Articulación',
+    'OTRO - Tipo Actividad',
   ],
 }
