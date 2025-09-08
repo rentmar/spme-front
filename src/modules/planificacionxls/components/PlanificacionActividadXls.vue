@@ -818,7 +818,11 @@ const columns = ref([
     title: 'Tipo de Actividad',
     type: 'dropdown',
     width: 110,
-    source: tipoActividad,
+    source: function (query, process) {
+      const tipos = storePlanificacion.listaTiposAct
+      const siglas = tipos ? tipos.map((t) => t.sigla) : []
+      process(siglas)
+    },
   },
   {
     data: 'responsable',
@@ -994,9 +998,11 @@ const cargar = async () => {
     await Promise.all([
       cargarActividadesPorIdProyecto(idproyecto),
       contarPlanPorIdProyecto(idproyecto),
+      storePlanificacion.obtenerListaUsuarios(),
     ])
 
     await storePlanificacion.obtenerListaUsuarios()
+    await storePlanificacion.listaTiposDeActividad()
 
     // COMPROBADOR: Solo cargar tableData si hay actividades disponibles
     if (actividadesDisponibles.value && actividadesDisponibles.value.length > 0) {
@@ -1013,6 +1019,33 @@ const cargar = async () => {
     tablaDataDisponible.value = true
   }
 }
+
+// Computed para los tipos de actividad - FORMA CORRECTA
+const tiposActividadStore = computed(() => {
+  console.log('Lista tipos del store:', listaTiposAct.value)
+  console.log('Siglas del store:', siglasTiposActividad.value)
+
+  // Verificar si hay datos en el store
+  if (listaTiposAct.value && listaTiposAct.value.length > 0) {
+    // Extraer las siglas/códigos de los tipos
+    const siglas = listaTiposAct.value.map(
+      (tipo) => tipo.codigo || tipo.siglas || tipo.nombre_corto || tipo.nombre,
+    )
+    console.log('Siglas extraídas:', siglas)
+    return siglas
+  }
+
+  // Si el store está vacío, verificar siglasTiposActividad
+  if (siglasTiposActividad.value && siglasTiposActividad.value.length > 0) {
+    console.log('Usando siglasTiposActividad:', siglasTiposActividad.value)
+    return siglasTiposActividad.value
+  }
+
+  // Fallback final a los tipos estáticos
+  console.log('Usando fallback estático')
+  return SELECT_OPTIONS.tipo_actividad
+})
+console.log(tiposActividadStore)
 
 onMounted(() => {
   cargar()

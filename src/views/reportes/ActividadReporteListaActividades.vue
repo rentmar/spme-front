@@ -1,9 +1,12 @@
 <template>
   <div>
-    <h1></h1>
+    <h1>Lista de Proyectos</h1>
+    <TipoDeActividad></TipoDeActividad>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import TipoDeActividad from '@/modules/actividades/components/TipoDeActividad.vue'
+</script>
 
 <style scoped></style>

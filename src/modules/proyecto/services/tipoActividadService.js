@@ -1,7 +1,7 @@
 import api from '@/services/axios'
 
 export const tipoActividadServicio = {
-  /* Fetch kpis */
+  /* Fetch Tipo Actividad */
   all: async () => {
     try {
       const respuesta = await api.get('/tipo-actividad/')
