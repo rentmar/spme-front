@@ -17,6 +17,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
   const proyecto_objgeneral_info = ref(null) //Proyecto - objetivo-general-info adicional
   const objetivosIndicadores = ref([])
   const nodosClasificados = ref(null)
+  const nodosVinculadosActividad = ref([])
   const nodes = ref(null)
   const edges = ref(null)
   const cargando = ref(false) //Indicador de carga
@@ -229,6 +230,51 @@ export const useProyectoStore = defineStore('proyecto', () => {
     return resultados
   }
 
+  /**
+   * 💡 Acción para buscar y almacenar los nodos de procedencia de una actividad.
+   * Esta función recorre la estructura de procedencia (con tipo y datos)
+   * y busca el nodo completo en el store para luego almacenarlo en un array.
+   * @param {Object} estructuraProcedencia - Objeto con el tipo y los datos completos de las selecciones.
+   */
+  const almacenarNodosProcedenciaActividad = (estructuraProcedencia) => {
+    // Limpiamos el estado anterior para la nueva lista de nodos
+    nodosVinculadosActividad.value = []
+
+    // Verificamos si hay nodos clasificados en el store
+    if (!nodosClasificados.value) {
+      console.warn('No se encontraron nodos clasificados en el store.')
+      return
+    }
+
+    // Iteramos sobre las propiedades del objeto de estructura de procedencia
+    for (const tipo in estructuraProcedencia) {
+      const valor = estructuraProcedencia[tipo]
+
+      if (valor) {
+        if (Array.isArray(valor)) {
+          // Caso de selección múltiple (ej. 'indicadorog')
+          valor.forEach((item) => {
+            // Buscamos el nodo completo por su ID en la lista de nodos clasificados
+            const nodoEncontrado = nodosClasificados.value[item.tipo]?.find(
+              (nodo) => nodo.data?.nodoProyecto?.id === item.data.id,
+            )
+            if (nodoEncontrado) {
+              nodosVinculadosActividad.value.push(nodoEncontrado)
+            }
+          })
+        } else {
+          // Caso de selección simple
+          const nodoEncontrado = nodosClasificados.value[valor.tipo]?.find(
+            (nodo) => nodo.data?.nodoProyecto?.id === valor.data.id,
+          )
+          if (nodoEncontrado) {
+            nodosVinculadosActividad.value.push(nodoEncontrado)
+          }
+        }
+      }
+    }
+  }
+
   return {
     proyectos, //ref
     proyectoActual, //ref
@@ -239,6 +285,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
     objetivosIndicadores, //ref
     proyecto_objgeneral_info, //ref
     nodosClasificados, //ref nodos del proyecto clasificados
+    nodosVinculadosActividad,
     cargando, //ref
     error, //ref
     nodes, //ref
@@ -254,6 +301,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
     buscarNodoPorId, //Busqueda de un nodo por id de backend
     buscarNodoPorTipoId, //Busqueda de un nodo por type e Identificado4
     buscarNodosPorId, //Busqueda de todos los nodos que tengan el mismo id
+    almacenarNodosProcedenciaActividad,
   }
 })
 

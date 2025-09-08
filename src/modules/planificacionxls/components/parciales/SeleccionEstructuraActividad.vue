@@ -68,6 +68,8 @@
             return-object
             clearable
             class="mb-4"
+            multiple
+            chips
           >
             <template v-slot:item="{ props, item }">
               <v-list-item v-bind="props" :subtitle="item.raw.descripcion"></v-list-item>
@@ -307,7 +309,7 @@
               <v-btn
                 color="primary"
                 variant="flat"
-                @click="crearActividad"
+                @click="mostrarDialogoConfirmacion"
                 :disabled="!esFormularioValido"
               >
                 Crear Actividad
@@ -324,12 +326,168 @@
         </div>
       </v-card-text>
     </v-card>
+
+    <v-dialog v-model="dialogVisible" max-width="600">
+      <v-card>
+        <v-card-title class="bg-blue-darken-3 text-white">
+          <v-icon class="mr-2">mdi-check-circle-outline</v-icon>
+          Confirmar Creación de Actividad
+        </v-card-title>
+
+        <v-card-text class="py-4">
+          <h4 class="text-subtitle-1 mb-2">Datos de la nueva Actividad:</h4>
+          <v-list density="compact" class="mb-4">
+            <v-list-item>
+              <v-list-item-title
+                ><strong>Código:</strong> {{ nuevaActividad.codigo }}</v-list-item-title
+              >
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-title
+                ><strong>Título:</strong> {{ nuevaActividad.titulo }}</v-list-item-title
+              >
+            </v-list-item>
+          </v-list>
+
+          <h4 class="text-subtitle-1 mb-2">Estructura de Procedencia:</h4>
+          <v-card variant="outlined" class="pa-3">
+            <v-list density="compact">
+              <v-list-item v-if="collectedData.objetivogeneral">
+                <v-list-item-title>
+                  <strong>Objetivo General:</strong> {{ collectedData.objetivogeneral.data.codigo }}
+                </v-list-item-title>
+                <v-list-item-subtitle>{{
+                  collectedData.objetivogeneral.data.descripcion
+                }}</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="collectedData.indicadorog?.length">
+                <v-list-item-title>
+                  <strong>Indicador OG:</strong>
+                </v-list-item-title>
+                <v-chip-group>
+                  <v-chip
+                    v-for="item in collectedData.indicadorog"
+                    :key="item.data.id"
+                    size="small"
+                  >
+                    {{ item.data.codigo }}
+                  </v-chip>
+                </v-chip-group>
+              </v-list-item>
+
+              <v-list-item v-if="collectedData.resultadoog">
+                <v-list-item-title>
+                  <strong>Resultado OG:</strong> {{ collectedData.resultadoog.data.codigo }}
+                </v-list-item-title>
+                <v-list-item-subtitle>{{
+                  collectedData.resultadoog.data.descripcion
+                }}</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="collectedData.indicadorresultadoog">
+                <v-list-item-title>
+                  <strong>Indicador Res. OG:</strong>
+                  {{ collectedData.indicadorresultadoog.data.codigo }}
+                </v-list-item-title>
+                <v-list-item-subtitle>{{
+                  collectedData.indicadorresultadoog.data.descripcion
+                }}</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="collectedData.procesoog">
+                <v-list-item-title>
+                  <strong>Proceso OG:</strong> {{ collectedData.procesoog.data.codigo }}
+                </v-list-item-title>
+                <v-list-item-subtitle>{{
+                  collectedData.procesoog.data.titulo
+                }}</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="collectedData.objetivoespecifico">
+                <v-list-item-title>
+                  <strong>Objetivo Específico:</strong>
+                  {{ collectedData.objetivoespecifico.data.codigo }}
+                </v-list-item-title>
+                <v-list-item-subtitle>{{
+                  collectedData.objetivoespecifico.data.descripcion
+                }}</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="collectedData.indicadoroe">
+                <v-list-item-title>
+                  <strong>Indicador OE:</strong> {{ collectedData.indicadoroe.data.codigo }}
+                </v-list-item-title>
+                <v-list-item-subtitle>{{
+                  collectedData.indicadoroe.data.descripcion
+                }}</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="collectedData.resultadooe">
+                <v-list-item-title>
+                  <strong>Resultado OE:</strong> {{ collectedData.resultadooe.data.codigo }}
+                </v-list-item-title>
+                <v-list-item-subtitle>{{
+                  collectedData.resultadooe.data.descripcion
+                }}</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="collectedData.indicadorresultadooe">
+                <v-list-item-title>
+                  <strong>Indicador Res. OE:</strong>
+                  {{ collectedData.indicadorresultadooe.data.codigo }}
+                </v-list-item-title>
+                <v-list-item-subtitle>{{
+                  collectedData.indicadorresultadooe.data.descripcion
+                }}</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="collectedData.procesooe">
+                <v-list-item-title>
+                  <strong>Proceso OE:</strong> {{ collectedData.procesooe.data.codigo }}
+                </v-list-item-title>
+                <v-list-item-subtitle>{{
+                  collectedData.procesooe.data.titulo
+                }}</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="collectedData.productoe">
+                <v-list-item-title>
+                  <strong>Producto OE:</strong> {{ collectedData.productoe.data.codigo }}
+                </v-list-item-title>
+                <v-list-item-subtitle>{{
+                  collectedData.productoe.data.descripcion
+                }}</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="collectedData.procesoproductoe">
+                <v-list-item-title>
+                  <strong>Proceso Producto OE:</strong>
+                  {{ collectedData.procesoproductoe.data.codigo }}
+                </v-list-item-title>
+                <v-list-item-subtitle>{{
+                  collectedData.procesoproductoe.data.titulo
+                }}</v-list-item-subtitle>
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="grey" variant="text" @click="dialogVisible = false"> Cancelar </v-btn>
+          <v-btn color="primary" variant="flat" @click="confirmarCreacion">
+            Confirmar y Guardar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
-
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useActividad } from '@/modules/proyecto/composables/useActividad'
+import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 
 // Props para recibir datos del proyecto desde el componente padre
 const props = defineProps({
@@ -339,9 +497,11 @@ const props = defineProps({
   },
 })
 
-// Datos del proyecto (se inicializarán desde los props)
+// Variables reactivas para el estado del componente
 const proyecto = ref({})
 const objetivosGenerales = ref([])
+const dialogVisible = ref(false)
+const collectedData = ref({})
 
 // Variables reactivas para la selección
 const selectedObjetivoGeneral = ref(null)
@@ -363,54 +523,51 @@ const nuevaActividad = ref({
   titulo: '',
 })
 
+// Iniciar composables
+const { crearActividad: crearActividadComposable } = useActividad()
+const proyectoStore = useProyectoStore()
+
 // Preprocesar datos cuando el componente se monta
 onMounted(() => {
   preprocesarDatos()
 })
 
+// Validación del formulario
+const esFormularioValido = computed(() => {
+  return nuevaActividad.value.codigo && nuevaActividad.value.titulo
+})
+
 // Función para preprocesar los datos de la API
 const preprocesarDatos = () => {
-  // Copiar los datos del proyecto
   proyecto.value = { ...props.proyectoData }
-
   if (proyecto.value.objetivo_general) {
     const objetivoGeneral = proyecto.value.objetivo_general
     objetivoGeneral.indicador_og = objetivoGeneral.indicador_og || []
     objetivoGeneral.resultados_og = objetivoGeneral.resultados_og || []
     objetivoGeneral.objetivos_especificos_og = objetivoGeneral.objetivos_especificos_og || []
-
     objetivoGeneral.resultados_og.forEach((resultado) => {
       resultado.proceso_resultado_og = resultado.proceso_resultado_og || []
       resultado.indicador_res_og = resultado.indicador_res_og || []
       resultado.productos_res_og = resultado.productos_res_og || []
     })
-
     objetivoGeneral.objetivos_especificos_og.forEach((objetivoEspecifico) => {
       objetivoEspecifico.indicador_oe = objetivoEspecifico.indicador_oe || []
       objetivoEspecifico.resultados_oe = objetivoEspecifico.resultados_oe || []
       objetivoEspecifico.productos_oe = objetivoEspecifico.productos_oe || []
-
       objetivoEspecifico.resultados_oe.forEach((resultado) => {
         resultado.proceso_resultado_oe = resultado.proceso_resultado_oe || []
         resultado.indicador_res_oe = resultado.indicador_res_oe || []
         resultado.productos_res_oe = resultado.productos_res_oe || []
       })
-
       objetivoEspecifico.productos_oe.forEach((producto) => {
         producto.proceso_producto_oe = producto.proceso_producto_oe || []
       })
     })
-
     objetivosGenerales.value = [objetivoGeneral]
   } else {
     objetivosGenerales.value = []
   }
 }
-
-// Validación del formulario
-const esFormularioValido = computed(() => {
-  return nuevaActividad.value.codigo && nuevaActividad.value.titulo
-})
 
 // Métodos para manejar selecciones
 const onObjetivoGeneralSelected = () => {
@@ -427,59 +584,126 @@ const onObjetivoGeneralSelected = () => {
   selectedProcesoProductoOE.value = null
 }
 
-//Iniciar el composable de actividad
-const { crearActividad: crearActividadComposable } = useActividad()
+// 💡 Versión mejorada y segura de la función para recolectar datos
+const obtenerEstructuraProcedencia = () => {
+  const estructura = {}
 
-// Crear actividad
-const crearActividad = async () => {
-  // Construir el objeto de estructura de procedencia con todas las selecciones
-  const estructuraProcedencia = {
-    objetivoGeneral: selectedObjetivoGeneral.value
-      ? { id: selectedObjetivoGeneral.value.id }
-      : null,
-    indicadorOG: selectedIndicadorOG.value ? { id: selectedIndicadorOG.value.id } : null,
-    resultadoOG: selectedResultadoOG.value ? { id: selectedResultadoOG.value.id } : null,
-    indicadorResultadoOG: selectedIndicadorResultadoOG.value
-      ? { id: selectedIndicadorResultadoOG.value.id }
-      : null,
-    procesoOG: selectedProcesoOG.value ? { id: selectedProcesoOG.value.id } : null,
-    objetivoEspecifico: selectedObjetivoEspecifico.value
-      ? { id: selectedObjetivoEspecifico.value.id }
-      : null,
-    indicadorOE: selectedIndicadorOE.value ? { id: selectedIndicadorOE.value.id } : null,
-    resultadoOE: selectedResultadoOE.value ? { id: selectedResultadoOE.value.id } : null,
-    indicadorResultadoOE: selectedIndicadorResultadoOE.value
-      ? { id: selectedIndicadorResultadoOE.value.id }
-      : null,
-    procesoOE: selectedProcesoOE.value ? { id: selectedProcesoOE.value.id } : null,
-    productoOE: selectedProductoOE.value ? { id: selectedProductoOE.value.id } : null,
-    procesoProductoOE: selectedProcesoProductoOE.value
-      ? { id: selectedProcesoProductoOE.value.id }
-      : null,
+  const selecciones = {
+    objetivogeneral: selectedObjetivoGeneral,
+    indicadorog: selectedIndicadorOG,
+    resultadoog: selectedResultadoOG,
+    indicadorresultadoog: selectedIndicadorResultadoOG,
+    procesoog: selectedProcesoOG,
+    objetivoespecifico: selectedObjetivoEspecifico,
+    indicadoroe: selectedIndicadorOE,
+    resultadooe: selectedResultadoOE,
+    indicadorresultadooe: selectedIndicadorResultadoOE,
+    procesooe: selectedProcesoOE,
+    productoe: selectedProductoOE,
+    procesoproductoe: selectedProcesoProductoOE,
   }
+
+  for (const tipo in selecciones) {
+    const valorSeleccionado = selecciones[tipo].value
+
+    if (valorSeleccionado) {
+      if (Array.isArray(valorSeleccionado)) {
+        // Manejo de selecciones múltiples
+        estructura[tipo] = valorSeleccionado.map((data) => ({
+          tipo: tipo,
+          data: data,
+        }))
+      } else {
+        // Manejo de selecciones simples
+        estructura[tipo] = {
+          tipo: tipo,
+          data: valorSeleccionado,
+        }
+      }
+    }
+  }
+
+  return estructura
+}
+
+// 💡 NUEVA FUNCIÓN: Obtiene las selecciones de manera simple (solo IDs) para edición
+const obtenerSeleccionesSimples = () => {
+  const seleccionesSimples = {}
+
+  if (selectedObjetivoGeneral.value) {
+    seleccionesSimples.objetivoGeneralId = selectedObjetivoGeneral.value.id
+  }
+  if (selectedIndicadorOG.value) {
+    seleccionesSimples.indicadorOGIds = selectedIndicadorOG.value.map((item) => item.id)
+  }
+  if (selectedResultadoOG.value) {
+    seleccionesSimples.resultadoOGId = selectedResultadoOG.value.id
+  }
+  if (selectedIndicadorResultadoOG.value) {
+    seleccionesSimples.indicadorResultadoOGId = selectedIndicadorResultadoOG.value.id
+  }
+  if (selectedProcesoOG.value) {
+    seleccionesSimples.procesoOGId = selectedProcesoOG.value.id
+  }
+  if (selectedObjetivoEspecifico.value) {
+    seleccionesSimples.objetivoEspecificoId = selectedObjetivoEspecifico.value.id
+  }
+  if (selectedIndicadorOE.value) {
+    seleccionesSimples.indicadorOEId = selectedIndicadorOE.value.id
+  }
+  if (selectedResultadoOE.value) {
+    seleccionesSimples.resultadoOEId = selectedResultadoOE.value.id
+  }
+  if (selectedIndicadorResultadoOE.value) {
+    seleccionesSimples.indicadorResultadoOEId = selectedIndicadorResultadoOE.value.id
+  }
+  if (selectedProcesoOE.value) {
+    seleccionesSimples.procesoOEId = selectedProcesoOE.value.id
+  }
+  if (selectedProductoOE.value) {
+    seleccionesSimples.productoOEId = selectedProductoOE.value.id
+  }
+  if (selectedProcesoProductoOE.value) {
+    seleccionesSimples.procesoProductoOEId = selectedProcesoProductoOE.value.id
+  }
+
+  return seleccionesSimples
+}
+
+// Mostrar el diálogo de confirmación
+const mostrarDialogoConfirmacion = () => {
+  collectedData.value = obtenerEstructuraProcedencia()
+  dialogVisible.value = true
+}
+
+// Crear actividad después de la confirmación
+const confirmarCreacion = async () => {
+  dialogVisible.value = false
+  proyectoStore.almacenarNodosProcedenciaActividad(collectedData.value)
 
   const actividadCompleta = {
     codigo: nuevaActividad.value.codigo,
     nombreCorto: nuevaActividad.value.titulo,
     estado: 'CRD',
-    estructuraProcedencia: estructuraProcedencia,
+    estructuraProcedencia: {
+      datosProcedencia: collectedData.value,
+      nodosRelacionados: proyectoStore.nodosVinculadosActividad,
+      // 💡 Se añade la nueva propiedad con las selecciones simples
+      seleccionesSimples: obtenerSeleccionesSimples(),
+    },
     proyecto: proyecto.value.id,
     responsable: nuevaActividad.value.responsable,
   }
 
+  //console.log(actividadCompleta.estructuraProcedencia)
+  //console.log(proyectoStore.nodosVinculadosActividad)
+  //console.log(actividadCompleta)
   try {
     await crearActividadComposable(actividadCompleta)
+    emit('crear-actividad', actividadCompleta)
   } catch (e) {
     console.error(e)
   }
-
-  console.log('Actividad creada:', actividadCompleta)
-
-  // Emitir el evento con el nuevo formato
-  emit('crear-actividad', actividadCompleta)
-
-  // Resetear el formulario
-  resetSeleccion()
 }
 
 // Resetear toda la selección
@@ -496,8 +720,6 @@ const resetSeleccion = () => {
   selectedProcesoOE.value = null
   selectedProductoOE.value = null
   selectedProcesoProductoOE.value = null
-
-  // Resetear formulario
   nuevaActividad.value = {
     codigo: '',
     titulo: '',
@@ -525,18 +747,14 @@ const emit = defineEmits(['crear-actividad'])
 .v-card {
   border-radius: 8px;
 }
-
-/* Mejoras de espaciado */
 .v-card-title {
   padding-top: 16px;
   padding-bottom: 16px;
 }
-
 .v-card-text {
   padding-top: 20px;
   padding-bottom: 20px;
 }
-
 .bg-blue-lighten-5 {
   padding-top: 24px;
   padding-bottom: 24px;
