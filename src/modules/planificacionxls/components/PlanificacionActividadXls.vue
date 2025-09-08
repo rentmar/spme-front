@@ -370,7 +370,10 @@
       <v-btn variant="text" @click="snackbar.show = false">Cerrar</v-btn>
     </template>
   </v-snackbar>
-  {{ storePlanificacion.listaUsuarios }}
+  {{ props.proyectoEstructura }}
+  <br /><br /><br /><br />
+  ESTRUCTURA PROYECTO NODOS:<br /><br />
+  {{ storeProyecto.proyectoEstructuraNodos }}
 </template>
 
 <script setup>
@@ -393,7 +396,7 @@ import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
 //Estructuras
 import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
 import SeleccionEstructuraActividad from './parciales/SeleccionEstructuraActividad.vue'
-import DiagramaPlanificacion from './DiagramaPlanificacion.vue'
+import DiagramaPlanificacion from './DiagramaJerarquiaPlanificacion.vue'
 //Actividades Test
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { usePlanificacionStore } from '../store/usePlanificacionStore'
@@ -428,6 +431,7 @@ const proyectoStore = useProyectoStore()
 const { nodes, edges } = storeToRefs(proyectoStore)
 
 const storePlanificacion = usePlanificacionStore()
+const storeProyecto = useProyectoStore()
 // Composables
 const {
   actividades: actividadesDisponibles,
