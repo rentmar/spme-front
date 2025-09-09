@@ -619,35 +619,6 @@ const crearActividadPlan = async () => {
 
 // Método para confirmar el guardado - ACTUALIZADO
 const confirmarGuardado = async () => {
-  // guardando.value = true
-  // try {
-  //   // Crear copia simple de los datos sin reactividad
-  //   const datosSimples = JSON.parse(JSON.stringify(tableData.value))
-
-  //   // Preparar la estructura que espera el backend
-  //   const datosEnvio = {
-  //     table_config: obtenerConfiguracionTabla(),
-  //     rows_data: datosSimples,
-  //     razon_cambio: 'Actualización de planificación',
-  //     usuario: 'admin',
-  //   }
-
-  //   // Guardar en el backend
-  //   await guardarActividadesBulk(idproyecto, datosEnvio)
-
-  //   // Mostrar mensaje de éxito
-  //   mostrarMensaje('Planificación guardada exitosamente', 'success')
-
-  //   // REFRESCAR LOS DATOS después de guardar
-  //   await refrescarDatos()
-  // } catch (error) {
-  //   console.error('Error:', error)
-  //   mostrarMensaje('Error al guardar: ' + error.message, 'error')
-  // } finally {
-  //   guardando.value = false
-  //   confirmacionModal.value = false
-  // }
-
   guardando.value = true
   try {
     // Crear copia simple de los datos sin reactividad
