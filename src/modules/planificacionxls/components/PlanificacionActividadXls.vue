@@ -4,6 +4,7 @@
       :tabla-data-disponible="tablaDataDisponible"
       :actividad-id="selectedRowData.id"
     ></TrazadorActividad>
+    <ActividadRelacionEstructura></ActividadRelacionEstructura>
   </div>
   <div class="hot-wrapper" v-if="!isLoading">
     <div class="content-wrapper">
@@ -402,6 +403,7 @@ import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { usePlanificacionStore } from '../store/usePlanificacionStore'
 import { storeToRefs } from 'pinia'
 import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
+import ActividadRelacionEstructura from './parciales/ActividadRelacionEstructura.vue'
 
 // Props del componente
 const props = defineProps({
