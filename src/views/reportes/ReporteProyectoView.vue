@@ -11,6 +11,7 @@
         Generar Reporte
       </v-btn>
     </div>
+    <diagrama-reportes :id-proyecto="idproyecto"></diagrama-reportes>
 
     <v-row>
       <!-- Panel de selección -->
@@ -137,19 +138,21 @@
         </v-card>
       </v-col>
     </v-row>
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></br>
+    <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+    <!-- <diagrama-reportes-grafico-main></diagrama-reportes-grafico-main> -->
   </v-container>
   <p>Nodos seleccionados</p>
   {{ nodosSeleccionados }}
   <p>Diagrama programa</p>
-{{ store.diagrama.nodos }}
+  {{ store.diagrama.nodos }}
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useProyectoEstructuraStore } from '@/modules/estructuraProyecto/store/useProyectoEstructuraStore'
 import { useRoute } from 'vue-router'
-
+import DiagramaReportes from '@/modules/reportes/components/DiagramaReportes.vue'
+import DiagramaReportesGraficoMain from '@/modules/reportes/components/DiagramaReportesGraficoMain.vue'
 
 // Inicializar las rutas y obtener el id de proyecto
 const ruta = useRoute()
@@ -159,97 +162,8 @@ const idproyecto = ruta.params.id
 const store = useProyectoEstructuraStore()
 
 // Datos de ejemplo basados en la estructura proporcionada
-const nodosDisponibles =ref([])
+const nodosDisponibles = ref([])
 console.log(nodosDisponibles)
-// const nodosDisponibles = ref([
-//   {
-//     id: '1',
-//     type: 'proyecto',
-//     label: 'Proyecto',
-//     data: {
-//       datosNodo: {
-//         codigo: 'TESTREP',
-//         titulo: 'Proyecto Test de Reportes',
-//         descripcion: 'Descripción, estructura completa',
-//       },
-//     },
-//   },
-//   {
-//     id: '2',
-//     type: 'objetivogeneral',
-//     label: 'Objetivo General',
-//     data: {
-//       nodoProyecto: {
-//         codigo: 'OO',
-//         descripcion: 'desc og',
-//       },
-//     },
-//   },
-//   {
-//     id: '3',
-//     type: 'indicadorog',
-//     label: 'Indicador OG',
-//     data: {
-//       nodoProyecto: {
-//         codigo: 'IND-OG1',
-//         redaccion: 'GUIA',
-//       },
-//     },
-//   },
-//   {
-//     id: '4',
-//     type: 'indicadorog',
-//     label: 'Indicador OG',
-//     data: {
-//       nodoProyecto: {
-//         codigo: 'IND-OG2',
-//         redaccion: 'GUIA',
-//       },
-//     },
-//   },
-//   {
-//     id: '5',
-//     type: 'objetivoespecificoog',
-//     label: 'Objetivo Específico OG',
-//     data: {
-//       nodoProyecto: {
-//         codigo: 'SPO1',
-//       },
-//     },
-//   },
-//   {
-//     id: '6',
-//     type: 'objetivoespecificoog',
-//     label: 'Objetivo Específico OG',
-//     data: {
-//       nodoProyecto: {
-//         codigo: 'SPO2',
-//       },
-//     },
-//   },
-//   {
-//     id: '11',
-//     type: 'resultadooe',
-//     label: 'Resultado OE',
-//     data: {
-//       nodoProyecto: {
-//         codigo: 'RES01-OE1',
-//         descripcion: 'Des Res OE',
-//       },
-//     },
-//   },
-//   {
-//     id: '20',
-//     type: 'resultadoog',
-//     label: 'Resultado OG',
-//     data: {
-//       nodoProyecto: {
-//         codigo: 'R01-OO',
-//         descripcion: 'Descripción del resultado de obj gral',
-//       },
-//     },
-//   },
-// ])
 
 // Estado de la aplicación
 const nodosSeleccionados = ref([])
@@ -258,9 +172,7 @@ const nivelDetalle = ref('medio')
 const incluirConexiones = ref(true)
 
 // Opciones disponibles
-const formatos = ref([
-  { title: 'Word', value: 'word' },
-])
+const formatos = ref([{ title: 'Word', value: 'word' }])
 
 const nivelesDetalle = ref([
   { title: 'Básico', value: 'basico' },
@@ -351,29 +263,25 @@ const generarReporte = () => {
 }
 //Hook
 onMounted(async () => {
-await cargarDatos()
+  await cargarDatos()
 })
 
 const cargando = ref(true)
 //Cargar datos
 const cargarDatos = async () => {
   cargando.value = true
-  try{
+  try {
     await store.obtenerDiagramaPorId(idproyecto)
-    if(store.diagrama){
+    if (store.diagrama) {
       nodosDisponibles.value = store.diagrama.nodos
-      console.log(store.diagrama.nodos)
     }
-  }catch(err){
+  } catch (err) {
     console.error(err)
-    throw(err)
-  }finally{
+    throw err
+  } finally {
     cargando.value = false
   }
-
-
 }
-
 </script>
 
 <style scoped>
