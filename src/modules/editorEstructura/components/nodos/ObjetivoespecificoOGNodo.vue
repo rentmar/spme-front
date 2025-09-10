@@ -90,23 +90,46 @@ const emit = defineEmits(['addIndicadorOE', 'addResultadoOE', 'addProductoOE', '
 
 /* Funciones */
 const agregarIndicadorOE = async () => {
+  // const indicadorOe = {
+  //   codigo: 'IND001-OESP01',
+  //   descripcion: 'des test',
+  //   definicion: 'def test',
+  //   redaccion: 'GUIA',
+  //   fuente_verificacion: '',
+  //   target_poblacion: '',
+  //   tipo: 'A-Z',
+  //   baseline: '',
+  //   target_q1: '',
+  //   target_q2: '',
+  //   target_q3: '',
+  //   objetivo_especifico: idCurrenNode.toString(),
+  // }
   const indicadorOe = {
-    codigo: 'IND001-OESP01',
-    descripcion: 'des test',
-    definicion: 'def test',
+    codigo: 'IND00-SPO',
+    descripcion: 'Descripcion',
     redaccion: 'GUIA',
     fuente_verificacion: '',
     target_poblacion: '',
+    fechaTargetPoblacion: null,
     tipo: 'A-Z',
+    frecuencia: 'MENSUAL',
+    responsable: '',
     baseline: '',
+    fechaLineaBase: null,
     target_q1: '',
+    fechaTargetQ1: null,
     target_q2: '',
+    fechaTargetQ2: null,
     target_q3: '',
+    fechaTargetQ3: null,
+    target_q4: null,
+    fechaTargetQ4: null,
     objetivo_especifico: idCurrenNode.toString(),
   }
+
   try {
     await crearIndicadorObjEspecifico(indicadorOe)
-    // console.log(indicadorObjetivoEspecifico)
+    console.log(indicadorObjetivoEspecifico)
     const payload = {
       sourceId: currentNode.id.toString(),
       meta: {
@@ -122,11 +145,18 @@ const agregarIndicadorOE = async () => {
           redaccion: indicadorObjetivoEspecifico.value.redaccion,
           fuente_verificacion: indicadorObjetivoEspecifico.value.fuente_verificacion,
           target_poblacion: indicadorObjetivoEspecifico.value.target_poblacion,
+          fechaTargetPoblacion: indicadorObjetivoEspecifico.value.fechaTargetPoblacion,
           tipo: indicadorObjetivoEspecifico.value.tipo,
+          frecuencia: indicadorObjetivoEspecifico.value.frecuencia,
+          responsable: indicadorObjetivoEspecifico.value.responsable,
           baseline: indicadorObjetivoEspecifico.value.baseline,
+          fechaLineaBase: indicadorObjetivoEspecifico.value.fechaLineaBase,
           target_q1: indicadorObjetivoEspecifico.value.target_q1,
+          fechaTargetQ1: indicadorObjetivoEspecifico.value.fechaTargetPoblacion,
           target_q2: indicadorObjetivoEspecifico.value.target_q2,
+          fechaTargetQ2: indicadorObjetivoEspecifico.value.fechaTargetQ2,
           target_q3: indicadorObjetivoEspecifico.value.target_q3,
+          fechaTargetQ3: indicadorObjetivoEspecifico.value.fechaTargetQ3,
           objetivo_especifico: indicadorObjetivoEspecifico.value.objetivo_especifico,
         },
       },

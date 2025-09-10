@@ -58,6 +58,15 @@
       clearable
       type="number"
     />
+
+    <v-text-field
+      v-model="formData.nodoProyecto.fechaTargetPoblacion"
+      label="Fecha Target Q3 *"
+      type="date"
+      variant="outlined"
+      clearable
+    />
+
     <v-select
       v-model="formData.nodoProyecto.tipo"
       variant="outlined"
@@ -65,6 +74,15 @@
       item-value="valor"
       item-title="etiqueta"
       label="Tipo de indicador"
+    ></v-select>
+
+    <v-select
+      v-model="formData.nodoProyecto.frecuencia"
+      variant="outlined"
+      :items="frecuencia_indicador"
+      item-value="valor"
+      item-title="etiqueta"
+      label="Frecuencia"
     ></v-select>
 
     <v-text-field
@@ -78,11 +96,27 @@
     />
 
     <v-text-field
+      v-model="formData.nodoProyecto.fechaLineaBase"
+      label="Fecha Baseline *"
+      type="date"
+      variant="outlined"
+      clearable
+    />
+
+    <v-text-field
       v-model="formData.nodoProyecto.target_q1"
       variant="outlined"
       label="Target q1"
       outlined
       dense
+      clearable
+    />
+
+    <v-text-field
+      v-model="formData.nodoProyecto.fechaTargetQ1"
+      label="Fecha Target Q1 *"
+      type="date"
+      variant="outlined"
       clearable
     />
 
@@ -96,11 +130,27 @@
     />
 
     <v-text-field
+      v-model="formData.nodoProyecto.fechaTargetQ2"
+      label="Fecha Target Q2 *"
+      type="date"
+      variant="outlined"
+      clearable
+    />
+
+    <v-text-field
       v-model="formData.nodoProyecto.target_q3"
       variant="outlined"
       label="Target q3"
       outlined
       dense
+      clearable
+    />
+
+    <v-text-field
+      v-model="formData.nodoProyecto.fechaTargetQ3"
+      label="Fecha Target Q3 *"
+      type="date"
+      variant="outlined"
       clearable
     />
 
@@ -163,6 +213,7 @@ const { actualizarNodosEdges } = useDiagramaCrud()
 //Selects del indicador
 const tipo_indicador = SELECT_OPTIONS.tipos_indicador
 const redaccion_indicador = SELECT_OPTIONS.redaccion_indicador
+const frecuencia_indicador = SELECT_OPTIONS.frecuencia_indicador
 
 //Definir señales
 const emit = defineEmits(['guardar', 'cancelar', 'eliminar'])

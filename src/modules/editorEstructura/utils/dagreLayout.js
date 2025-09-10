@@ -4,7 +4,7 @@
 import dagre from 'dagre'
 
 const nodeWidth = 700
-const nodeHeight = 400
+const nodeHeight = 600
 
 export function layoutGraph(nodes, edges, direction = 'TB') {
   const g = new dagre.graphlib.Graph()

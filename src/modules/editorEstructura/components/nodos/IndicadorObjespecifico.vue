@@ -13,11 +13,29 @@
         <div class="mb-1">
           <strong>Target poblacion:</strong> {{ data.nodoProyecto.target_poblacion }}
         </div>
+        <div class="mb-1">
+          <strong>Fecha Target poblacion:</strong> {{ data.nodoProyecto.fechaTargetPoblacion }}
+        </div>
+
         <div class="mb-1"><strong>Tipo:</strong> {{ data.nodoProyecto.tipo }}</div>
-        <div class="mb-1"><strong>Base line</strong> {{ data.nodoProyecto.baseline }}</div>
+        <div class="mb-1"><strong>frecuencia:</strong> {{ data.nodoProyecto.frecuencia }}</div>
+
+        <div class="mb-1"><strong>Baseline</strong> {{ data.nodoProyecto.baseline }}</div>
+        <div class="mb-1">
+          <strong>Fecha Baseline:</strong> {{ data.nodoProyecto.fechaLineaBase }}
+        </div>
         <div class="mb-1"><strong>target q1</strong> {{ data.nodoProyecto.target_q1 }}</div>
+        <div class="mb-1">
+          <strong>Fecha Target Q1:</strong> {{ data.nodoProyecto.fechaTargetQ1 }}
+        </div>
         <div class="mb-1"><strong>target q2</strong> {{ data.nodoProyecto.target_q2 }}</div>
+        <div class="mb-1">
+          <strong>Fecha Target Q2:</strong> {{ data.nodoProyecto.fechaTargetQ2 }}
+        </div>
         <div class="mb-1"><strong>target q3</strong> {{ data.nodoProyecto.target_q3 }}</div>
+        <div class="mb-1">
+          <strong>Fecha Target Q3:</strong> {{ data.nodoProyecto.fechaTargetQ3 }}
+        </div>
       </div>
     </template>
 

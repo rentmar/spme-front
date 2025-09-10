@@ -136,20 +136,44 @@ const agregarKpi = async () => {
 
 //Agregar indicador
 const agregarIndicadorObjGeneral = async () => {
+  // const indicadorOg = {
+  //   codigo: 'IND-OG',
+  //   descripcion: '',
+  //   definicion: '',
+  //   redaccion: 'GUIA',
+  //   fuente_verificacion: 'Fuentes de verificacion',
+  //   target_poblacion: '',
+  //   tipo: 'A-Z',
+  //   baseline: '',
+  //   target_q1: '',
+  //   target_q2: '',
+  //   target_q3: '',
+  //   objetivo_general: idObjetivoGeneral,
+
+  // }
   const indicadorOg = {
     codigo: 'IND-OG',
     descripcion: '',
-    definicion: '',
     redaccion: 'GUIA',
     fuente_verificacion: 'Fuentes de verificacion',
     target_poblacion: '',
+    fechaTargetPoblacion: null,
     tipo: 'A-Z',
+    frecuencia: 'MENSUAL',
+    responsable: null,
     baseline: '',
+    fechaLineaBase: null,
     target_q1: '',
+    fechaTargetQ1: null,
     target_q2: '',
+    fechaTargetQ2: null,
     target_q3: '',
+    fechaTargetQ3: null,
+    target_q4: null,
+    fechaTargetQ4: null,
     objetivo_general: idObjetivoGeneral,
   }
+
   //console.log(indicadorOg)
 
   try {
@@ -170,11 +194,18 @@ const agregarIndicadorObjGeneral = async () => {
           redaccion: indicadorObjGeneral.value.redaccion,
           fuente_verificacion: indicadorObjGeneral.value.fuente_verificacion,
           target_poblacion: indicadorObjGeneral.value.target_poblacion,
+          fechaTargetPoblacion: indicadorObjGeneral.value.fechaTargetPoblacion,
           tipo: indicadorObjGeneral.value.tipo,
+          frecuencia: indicadorObjGeneral.value.frecuencia,
+          responsable: indicadorObjGeneral.value.responsable,
           baseline: indicadorObjGeneral.value.baseline,
+          fechaLineaBase: indicadorObjGeneral.value.fechaLineaBase,
           target_q1: indicadorObjGeneral.value.target_q1,
+          fechaTargetQ1: indicadorObjGeneral.value.fechaTargetQ1,
           target_q2: indicadorObjGeneral.value.target_q2,
+          fechaTargetQ2: indicadorObjGeneral.value.fechaTargetQ2,
           target_q3: indicadorObjGeneral.value.target_q3,
+          fechaTargetQ3: indicadorObjGeneral.value.fechaTargetQ3,
           objetivo_general: indicadorObjGeneral.value.objetivo_general,
         },
       },
