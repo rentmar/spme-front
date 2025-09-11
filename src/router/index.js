@@ -159,7 +159,7 @@ const router = createRouter({
     {
       path: '/notificaciones',
       name: 'notificaciones',
-      component: HomeView,
+      component: () => import('@/views/notificacion/NotificacionesDashboardView.vue'),
     },
     {
       path: '/notificaciones/configuracion',
@@ -207,7 +207,7 @@ const router = createRouter({
     {
       path: '/estructura/inicio',
       name: 'homeEstructura',
-      component: () => import('@/views/HomeView.vue'),
+      component: () => import('@/views/notificacion/NotificacionesDashboardView.vue'),
     },
     {
       path: '/planificacion/inicio',
