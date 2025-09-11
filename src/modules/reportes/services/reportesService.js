@@ -1,4 +1,4 @@
-import { apiRep } from '@/services/axios'
+import { apiRep, api } from '@/services/axios'
 
 export const reportesServicios = {
   estructuraJerReportes: async (idProyecto) => {
@@ -7,6 +7,15 @@ export const reportesServicios = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: error fectch estruc jerar proy idproy: ' + idProyecto, error)
+      throw error
+    }
+  },
+  actidadIndPorId: async (idactividad) => {
+    try {
+      const respuesta = await api.get('/actividad-indicadores-proyecto/' + idactividad + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error fectch estruc jerar proy idproy: ' + idactividad, error)
       throw error
     }
   },

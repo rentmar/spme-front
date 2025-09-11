@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useIndicadoresStore } from '../stores/useIndicadoresStore'
 
 // Props del componente
@@ -17,9 +17,23 @@ const props = defineProps({
 //Iniciar el store
 const storeIndicadores = useIndicadoresStore()
 
-onMounted(() => {})
+onMounted(async () => {
+  if (props.idactividad) {
+    await cargarDatos()
+  }
+})
 
-const cargarDatos = async () => {}
+const isLoading = ref(false)
+const cargarDatos = async () => {
+  isLoading.value = true
+  try {
+    await storeIndicadores.cargarActividad(props.idactividad)
+  } catch (error) {
+    console.error(error)
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <style scoped></style>

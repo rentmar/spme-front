@@ -366,7 +366,10 @@ const removerFactorCritico = (factorId) => {
 const cargar = async () => {
   estaCargando.value = true
   try {
-    await Promise.all([obtenerObjetivosPeiPorIdPei(1), obtenerIndicadoresPeiPorIdPei(1)])
+    await Promise.all([
+      obtenerObjetivosPeiPorIdPei(peiVigente.value.id),
+      obtenerIndicadoresPeiPorIdPei(peiVigente.value.id),
+    ])
   } catch (e) {
     console.error('Error al cargar datos:', e)
     err.value = e.message
@@ -384,7 +387,11 @@ const cargarIndicadoresYFactores = () => {
 
 // Cargar datos iniciales cuando el componente se monta
 onMounted(async () => {
-  await cargar()
+  if (peiVigente) {
+    await cargar()
+    console.log('PEI VIGENTE:')
+    console.log(peiVigente)
+  }
 
   // Si hay un objetivo inicial, seleccionarlo
   if (props.objetivoInicial) {

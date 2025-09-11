@@ -6,6 +6,7 @@ import { reportesServicios } from '../services/reportesService'
 const loading = ref(null)
 const error = ref(null)
 const estructuraJerarquicaProyecto = ref([])
+const actividadIndicadores = ref(null)
 
 export function useReportes() {
   //fecth kpis
@@ -22,10 +23,25 @@ export function useReportes() {
     }
   }
 
+  //Fetch actividades con indicadores e informacion adicional
+  async function cargarActividadIndicadoresInfo(idActividad) {
+    loading.value = true
+    try {
+      const respuesta = await reportesServicios.actidadIndPorId(idActividad)
+      actividadIndicadores.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading, //ref
     error, //ref
     estructuraJerarquicaProyecto,
+    actividadIndicadores,
     cargarEstructuraJerarquicaProyecto,
+    cargarActividadIndicadoresInfo,
   }
 }
