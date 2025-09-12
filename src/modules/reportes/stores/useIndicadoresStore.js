@@ -24,6 +24,15 @@ export const useIndicadoresStore = defineStore('reportes', () => {
     )
   }
 
+  // Retorna una lista de indicadores formateada para su uso en un v-select.
+  const getIndicadoresForSelect = () => {
+    const indicadores = filtrarIndicadores()
+    return indicadores.map((indicador) => {
+      // Devolvemos directamente el objeto completo de nodoProyecto
+      return indicador.data.nodoProyecto || {}
+    })
+  }
+
   //Cargar la informacion de la actividad
   const cargarActividad = async (idindicador) => {
     loading.value = true
@@ -46,5 +55,6 @@ export const useIndicadoresStore = defineStore('reportes', () => {
     actividadInfo,
     cargarActividad,
     filtrarIndicadores,
+    getIndicadoresForSelect,
   }
 })

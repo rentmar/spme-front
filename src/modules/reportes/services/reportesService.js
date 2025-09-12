@@ -19,4 +19,5 @@ export const reportesServicios = {
       throw error
     }
   },
+  /****** Crear bitacora **********/
 }
