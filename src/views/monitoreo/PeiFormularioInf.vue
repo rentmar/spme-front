@@ -117,12 +117,17 @@
             color="primary"
             variant="outlined"
             prepend-icon="mdi-chart-bar"
-            @click="openIndicatorDialog"
+            @click="modalAbierto = true"
             block
             size="large"
           >
             Seleccionar Indicador de Proyecto
           </v-btn>
+          <Indicador-registro-bitacora
+            v-model = "modalAbierto"
+            :idactividad = "idActividad"
+            @guardarAvances = "actualizarIndicadores"          >
+          </Indicador-registro-bitacora>
           <br>
 
           <!-- <v-col cols="12" class="mt-4">
@@ -291,6 +296,9 @@ import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
+import IndicadorRegistroBitacora from '@/modules/reportes/components/IndicadorRegistroBitacora.vue';
+
+const modalAbierto = ref(false);
 
 // Composables
 const { usuario, informacionUsuarioPorNick } = useUsuario();
@@ -346,6 +354,10 @@ const acceptedFormats = {
   herramientas: 'image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx',
   medios: 'image/*,video/*,.mp3,.pdf,.doc,.docx',
 }
+
+const actualizarIndicadores = (payload) => {
+  formData.avance_en_indicador = payload;
+};
 
 // Métodos
 async function obtenerDatosProyecto(id) {
