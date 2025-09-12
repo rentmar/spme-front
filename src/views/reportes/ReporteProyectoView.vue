@@ -11,7 +11,7 @@
         Generar Reporte
       </v-btn>
     </div>
-    <diagrama-reportes :id-proyecto="idproyecto"></diagrama-reportes>
+    <diagrama-reportes v-if="!cargando" :id-proyecto="idproyecto"></diagrama-reportes>
 
     <v-row>
       <!-- Panel de selección -->
@@ -141,10 +141,6 @@
     <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
     <!-- <diagrama-reportes-grafico-main></diagrama-reportes-grafico-main> -->
   </v-container>
-  <p>Nodos seleccionados</p>
-  {{ nodosSeleccionados }}
-  <p>Diagrama programa</p>
-  {{ store.diagrama.nodos }}
 </template>
 
 <script setup>
@@ -157,6 +153,7 @@ import DiagramaReportesGraficoMain from '@/modules/reportes/components/DiagramaR
 // Inicializar las rutas y obtener el id de proyecto
 const ruta = useRoute()
 const idproyecto = ruta.params.id
+console.log(idproyecto)
 
 //Inicializar el store
 const store = useProyectoEstructuraStore()
@@ -263,7 +260,9 @@ const generarReporte = () => {
 }
 //Hook
 onMounted(async () => {
-  await cargarDatos()
+  if (idproyecto) {
+    await cargarDatos()
+  }
 })
 
 const cargando = ref(true)

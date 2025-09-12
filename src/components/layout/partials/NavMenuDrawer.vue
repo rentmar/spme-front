@@ -182,7 +182,7 @@
       <template v-slot:activator="{ props }">
         <v-list-item v-bind="props" prepend-icon="mdi-bell" title="Notificaciones"></v-list-item>
       </template>
-
+      <!--
       <v-list-item
         prepend-icon="mdi-bell-outline"
         title="Mis Notificaciones"
@@ -197,18 +197,18 @@
             inline
           ></v-badge>
         </template>
-      </v-list-item>
-      <v-list-item
+      </v-list-item> -->
+      <!-- <v-list-item
         prepend-icon="mdi-cog-outline"
         title="Configuración"
         value="notification-settings"
         to="/notificaciones/configuracion"
-      ></v-list-item>
+      ></v-list-item> -->
       <!-- Sección de administración (solo visible para admin) -->
       <template v-if="userIsAdmin">
         <v-divider class="my-1"></v-divider>
 
-        <v-list-item
+        <!-- <v-list-item
           prepend-icon="mdi-bell-cog"
           title="Administrar Notificaciones"
           value="admin-notifications"
@@ -229,7 +229,7 @@
           value="system-notification-settings"
           to="/admin/notificaciones/configuracion"
           class="admin-item"
-        ></v-list-item>
+        ></v-list-item> -->
       </template>
     </v-list-group>
 

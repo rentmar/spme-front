@@ -215,7 +215,6 @@
       </v-card-text>
     </v-card>
   </v-container>
-  {{ estructuraJerarquicaProyecto?.proyecto }}
 </template>
 
 <script setup>
@@ -236,112 +235,6 @@ const { estructuraJerarquicaProyecto, cargarEstructuraJerarquicaProyecto } = use
 //Datos del proyecto
 const proyectoData = ref()
 proyectoData.value = estructuraJerarquicaProyecto.value.proyecto
-
-//DATOS DUMMY
-// const proyectoData = ref({
-//   id: 3,
-//   codigo: 'PRY001',
-//   titulo: 'PROYECTO DE DESARROLLO COMUNITARIO',
-//   descripcion: 'Proyecto integral para el desarrollo sostenible',
-//   objetivo_general: {
-//     id: 3,
-//     codigo: 'OG-001',
-//     descripcion: 'Mejorar la calidad de vida de la comunidad mediante el desarrollo sostenible',
-//     indicadores_og: [
-//       {
-//         id: 2,
-//         codigo: 'IND-OG-001',
-//         descripcion: 'Porcentaje de familias con acceso a servicios básicos',
-//         redaccion: 'SMART',
-//       },
-//       {
-//         id: 3,
-//         codigo: 'IND-OG-002',
-//         descripcion: 'Nivel de satisfacción de la comunidad con los proyectos',
-//         redaccion: 'SMART',
-//       },
-//     ],
-//     resultados_og: [
-//       {
-//         id: 3,
-//         codigo: 'ROG-001',
-//         descripcion: 'Infraestructura comunitaria mejorada y sostenible',
-//         indicadores_rog: [
-//           {
-//             id: 4,
-//             codigo: 'IND-ROG-001',
-//             descripcion: 'Número de infraestructuras construidas o mejoradas',
-//             redaccion: 'SMART',
-//           },
-//         ],
-//       },
-//       {
-//         id: 4,
-//         codigo: 'ROG-002',
-//         descripcion: 'Capacidades locales fortalecidas para la autogestión',
-//         indicadores_rog: [
-//           {
-//             id: 5,
-//             codigo: 'IND-ROG-002',
-//             descripcion: 'Número de personas capacitadas en gestión comunitaria',
-//             redaccion: 'SMART',
-//           },
-//         ],
-//       },
-//     ],
-//   },
-//   objetivos_especificos: [
-//     {
-//       id: 2,
-//       codigo: 'OE-001',
-//       descripcion: 'Fortalecer las capacidades de organización y gestión comunitaria',
-//       indicadores_oe: [
-//         {
-//           id: 8,
-//           codigo: 'IND-OE-001',
-//           descripcion: 'Número de talleres de capacitación realizados',
-//           redaccion: 'SMART',
-//         },
-//       ],
-//       resultados_oe: [],
-//     },
-//     {
-//       id: 3,
-//       codigo: 'OE-002',
-//       descripcion: 'Implementar infraestructura básica y productiva sostenible',
-//       indicadores_oe: [
-//         {
-//           id: 7,
-//           codigo: 'IND-OE-004',
-//           descripcion: 'Metros cuadrados de infraestructura construida',
-//           redaccion: 'SMART',
-//         },
-//       ],
-//       resultados_oe: [
-//         {
-//           id: 5,
-//           codigo: 'ROE-001',
-//           descripcion: 'Sistemas de agua potable instalados y funcionando',
-//           indicadores_roe: [
-//             {
-//               id: 12,
-//               codigo: 'IND-ROE-001',
-//               descripcion: 'Número de sistemas de agua instalados',
-//               redaccion: 'SMART',
-//             },
-//           ],
-//           productos_roe: [
-//             {
-//               id: 1,
-//               codigo: 'PROD-ROE-001',
-//               descripcion: 'Sistema de captación de agua de lluvia',
-//             },
-//           ],
-//         },
-//       ],
-//     },
-//   ],
-// })
 
 // Estado de selección
 const seleccionados = ref({

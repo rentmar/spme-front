@@ -1,10 +1,10 @@
 <template>
   <div v-if="selectedRowData">
-    <TrazadorActividad
+    <!-- <TrazadorActividad
       :tabla-data-disponible="tablaDataDisponible"
       :actividad-id="selectedRowData.id"
-    ></TrazadorActividad>
-    <ActividadRelacionEstructura></ActividadRelacionEstructura>
+    ></TrazadorActividad> -->
+    <!-- <ActividadRelacionEstructura></ActividadRelacionEstructura> -->
   </div>
   <div class="hot-wrapper" v-if="!isLoading">
     <div class="content-wrapper">
@@ -82,7 +82,7 @@
               </v-card-text>
             </v-card>
           </v-dialog>
-          <v-tooltip text="Agregar nueva actividad Variante" location="bottom">
+          <!-- <v-tooltip text="Agregar nueva actividad Variante" location="bottom">
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
@@ -94,7 +94,7 @@
                 <v-icon size="18">mdi-clipboard-text-outline</v-icon>
               </v-btn>
             </template>
-          </v-tooltip>
+          </v-tooltip> -->
 
           <v-dialog v-model="mostrarModalActividadVariante" fullscreen>
             <v-card>
