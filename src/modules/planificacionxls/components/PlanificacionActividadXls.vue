@@ -330,7 +330,65 @@
       </div>
 
       <!-- Panel Derecho - Contenido Adicional -->
-      <div class="side-panel" v-if="sidePanelVisible"></div>
+      <div class="side-panel" v-if="sidePanelVisible">
+        <v-card variant="outlined" class="ma-4">
+          <v-card-title class="bg-primary">
+            <v-icon icon="mdi-format-list-bulleted-type" class="mr-2"></v-icon>
+            Tipos de Actividad Disponibles
+          </v-card-title>
+
+          <v-card-text class="pa-4">
+            <div class="text-caption text-grey mb-3">
+              Códigos y descripciones de tipos de actividad
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="grey" class="mr-2">NODEF</v-chip>
+              <span>No definido</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="blue" class="mr-2">ACAP</v-chip>
+              <span>Actividad de Capacitacion</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="green" class="mr-2">PRIN</v-chip>
+              <span>Proyecto de Investigacion</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="orange" class="mr-2">AOP</v-chip>
+              <span>Actividad Operativa</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="purple" class="mr-2">CSNS</v-chip>
+              <span>Campaña de Sensibilizacion</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="teal" class="mr-2">PDES</v-chip>
+              <span>Proyecto de Desarrollo</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="red" class="mr-2">AINC</v-chip>
+              <span>Actividad de Incidencia</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="indigo" class="mr-2">AART</v-chip>
+              <span>Actividad de Articulacion</span>
+            </div>
+
+            <div class="d-flex align-center">
+              <v-chip size="small" color="brown" class="mr-2">OTRO</v-chip>
+              <span>Otro</span>
+            </div>
+          </v-card-text>
+        </v-card>
+      </div>
     </div>
   </div>
   <!-- Modal de Confirmación Sencillo -->
