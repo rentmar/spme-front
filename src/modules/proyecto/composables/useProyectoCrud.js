@@ -63,6 +63,19 @@ export function useProyectoCrud() {
     }
   }
 
+  //Obtiene el proyecto por id
+  const obtenerProyectoDetallesPorId = async (id) => {
+    loading.value = true
+    try {
+      proyecto.value = await proyectoServicios.proyectoDetalles(id)
+      return proyecto.value
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     proyectos, //ref todos los proyectos
     proyecto, //ref proyecto por id
@@ -73,5 +86,6 @@ export function useProyectoCrud() {
     createProyecto, //fun crea un proyecto
     updateProyecto, //actualiza proyecto
     delProyecto, // fun elimina el proyecto
+    obtenerProyectoDetallesPorId,
   }
 }

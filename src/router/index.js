@@ -13,6 +13,7 @@ const router = createRouter({
       name: 'perfil',
       component: HomeView,
     },
+
     {
       path: '/pei',
       name: 'pei',
@@ -214,11 +215,43 @@ const router = createRouter({
       name: 'homePlanificacion',
       component: () => import('@/views/HomeView.vue'),
     },
+    /****************************Monitoreo ************************************************/
+    {
+      path: '/pei/listaactividades/',
+      name: 'listadeActividades',
+      component: () => import('@/views/pei/PeiListaActividades.vue'),
+    },
     {
       path: '/monitoreo/inicio',
       name: 'homeMonitoreo',
       component: () => import('@/views/HomeView.vue'),
     },
+    {
+      path: '/monitoreo/formulario01/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeFondos.vue'),
+    },
+    {
+      path: '/monitoreo/formulario02/:id',
+      component: () => import('@/views/monitoreo/RendicionDeCuentas.vue'),
+    },
+    {
+      path: '/monitoreo/formulario03/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeReposicion.vue'),
+    },
+    {
+      path: '/monitoreo/formulario05/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeViaje.vue'),
+    },
+    {
+      path: '/monitoreo/formulario08/:id',
+      component: () => import('@/views/monitoreo/SolicitudDePagoDirecto.vue'),
+    },
+    {
+      path: '/monitoreo/formularioInf/:id',
+      component: () => import('@/views/monitoreo/InformeActividad.vue'),
+    },
+
+    /*************************  Reportes  **************************************************** */
     {
       path: '/reporte/inicio',
       name: 'homeReporte',

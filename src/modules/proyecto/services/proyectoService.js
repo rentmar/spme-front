@@ -1,4 +1,4 @@
-import api from '@/services/axios'
+import { api, apiProy } from '@/services/axios'
 
 export const proyectoServicios = {
   /*Obtener todos los Proyectos*/
@@ -110,6 +110,16 @@ export const proyectoServicios = {
   },
   /* Obtener todos los proyectos del PEI vigente */
   porIdPeiVigente: async () => {},
+
+  proyectoDetalles: async (id) => {
+    try {
+      const respuesta = await apiProy.get('/proyectos/' + id + '/detalles/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo extraer los detalles del proyecto con ID: ' + id, error)
+      throw error
+    }
+  },
 }
 
 export const proyectoObjetivos = {

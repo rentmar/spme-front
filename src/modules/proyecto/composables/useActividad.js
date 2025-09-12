@@ -1,7 +1,9 @@
 //Composable useActividad
 //CRUD de Actividades
 import { ref } from 'vue'
+//import { actividadServicios, tareasServicios } from '../services/actividadService'
 import { actividadServicios } from '../services/actividadService'
+import { tareasServicios } from '../services/tareasService'
 
 //Estados
 const loading = ref(null)
@@ -10,9 +12,14 @@ const actividades = ref([])
 const actividad = ref(null)
 const proyectoDatos = ref(null)
 const mensaje = ref(null)
+const actividadTarea = ref([])
+
+// Estados específicos para tareas
+const tareasActividad = ref([])
+const tareaActual = ref(null)
 
 export function useActividad() {
-  //fecth kpis
+  //fetch actividades
   async function cargarActividades() {
     loading.value = true
     try {
@@ -22,6 +29,7 @@ export function useActividad() {
       return respuesta
     } catch (err) {
       error.value = err
+      throw err
     } finally {
       loading.value = false
     }
@@ -122,12 +130,57 @@ export function useActividad() {
     }
   }
 
+  // === FUNCIONES PARA CRUD DE TAREAS ===
+
+  // Cargar tareas de una actividad específica
+  async function cargarTareasDeActividad(actividadId) {
+    loading.value = true
+    try {
+      // Usar el nuevo endpoint específico para tareas por actividad
+      const respuesta = await tareasServicios.porActividad(actividadId)
+      tareasActividad.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+      // Fallback: si el endpoint específico no existe, usar el método anterior
+      try {
+        const todasTareas = await tareasServicios.all()
+        const tareasFiltradas = todasTareas.filter((tarea) => tarea.actividad === actividadId)
+        tareasActividad.value = tareasFiltradas
+        return tareasFiltradas
+      } catch (fallbackErr) {
+        console.error('Error al cargar tareas:', fallbackErr)
+        throw fallbackErr
+      }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Cargar activ
+  const actividadTarea = ref([])
+  async function actividadesTareas() {
+    loading.value = true
+    try {
+      const respuesta = await actividadServicios.listaActividadesTareas()
+      actividadTarea.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading, //ref
     error, //ref
     actividades, //ref lista de kpis
     actividad, //ref un kpi por id
     mensaje,
+    actividadTarea,
+    tareaActual,
     cargarActividades,
     cargarActividadPorId,
     cargarActividadesPorIdProyecto, //
@@ -136,5 +189,7 @@ export function useActividad() {
     delActividad,
     guardarActividadesBulk,
     obtenerListaActividadesTareas,
+    cargarTareasDeActividad,
+    actividadesTareas,
   }
 }

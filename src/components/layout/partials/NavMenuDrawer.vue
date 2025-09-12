@@ -82,28 +82,31 @@
       <template v-slot:activator="{ props }">
         <v-list-item v-bind="props" prepend-icon="mdi-chart-line" title="Monitoreo"></v-list-item>
       </template>
-
       <v-list-item
+        @click="goToPageWithButton(1)"
         prepend-icon="mdi-account-alert"
         title="Solicitud/Reposición"
         value="monitoring-requests"
-        to="/"
+        to="/pei/listaactividades?showButton=1"
       ></v-list-item>
 
       <v-list-item
+        @click="goToPageWithButton(2)"
         prepend-icon="mdi-chart-box"
         title="Rendición Cuentas"
         value="monitoring-reports"
-        to="/"
+        to="/pei/listaactividades?showButton=2"
       ></v-list-item>
 
       <v-list-item
-        prepend-icon="mdi-file-chart"
+        @click="goToPageWithButton(3)"
+        prepend-icon="mdi-file-document-outline"
         title="Informe de Actividad"
         value="monitoring-activity"
-        to=""
+        to="/pei/listaactividades?showButton=3"
       ></v-list-item>
     </v-list-group>
+
     <!-- Reportes -->
     <v-list-group value="reporte">
       <template v-slot:activator="{ props }">
@@ -128,7 +131,8 @@
         title="Reporte Estructura Pruebas"
         value="actividades-reports"
         to="/reportes/estructura"
-      ></v-list-item>
+      ></v-list-item
+      >pei/listaactivi
     </v-list-group>
 
     <!-- Administración de Usuarios -->
