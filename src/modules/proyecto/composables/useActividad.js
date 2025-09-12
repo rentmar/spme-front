@@ -9,7 +9,9 @@ const loading = ref(null)
 const error = ref(null)
 const actividades = ref([])
 const actividad = ref(null)
+const proyectoDatos = ref(null)
 const actividadTarea = ref([])
+const mensaje = ref(null)
 
 // Estados específicos para tareas
 const tareasActividad = ref([])
@@ -90,6 +92,47 @@ export function useActividad() {
     }
   }
 
+  //Fecth de actividades de un proyecto por id
+  async function cargarActividadesPorIdProyecto(id) {
+    loading.value = false
+    try {
+      const respuesta = await actividadServicios.allPorIdProyecto(id)
+      actividades.value = respuesta.actividades
+      proyectoDatos.value = respuesta.proyecto
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Actividad - Metodo Bulk
+  async function guardarActividadesBulk(id, data) {
+    loading.value = false
+    try {
+      const respuesta = await actividadServicios.guardarBulk(id, data)
+      mensaje.value = respuesta.data
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Lista de Actividades y tareas
+  async function obtenerListaActividadesTareas() {
+    loading.value = false
+    try {
+      const respuesta = await actividadServicios.listaActividadesTareas()
+      actividades.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Cargar actividades con tareas
   async function actividadesTareas() {
     loading.value = true
@@ -120,7 +163,7 @@ export function useActividad() {
       // Fallback: si el endpoint específico no existe, usar el método anterior
       try {
         const todasTareas = await tareasServicios.all()
-        const tareasFiltradas = todasTareas.filter(tarea => tarea.actividad === actividadId)
+        const tareasFiltradas = todasTareas.filter((tarea) => tarea.actividad === actividadId)
         tareasActividad.value = tareasFiltradas
         return tareasFiltradas
       } catch (fallbackErr) {
@@ -160,13 +203,13 @@ export function useActividad() {
     try {
       const dataConActividad = {
         ...tareaData,
-        actividad: actividadId
+        actividad: actividadId,
       }
       const respuesta = await tareasServicios.update(tareaId, dataConActividad)
       tareaActual.value = respuesta
 
       // Actualizar la lista local de tareas
-      const index = tareasActividad.value.findIndex(t => t.id === tareaId)
+      const index = tareasActividad.value.findIndex((t) => t.id === tareaId)
       if (index !== -1) {
         tareasActividad.value[index] = respuesta
       }
@@ -187,7 +230,7 @@ export function useActividad() {
       const respuesta = await tareasServicios.delete(tareaId)
 
       // Eliminar de la lista local de tareas
-      tareasActividad.value = tareasActividad.value.filter(t => t.id !== tareaId)
+      tareasActividad.value = tareasActividad.value.filter((t) => t.id !== tareaId)
 
       return respuesta
     } catch (err) {
@@ -230,12 +273,14 @@ export function useActividad() {
     updateActividad,
     delActividad,
     actividadesTareas,
-
+    obtenerListaActividadesTareas,
+    guardarActividadesBulk,
+    cargarActividadesPorIdProyecto,
     // Funciones de tareas
     cargarTareasDeActividad,
     crearTareaEnActividad,
     actualizarTareaEnActividad,
     eliminarTareaDeActividad,
-    obtenerTareaPorId
+    obtenerTareaPorId,
   }
 }
