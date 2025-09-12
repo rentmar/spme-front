@@ -37,13 +37,18 @@
         to="/programas"
       ></v-list-item>
 
-      <v-list-item prepend-icon="mdi-finance" title="FPP" value="fpd-list" to="/"></v-list-item>
+      <v-list-item
+        prepend-icon="mdi-finance"
+        title="FPP"
+        value="fpd-list"
+        to="/fpp/inicio"
+      ></v-list-item>
 
       <v-list-item
         prepend-icon="mdi-cash-multiple"
         title="FONFOSC"
         value="fonfosc-list"
-        to="/"
+        to="/fonfosc/inicio"
       ></v-list-item>
     </v-list-group>
 
@@ -55,13 +60,13 @@
           title="Planificación"
         ></v-list-item>
       </template>
-
+      <!--
       <v-list-item
         prepend-icon="mdi-format-list-checkbox"
         title="Tareas"
         value="planning-tareas"
         to="/proyecto/actividades/tareas/"
-      ></v-list-item>
+      ></v-list-item> -->
 
       <v-list-item
         prepend-icon="mdi-playlist-check"
@@ -115,7 +120,7 @@
         value="reporte-proyecto"
         to="/reporte/proyectos"
       ></v-list-item>
-
+      <!--
       <v-list-item
         prepend-icon="mdi-chart-line"
         title="Por Actividad"
@@ -128,7 +133,7 @@
         title="Reporte Estructura Pruebas"
         value="actividades-reports"
         to="/reportes/estructura"
-      ></v-list-item>
+      ></v-list-item> -->
     </v-list-group>
 
     <!-- Administración de Usuarios -->

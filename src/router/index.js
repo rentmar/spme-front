@@ -249,6 +249,16 @@ const router = createRouter({
       name: 'homeNotificaciones',
       component: () => import('@/views/HomeView.vue'),
     },
+    {
+      path: '/fpp/inicio',
+      name: 'homeFpp',
+      component: () => import('@/views/fpp/FppView.vue'),
+    },
+    {
+      path: '/fonfosc/inicio',
+      name: 'homeFonFosc',
+      component: () => import('@/views/fonfosc/FonFoscView.vue'),
+    },
   ],
 })
 
