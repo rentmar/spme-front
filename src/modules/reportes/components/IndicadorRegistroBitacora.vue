@@ -98,6 +98,19 @@
                     }}</v-list-item-title>
                     <v-list-item-subtitle>Fuente de Verificacion</v-list-item-subtitle>
                   </v-list-item>
+                  <!-- Baseline -->
+                  <v-list-item
+                    v-if="
+                      indicadorSeleccionado.baseline !== undefined &&
+                      indicadorSeleccionado.baseline !== null
+                    "
+                  >
+                    <template v-slot:prepend>
+                      <v-icon color="primary">mdi-chart-line</v-icon>
+                    </template>
+                    <v-list-item-title>{{ indicadorSeleccionado.baseline }}</v-list-item-title>
+                    <v-list-item-subtitle>Valor inicial (Baseline)</v-list-item-subtitle>
+                  </v-list-item>
                 </v-list>
               </v-col>
             </v-row>
@@ -232,11 +245,19 @@
         </v-card>
 
         <!-- Gráfica de avance -->
-        <v-card v-if="indicadorSeleccionado && bitacoraIndicador.length > 0" flat class="ma-4 mb-8">
+        <v-card
+          v-if="indicadorSeleccionado && datosGrafica.labels.length > 0"
+          flat
+          class="ma-4 mb-8"
+        >
           <v-card-title class="text-h6 font-weight-medium">Evolución del Avance</v-card-title>
           <v-card-text>
             <div style="height: 300px">
               <canvas ref="graficaAvance"></canvas>
+            </div>
+            <div class="text-caption text-medium-emphasis mt-2">
+              * La gráfica incluye el valor baseline inicial y muestra la evolución del indicador a
+              lo largo del tiempo.
             </div>
           </v-card-text>
         </v-card>
@@ -353,7 +374,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, nextTick, computed } from 'vue'
+import { ref, watch, onMounted, nextTick, computed, reactive } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { useIndicadoresStore } from '../stores/useIndicadoresStore'
 
@@ -392,6 +413,12 @@ let chartInstance = null
 const indicadorSeleccionado = ref(null)
 const bitacoraIndicador = ref([])
 const indicadorYaRegistrado = ref(false)
+
+// Datos para la gráfica
+const datosGrafica = reactive({
+  labels: [],
+  valores: [],
+})
 
 // Formulario de nuevo avance
 const formAvance = ref(null)
@@ -502,6 +529,8 @@ watch(indicadorSeleccionado, (newVal) => {
     cargarDatosIndicador(newVal.id)
   } else {
     bitacoraIndicador.value = []
+    datosGrafica.labels = []
+    datosGrafica.valores = []
   }
 })
 
@@ -513,6 +542,8 @@ const reiniciarEstado = () => {
   bitacoraIndicador.value = []
   avancesRegistrados.value = []
   indicadorYaRegistrado.value = false
+  datosGrafica.labels = []
+  datosGrafica.valores = []
   nuevoAvance.value = {
     valor: '',
     observaciones: '',
@@ -539,13 +570,40 @@ const cargarBitacoraIndicador = async (indicadorId) => {
   setTimeout(() => {
     bitacoraIndicador.value = datosBitacora[indicadorId] || []
 
+    // Preparar datos para la gráfica incluyendo el baseline
+    prepararDatosGrafica()
+
     // Si hay datos, crear la gráfica
-    if (bitacoraIndicador.value.length > 0) {
+    if (datosGrafica.labels.length > 0) {
       nextTick(() => {
         crearGraficaAvance()
       })
     }
   }, 300)
+}
+
+/**
+ * Prepara los datos para la gráfica incluyendo el baseline
+ */
+const prepararDatosGrafica = () => {
+  datosGrafica.labels = []
+  datosGrafica.valores = []
+
+  // Agregar baseline si existe
+  if (
+    indicadorSeleccionado.value &&
+    indicadorSeleccionado.value.baseline !== undefined &&
+    indicadorSeleccionado.value.baseline !== null
+  ) {
+    datosGrafica.labels.push('Línea Base')
+    datosGrafica.valores.push(indicadorSeleccionado.value.baseline)
+  }
+
+  // Agregar datos de la bitácora
+  bitacoraIndicador.value.forEach((registro) => {
+    datosGrafica.labels.push(formatFechaCorta(registro.fecha))
+    datosGrafica.valores.push(registro.valor)
+  })
 }
 
 /**
@@ -558,22 +616,22 @@ const crearGraficaAvance = () => {
 
   const ctx = graficaAvance.value.getContext('2d')
 
-  // Preparar datos para la gráfica
-  const fechas = bitacoraIndicador.value.map((r) => formatFechaCorta(r.fecha))
-  const valores = bitacoraIndicador.value.map((r) => r.valor)
-
   chartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: fechas,
+      labels: datosGrafica.labels,
       datasets: [
         {
-          label: 'Avance del indicador',
-          data: valores,
+          label: 'Evolución del Indicador',
+          data: datosGrafica.valores,
           borderColor: '#1976D2',
           backgroundColor: 'rgba(25, 118, 210, 0.1)',
           tension: 0.3,
           fill: true,
+          pointBackgroundColor: '#1976D2',
+          pointBorderColor: '#fff',
+          pointRadius: 5,
+          pointHoverRadius: 7,
         },
       ],
     },
@@ -583,6 +641,29 @@ const crearGraficaAvance = () => {
       scales: {
         y: {
           beginAtZero: true,
+          title: {
+            display: true,
+            text: `Valor (${unidadMedida.value})`,
+          },
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Período',
+          },
+        },
+      },
+      plugins: {
+        title: {
+          display: true,
+          text: 'Evolución del Indicador desde Línea Base',
+        },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              return `Valor: ${context.raw}${unidadMedida.value === 'Porcentaje' ? '%' : ''}`
+            },
+          },
         },
       },
     },
@@ -624,6 +705,9 @@ const agregarAvance = async () => {
     observaciones: '',
     fecha: new Date().toISOString().substr(0, 10),
   }
+
+  // Actualizar datos de la gráfica
+  prepararDatosGrafica()
 
   // Actualizar gráfica
   if (chartInstance) {
