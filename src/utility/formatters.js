@@ -1,8 +1,26 @@
 //Formateador de fechas
+// export const formatDate = (dateString) => {
+//   if (!dateString) return 'Sin fecha'
+//   const options = { year: 'numeric', month: 'short', day: 'numeric' }
+//   return new Date(dateString).toLocaleDateString('es-ES', options)
+// }
 export const formatDate = (dateString) => {
   if (!dateString) return 'Sin fecha'
+
+  // Divide la cadena de fecha 'YYYY-MM-DD' en sus componentes
+  const [year, month, day] = dateString.split('-').map(Number)
+
+  // Crea la fecha usando los componentes en la zona horaria local
+  // Se resta 1 al mes porque en JavaScript los meses van de 0 a 11
+  const date = new Date(year, month - 1, day)
+
+  // Verifica si la fecha es válida
+  if (isNaN(date.getTime())) {
+    return 'Fecha inválida'
+  }
+
   const options = { year: 'numeric', month: 'short', day: 'numeric' }
-  return new Date(dateString).toLocaleDateString('es-ES', options)
+  return date.toLocaleDateString('es-ES', options)
 }
 
 //Formateador de color

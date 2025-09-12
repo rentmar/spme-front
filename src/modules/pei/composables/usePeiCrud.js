@@ -8,6 +8,8 @@ export function usePeiCrud() {
   const peis = ref([])
   const pei = ref(null)
   const peiEstructura = ref(null)
+  const objetivosPei = ref([])
+  const indicadoresPei = ref([])
   const loading = ref(false)
   const error = ref(null)
 
@@ -49,6 +51,31 @@ export function usePeiCrud() {
     }
   }
 
+  //Obtiene los objetivos del PEI por idpei
+  const obtenerObjetivosPeiPorIdPei = async (id) => {
+    loading.value = true
+    try {
+      objetivosPei.value = await peiServicios.objetivosPeiPorIdPei(id)
+      return objetivosPei.value
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+  //Obtiene los indicadores del PEI por idpei
+  const obtenerIndicadoresPeiPorIdPei = async (id) => {
+    loading.value = true
+    try {
+      indicadoresPei.value = await peiServicios.indicadoresPeiPorIdPei(id)
+      return indicadoresPei.value
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   //Crea un pei
   const createPei = async (payload) => {
     return await peiServicios.crear(payload)
@@ -79,6 +106,8 @@ export function usePeiCrud() {
     peis, //ref todos los peis
     pei, //ref proyecto por id
     peiEstructura, //ref
+    objetivosPei,
+    indicadoresPei,
     loading, //ref estado de carga
     error, //ref variable de error
     obtenerPeis, //fun recupera todos los proyectos registrados
@@ -87,5 +116,7 @@ export function usePeiCrud() {
     updatePei, //actualiza proyecto
     delPei, // fun elimina el proyecto
     obtenerEstructuraPeiPorId, //fun
+    obtenerObjetivosPeiPorIdPei, //fun
+    obtenerIndicadoresPeiPorIdPei, //func
   }
 }

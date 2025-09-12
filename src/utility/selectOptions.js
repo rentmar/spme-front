@@ -6,6 +6,13 @@ export const SELECT_OPTIONS = {
     { valor: '1-9', etiqueta: 'Numérico' },
     { valor: '%', etiqueta: 'Porcentual' },
   ],
+  frecuencia_indicador: [
+    { valor: 'MENSUAL', etiqueta: 'Mensual' },
+    { valor: 'BIMENSUAL', etiqueta: 'Bimensual' },
+    { valor: 'TRIMESTRAL', etiqueta: 'Trimestral' },
+    { valor: 'CUATRIMESTRAL', etiqueta: 'Cuatrimestral' },
+    { valor: 'ANUAL', etiqueta: 'Anual' },
+  ],
   redaccion_indicador: [
     { valor: 'GUIA', etiqueta: 'Indicador GUIA' },
     { valor: 'SMART', etiqueta: 'Indicador SMART' },
@@ -39,5 +46,6 @@ export const SELECT_OPTIONS = {
     'PDES - Proyecto de Desarrollo',
     'AINC - Actividad de Incidencia',
     'AART - Actividad de Articulación',
+    'OTRO - Tipo Actividad',
   ],
 }

@@ -69,6 +69,24 @@ export const peiServicios = {
       throw error
     }
   },
+  /* Extraer objetivos pei por idpei */
+  objetivosPeiPorIdPei: async (idpei) => {
+    try {
+      const respuesta = await api.get('/pei/' + idpei + '/objetivos-pei/')
+      return respuesta.data.data
+    } catch (error) {
+      console.error('No se pudo obtener la lista de PEIs', error)
+    }
+  },
+  /* Extraer indicadores pei por idpei */
+  indicadoresPeiPorIdPei: async (idpei) => {
+    try {
+      const respuesta = await api.get('/pei/' + idpei + '/indicadores-pei/')
+      return respuesta.data.data
+    } catch (error) {
+      console.error('No se pudo obtener la lista de PEIs', error)
+    }
+  },
 }
 
 export const objetivoPeiServicios = {

@@ -1,559 +1,493 @@
+<template>
+  <v-container fluid class="pa-4">
+    <v-row>
+      <v-col cols="12">
+        <v-card>
+          <v-card-title class="d-flex align-center">
+            <v-icon class="mr-2">mdi-chart-tree</v-icon>
+            Estructura PEI
+          </v-card-title>
+          <v-card-text>
+            <!-- Dropdowns para Objetivos, Indicadores y Factores Críticos -->
+            <v-row>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="objetivoSeleccionado"
+                  :items="objetivosPei"
+                  item-title="descripcion"
+                  item-value="id"
+                  label="Objetivo PEI"
+                  @update:modelValue="cargarIndicadoresYFactores"
+                  return-object
+                  clearable
+                  :loading="estaCargando"
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="indicadorSeleccionado"
+                  :items="indicadoresPeiFiltrados"
+                  item-title="descripcion"
+                  item-value="id"
+                  label="Indicador PEI"
+                  :disabled="!objetivoSeleccionado"
+                  return-object
+                  clearable
+                  :loading="estaCargando"
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="factoresCriticosSeleccionadosIds"
+                  :items="factoresCriticosFiltrados"
+                  item-title="factor_critico"
+                  item-value="id"
+                  label="Factores Críticos"
+                  :disabled="!objetivoSeleccionado"
+                  multiple
+                  chips
+                  clearable
+                  :loading="estaCargando"
+                  @update:modelValue="actualizarFactoresSeleccionados"
+                >
+                  <template v-slot:selection="{ item, index }">
+                    <v-chip v-if="index < 2" class="ma-1" color="orange-lighten-3" small>
+                      <span>{{ item.title }}</span>
+                    </v-chip>
+                    <span v-if="index === 2" class="text-grey text-caption align-self-center ml-2">
+                      (+{{ factoresCriticosSeleccionadosIds.length - 2 }} más)
+                    </span>
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
+
+            <!-- TextField para mostrar factores críticos seleccionados -->
+            <v-row v-if="factoresCriticosSeleccionados.length > 0">
+              <v-col cols="12">
+                <v-text-field
+                  :model-value="textoFactoresSeleccionados"
+                  label="Factores Críticos Seleccionados"
+                  readonly
+                  variant="outlined"
+                  bg-color="orange-lighten-5"
+                  append-inner-icon="mdi-checkbox-multiple-marked"
+                >
+                  <template v-slot:append-inner>
+                    <v-tooltip location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-icon v-bind="props" color="orange-darken-2">
+                          mdi-checkbox-multiple-marked
+                        </v-icon>
+                      </template>
+                      <span>{{ factoresCriticosSeleccionados.length }} factores seleccionados</span>
+                    </v-tooltip>
+                  </template>
+                </v-text-field>
+              </v-col>
+            </v-row>
+
+            <!-- Tarjetas informativas -->
+            <v-row v-if="objetivoSeleccionado || objetivoActual">
+              <v-col cols="12" md="6">
+                <v-card variant="outlined">
+                  <v-card-title class="text-subtitle-1 bg-blue-lighten-5">
+                    Objetivo PEI {{ objetivoSeleccionado ? 'Seleccionado' : 'Actual' }}
+                  </v-card-title>
+                  <v-card-text v-if="objetivoSeleccionado">
+                    <p><strong>Código:</strong> {{ objetivoSeleccionado.codigo }}</p>
+                    <p><strong>Nombre:</strong> {{ objetivoSeleccionado.nombre }}</p>
+                    <p><strong>Descripción:</strong> {{ objetivoSeleccionado.descripcion }}</p>
+                  </v-card-text>
+                  <v-card-text v-else-if="objetivoActual">
+                    <p><strong>Código:</strong> {{ objetivoActual.codigo }}</p>
+                    <p><strong>Nombre:</strong> {{ objetivoActual.nombre }}</p>
+                    <p><strong>Descripción:</strong> {{ objetivoActual.descripcion }}</p>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+
+            <v-row v-if="indicadorSeleccionado || indicadorActual">
+              <v-col cols="12" md="6">
+                <v-card variant="outlined">
+                  <v-card-title class="text-subtitle-1 bg-green-lighten-5">
+                    Indicador PEI {{ indicadorSeleccionado ? 'Seleccionado' : 'Actual' }}
+                  </v-card-title>
+                  <v-card-text v-if="indicadorSeleccionado">
+                    <p><strong>Código:</strong> {{ indicadorSeleccionado.codigo }}</p>
+                    <p><strong>Nombre:</strong> {{ indicadorSeleccionado.nombre }}</p>
+                    <p><strong>Descripción:</strong> {{ indicadorSeleccionado.descripcion }}</p>
+                    <p><strong>Meta:</strong> {{ indicadorSeleccionado.meta }}</p>
+                  </v-card-text>
+                  <v-card-text v-else-if="indicadorActual">
+                    <p><strong>Código:</strong> {{ indicadorActual.codigo }}</p>
+                    <p><strong>Nombre:</strong> {{ indicadorActual.nombre }}</p>
+                    <p><strong>Descripción:</strong> {{ indicadorActual.descripcion }}</p>
+                    <p><strong>Meta:</strong> {{ indicadorActual.meta }}</p>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+
+            <!-- Lista detallada de factores críticos seleccionados con notas -->
+            <v-row v-if="factoresCriticosSeleccionados.length > 0">
+              <v-col cols="12">
+                <v-card variant="outlined">
+                  <v-card-title class="text-subtitle-1 bg-orange-lighten-5 d-flex align-center">
+                    <v-icon class="mr-2" color="orange-darken-2">mdi-format-list-bulleted</v-icon>
+                    Detalle de Factores Críticos Seleccionados
+                    <v-spacer></v-spacer>
+                    <v-chip color="orange" variant="flat" size="small">
+                      {{ factoresCriticosSeleccionados.length }} seleccionados
+                    </v-chip>
+                  </v-card-title>
+                  <v-card-text>
+                    <v-list density="comfortable">
+                      <v-list-item
+                        v-for="(factor, index) in factoresCriticosSeleccionados"
+                        :key="factor.id"
+                        class="mb-4"
+                      >
+                        <template v-slot:prepend>
+                          <v-icon color="orange-darken-2">mdi-check-circle</v-icon>
+                        </template>
+
+                        <v-list-item-title class="mb-2">
+                          <strong>{{ factor.nombre }}</strong>
+                          <v-chip size="small" color="blue-lighten-4" class="ml-2">
+                            Obj. {{ factor.objetivo_especifico }}
+                          </v-chip>
+                        </v-list-item-title>
+
+                        <v-list-item-subtitle class="mt-2">
+                          <v-textarea
+                            v-model="factor.nota"
+                            label="Nota del factor crítico"
+                            variant="outlined"
+                            rows="2"
+                            auto-grow
+                            clearable
+                            :placeholder="`Agregar nota para ${factor.nombre}`"
+                            @update:modelValue="actualizarNotaFactor(factor.id, $event)"
+                          ></v-textarea>
+                        </v-list-item-subtitle>
+
+                        <template v-slot:append>
+                          <v-btn
+                            icon
+                            size="small"
+                            variant="text"
+                            color="error"
+                            @click="removerFactorCritico(factor.id)"
+                          >
+                            <v-icon>mdi-close</v-icon>
+                          </v-btn>
+                        </template>
+                      </v-list-item>
+                    </v-list>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="grey" variant="text" @click="cerrarModal">Cancelar</v-btn>
+            <v-btn
+              color="primary"
+              variant="flat"
+              @click="guardarSeleccion"
+              :disabled="!indicadorSeleccionado && !props.indicadorInicial"
+            >
+              Guardar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
+</template>
+
 <script setup>
-import { ref } from 'vue'
-import { useVueFlow, VueFlow } from '@vue-flow/core'
+import { ref, computed, onMounted, inject } from 'vue'
+import { usePeiCrud } from '@/modules/pei/composables/usePeiCrud'
 
-const { onInit, findNode, fitView, snapToGrid } = useVueFlow()
+// Props para recibir IDs iniciales
+const props = defineProps({
+  objetivoInicial: {
+    type: Number,
+    default: null,
+  },
+  indicadorInicial: {
+    type: Number,
+    default: null,
+  },
+  factoresCriticosIniciales: {
+    type: Array,
+    default: () => [],
+  },
+})
 
-const nodes = ref([
+// El PEI vigente
+const peiVigente = inject('peiVigente')
+const idpei = 1
+
+// Emits para comunicación con el componente padre
+const emit = defineEmits(['guardar', 'cerrar'])
+
+const { objetivosPei, indicadoresPei, obtenerObjetivosPeiPorIdPei, obtenerIndicadoresPeiPorIdPei } =
+  usePeiCrud()
+
+// Variables reactivas
+const objetivoSeleccionado = ref(null)
+const indicadorSeleccionado = ref(null)
+const factoresCriticosSeleccionadosIds = ref([])
+const factoresCriticosSeleccionados = ref([])
+const estaCargando = ref(false)
+const err = ref(null)
+
+// Datos dummy de factores críticos
+const todosLosFactoresCriticos = ref([
   {
-    id: '1',
-    type: 'proyecto',
-    dimensions: { width: 700, height: 350 },
-    computedPosition: { x: 96, y: -282, z: 0 },
-    handleBounds: {
-      source: [
-        {
-          id: 'source-1',
-          type: 'source',
-          nodeId: '1',
-          position: 'bottom',
-          x: 343.9998557186057,
-          y: 343.4999162538225,
-          width: 12,
-          height: 12,
-        },
-      ],
-      target: null,
-    },
-    selected: false,
-    dragging: false,
-    resizing: false,
-    initialized: false,
-    isParent: false,
-    position: { x: 96, y: -282 },
-    data: {
-      label: 'Proyecto',
-      type: 'proyecto',
-      estado: 'ES',
-      datosNodo: {
-        id: 6,
-        codigo: 'TST2',
-        titulo: 'Tesde 2',
-        descripcion: 'dasdas',
-        fecha_creacion: '2025-08-21T14:37:18.400099+00:00',
-        fecha_inicio: null,
-        fecha_finalizacion: null,
-        presupuesto: '54654.00',
-        estado: 'EP',
-        creado_por: 'Admin',
-        pei: 1,
-        instancia_gestora: [5],
-        procedencia_fondos: [1],
-      },
-    },
-    events: {},
+    id: 1,
+    factor_critico: 'Cualificación de capacidades de las organizaciones sociales',
+    objetivo_especifico: 1,
   },
   {
-    id: '2',
-    type: 'objetivogeneral',
-    dimensions: { width: 700, height: 210 },
-    computedPosition: { x: 60, y: 202, z: 0 },
-    handleBounds: {
-      source: [
-        {
-          id: 'source-2',
-          type: 'source',
-          nodeId: '2',
-          position: 'bottom',
-          x: 344,
-          y: 203.75,
-          width: 12,
-          height: 12,
-        },
-      ],
-      target: [
-        {
-          id: 'source-2',
-          type: 'target',
-          nodeId: '2',
-          position: 'top',
-          x: 344,
-          y: -6,
-          width: 12,
-          height: 12,
-        },
-      ],
-    },
-    selected: false,
-    dragging: false,
-    resizing: false,
-    initialized: false,
-    isParent: false,
-    position: { x: 60, y: 202 },
-    data: {
-      label: 'Objetivo General',
-      type: 'objetivogeneral',
-      estado: 'ES',
-      mapaNodoId: '6',
-      nodoProyecto: {
-        id: 6,
-        codigo: 'OO',
-        descripcion: 'desc og',
-        supuestos: 'sup og',
-        riesgos: 'ries og',
-        proyecto: 6,
-      },
-    },
-    events: {},
+    id: 2,
+    factor_critico: 'Impulso a la participación independiente',
+    objetivo_especifico: 1,
   },
   {
-    id: '3',
-    type: 'resultadoog',
-    dimensions: { width: 700, height: 210 },
-    computedPosition: { x: 240, y: 478, z: 1000 },
-    handleBounds: {
-      source: [
-        {
-          id: 'source-3',
-          type: 'source',
-          nodeId: '3',
-          position: 'bottom',
-          x: 344,
-          y: 203.75,
-          width: 12,
-          height: 12,
-        },
-      ],
-      target: [
-        {
-          id: 'source-3',
-          type: 'target',
-          nodeId: '3',
-          position: 'top',
-          x: 344,
-          y: -6,
-          width: 12,
-          height: 12,
-        },
-      ],
-    },
-    selected: true,
-    dragging: false,
-    resizing: false,
-    initialized: false,
-    isParent: false,
-    position: { x: 240, y: 478 },
-    data: {
-      label: 'Resultado OG',
-      type: 'resultadoog',
-      mapaNodoId: '6',
-      nodoProyecto: {
-        id: 8,
-        codigo: 'R0',
-        descripcion: 'Descripcion del resultado de obj gral',
-        supuestos: 'sup res obj gral',
-        riesgos: 'riesg res obj gral',
-        objetivo_general: 6,
-      },
-    },
-    events: {},
+    id: 3,
+    factor_critico: 'Capacidades institucionales',
+    objetivo_especifico: 2,
   },
   {
-    id: '4',
-    type: 'actividadrog',
-    dimensions: { width: 0, height: 0 },
-    computedPosition: { z: 0, x: 0, y: 0 },
-    handleBounds: { source: [], target: [] },
-    selected: false,
-    dragging: false,
-    resizing: false,
-    initialized: false,
-    isParent: false,
-    position: { x: 0, y: 0 },
-    data: {
-      label: 'Actividad Res. OG',
-      type: 'actividadrog',
-      mapaNodoId: '6',
-      nodoProyecto: {
-        id: 47,
-        codigo: 'ACT',
-        descripcion: '',
-        tipo: null,
-        fecha_programada: null,
-        fecha_inicio: null,
-        fecha_cierre: null,
-        presupuesto: null,
-        estado: 'CRD',
-        procedencia_fondos: null,
-        objetivo_de_actividad: '',
-        descripcion_evaluacion: '',
-        proceso: null,
-        resultado_og: null,
-        resultado_oe: null,
-        producto_oe: null,
-        responsable: null,
-        proyecto: 6,
-      },
-    },
-    events: {},
+    id: 4,
+    factor_critico: 'Capacidades multiactor',
+    objetivo_especifico: 2,
+  },
+  {
+    id: 5,
+    factor_critico: 'Evidencia del entorno',
+    objetivo_especifico: 3,
+  },
+  {
+    id: 6,
+    factor_critico: 'Mejoramiento del entorno',
+    objetivo_especifico: 3,
   },
 ])
 
-const edges = ref([
-  {
-    id: 'edge-1',
-    type: 'default',
-    source: '1',
-    target: '2',
-    data: {},
-    events: {},
-    label: 'Conexion',
-    animated: true,
-    sourceNode: {
-      id: '1',
-      type: 'proyecto',
-      dimensions: { width: 700, height: 350 },
-      computedPosition: { x: 96, y: -282, z: 0 },
-      handleBounds: {
-        source: [
-          {
-            id: 'source-1',
-            type: 'source',
-            nodeId: '1',
-            position: 'bottom',
-            x: 343.9998557186057,
-            y: 343.4999162538225,
-            width: 12,
-            height: 12,
-          },
-        ],
-        target: null,
-      },
-      selected: false,
-      dragging: false,
-      resizing: false,
-      initialized: false,
-      isParent: false,
-      position: { x: 96, y: -282 },
-      data: {
-        label: 'Proyecto',
-        type: 'proyecto',
-        estado: 'ES',
-        datosNodo: {
-          id: 6,
-          codigo: 'TST2',
-          titulo: 'Tesde 2',
-          descripcion: 'dasdas',
-          fecha_creacion: '2025-08-21T14:37:18.400099+00:00',
-          fecha_inicio: null,
-          fecha_finalizacion: null,
-          presupuesto: '54654.00',
-          estado: 'EP',
-          creado_por: 'Admin',
-          pei: 1,
-          instancia_gestora: [5],
-          procedencia_fondos: [1],
-        },
-      },
-      events: {},
-    },
-    targetNode: {
-      id: '2',
-      type: 'objetivogeneral',
-      dimensions: { width: 700, height: 210 },
-      computedPosition: { x: 60, y: 202, z: 0 },
-      handleBounds: {
-        source: [
-          {
-            id: 'source-2',
-            type: 'source',
-            nodeId: '2',
-            position: 'bottom',
-            x: 344,
-            y: 203.75,
-            width: 12,
-            height: 12,
-          },
-        ],
-        target: [
-          {
-            id: 'source-2',
-            type: 'target',
-            nodeId: '2',
-            position: 'top',
-            x: 344,
-            y: -6,
-            width: 12,
-            height: 12,
-          },
-        ],
-      },
-      selected: false,
-      dragging: false,
-      resizing: false,
-      initialized: false,
-      isParent: false,
-      position: { x: 60, y: 202 },
-      data: {
-        label: 'Objetivo General',
-        type: 'objetivogeneral',
-        estado: 'ES',
-        mapaNodoId: '6',
-        nodoProyecto: {
-          id: 6,
-          codigo: 'OO',
-          descripcion: 'desc og',
-          supuestos: 'sup og',
-          riesgos: 'ries og',
-          proyecto: 6,
-        },
-      },
-      events: {},
-    },
-    sourceX: 445.9998557186057,
-    sourceY: 73.4999162538225,
-    targetX: 410,
-    targetY: 196,
-  },
-  {
-    id: 'edge-2',
-    type: 'default',
-    source: '2',
-    target: '3',
-    data: {},
-    events: {},
-    label: 'Conexion',
-    animated: true,
-    sourceNode: {
-      id: '2',
-      type: 'objetivogeneral',
-      dimensions: { width: 700, height: 210 },
-      computedPosition: { x: 60, y: 202, z: 0 },
-      handleBounds: {
-        source: [
-          {
-            id: 'source-2',
-            type: 'source',
-            nodeId: '2',
-            position: 'bottom',
-            x: 344,
-            y: 203.75,
-            width: 12,
-            height: 12,
-          },
-        ],
-        target: [
-          {
-            id: 'source-2',
-            type: 'target',
-            nodeId: '2',
-            position: 'top',
-            x: 344,
-            y: -6,
-            width: 12,
-            height: 12,
-          },
-        ],
-      },
-      selected: false,
-      dragging: false,
-      resizing: false,
-      initialized: false,
-      isParent: false,
-      position: { x: 60, y: 202 },
-      data: {
-        label: 'Objetivo General',
-        type: 'objetivogeneral',
-        estado: 'ES',
-        mapaNodoId: '6',
-        nodoProyecto: {
-          id: 6,
-          codigo: 'OO',
-          descripcion: 'desc og',
-          supuestos: 'sup og',
-          riesgos: 'ries og',
-          proyecto: 6,
-        },
-      },
-      events: {},
-    },
-    targetNode: {
-      id: '3',
-      type: 'resultadoog',
-      dimensions: { width: 700, height: 210 },
-      computedPosition: { x: 240, y: 478, z: 1000 },
-      handleBounds: {
-        source: [
-          {
-            id: 'source-3',
-            type: 'source',
-            nodeId: '3',
-            position: 'bottom',
-            x: 344,
-            y: 203.75,
-            width: 12,
-            height: 12,
-          },
-        ],
-        target: [
-          {
-            id: 'source-3',
-            type: 'target',
-            nodeId: '3',
-            position: 'top',
-            x: 344,
-            y: -6,
-            width: 12,
-            height: 12,
-          },
-        ],
-      },
-      selected: true,
-      dragging: false,
-      resizing: false,
-      initialized: false,
-      isParent: false,
-      position: { x: 240, y: 478 },
-      data: {
-        label: 'Resultado OG',
-        type: 'resultadoog',
-        mapaNodoId: '6',
-        nodoProyecto: {
-          id: 8,
-          codigo: 'R0',
-          descripcion: 'Descripcion del resultado de obj gral',
-          supuestos: 'sup res obj gral',
-          riesgos: 'riesg res obj gral',
-          objetivo_general: 6,
-        },
-      },
-      events: {},
-    },
-    sourceX: 410,
-    sourceY: 417.75,
-    targetX: 590,
-    targetY: 472,
-  },
-  {
-    id: 'edge-3',
-    type: 'default',
-    source: '3',
-    target: '4',
-    data: {},
-    events: {},
-    label: 'Conexion',
-    animated: true,
-    sourceNode: {
-      id: '3',
-      type: 'resultadoog',
-      dimensions: { width: 700, height: 210 },
-      computedPosition: { x: 240, y: 478, z: 1000 },
-      handleBounds: {
-        source: [
-          {
-            id: 'source-3',
-            type: 'source',
-            nodeId: '3',
-            position: 'bottom',
-            x: 344,
-            y: 203.75,
-            width: 12,
-            height: 12,
-          },
-        ],
-        target: [
-          {
-            id: 'source-3',
-            type: 'target',
-            nodeId: '3',
-            position: 'top',
-            x: 344,
-            y: -6,
-            width: 12,
-            height: 12,
-          },
-        ],
-      },
-      selected: true,
-      dragging: false,
-      resizing: false,
-      initialized: false,
-      isParent: false,
-      position: { x: 240, y: 478 },
-      data: {
-        label: 'Resultado OG',
-        type: 'resultadoog',
-        mapaNodoId: '6',
-        nodoProyecto: {
-          id: 8,
-          codigo: 'R0',
-          descripcion: 'Descripcion del resultado de obj gral',
-          supuestos: 'sup res obj gral',
-          riesgos: 'riesg res obj gral',
-          objetivo_general: 6,
-        },
-      },
-      events: {},
-    },
-    targetNode: {
-      id: '4',
-      type: 'actividadrog',
-      dimensions: { width: 0, height: 0 },
-      computedPosition: { z: 0, x: 0, y: 0 },
-      handleBounds: { source: [], target: [] },
-      selected: false,
-      dragging: false,
-      resizing: false,
-      initialized: false,
-      isParent: false,
-      position: { x: 0, y: 0 },
-      data: {
-        label: 'Actividad Res. OG',
-        type: 'actividadrog',
-        mapaNodoId: '6',
-        nodoProyecto: {
-          id: 47,
-          codigo: 'ACT',
-          descripcion: '',
-          tipo: null,
-          fecha_programada: null,
-          fecha_inicio: null,
-          fecha_cierre: null,
-          presupuesto: null,
-          estado: 'CRD',
-          procedencia_fondos: null,
-          objetivo_de_actividad: '',
-          descripcion_evaluacion: '',
-          proceso: null,
-          resultado_og: null,
-          resultado_oe: null,
-          producto_oe: null,
-          responsable: null,
-          proyecto: 6,
-        },
-      },
-      events: {},
-    },
-  },
-])
+// Factores críticos filtrados por objetivo seleccionado
+const factoresCriticosFiltrados = computed(() => {
+  if (!objetivoSeleccionado.value) return []
+  return todosLosFactoresCriticos.value.filter(
+    (factor) => factor.objetivo_especifico === objetivoSeleccionado.value.id,
+  )
+})
 
-// to enable snapping to grid
-snapToGrid.value = true
+// Texto para el textfield de factores seleccionados
+const textoFactoresSeleccionados = computed(() => {
+  if (factoresCriticosSeleccionados.value.length === 0) return ''
 
-// any event that is emitted from the `<VueFlow />` component can be listened to using the `onEventName` method
-onInit((instance) => {
-  // `instance` is the same type as the return of `useVueFlow` (VueFlowStore)
+  const factores = factoresCriticosSeleccionados.value.map((factor) => {
+    return factor.nombre
+  })
 
-  fitView()
+  return factores.join(', ')
+})
 
-  const node = findNode('1')
+// Objetivo e indicador actual basados en los IDs proporcionados
+const objetivoActual = computed(() => {
+  if (!props.objetivoInicial) return null
+  return objetivosPei.value.find((obj) => obj.id === props.objetivoInicial)
+})
 
-  if (node) {
-    node.position = { x: 100, y: 100 }
+const indicadorActual = computed(() => {
+  if (!props.indicadorInicial) return null
+  return indicadoresPei.value.find((ind) => ind.id === props.indicadorInicial)
+})
+
+// Indicadores filtrados por objetivo seleccionado
+const indicadoresPeiFiltrados = computed(() => {
+  if (!objetivoSeleccionado.value) return []
+  return indicadoresPei.value.filter((ind) => ind.objetivo === objetivoSeleccionado.value.id)
+})
+
+// Actualizar la lista de factores seleccionados con estructura JSON
+const actualizarFactoresSeleccionados = (newIds) => {
+  factoresCriticosSeleccionadosIds.value = newIds
+
+  // Crear array con estructura JSON completa
+  factoresCriticosSeleccionados.value = newIds.map((id) => {
+    const factorExistente = factoresCriticosSeleccionados.value.find((f) => f.id === id)
+    if (factorExistente) {
+      return factorExistente
+    }
+
+    const factorOriginal = todosLosFactoresCriticos.value.find((f) => f.id === id)
+    return {
+      id: factorOriginal.id,
+      nombre: factorOriginal.factor_critico,
+      objetivo_especifico: factorOriginal.objetivo_especifico,
+      nota: '',
+    }
+  })
+}
+
+// Actualizar nota de un factor específico
+const actualizarNotaFactor = (factorId, nuevaNota) => {
+  const factor = factoresCriticosSeleccionados.value.find((f) => f.id === factorId)
+  if (factor) {
+    factor.nota = nuevaNota
+  }
+}
+
+// Obtener nombre del factor crítico por ID
+const obtenerNombreFactor = (factorId) => {
+  const factor = todosLosFactoresCriticos.value.find((f) => f.id === factorId)
+  return factor ? factor.factor_critico : 'Factor desconocido'
+}
+
+// Remover factor crítico de la selección
+const removerFactorCritico = (factorId) => {
+  factoresCriticosSeleccionadosIds.value = factoresCriticosSeleccionadosIds.value.filter(
+    (id) => id !== factorId,
+  )
+  factoresCriticosSeleccionados.value = factoresCriticosSeleccionados.value.filter(
+    (factor) => factor.id !== factorId,
+  )
+}
+
+// Cargar datos iniciales
+const cargar = async () => {
+  estaCargando.value = true
+  try {
+    await Promise.all([
+      obtenerObjetivosPeiPorIdPei(peiVigente.value.id),
+      obtenerIndicadoresPeiPorIdPei(peiVigente.value.id),
+    ])
+  } catch (e) {
+    console.error('Error al cargar datos:', e)
+    err.value = e.message
+  } finally {
+    estaCargando.value = false
+  }
+}
+
+// Cargar indicadores y factores cuando se selecciona un objetivo
+const cargarIndicadoresYFactores = () => {
+  indicadorSeleccionado.value = null
+  factoresCriticosSeleccionadosIds.value = []
+  factoresCriticosSeleccionados.value = []
+}
+
+// Cargar datos iniciales cuando el componente se monta
+onMounted(async () => {
+  if (peiVigente) {
+    await cargar()
+    console.log('PEI VIGENTE:')
+    console.log(peiVigente)
+  }
+
+  // Si hay un objetivo inicial, seleccionarlo
+  if (props.objetivoInicial) {
+    objetivoSeleccionado.value = objetivosPei.value.find((obj) => obj.id === props.objetivoInicial)
+
+    // Si hay un indicador inicial, seleccionarlo
+    if (props.indicadorInicial && objetivoSeleccionado.value) {
+      const indicador = indicadoresPei.value.find(
+        (ind) =>
+          ind.id === props.indicadorInicial && ind.objetivo_id === objetivoSeleccionado.value.id,
+      )
+      if (indicador) {
+        indicadorSeleccionado.value = indicador
+      }
+    }
+
+    // Si hay factores críticos iniciales, seleccionarlos
+    if (props.factoresCriticosIniciales && props.factoresCriticosIniciales.length > 0) {
+      // Convertir array de IDs a estructura JSON completa
+      factoresCriticosSeleccionados.value = props.factoresCriticosIniciales
+        .map((factor) => {
+          if (typeof factor === 'object' && factor !== null) {
+            return factor // Ya está en formato JSON
+          } else {
+            // Es solo un ID, buscar el factor completo
+            const factorCompleto = todosLosFactoresCriticos.value.find((f) => f.id === factor)
+            return factorCompleto
+              ? {
+                  id: factorCompleto.id,
+                  nombre: factorCompleto.factor_critico,
+                  objetivo_especifico: factorCompleto.objetivo_especifico,
+                  nota: '',
+                }
+              : null
+          }
+        })
+        .filter(Boolean)
+
+      factoresCriticosSeleccionadosIds.value = factoresCriticosSeleccionados.value.map((f) => f.id)
+    }
   }
 })
+
+// Guardar la selección y actualizar la tabla
+const guardarSeleccion = () => {
+  // Determinar qué valores guardar
+  const objetivoId = objetivoSeleccionado.value
+    ? objetivoSeleccionado.value.id
+    : props.objetivoInicial
+  const indicadorId = indicadorSeleccionado.value
+    ? indicadorSeleccionado.value.id
+    : props.indicadorInicial
+
+  // Solo emitir si tenemos ambos valores
+  if (objetivoId && indicadorId) {
+    emit('guardar', {
+      objetivo_pei: objetivoId,
+      indicador_pei: indicadorId,
+      factoresCriticos: factoresCriticosSeleccionados.value, // Enviar JSON completo
+    })
+  } else if (!objetivoId && !indicadorId) {
+    // Si ambos son nulos, emitir valores nulos
+    emit('guardar', {
+      objetivo_pei: null,
+      indicador_pei: null,
+      factoresCriticos: [],
+    })
+  }
+}
+
+// Cerrar el modal
+const cerrarModal = () => {
+  emit('cerrar')
+}
 </script>
 
-<template>
-  <VueFlow :nodes="nodes" :edges="edges" />
-</template>
+<style scoped>
+.v-card {
+  border-radius: 8px;
+}
+
+.v-card-title {
+  padding: 16px;
+}
+
+.v-card-text {
+  padding: 16px;
+}
+
+.v-chip {
+  cursor: pointer;
+}
+
+.v-list-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 12px;
+}
+</style>

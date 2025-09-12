@@ -16,8 +16,13 @@ export const useProyectoStore = defineStore('proyecto', () => {
   const proyectosPlanificacion = ref([]) //Almacena los proyectos en estado de Planificacion
   const proyecto_objgeneral_info = ref(null) //Proyecto - objetivo-general-info adicional
   const objetivosIndicadores = ref([])
+  const nodosClasificados = ref(null)
+  const nodosVinculadosActividad = ref([])
+  const nodes = ref(null)
+  const edges = ref(null)
   const cargando = ref(false) //Indicador de carga
   const error = ref(null) //Mensaje de error
+
   /***  ACCIONES    ***/
   //Obtener todos los Proyectos
   const obtenerProyectos = async () => {
@@ -33,6 +38,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
       cargando.value = false
     }
   }
+
   //Obtener un proyecto por ID
   const obtenerProyectoPorId = async (id) => {
     cargando.value = true
@@ -60,12 +66,16 @@ export const useProyectoStore = defineStore('proyecto', () => {
     }
   }
 
-  //Estructura del proyecto con nodos
+  //Estructura del proyecto con nodos y conexiones
   const obtenerProyectoEstructuraNodosPorId = async (id) => {
     cargando.value = true
     error.value = null
     try {
       proyectoEstructuraNodos.value = await proyectoServicios.estructuraNodosPorID(id)
+      nodes.value = proyectoEstructuraNodos.value.mapa_nodo.nodos
+      edges.value = proyectoEstructuraNodos.value.mapa_nodo.conexiones
+      //Clasificar los nodos
+      nodosClasificados.value = clasificarNodos(proyectoEstructuraNodos.value.mapa_nodo)
     } catch (err) {
       error.value = err
     } finally {
@@ -113,6 +123,158 @@ export const useProyectoStore = defineStore('proyecto', () => {
     }
   }
 
+  //Clasificar los nodos del diagrama - funcion interna
+  const clasificarNodos = (mapaNodo) => {
+    const nodosAgrupados = {}
+
+    if (!mapaNodo || !mapaNodo.nodos || mapaNodo.nodos.length === 0) {
+      console.warn('No se encontraron nodos para clasificar.')
+      return nodosAgrupados
+    }
+
+    mapaNodo.nodos.forEach((nodo) => {
+      if (nodo.type === 'proyecto') {
+        return
+      }
+
+      if (nodo.data && nodo.data.nodoProyecto) {
+        const tipoNodo = nodo.type
+
+        if (!nodosAgrupados[tipoNodo]) {
+          nodosAgrupados[tipoNodo] = []
+        }
+
+        nodosAgrupados[tipoNodo].push(nodo)
+      }
+    })
+
+    return nodosAgrupados
+  }
+
+  //Buscar nodos por id
+  const buscarNodoPorId = (id) => {
+    if (!nodosClasificados.value) {
+      return null
+    }
+
+    // Iterar sobre cada tipo de nodo (ej. 'objetivogeneral', 'actividadrog')
+    for (const tipo in nodosClasificados.value) {
+      // Iterar sobre el array de nodos de cada tipo
+      const nodoEncontrado = nodosClasificados.value[tipo].find(
+        (nodo) => nodo.data && nodo.data.nodoProyecto && nodo.data.nodoProyecto.id === id,
+      )
+
+      // Si se encuentra el nodo, retornarlo inmediatamente
+      if (nodoEncontrado) {
+        return nodoEncontrado
+      }
+    }
+
+    // Retornar null si no se encuentra ninguna coincidencia
+    return null
+  }
+
+  //Buscar nodos por id y tipo
+  const buscarNodoPorTipoId = (tipo, id) => {
+    if (!nodosClasificados.value) {
+      return null
+    }
+
+    //Acceder al array del tipo de nodo
+    const nodosDelTipo = nodosClasificados.value[tipo]
+
+    //Si no hay nodos de ese tipo se retorna null
+    if (!nodosDelTipo) {
+      return null
+    }
+
+    //Busqueda del nodo
+    const nodoEncontrado = nodosDelTipo.find(
+      (nodo) => nodo.data && nodo.data.nodoProyecto && nodo.data.nodoProyecto.id === id,
+    )
+
+    return nodoEncontrado || null
+  }
+
+  //Obtener los tipos de nodos de un diagrama
+  const getTiposNodos = () => {
+    // Si no hay nodos clasificados, retorna un array vacío
+    if (!nodosClasificados.value) {
+      return []
+    }
+    // Usa Object.keys() para obtener un array de las claves del objeto
+    return Object.keys(nodosClasificados.value)
+  }
+
+  const buscarNodosPorId = (id) => {
+    if (!nodosClasificados.value) {
+      return [] // Retornamos un array vacío si no hay nodos clasificados
+    }
+
+    const resultados = []
+
+    // Iterar sobre cada tipo de nodo (ej. 'objetivogeneral', 'actividadrog')
+    for (const tipo in nodosClasificados.value) {
+      // Usamos .filter() para encontrar TODAS las coincidencias en este tipo de nodo
+      const nodosEncontrados = nodosClasificados.value[tipo].filter(
+        (nodo) => nodo.data && nodo.data.nodoProyecto && nodo.data.nodoProyecto.id === id,
+      )
+
+      // Concatenamos los nodos encontrados al array principal de resultados
+      if (nodosEncontrados.length > 0) {
+        resultados.push(...nodosEncontrados)
+      }
+    }
+
+    // Retornar el array completo de resultados
+    return resultados
+  }
+
+  /**
+   * 💡 Acción para buscar y almacenar los nodos de procedencia de una actividad.
+   * Esta función recorre la estructura de procedencia (con tipo y datos)
+   * y busca el nodo completo en el store para luego almacenarlo en un array.
+   * @param {Object} estructuraProcedencia - Objeto con el tipo y los datos completos de las selecciones.
+   */
+  const almacenarNodosProcedenciaActividad = (estructuraProcedencia) => {
+    // Limpiamos el estado anterior para la nueva lista de nodos
+    nodosVinculadosActividad.value = []
+
+    // Verificamos si hay nodos clasificados en el store
+    if (!nodosClasificados.value) {
+      console.warn('No se encontraron nodos clasificados en el store.')
+      return
+    }
+
+    // Iteramos sobre las propiedades del objeto de estructura de procedencia
+    for (const tipo in estructuraProcedencia) {
+      const valor = estructuraProcedencia[tipo]
+
+      if (valor) {
+        if (Array.isArray(valor)) {
+          // Caso de selección múltiple (ej. 'indicadorog')
+          valor.forEach((item) => {
+            // Buscamos el nodo completo por su ID en la lista de nodos clasificados
+            const nodoEncontrado = nodosClasificados.value[item.tipo]?.find(
+              (nodo) => nodo.data?.nodoProyecto?.id === item.data.id,
+            )
+            if (nodoEncontrado) {
+              nodosVinculadosActividad.value.push(nodoEncontrado)
+            }
+          })
+        } else {
+          // Caso de selección simple
+          const nodoEncontrado = nodosClasificados.value[valor.tipo]?.find(
+            (nodo) => nodo.data?.nodoProyecto?.id === valor.data.id,
+          )
+          if (nodoEncontrado) {
+            nodosVinculadosActividad.value.push(nodoEncontrado)
+          }
+        }
+      }
+    }
+  }
+
   return {
     proyectos, //ref
     proyectoActual, //ref
@@ -122,8 +284,13 @@ export const useProyectoStore = defineStore('proyecto', () => {
     proyectoObjetivos, //ref
     objetivosIndicadores, //ref
     proyecto_objgeneral_info, //ref
+    nodosClasificados, //ref nodos del proyecto clasificados
+    nodosVinculadosActividad,
     cargando, //ref
     error, //ref
+    nodes, //ref
+    edges, //ref
+    getTiposNodos,
     obtenerProyectos, //accion
     obtenerProyectosPlanificacion, //accion, todos los proyectos en estado de planificacion
     obtenerProyectoPorId, //accion
@@ -131,6 +298,10 @@ export const useProyectoStore = defineStore('proyecto', () => {
     obtenerProyectoEstructuraNodosPorId, //accion
     objetivosIndPorIdProyecto, //accion
     proyectoObjGeneralInfo, //accion
+    buscarNodoPorId, //Busqueda de un nodo por id de backend
+    buscarNodoPorTipoId, //Busqueda de un nodo por type e Identificado4
+    buscarNodosPorId, //Busqueda de todos los nodos que tengan el mismo id
+    almacenarNodosProcedenciaActividad,
   }
 })
 

@@ -47,13 +47,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, provide, readonly } from 'vue'
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
-import PlanificacionXls from '@/modules/planificacionxls/components/PlanificacionXls.vue'
 import PlanificacionActividadXls from '@/modules/planificacionxls/components/PlanificacionActividadXls.vue'
 
 //Estado de carga
@@ -76,12 +75,19 @@ const {
   proyectoActual: proyecto,
   cargando: cargandoProyecto,
   proyectoEstructura,
+  proyectoEstructuraNodos,
 } = storeToRefs(proyectoStore)
-const { obtenerProyectoPorId, obtenerProyectoEstructuraPorId } = proyectoStore
+const {
+  obtenerProyectoPorId,
+  obtenerProyectoEstructuraPorId,
+  obtenerProyectoEstructuraNodosPorId,
+} = proyectoStore
 
 onMounted(async () => {
   await cargarDatos()
 })
+
+provide('proyectoEstructura', readonly(proyectoEstructuraNodos))
 
 //Watch para la carga completa
 watch(
@@ -100,6 +106,7 @@ const cargarDatos = async () => {
     await Promise.all([
       await obtenerProyectoPorId(idproyecto),
       await obtenerProyectoEstructuraPorId(idproyecto),
+      await obtenerProyectoEstructuraNodosPorId(idproyecto),
     ])
   } catch (err) {
     console.erro('Error al cargar datos', err)

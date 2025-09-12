@@ -318,6 +318,8 @@ import useNodeEvents from '../composables/useNodeEvents'
 import { toJpeg, toPng, toSvg } from 'html-to-image'
 import jsPDF from 'jspdf'
 import * as XLSX from 'xlsx'
+//Composable de snackbars
+import { useSnackbar } from '@/composables/useSnackbar'
 
 //Capturar la inyeccion de datos
 const proyecto = inject('proyectoEstructura')
@@ -334,6 +336,9 @@ const conectores = ref([])
 //Inicializar el composable
 // eslint-disable-next-line no-unused-vars
 const { fitView, onNodeDoubleClick, getNodes, getEdges, addNodes, removeNodes } = useVueFlow()
+
+//Inicializar los snackbars
+const { successMsg } = useSnackbar()
 
 //Captura del click sobre el nodo
 onNodeDoubleClick((event) => {
@@ -476,7 +481,8 @@ const formularioActual = computed(() => {
 
 // Función para actualizar el nodo
 const actualizarNodo = (nuevosDatos) => {
-  alert('actualizar')
+  //alert('actualizar')
+  successMsg('Operacion completada con exito')
   console.log(nuevosDatos)
   //nodoSeleccionado.value.data = { ...nodoSeleccionado.value.data, ...nuevosDatos }
   //nodoSeleccionado.value = null // Cierra el panel después de guardar

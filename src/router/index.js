@@ -214,18 +214,13 @@ const router = createRouter({
     {
       path: '/programas/',
       name: 'programasareasproyecto',
-      component: () => import('@/views/estructuracion/ProgramasAreasView.vue'),
-    },
-    {
-      path: '/programas/',
-      name: 'programasareasproyecto',
-      component: () => import('@/views/estructuracion/ProgramasAreasView.vue'),
+      component: () => import('@/views/programas/ProgramasAreasView.vue'),
     },
     /****************** Notificaciones **********************/
     {
       path: '/notificaciones',
       name: 'notificaciones',
-      component: HomeView,
+      component: () => import('@/views/notificacion/NotificacionesDashboardView.vue'),
     },
     {
       path: '/notificaciones/configuracion',
@@ -263,8 +258,7 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/HelpView.vue'),
     },
-
-    /*
+    /*************************** REPORTES ****************************/
     {
       path: '/about',
       name: 'about',
@@ -272,11 +266,71 @@ const router = createRouter({
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
-    },*/
+    },
     {
       path: '/solicitud-viajes/',
       name: 'solicitudViajes',
       component: () => import('@/views/pei/PeiComposableViajes.vue'),
+    },
+    {  path: '/reportes/estructura',
+      name: 'reportesEstructura',
+      component: () => import('@/views/reportes/ProyectoEstructuraView.vue'),
+    },
+    /************************** Rutas limpias para Headers *******************/
+    {
+      path: '/estructura/inicio',
+      name: 'homeEstructura',
+      component: () => import('@/views/notificacion/NotificacionesDashboardView.vue'),
+    },
+    {
+      path: '/planificacion/inicio',
+      name: 'homePlanificacion',
+      component: () => import('@/views/HomeView.vue'),
+    },
+    {
+      path: '/monitoreo/inicio',
+      name: 'homeMonitoreo',
+      component: () => import('@/views/HomeView.vue'),
+    },
+    {
+      path: '/reporte/inicio',
+      name: 'homeReporte',
+      component: () => import('@/views/HomeView.vue'),
+    },
+    {
+      path: '/reporte/proyectos',
+      name: 'reporteListaProyectos',
+      component: () => import('@/views/reportes/ProyectoReportesListaProyectos.vue'),
+    },
+    {
+      path: '/reporte/proyectos/:id/',
+      name: 'reporteProyecto',
+      component: () => import('@/views/reportes/ReporteProyectoView.vue'),
+    },
+    {
+      path: '/reporte/actividades',
+      name: 'reporteListaActividades',
+      component: () => import('@/views/reportes/ActividadReporteListaActividades.vue'),
+    },
+    {
+      path: '/usuarios/inicio',
+      name: 'homeUsuariosInicio',
+      component: () => import('@/views/HomeView.vue'),
+    },
+    {
+      path: '/notificaciones/inicio',
+      name: 'homeNotificaciones',
+      component: () => import('@/views/HomeView.vue'),
+    },
+    {
+      path: '/fpp/inicio',
+      name: 'homeFpp',
+      component: () => import('@/views/fpp/FppView.vue'),
+    },
+    {
+      path: '/fonfosc/inicio',
+      name: 'homeFonFosc',
+      component: () => import('@/views/fonfosc/FonFoscView.vue'),
     },
   ],
 })

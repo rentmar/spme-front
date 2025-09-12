@@ -101,20 +101,44 @@ const emit = defineEmits([
 
 //AGregar Indicador Obj General
 const agregarIndicadorResultadoOg = async () => {
+  // const indicadorResultadoOg = {
+  //   codigo: 'IND00-R0-OG',
+  //   descripcion: '',
+  //   definicion: '',
+  //   redaccion: 'GUIA',
+  //   fuente_verificacion: 'Fuente Verificacion',
+  //   target_poblacion: '',
+  //   tipo: 'A-Z',
+  //   baseline: '',
+  //   target_q1: '',
+  //   target_q2: '',
+  //   target_q3: '',
+  //   resultado_og: idCurrentNode,
+  // }
+
   const indicadorResultadoOg = {
     codigo: 'IND00-R0-OG',
     descripcion: '',
-    definicion: '',
     redaccion: 'GUIA',
     fuente_verificacion: 'Fuente Verificacion',
     target_poblacion: '',
+    fechaTargetPoblacion: null,
     tipo: 'A-Z',
+    frecuencia: 'MENSUAL',
+    responsable: null,
     baseline: '',
+    fechaLineaBase: null,
     target_q1: '',
+    fechaTargetQ1: null,
     target_q2: '',
+    fechaTargetQ2: null,
     target_q3: '',
+    fechaTargetQ3: null,
+    target_q4: null,
+    fechaTargetQ4: null,
     resultado_og: idCurrentNode,
   }
+
   //Crear el indicador resultado og
   try {
     await crearIndicadorResultadoObjetivoGeneral(indicadorResultadoOg)
@@ -135,11 +159,18 @@ const agregarIndicadorResultadoOg = async () => {
           redaccion: indicadorResultadoObjGeneral.value.redaccion,
           fuente_verificacion: indicadorResultadoObjGeneral.value.fuente_verificacion,
           target_poblacion: indicadorResultadoObjGeneral.value.target_poblacion,
+          fechaTargetPoblacion: indicadorResultadoObjGeneral.value.fechaTargetPoblacion,
           tipo: indicadorResultadoObjGeneral.value.tipo,
+          frecuencia: indicadorResultadoObjGeneral.value.frecuencia,
+          responsable: indicadorResultadoObjGeneral.value.responsable,
           baseline: indicadorResultadoObjGeneral.value.baseline,
+          fechaLineaBase: indicadorResultadoObjGeneral.value.fechaLineaBase,
           target_q1: indicadorResultadoObjGeneral.value.target_q1,
+          fechaTargetQ1: indicadorResultadoObjGeneral.value.fechaTargetQ1,
           target_q2: indicadorResultadoObjGeneral.value.target_q2,
+          fechaTargetQ2: indicadorResultadoObjGeneral.value.fechaTargetQ2,
           target_q3: indicadorResultadoObjGeneral.value.target_q3,
+          fechaTargetQ3: indicadorResultadoObjGeneral.value.fechaTargetQ3,
           resultado_og: indicadorResultadoObjGeneral.value.resultado_og,
         },
       },

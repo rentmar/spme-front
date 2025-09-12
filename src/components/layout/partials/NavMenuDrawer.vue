@@ -34,16 +34,21 @@
         prepend-icon="mdi-chart-gantt"
         title="Programas/Areas"
         value="programas-list"
-        to="/"
+        to="/programas"
       ></v-list-item>
 
-      <v-list-item prepend-icon="mdi-finance" title="FPP" value="fpd-list" to="/"></v-list-item>
+      <v-list-item
+        prepend-icon="mdi-finance"
+        title="FPP"
+        value="fpd-list"
+        to="/fpp/inicio"
+      ></v-list-item>
 
       <v-list-item
         prepend-icon="mdi-cash-multiple"
         title="FONFOSC"
         value="fonfosc-list"
-        to="/"
+        to="/fonfosc/inicio"
       ></v-list-item>
     </v-list-group>
 
@@ -55,13 +60,13 @@
           title="Planificación"
         ></v-list-item>
       </template>
-
+      <!--
       <v-list-item
         prepend-icon="mdi-format-list-checkbox"
         title="Tareas"
         value="planning-tareas"
         to="/proyecto/actividades/tareas/"
-      ></v-list-item>
+      ></v-list-item> -->
 
       <v-list-item
         prepend-icon="mdi-playlist-check"
@@ -108,15 +113,37 @@
         to="/pei/listaactividades?showButton=3"
       ></v-list-item>
     </v-list-group>
+    <!-- Reportes -->
+    <v-list-group value="reporte">
+      <template v-slot:activator="{ props }">
+        <v-list-item v-bind="props" prepend-icon="mdi-chart-bar" title="Reportes"></v-list-item>
+      </template>
+      <v-list-item
+        prepend-icon="mdi-view-dashboard"
+        title="Por Proyecto"
+        value="reporte-proyecto"
+        to="/reporte/proyectos"
+      ></v-list-item>
+      <!--
+      <v-list-item
+        prepend-icon="mdi-chart-line"
+        title="Por Actividad"
+        value="reporte-actividades"
+        to="/reporte/actividades"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-chart-line"
+        title="Reporte Estructura Pruebas"
+        value="actividades-reports"
+        to="/reportes/estructura"
+      ></v-list-item> -->
+    </v-list-group>
 
     <!-- Administración de Usuarios -->
     <v-list-group value="admin">
       <template v-slot:activator="{ props }">
-        <v-list-item
-          v-bind="props"
-          prepend-icon="mdi-account-cog"
-          title="Administración"
-        ></v-list-item>
+        <v-list-item v-bind="props" prepend-icon="mdi-account-cog" title="Usuarios"></v-list-item>
       </template>
 
       <v-list-item
@@ -159,7 +186,7 @@
       <template v-slot:activator="{ props }">
         <v-list-item v-bind="props" prepend-icon="mdi-bell" title="Notificaciones"></v-list-item>
       </template>
-
+      <!--
       <v-list-item
         prepend-icon="mdi-bell-outline"
         title="Mis Notificaciones"
@@ -174,18 +201,18 @@
             inline
           ></v-badge>
         </template>
-      </v-list-item>
-      <v-list-item
+      </v-list-item> -->
+      <!-- <v-list-item
         prepend-icon="mdi-cog-outline"
         title="Configuración"
         value="notification-settings"
         to="/notificaciones/configuracion"
-      ></v-list-item>
+      ></v-list-item> -->
       <!-- Sección de administración (solo visible para admin) -->
       <template v-if="userIsAdmin">
         <v-divider class="my-1"></v-divider>
 
-        <v-list-item
+        <!-- <v-list-item
           prepend-icon="mdi-bell-cog"
           title="Administrar Notificaciones"
           value="admin-notifications"
@@ -206,7 +233,7 @@
           value="system-notification-settings"
           to="/admin/notificaciones/configuracion"
           class="admin-item"
-        ></v-list-item>
+        ></v-list-item> -->
       </template>
     </v-list-group>
 

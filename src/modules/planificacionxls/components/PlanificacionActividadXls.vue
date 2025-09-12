@@ -1,6 +1,10 @@
 <template>
-  <div>
-    <TrazadorActividad></TrazadorActividad>
+  <div v-if="selectedRowData">
+    <!-- <TrazadorActividad
+      :tabla-data-disponible="tablaDataDisponible"
+      :actividad-id="selectedRowData.id"
+    ></TrazadorActividad> -->
+    <!-- <ActividadRelacionEstructura></ActividadRelacionEstructura> -->
   </div>
   <div class="hot-wrapper" v-if="!isLoading">
     <div class="content-wrapper">
@@ -30,7 +34,7 @@
             </template>
           </v-tooltip>
           <!--Reprogramar-->
-          <v-tooltip text="Reprogramar" location="bottom">
+          <!-- <v-tooltip text="Reprogramar" location="bottom">
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
@@ -41,29 +45,78 @@
                 <v-icon size="18">mdi-wrench-clock</v-icon>
               </v-btn>
             </template>
-          </v-tooltip>
+          </v-tooltip> -->
           <!--Nueva Actividad-->
           <v-tooltip text="Agregar nueva actividad" location="bottom">
             <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                variant="text"
-                class="toolbar-btn"
-                @click="agregarNuevaActividad"
-              >
+              <v-btn v-bind="props" variant="text" class="toolbar-btn" @click="abrirNuevaActividad">
                 <v-icon size="18">mdi-plus-outline</v-icon>
                 <v-icon size="18">mdi-clipboard-text-outline</v-icon>
               </v-btn>
             </template>
           </v-tooltip>
-          <!--Eliminar fila-->
-          <v-tooltip text="Eliminar fila seleccionada" location="bottom">
+
+          <v-dialog v-model="mostrarModalActividad" fullscreen>
+            <v-card>
+              <v-toolbar>
+                <v-btn icon="mdi-close" @click="cerrarNuevaActividad"></v-btn>
+
+                <v-toolbar-title>Agregar Nueva Actividad/Proceso </v-toolbar-title>
+
+                <v-toolbar-items>
+                  <!-- <v-btn text="Guardar" variant="text"></v-btn> -->
+                </v-toolbar-items>
+              </v-toolbar>
+              <v-card-text>
+                <v-card-text>
+                  <SeleccionEstructuraActividad
+                    :proyecto-data="props.proyectoEstructura"
+                    @crear-actividad="crearActividadPlan"
+                  ></SeleccionEstructuraActividad>
+
+                  <!--Editor grafico de actividades-->
+                  <!-- <div style="width: 100%; height: 600px">
+                    <EditorEstructuraMainActividades></EditorEstructuraMainActividades>
+                  </div> -->
+                </v-card-text>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+          <!-- <v-tooltip text="Agregar nueva actividad Variante" location="bottom">
             <template #activator="{ props }">
-              <v-btn v-bind="props" variant="text" class="toolbar-btn" @click="eliminarFila">
-                <v-icon size="18">mdi-delete</v-icon>
+              <v-btn
+                v-bind="props"
+                variant="text"
+                class="toolbar-btn"
+                @click="abrirNuevaActividadVariante"
+              >
+                <v-icon size="18">mdi-plus-outline</v-icon>
+                <v-icon size="18">mdi-clipboard-text-outline</v-icon>
               </v-btn>
             </template>
-          </v-tooltip>
+          </v-tooltip> -->
+
+          <v-dialog v-model="mostrarModalActividadVariante" fullscreen>
+            <v-card>
+              <v-toolbar>
+                <v-btn icon="mdi-close" @click="cerrarNuevaActividadVariante"></v-btn>
+
+                <v-toolbar-title>Agregar Nueva Actividad/Proceso </v-toolbar-title>
+
+                <v-toolbar-items>
+                  <!-- <v-btn text="Guardar" variant="text"></v-btn> -->
+                </v-toolbar-items>
+              </v-toolbar>
+              <v-card-text>
+                <v-card-text>
+                  <div style="width: 100%; height: 1000px">
+                    <DiagramaPlanificacion :idproyecto="1"></DiagramaPlanificacion>
+                  </div>
+                </v-card-text>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+
           <v-spacer></v-spacer>
           <!--Exportar a Excel-->
           <v-tooltip text="Exportar a Excel" location="bottom">
@@ -130,48 +183,59 @@
 
           <!-- Botonera compacta estilo Excel -->
           <div class="estructura-buttons excel-button-group horizontal-buttons">
-            <!-- Botón Presupuesto -->
-            <v-btn
-              color="#0078D4"
-              variant="flat"
-              size="small"
-              class="excel-button budget-button"
-              @click="mostrarModalPresupuesto"
-            >
-              <template v-slot:prepend>
-                <v-icon size="16">mdi-cash-multiple</v-icon>
+            <v-tooltip text="Ajustar Presupuesto de la Actividad" location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  color="#0078D4"
+                  variant="flat"
+                  size="small"
+                  class="excel-button budget-button"
+                  @click="mostrarModalPresupuesto"
+                >
+                  <template v-slot:prepend>
+                    <v-icon size="16">mdi-cash-multiple</v-icon>
+                  </template>
+                  Presupuesto
+                </v-btn>
               </template>
-              Presupuesto
-            </v-btn>
+            </v-tooltip>
 
-            <!-- Botón PEI -->
-            <v-btn
-              color="#107C10"
-              variant="flat"
-              size="small"
-              class="excel-button pei-button"
-              @click="abrirModalPei"
-            >
-              <template v-slot:prepend>
-                <v-icon size="16">mdi-chart-tree</v-icon>
+            <v-tooltip text="Relacion con el PEI" location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  color="#107C10"
+                  variant="flat"
+                  size="small"
+                  class="excel-button pei-button"
+                  @click="abrirModalPei"
+                >
+                  <template v-slot:prepend>
+                    <v-icon size="16">mdi-chart-tree</v-icon>
+                  </template>
+                  PEI
+                </v-btn>
               </template>
-              PEI
-            </v-btn>
+            </v-tooltip>
 
-            <!-- Botón Estructura (solo para nuevas actividades) -->
-            <v-btn
-              v-if="selectedRowData.id === 0"
-              color="#505A64"
-              variant="flat"
-              size="small"
-              class="excel-button structure-button"
-              @click="abrirModalEstructura"
-            >
-              <template v-slot:prepend>
-                <v-icon size="16">mdi-sitemap</v-icon>
+            <v-tooltip text="Seleccion de indicadores" location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  color="#505A64"
+                  variant="flat"
+                  size="small"
+                  class="excel-button structure-button"
+                  @click="abrirModalEstructura"
+                >
+                  <template v-slot:prepend>
+                    <v-icon size="16">mdi-sitemap</v-icon>
+                  </template>
+                  Estructura
+                </v-btn>
               </template>
-              Estructura
-            </v-btn>
+            </v-tooltip>
 
             <!----Componente Presupuesto-->
             <ComponentPresupuesto
@@ -181,44 +245,44 @@
               @guardarDesglose="guardarDesglosePresupuesto"
             ></ComponentPresupuesto>
           </div>
-
-          <!--Estructura Proyecto-->
+          <!--Relacion de la actividad-->
           <v-dialog v-model="modalEstructura" transition="dialog-bottom-transition" fullscreen>
             <v-card>
               <v-toolbar>
                 <v-btn icon="mdi-close" @click="modalEstructura = false"></v-btn>
-
-                <v-toolbar-title>Estructura Proyecto </v-toolbar-title>
-
-                <v-toolbar-items>
-                  <v-btn text="Guardar" variant="text"></v-btn>
-                </v-toolbar-items>
+                <v-toolbar-title
+                  >Trazado de la Actividad: {{ selectedRowData.codigo }} -
+                  {{ selectedRowData.nombreCorto }}</v-toolbar-title
+                >
               </v-toolbar>
               <v-card-text>
-                <v-card-text style="height: calc(100vh - 64px); padding: 0">
-                  <div style="width: 100%; height: 600px">
-                    <SeleccionEstructuraProyecto></SeleccionEstructuraProyecto>
-                  </div>
-                </v-card-text>
+                <SeleccionEstructuraProyecto
+                  :actividad-id="selectedRowData.id"
+                  :ruta-trazado-inicial="selectedRowData.rutaTrazadoIndicadores"
+                  @actualizar-ruta-trazado="actualizarRutaTrazado"
+                >
+                </SeleccionEstructuraProyecto>
               </v-card-text>
             </v-card>
           </v-dialog>
-          <!--Estructura Proyecto-->
+          <!--Estructura Pei-->
           <v-dialog v-model="modalPei" transition="dialog-bottom-transition" fullscreen>
             <v-card>
               <v-toolbar>
                 <v-btn icon="mdi-close" @click="modalPei = false"></v-btn>
-
-                <v-toolbar-title>Estructura PEi </v-toolbar-title>
-
-                <v-toolbar-items>
-                  <v-btn text="Guardar" variant="text"></v-btn>
-                </v-toolbar-items>
+                <v-toolbar-title
+                  >Estructura PEI: {{ selectedRowData.codigo }} -
+                  {{ selectedRowData.nombreCorto }}</v-toolbar-title
+                >
               </v-toolbar>
               <v-card-text style="height: calc(100vh - 64px); padding: 0">
-                <div style="width: 100%; height: 100%">
-                  <SeleccionEstructuraPei></SeleccionEstructuraPei>
-                </div>
+                <SeleccionEstructuraPei
+                  :objetivo-inicial="objetivoInicialId"
+                  :indicador-inicial="indicadorInicialId"
+                  :factores-criticos-iniciales="selectedRowData.factoresCriticos"
+                  @guardar="manejarSeleccionPei"
+                  @cerrar="modalPei = false"
+                ></SeleccionEstructuraPei>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -266,7 +330,65 @@
       </div>
 
       <!-- Panel Derecho - Contenido Adicional -->
-      <div class="side-panel" v-if="sidePanelVisible"></div>
+      <div class="side-panel" v-if="sidePanelVisible">
+        <v-card variant="outlined" class="ma-4">
+          <v-card-title class="bg-primary">
+            <v-icon icon="mdi-format-list-bulleted-type" class="mr-2"></v-icon>
+            Tipos de Actividad Disponibles
+          </v-card-title>
+
+          <v-card-text class="pa-4">
+            <div class="text-caption text-grey mb-3">
+              Códigos y descripciones de tipos de actividad
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="grey" class="mr-2">NODEF</v-chip>
+              <span>No definido</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="blue" class="mr-2">ACAP</v-chip>
+              <span>Actividad de Capacitacion</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="green" class="mr-2">PRIN</v-chip>
+              <span>Proyecto de Investigacion</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="orange" class="mr-2">AOP</v-chip>
+              <span>Actividad Operativa</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="purple" class="mr-2">CSNS</v-chip>
+              <span>Campaña de Sensibilizacion</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="teal" class="mr-2">PDES</v-chip>
+              <span>Proyecto de Desarrollo</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="red" class="mr-2">AINC</v-chip>
+              <span>Actividad de Incidencia</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-chip size="small" color="indigo" class="mr-2">AART</v-chip>
+              <span>Actividad de Articulacion</span>
+            </div>
+
+            <div class="d-flex align-center">
+              <v-chip size="small" color="brown" class="mr-2">OTRO</v-chip>
+              <span>Otro</span>
+            </div>
+          </v-card-text>
+        </v-card>
+      </div>
     </div>
   </div>
   <!-- Modal de Confirmación Sencillo -->
@@ -316,7 +438,7 @@ import { registerAllModules } from 'handsontable/registry'
 import { registerLanguageDictionary } from 'handsontable/i18n'
 import { esMX } from 'handsontable/i18n'
 import 'handsontable/dist/handsontable.full.css'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 
 import TrazadorActividad from './parciales/TrazadorActividad.vue'
@@ -329,8 +451,14 @@ import { SELECT_OPTIONS } from '@/utility/selectOptions'
 import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
 //Estructuras
 import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
-import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
+import SeleccionEstructuraActividad from './parciales/SeleccionEstructuraActividad.vue'
+import DiagramaPlanificacion from './DiagramaJerarquiaPlanificacion.vue'
 //Actividades Test
+import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
+import { usePlanificacionStore } from '../store/usePlanificacionStore'
+import { storeToRefs } from 'pinia'
+import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
+import ActividadRelacionEstructura from './parciales/ActividadRelacionEstructura.vue'
 
 // Props del componente
 const props = defineProps({
@@ -355,6 +483,12 @@ registerLanguageDictionary(esMX)
 const route = useRoute()
 const idproyecto = route.params.id
 
+//Stores
+const proyectoStore = useProyectoStore()
+const { nodes, edges } = storeToRefs(proyectoStore)
+
+const storePlanificacion = usePlanificacionStore()
+const storeProyecto = useProyectoStore()
 // Composables
 const {
   actividades: actividadesDisponibles,
@@ -363,7 +497,7 @@ const {
   guardarActividadesBulk,
   loading: loadinActividades,
 } = useActividad()
-const { usuarios } = useUsuario()
+const { usuarios, obtenerUsuarios, loading: loadingUsuarios } = useUsuario()
 const { contadorPlan, contarPlanPorIdProyecto } = usePlanificacion()
 
 // Snackbar para mensajes
@@ -372,17 +506,92 @@ const snackbar = ref({
   message: '',
   color: 'success',
 })
-
+/******************** Trazador ****************************************/
+const trazadorRef = ref(null)
+const tablaDataDisponible = ref(false)
 /******************** PEI ******************************************/
 const modalPei = ref(false)
+const objetivoInicialId = ref(null)
+const indicadorInicialId = ref(null)
 const abrirModalPei = () => {
+  // Cargar IDs actuales de la fila seleccionada
+  if (selectedRowData.value) {
+    objetivoInicialId.value = selectedRowData.value.objetivo_pei
+    indicadorInicialId.value = selectedRowData.value.indicador_pei
+  }
   modalPei.value = true
 }
-/********************* Estructura ********************************/
+// Manejar la selección de PEI
+const manejarSeleccionPei = (datosPei) => {
+  if (selectedRowData.value) {
+    const rowIndex = tableData.value.findIndex((row) => row.id === selectedRowData.value.id)
+
+    if (rowIndex !== -1) {
+      // Actualizar la fila con los datos de PEI
+      tableData.value[rowIndex] = {
+        ...tableData.value[rowIndex],
+        objetivo_pei: datosPei.objetivo_pei,
+        indicador_pei: datosPei.indicador_pei,
+        factoresCriticos: datosPei.factoresCriticos,
+      }
+
+      // Forzar actualización de Handsontable
+      if (hotTable.value?.hotInstance) {
+        hotTable.value.hotInstance.render()
+      }
+
+      mostrarMensaje('Estructura PEI actualizada correctamente', 'success')
+    }
+  }
+
+  modalPei.value = false
+}
+/********************* Estructura Nodos ********************************/
 const modalEstructura = ref(false)
 const abrirModalEstructura = () => {
   modalEstructura.value = true
 }
+
+//Agregar nueva actividad
+const mostrarModalActividad = ref(false)
+const abrirNuevaActividad = () => {
+  mostrarModalActividad.value = true
+}
+const cerrarNuevaActividad = () => {
+  mostrarModalActividad.value = false
+}
+
+//Agregar nueva actividad variante
+const mostrarModalActividadVariante = ref(false)
+const abrirNuevaActividadVariante = () => {
+  mostrarModalActividadVariante.value = true
+}
+const cerrarNuevaActividadVariante = () => {
+  mostrarModalActividadVariante.value = false
+}
+
+//Actualizar la ruta de trazado
+const actualizarRutaTrazado = (rutaTrazado) => {
+  if (selectedRowData.value) {
+    const rowIndex = tableData.value.findIndex((row) => row.id === selectedRowData.value.id)
+
+    if (rowIndex !== -1) {
+      // Actualizar la fila con la nueva ruta de trazado
+      tableData.value[rowIndex] = {
+        ...tableData.value[rowIndex],
+        rutaTrazadoIndicadores: rutaTrazado,
+      }
+
+      // Forzar actualización de Handsontable
+      if (hotTable.value?.hotInstance) {
+        hotTable.value.hotInstance.render()
+      }
+
+      mostrarMensaje('Ruta de trazado actualizada correctamente', 'success')
+    }
+  }
+}
+
 /******************** Presupuesto *******************************/
 const mostrarPresupuesto = ref(false)
 const mostrarModalPresupuesto = () => {
@@ -399,19 +608,28 @@ const guardarDesglosePresupuesto = (nuevoDesglose) => {
 
       // Actualizar solo el campo procedencia_fondos de la fila específica
       updatedTableData[rowIndex] = {
-        ...updatedTableData[rowIndex], // Mantener todos los otros campos
-        procedencia_fondos: nuevoDesglose, // Actualizar solo este campo
+        ...updatedTableData[rowIndex],
+        procedencia_fondos: Array.isArray(nuevoDesglose) ? [...nuevoDesglose] : nuevoDesglose,
       }
 
       // Asignar el nuevo array reactivo
       tableData.value = updatedTableData
 
-      console.log('procedencia_fondos actualizado para fila:', rowIndex)
+      // Forzar actualización de Handsontable
+      if (hotTable.value?.hotInstance) {
+        // Actualizar la celda específica
+        hotTable.value.hotInstance.setDataAtCell(rowIndex, 10, nuevoDesglose)
+
+        // Forzar re-renderizado completo
+        hotTable.value.hotInstance.render()
+        hotTable.value.hotInstance.deselectCell()
+
+        console.log('procedencia_fondos actualizado para fila:', rowIndex)
+      }
     }
   }
 
   mostrarPresupuesto.value = false
-  //selectedRowData.value = null
   mostrarMensaje('Desglose de presupuesto guardado correctamente', 'success')
 }
 /***************************************************************/
@@ -447,37 +665,15 @@ const obtenerConfiguracionTabla = () => {
   }
 }
 
+//Guardar procedencia
+const crearActividadPlan = async () => {
+  mostrarMensaje('Actividad creada exitosamente', 'success')
+  refrescarDatos()
+  cerrarNuevaActividad()
+}
+
 // Método para confirmar el guardado - ACTUALIZADO
 const confirmarGuardado = async () => {
-  // guardando.value = true
-  // try {
-  //   // Crear copia simple de los datos sin reactividad
-  //   const datosSimples = JSON.parse(JSON.stringify(tableData.value))
-
-  //   // Preparar la estructura que espera el backend
-  //   const datosEnvio = {
-  //     table_config: obtenerConfiguracionTabla(),
-  //     rows_data: datosSimples,
-  //     razon_cambio: 'Actualización de planificación',
-  //     usuario: 'admin',
-  //   }
-
-  //   // Guardar en el backend
-  //   await guardarActividadesBulk(idproyecto, datosEnvio)
-
-  //   // Mostrar mensaje de éxito
-  //   mostrarMensaje('Planificación guardada exitosamente', 'success')
-
-  //   // REFRESCAR LOS DATOS después de guardar
-  //   await refrescarDatos()
-  // } catch (error) {
-  //   console.error('Error:', error)
-  //   mostrarMensaje('Error al guardar: ' + error.message, 'error')
-  // } finally {
-  //   guardando.value = false
-  //   confirmacionModal.value = false
-  // }
-
   guardando.value = true
   try {
     // Crear copia simple de los datos sin reactividad
@@ -563,38 +759,41 @@ const reprogramarPlanificacion = async () => {
 }
 
 const agregarNuevaActividad = () => {
-  tableData.value.push({
-    id: 0,
-    responsable: '',
-    proyecto: idproyecto,
-    codigo: 'ACT-',
-    nombreCorto: 'Actividad',
-    descripcion: 'Describir',
-    supuestos: '',
-    riesgos: '',
-    objetivo_de_actividad: '',
-    descripcion_evaluacion: '',
-    descripcion_tipo_actividad: null,
-    tipo: 'NODEF',
-    fecha_programada: null,
-    fecha_inicio: null,
-    fecha_cierre: null,
-    presupuesto: 0,
-    presupuestoGlobal: 0,
-    totalReportado: 0,
-    totalEjecutado: 0,
-    saldo: 0,
-    gradoEjecucion: null,
-    procedencia_fondos: null,
-    estado: 'CRD',
-    proceso: null,
-    resultado_og: null,
-    resultado_oe: null,
-    producto_oe: null,
-    objetivo_pei: null,
-    indicador_pei: null,
-  })
-  mostrarMensaje('Nueva actividad agregada', 'info')
+  // tableData.value.push({
+  //   id: 0,
+  //   responsable: '',
+  //   proyecto: idproyecto,
+  //   codigo: 'ACT-',
+  //   nombreCorto: 'Actividad',
+  //   descripcion: 'Describir',
+  //   supuestos: '',
+  //   riesgos: '',
+  //   objetivo_de_actividad: '',
+  //   descripcion_evaluacion: '',
+  //   descripcion_tipo_actividad: null,
+  //   tipo: 'NODEF',
+  //   fecha_programada: null,
+  //   fecha_inicio: null,
+  //   fecha_cierre: null,
+  //   presupuesto: 0,
+  //   presupuestoGlobal: 0,
+  //   totalReportado: 0,
+  //   totalEjecutado: 0,
+  //   saldo: 0,
+  //   gradoEjecucion: null,
+  //   procedencia_fondos: null,
+  //   estado: 'CRD',
+  //   proceso: null,
+  //   resultado_og: null,
+  //   resultado_oe: null,
+  //   producto_oe: null,
+  //   objetivo_pei: null,
+  //   indicador_pei: null,
+  // })
+  // mostrarMensaje('Nueva actividad agregada', 'info')
+
+  modalEstructura.value = true
+  mostrarMensaje('Actividad')
 }
 
 const eliminarFila = async () => {
@@ -643,7 +842,7 @@ usernameDropdown.value = usuarios.value.map((item) => item.username)
 
 // Configuración de columnas
 const columns = ref([
-  { data: 'id', title: 'Id', type: 'numeric', width: 50 },
+  { data: 'id', title: 'Id', type: 'numeric', width: 50, readOnly: true },
   { data: 'codigo', title: 'Código', width: 100 },
   { data: 'nombreCorto', title: 'Nombre', width: 100 },
   {
@@ -651,14 +850,34 @@ const columns = ref([
     title: 'Tipo de Actividad',
     type: 'dropdown',
     width: 110,
-    source: tipoActividad,
+    source: function (query, process) {
+      const tipos = storePlanificacion.listaTiposAct
+      const siglas = tipos ? tipos.map((t) => t.sigla) : []
+      process(siglas)
+    },
   },
   {
     data: 'responsable',
     title: 'Responsable',
     type: 'dropdown',
     width: 110,
-    source: ['admin', 'oscar'],
+    source: function (query, process) {
+      // Asegúrate de que el store tenga los usuarios cargados
+      const usernames = storePlanificacion.listaUsuariosCompleta
+        .filter((user) => user.is_active !== false)
+        .map((user) => user.username)
+        .filter((username) => username)
+        .sort()
+
+      if (query) {
+        const filtered = usernames.filter((username) =>
+          username.toLowerCase().includes(query.toLowerCase()),
+        )
+        process(filtered)
+      } else {
+        process(usernames)
+      }
+    },
   },
   {
     data: 'fecha_inicio',
@@ -741,6 +960,26 @@ const columns = ref([
     },
     editor: false,
   },
+  //   objetivo_pei: null,
+  //   indicador_pei: null,
+  {
+    data: 'objetivo_pei',
+    title: 'Objetivo PEI',
+    type: 'numeric',
+    readOnly: true,
+  },
+  {
+    data: 'indicador_pei',
+    title: 'Indicador PEI',
+    type: 'numeric',
+    readOnly: true,
+  },
+  {
+    data: 'rutaTrazadoIndicadores',
+    title: 'Ruta e indicadores',
+    readOnly: true,
+  },
+  { data: 'factoresCriticos', title: 'Factores criticos', readOnly: true },
 ])
 
 const headers = ref(true)
@@ -770,6 +1009,17 @@ const accionBoton = (row) => {
   mostrarMensaje('Funcionalidad de medios de verificación', 'info')
 }
 
+// Cuando la tabla esté disponible (después de cargar datos)
+const onTablaCargada = () => {
+  // Esperar al siguiente tick para asegurar que el componente esté montado
+  nextTick(() => {
+    if (trazadorRef.value) {
+      // Indicar al componente TrazadorActividad que los datos están disponibles
+      trazadorRef.value.setTablaDataDisponible(true)
+    }
+  })
+}
+
 // Carga de datos
 const isLoading = ref(true)
 const err = ref(null)
@@ -780,12 +1030,17 @@ const cargar = async () => {
     await Promise.all([
       cargarActividadesPorIdProyecto(idproyecto),
       contarPlanPorIdProyecto(idproyecto),
+      storePlanificacion.obtenerListaUsuarios(),
     ])
+
+    await storePlanificacion.obtenerListaUsuarios()
+    await storePlanificacion.listaTiposDeActividad()
 
     // COMPROBADOR: Solo cargar tableData si hay actividades disponibles
     if (actividadesDisponibles.value && actividadesDisponibles.value.length > 0) {
       tableData.value = [...actividadesDisponibles.value]
       actividadesDisponibles.value = []
+      onTablaCargada()
     }
   } catch (e) {
     console.error('Error al cargar:', e)
@@ -793,11 +1048,44 @@ const cargar = async () => {
     mostrarMensaje('Error al cargar actividades', 'error')
   } finally {
     isLoading.value = false
+    tablaDataDisponible.value = true
   }
 }
 
+// Computed para los tipos de actividad - FORMA CORRECTA
+const tiposActividadStore = computed(() => {
+  console.log('Lista tipos del store:', listaTiposAct.value)
+  console.log('Siglas del store:', siglasTiposActividad.value)
+
+  // Verificar si hay datos en el store
+  if (listaTiposAct.value && listaTiposAct.value.length > 0) {
+    // Extraer las siglas/códigos de los tipos
+    const siglas = listaTiposAct.value.map(
+      (tipo) => tipo.codigo || tipo.siglas || tipo.nombre_corto || tipo.nombre,
+    )
+    console.log('Siglas extraídas:', siglas)
+    return siglas
+  }
+
+  // Si el store está vacío, verificar siglasTiposActividad
+  if (siglasTiposActividad.value && siglasTiposActividad.value.length > 0) {
+    console.log('Usando siglasTiposActividad:', siglasTiposActividad.value)
+    return siglasTiposActividad.value
+  }
+
+  // Fallback final a los tipos estáticos
+  console.log('Usando fallback estático')
+  return SELECT_OPTIONS.tipo_actividad
+})
+console.log(tiposActividadStore)
+
 onMounted(() => {
   cargar()
+  // Verificar después de un tiempo que los usuarios se cargaron
+  setTimeout(() => {
+    console.log('Usuarios en store:', storePlanificacion.listaUsuariosCompleta)
+    console.log('Usernames para dropdown:', storePlanificacion.usernamesParaDropdown)
+  }, 2000)
 })
 
 /*************** Manejo de cambios *************************/
