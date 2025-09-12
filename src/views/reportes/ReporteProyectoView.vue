@@ -11,7 +11,7 @@
         Generar Reporte
       </v-btn>
     </div>
-    <diagrama-reportes v-if="!cargando" :id-proyecto="idproyecto"></diagrama-reportes>
+    <diagrama-reportes v-if="store.diagrama" :id-proyecto="proyecto_id"></diagrama-reportes>
 
     <v-row>
       <!-- Panel de selección -->
@@ -153,6 +153,7 @@ import DiagramaReportesGraficoMain from '@/modules/reportes/components/DiagramaR
 // Inicializar las rutas y obtener el id de proyecto
 const ruta = useRoute()
 const idproyecto = ruta.params.id
+const proyecto_id = ref()
 console.log(idproyecto)
 
 //Inicializar el store
@@ -264,6 +265,7 @@ onMounted(async () => {
     await cargarDatos()
   }
 })
+console.log(store.diagrama.id)
 
 const cargando = ref(true)
 //Cargar datos
@@ -273,6 +275,7 @@ const cargarDatos = async () => {
     await store.obtenerDiagramaPorId(idproyecto)
     if (store.diagrama) {
       nodosDisponibles.value = store.diagrama.nodos
+      proyecto_id.value = store.diagrama.id
     }
   } catch (err) {
     console.error(err)

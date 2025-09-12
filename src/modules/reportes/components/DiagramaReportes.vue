@@ -344,6 +344,16 @@ const cargarDatos = async () => {
     isLoading.value = false
   }
 }
+
+watch(
+  () => props.idProyecto,
+  (newId) => {
+    if (newId) {
+      console.log('ID del proyecto cambiado:', newId)
+      cargarDatos() // Ahora cargarDatos está definida
+    }
+  },
+)
 </script>
 
 <style scoped>
