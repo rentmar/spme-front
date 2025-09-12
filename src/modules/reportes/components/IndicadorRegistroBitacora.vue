@@ -31,6 +31,7 @@
             ></v-select>
           </v-card-text>
         </v-card>
+
         <!-- Informacion del Indicador Seleccionado-->
         <v-card v-if="indicadorSeleccionado" flat class="ma-4">
           <v-card-title class="text-h6 font-weight-medium">Información del Indicador</v-card-title>
@@ -66,22 +67,6 @@
                     <v-list-item-title>{{ indicadorSeleccionado.tipo }}</v-list-item-title>
                     <v-list-item-subtitle>TIPO</v-list-item-subtitle>
                   </v-list-item>
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon color="primary">mdi-format-list-numbered</v-icon>
-                    </template>
-                    <v-list-item-title>{{ indicadorSeleccionado.frecuencia }}</v-list-item-title>
-                    <v-list-item-subtitle>Frecuencia</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon color="primary">mdi-format-list-numbered</v-icon>
-                    </template>
-                    <v-list-item-title>{{
-                      indicadorSeleccionado.fuente_verificacion
-                    }}</v-list-item-title>
-                    <v-list-item-subtitle>Fuente de Verificacion</v-list-item-subtitle>
-                  </v-list-item>
                 </v-list>
               </v-col>
               <v-col cols="12" md="6">
@@ -91,82 +76,27 @@
                       <v-icon color="primary">mdi-target</v-icon>
                     </template>
                     <v-list-item-title>{{
-                      indicadorSeleccionado.target_poblacion
+                      indicadorSeleccionado.meta || 'No definida'
                     }}</v-list-item-title>
-                    <v-list-item-subtitle>Target</v-list-item-subtitle>
+                    <v-list-item-subtitle>Meta</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item>
                     <template v-slot:prepend>
                       <v-icon color="primary">mdi-calendar</v-icon>
                     </template>
                     <v-list-item-title>{{
-                      formatFecha(indicadorSeleccionado.fechaTargetPoblacion)
+                      indicadorSeleccionado.frecuencia || 'No definida'
                     }}</v-list-item-title>
-                    <v-list-item-subtitle>Fecha del Target</v-list-item-subtitle>
+                    <v-list-item-subtitle>Frecuencia</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item>
                     <template v-slot:prepend>
-                      <v-icon color="primary">mdi-target</v-icon>
-                    </template>
-                    <v-list-item-title>{{ indicadorSeleccionado.baseline }}</v-list-item-title>
-                    <v-list-item-subtitle>Baseline</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon color="primary">mdi-calendar</v-icon>
+                      <v-icon color="primary">mdi-source-repository</v-icon>
                     </template>
                     <v-list-item-title>{{
-                      formatFecha(indicadorSeleccionado.fechaLineaBase)
+                      indicadorSeleccionado.fuente_verificacion || 'No definida'
                     }}</v-list-item-title>
-                    <v-list-item-subtitle>Fecha del baseline</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon color="primary">mdi-target</v-icon>
-                    </template>
-                    <v-list-item-title>{{ indicadorSeleccionado.target_q1 }}</v-list-item-title>
-                    <v-list-item-subtitle>Target Q1</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon color="primary">mdi-calendar</v-icon>
-                    </template>
-                    <v-list-item-title>{{
-                      formatFecha(indicadorSeleccionado.fechaTargetQ1)
-                    }}</v-list-item-title>
-                    <v-list-item-subtitle>Fecha del Target Q1</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon color="primary">mdi-target</v-icon>
-                    </template>
-                    <v-list-item-title>{{ indicadorSeleccionado.target_q2 }}</v-list-item-title>
-                    <v-list-item-subtitle>Target Q2</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon color="primary">mdi-calendar</v-icon>
-                    </template>
-                    <v-list-item-title>{{
-                      formatFecha(indicadorSeleccionado.fechaTargetQ3)
-                    }}</v-list-item-title>
-                    <v-list-item-subtitle>Fecha del Target Q2</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon color="primary">mdi-target</v-icon>
-                    </template>
-                    <v-list-item-title>{{ indicadorSeleccionado.target_q1 }}</v-list-item-title>
-                    <v-list-item-subtitle>Target Q3</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon color="primary">mdi-calendar</v-icon>
-                    </template>
-                    <v-list-item-title>{{
-                      formatFecha(indicadorSeleccionado.fechaTargetQ1)
-                    }}</v-list-item-title>
-                    <v-list-item-subtitle>Fecha del Target Q3</v-list-item-subtitle>
+                    <v-list-item-subtitle>Fuente de Verificacion</v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
               </v-col>
@@ -175,7 +105,7 @@
         </v-card>
 
         <!-- Formulario y bitácora -->
-        <v-card v-if="indicadorSeleccionadoData" flat class="ma-4">
+        <v-card v-if="indicadorSeleccionado" flat class="ma-4">
           <v-card-title class="text-h6 font-weight-medium">Registro de Avance</v-card-title>
           <v-card-text>
             <v-row>
@@ -187,7 +117,7 @@
                     <v-form ref="formAvance" v-model="formValido">
                       <v-text-field
                         v-model="nuevoAvance.valor"
-                        :label="`Valor de avance (${indicadorSeleccionadoData.unidadMedida})`"
+                        :label="`Valor de avance (${unidadMedida})`"
                         variant="outlined"
                         type="number"
                         :rules="[reglaRequerido, reglaValorPositivo]"
@@ -271,9 +201,7 @@
                           <v-avatar color="primary" size="40">
                             <span class="white--text"
                               >{{ registro.valor
-                              }}{{
-                                indicadorSeleccionadoData.unidadMedida === 'Porcentaje' ? '%' : ''
-                              }}</span
+                              }}{{ unidadMedida === 'Porcentaje' ? '%' : '' }}</span
                             >
                           </v-avatar>
                         </template>
@@ -304,11 +232,7 @@
         </v-card>
 
         <!-- Gráfica de avance -->
-        <v-card
-          v-if="indicadorSeleccionadoData && bitacoraIndicador.length > 0"
-          flat
-          class="ma-4 mb-8"
-        >
+        <v-card v-if="indicadorSeleccionado && bitacoraIndicador.length > 0" flat class="ma-4 mb-8">
           <v-card-title class="text-h6 font-weight-medium">Evolución del Avance</v-card-title>
           <v-card-text>
             <div style="height: 300px">
@@ -466,7 +390,6 @@ let chartInstance = null
 
 // Datos del indicador seleccionado
 const indicadorSeleccionado = ref(null)
-const indicadorSeleccionadoData = ref(null)
 const bitacoraIndicador = ref([])
 const indicadorYaRegistrado = ref(false)
 
@@ -488,39 +411,10 @@ const indicadoresParaSelect = computed(() => {
   return storeIndicadores.getIndicadoresForSelect()
 })
 
-// Datos de ejemplo para los indicadores
-const indicadores = ref([
-  {
-    id: 1,
-    nombre: 'Porcentaje de cumplimiento',
-    tipo: 'Porcentual',
-    meta: 100,
-    avanceActual: 75,
-    unidadMedida: 'Porcentaje',
-    ultimaActualizacion: '2023-05-20',
-    responsable: 'Ana García',
-  },
-  {
-    id: 2,
-    nombre: 'Cantidad de unidades producidas',
-    tipo: 'Numérico',
-    meta: 500,
-    avanceActual: 320,
-    unidadMedida: 'Unidades',
-    ultimaActualizacion: '2023-05-18',
-    responsable: 'Carlos López',
-  },
-  {
-    id: 3,
-    nombre: 'Tiempo promedio de atención',
-    tipo: 'Tiempo',
-    meta: 15,
-    avanceActual: 18,
-    unidadMedida: 'Minutos',
-    ultimaActualizacion: '2023-05-19',
-    responsable: 'María Rodríguez',
-  },
-])
+const unidadMedida = computed(() => {
+  if (!indicadorSeleccionado.value) return ''
+  return indicadorSeleccionado.value.tipo === 'Porcentual' ? 'Porcentaje' : 'Unidades'
+})
 
 // Datos de ejemplo para las bitácoras
 const datosBitacora = {
@@ -605,9 +499,8 @@ watch(
 // Observador para cambios en el indicador seleccionado
 watch(indicadorSeleccionado, (newVal) => {
   if (newVal) {
-    cargarDatosIndicador(newVal)
+    cargarDatosIndicador(newVal.id)
   } else {
-    indicadorSeleccionadoData.value = null
     bitacoraIndicador.value = []
   }
 })
@@ -617,7 +510,6 @@ watch(indicadorSeleccionado, (newVal) => {
  */
 const reiniciarEstado = () => {
   indicadorSeleccionado.value = null
-  indicadorSeleccionadoData.value = null
   bitacoraIndicador.value = []
   avancesRegistrados.value = []
   indicadorYaRegistrado.value = false
@@ -632,19 +524,11 @@ const reiniciarEstado = () => {
  * Carga los datos del indicador seleccionado
  */
 const cargarDatosIndicador = (indicadorId) => {
-  // Buscar el indicador en la lista
-  const indicador = indicadores.value.find((i) => i.id === indicadorId)
-  if (indicador) {
-    indicadorSeleccionadoData.value = { ...indicador }
+  // Cargar bitácora del indicador
+  cargarBitacoraIndicador(indicadorId)
 
-    // Cargar bitácora del indicador
-    cargarBitacoraIndicador(indicadorId)
-
-    // Verificar si ya se registró un avance para este indicador
-    indicadorYaRegistrado.value = avancesRegistrados.value.some(
-      (a) => a.indicadorId === indicadorId,
-    )
-  }
+  // Verificar si ya se registró un avance para este indicador
+  indicadorYaRegistrado.value = avancesRegistrados.value.some((a) => a.indicadorId === indicadorId)
 }
 
 /**
@@ -699,7 +583,6 @@ const crearGraficaAvance = () => {
       scales: {
         y: {
           beginAtZero: true,
-          max: indicadorSeleccionadoData.value.meta * 1.1, // 10% más que la meta
         },
       },
     },
@@ -713,11 +596,11 @@ const agregarAvance = async () => {
   if (!formValido.value) return
 
   const avance = {
-    indicadorId: indicadorSeleccionado.value,
+    indicadorId: indicadorSeleccionado.value.id,
     valor: parseFloat(nuevoAvance.value.valor),
     observaciones: nuevoAvance.value.observaciones,
     fecha: nuevoAvance.value.fecha,
-    unidadMedida: indicadorSeleccionadoData.value.unidadMedida,
+    unidadMedida: unidadMedida.value,
     usuario: 'Usuario Actual',
   }
 
@@ -809,6 +692,7 @@ const cerrarSinGuardar = () => {
  * Formatea una fecha para mostrar
  */
 const formatFecha = (fecha) => {
+  if (!fecha) return 'No definida'
   return new Date(fecha).toLocaleDateString('es-ES', {
     day: '2-digit',
     month: '2-digit',
@@ -830,8 +714,8 @@ const formatFechaCorta = (fecha) => {
  * Obtiene el nombre de un indicador por su ID
  */
 const obtenerNombreIndicador = (id) => {
-  const indicador = indicadores.value.find((i) => i.id === id)
-  return indicador ? indicador.nombre : 'Indicador desconocido'
+  const indicador = indicadoresParaSelect.value.find((i) => i.id === id)
+  return indicador ? indicador.descripcion : 'Indicador desconocido'
 }
 
 /******************** Cargar datos ***************************/
