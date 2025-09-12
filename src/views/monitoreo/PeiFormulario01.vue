@@ -44,10 +44,6 @@
               <v-toolbar-title class="text-white">Información General</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="pa-4">
-              <!-- <div class="info-item mb-3">
-                <div class="text-subtitle-2 text-medium-emphasis">Proyecto:</div>
-                <div class="text-body-1 font-weight-medium">{{ proyectoData.codigo }}</div>
-              </div> -->
               <div class="info-item mb-3">
                 <div class="text-subtitle-2 text-medium-emphasis">Actividad:</div>
                 <div class="text-body-1 font-weight-medium">
@@ -61,12 +57,6 @@
                   {{ datosFormulario.actividad.estado }}
                 </v-chip>
               </div>
-              <!-- <div class="info-item">
-                <div class="text-subtitle-2 text-medium-emphasis">Fecha solicitud:</div>
-                <div class="text-body-1 font-weight-medium">
-                  {{ new Date().toLocaleDateString() }}
-                </div>
-              </div> -->
             </v-card-text>
           </v-card>
 
@@ -220,7 +210,7 @@
                     required
                   ></v-textarea>
                   <v-text-field
-                    v-model="formData.fuente_financiamiento"
+                    v-model="formData.fuente_financiamiento.mensaje"
                     label="Fuente de Financiamiento"
                     variant="outlined"
                     density="compact"
@@ -228,17 +218,17 @@
                     readonly
                   ></v-text-field>
 
-                                      <v-col cols="12" md="4">
-                      <v-text-field
-                        v-model="formData.fecha_frealizacion1"
-                        label="Fecha de ejecucion de actividad"
-                        type="date"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
+                  <v-col cols="12" md="4">
+                    <v-text-field
+                      v-model="formData.fecha_ejecucion"
+                      label="Fecha de ejecucion de actividad"
+                      type="date"
+                      variant="outlined"
+                      density="compact"
+                      bg-color="blue-lighten-5"
+                      readonly
+                    ></v-text-field>
+                  </v-col>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -283,7 +273,7 @@
                     </thead>
                     <tbody>
                       <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
-                        <td>
+                        <td class="narrow-column">
                           <v-text-field
                             v-model="gasto.partida"
                             variant="outlined"
@@ -291,9 +281,10 @@
                             hide-details
                             bg-color="blue-lighten-5"
                             placeholder="1.1.1"
+                            class="compact-field"
                           ></v-text-field>
                         </td>
-                        <td>
+                        <td class="wide-column">
                           <v-text-field
                             v-model="gasto.descripcion_gasto"
                             variant="outlined"
@@ -303,7 +294,7 @@
                             placeholder="Descripción del gasto"
                           ></v-text-field>
                         </td>
-                        <td>
+                        <td class="narrow-column">
                           <v-text-field
                             v-model.number="gasto.monto"
                             type="number"
@@ -313,9 +304,10 @@
                             bg-color="blue-lighten-5"
                             placeholder="0.00"
                             min="0"
+                            class="compact-field"
                           ></v-text-field>
                         </td>
-                        <td class="text-center">
+                        <td class="text-center action-column">
                           <v-btn
                             icon
                             color="error"
@@ -429,7 +421,7 @@
 
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
-                  <v-btn color="error" variant="outlined" size="large" prepend-icon="mdi-cancel">
+                  <v-btn color="error" variant="outlined" size="large" prepend-icon="mdi-cancel" :to="`/pei/listaactividades`">
                     Cancelar
                   </v-btn>
                   <v-btn
@@ -459,21 +451,25 @@
       </v-row>
     </div>
   </v-container>
-  <!-- {{ datosFormulario }} -->
+  <!-- {{ formData.fuente_financiamiento.mensaje }}-->
+  {{ '*******************' }}
+   <!-- {{ numeroFormularioSF }} -->
+  <pre>{{ datosFormulario }}</pre>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import * as XLSX from 'xlsx'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
+const router = useRouter()
 const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
-console.log('ID de Actividad desde la ruta:', idActividad)
+console.log('ID de Actividad:', idActividad)
 console.log('ID de Tarea:', idTarea)
 
 //variables para carga de datos
@@ -500,6 +496,7 @@ const formData = ref({
   objetivo_actividad: '',
   fecha_irealizacion: '',
   fecha_frealizacion: '',
+  fecha_ejecucion: '',
   fuente_financiamiento: '',
   id_actividad: 0,
   id_usuario: 0,
@@ -515,17 +512,10 @@ const formData = ref({
   idcoordinador: null,
 })
 
-// const proyectoData = ref({
-//   titulo: 'Formulario F-01: Solicitud de Fondos',
-//   codigo: 'F-01',
-//   estado: 'en_proceso',
-//   fecha_inicio: new Date().toISOString().split('T')[0],
-//   fecha_finalizacion: new Date().toISOString().split('T')[0],
-//   creado_por: 'Usuario Actual',
-//   presupuesto: '0.00',
-//   instancia_gestora: [],
-//   pei: null,
-// })
+//datos para abrir Solicitud de Fondos
+const idSolicitudFondos = ref(null)
+const numeroFormularioSF = ref(null)
+// Nuevo estado para controlar el bloqueo
 
 const actividadData = ref({
   codigo: 'ACT-2023-005',
@@ -568,7 +558,7 @@ const isFrozen = computed(() => {
   return true
 })
 
-// ✅ WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
+// WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
 watch(
   datosFormulario,
   (newVal) => {
@@ -744,9 +734,20 @@ async function submitForm() {
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`)
     }
-    exportToExcel()
+
     const data = await response.json()
+    idSolicitudFondos.value = data.id
+    numeroFormularioSF.value = data.numero_formulario
+    //bloquearIconoSF.value = true;
+    exportToExcel()
+    resetForm();
     console.log('Respuesta del servidor:', data)
+
+    setTimeout(() => {
+      router.push('/pei/listaactividades')
+    }, 1000)
+
+    return data
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message)
     alert(`Error: ${error.response?.data?.mensaje || error.message}`)
@@ -768,8 +769,8 @@ function resetForm() {
     idresponsable: null,
     validacion_coordinador: false,
     idcoordinador: null,
-    id_usuario: 0,
-    id_actividad: 0,
+    //id_usuario: 0,
+    //id_actividad: 0,
   })
 }
 
@@ -778,6 +779,7 @@ function exportToExcel() {
   const mainData = [
     ['FORMULARIO F-01: SOLICITUD DE FONDOS EN AVANCE CON CARGO A RENDICIÓN DE CUENTA', '', '', ''],
     [''],
+    ['FORMULARIO Nro:', numeroFormularioSF, '', ''],
     ['INFORMACIÓN DEL SOLICITANTE', '', '', ''],
     ['Nombre Completo:', nombreCompletoSolicitante.value, '', ''],
     ['Documento de Identidad:', formData.value.documento_identidad, '', ''],
@@ -798,7 +800,6 @@ function exportToExcel() {
     ['Forma de Pago:', formasPagoTexto.value, '', ''],
     ['Lugar de Solicitud:', formData.value.lugar_solicitud, '', ''],
     ['Fecha de Solicitud:', getCurrentDate1(), '', ''],
-    ['Monto Total Solicitado:', `Bs. ${totalMontoSolicitado.value.toLocaleString()}`, '', ''],
     [''],
     ['FIRMAS Y VALIDACIONES', '', '', ''],
     [
@@ -1105,5 +1106,22 @@ onMounted(async () => {
 :deep(.v-table td) {
   padding: 12px;
   background-color: #fafafa;
+}
+
+.narrow-column {
+  width: 15%;
+}
+
+.wide-column {
+  width: 50%;
+}
+
+.action-column {
+  width: 15%;
+}
+
+.compact-field {
+  font-size: 14px;
+  max-width: 100px;
 }
 </style>

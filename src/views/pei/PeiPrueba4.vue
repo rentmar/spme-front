@@ -3,8 +3,8 @@
     <v-main>
       <v-container class="pa-6">
         <!-- Header -->
-        <v-row class="mb-6">
-          <v-col cols="12" class="text-center">
+        <v-row class="mb-6 text-center">
+          <v-col cols="12">
             <h1 class="text-h4 primary--text">Sistema de Fondos</h1>
             <p class="text-subtitle-1 grey--text">Gestión de solicitudes y rendiciones</p>
           </v-col>
@@ -13,22 +13,15 @@
         <!-- Botones de acción principales -->
         <v-row class="mb-8" justify="center">
           <v-col cols="auto">
-            <v-btn
-              color="primary"
-              large
-              @click="dialogSolicitud = true"
-              class="mx-2"
-            >
+            <v-btn color="primary" large @click="nuevaSolicitud" class="mx-2" :disabled="bloquearNuevaSolicitud">
               <v-icon left>mdi-cash-plus</v-icon>
               Nueva Solicitud
+              <v-tooltip v-if="bloquearNuevaSolicitud" activator="parent" location="bottom">
+                Complete la rendición de la solicitud actual para crear una nueva
+              </v-tooltip>
             </v-btn>
-            <v-btn
-              color="secondary"
-              large
-              @click="mostrarTodasSolicitudes"
-              class="mx-2"
-              :disabled="solicitudes.length === 0"
-            >
+            <v-btn color="secondary" large @click="mostrarTodasSolicitudes" class="mx-2"
+              :disabled="!solicitudes.length">
               <v-icon left>mdi-format-list-bulleted</v-icon>
               Ver Todas
             </v-btn>
@@ -36,10 +29,9 @@
         </v-row>
 
         <!-- Tarjetas de solicitudes -->
-        <v-row v-if="solicitudes.length > 0">
+        <v-row v-if="solicitudes.length">
           <v-col v-for="solicitud in solicitudes" :key="solicitud.id" cols="12" md="6" lg="4">
             <v-card class="solicitud-card" :class="{'completada': solicitud.rendicion}">
-
               <v-card-title class="d-flex justify-space-between">
                 <span>Solicitud #{{ solicitud.id }}</span>
                 <v-chip small :color="solicitud.rendicion ? 'success' : 'warning'">
@@ -48,15 +40,9 @@
               </v-card-title>
 
               <v-card-text>
-                <div class="mb-2">
-                  <strong>Monto:</strong> {{ formatCurrency(solicitud.monto) }}
-                </div>
-                <div class="mb-2">
-                  <strong>Motivo:</strong> {{ solicitud.motivo }}
-                </div>
-                <div class="mb-2">
-                  <strong>Fecha:</strong> {{ formatDate(solicitud.fecha) }}
-                </div>
+                <div class="mb-2"><strong>Monto:</strong> {{ formatCurrency(solicitud.monto) }}</div>
+                <div class="mb-2"><strong>Motivo:</strong> {{ solicitud.motivo }}</div>
+                <div class="mb-2"><strong>Fecha:</strong> {{ formatDate(solicitud.fecha) }}</div>
                 <div v-if="solicitud.descripcion" class="mb-2">
                   <strong>Descripción:</strong> {{ solicitud.descripcion }}
                 </div>
@@ -64,15 +50,12 @@
 
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" text @click="editarSolicitud(solicitud)">
-                  <v-icon small>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn color="green" text @click="abrirRendicion(solicitud)" :disabled="!!solicitud.rendicion">
+                <v-btn color="green" text @click="abrirRendicion(solicitud)"
+                       :disabled="!!solicitud.rendicion">
                   <v-icon small>mdi-cash-check</v-icon>
                   Rendición
                 </v-btn>
               </v-card-actions>
-
             </v-card>
           </v-col>
         </v-row>
@@ -91,65 +74,34 @@
           <v-card>
             <v-card-title class="headline primary white--text">
               <v-icon left color="white">mdi-cash-plus</v-icon>
-              {{ esEdicion ? 'Editar' : 'Nueva' }} Solicitud de Fondos
+              Nueva Solicitud de Fondos
             </v-card-title>
 
             <v-card-text class="pa-4">
               <v-form ref="formSolicitud" v-model="validoSolicitud">
                 <v-row>
                   <v-col cols="12" md="6">
-                    <v-text-field
-                      v-model="solicitudActual.monto"
-                      label="Monto solicitado"
-                      type="number"
-                      prefix="$"
-                      :rules="[reglas.requerido, reglas.montoMinimo]"
-                      required
-                    ></v-text-field>
+                    <v-text-field v-model="solicitudActual.monto" label="Monto solicitado" type="number" prefix="$"
+                      :rules="[v => !!v || 'Requerido', v => v > 0 || 'Monto mayor a 0']" required />
                   </v-col>
 
                   <v-col cols="12" md="6">
-                    <v-menu
-                      v-model="menuFecha"
-                      :close-on-content-click="false"
-                      transition="scale-transition"
-                      offset-y
-                      min-width="auto"
-                    >
+                    <v-menu v-model="menuFecha" :close-on-content-click="false" transition="scale-transition" offset-y>
                       <template v-slot:activator="{ on, attrs }">
-                        <v-text-field
-                          v-model="solicitudActual.fecha"
-                          label="Fecha de solicitud"
-                          prepend-icon="mdi-calendar"
-                          readonly
-                          v-bind="attrs"
-                          v-on="on"
-                          :rules="[reglas.requerido]"
-                        ></v-text-field>
+                        <v-text-field v-model="solicitudActual.fecha" label="Fecha de solicitud" prepend-icon="mdi-calendar"
+                          readonly v-bind="attrs" v-on="on" :rules="[v => !!v || 'Requerido']" />
                       </template>
-                      <v-date-picker
-                        v-model="solicitudActual.fecha"
-                        @input="menuFecha = false"
-                        locale="es"
-                      ></v-date-picker>
+                      <v-date-picker v-model="solicitudActual.fecha" @input="menuFecha = false" locale="es" />
                     </v-menu>
                   </v-col>
 
                   <v-col cols="12">
-                    <v-text-field
-                      v-model="solicitudActual.motivo"
-                      label="Motivo de la solicitud"
-                      :rules="[reglas.requerido]"
-                      required
-                    ></v-text-field>
+                    <v-text-field v-model="solicitudActual.motivo" label="Motivo de la solicitud"
+                      :rules="[v => !!v || 'Requerido']" required />
                   </v-col>
 
                   <v-col cols="12">
-                    <v-textarea
-                      v-model="solicitudActual.descripcion"
-                      label="Descripción detallada"
-                      rows="3"
-                    ></v-textarea>
+                    <v-textarea v-model="solicitudActual.descripcion" label="Descripción detallada" rows="3" />
                   </v-col>
                 </v-row>
               </v-form>
@@ -158,13 +110,7 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="grey" text @click="cerrarDialogSolicitud">Cancelar</v-btn>
-              <v-btn
-                color="primary"
-                @click="guardarSolicitud"
-                :disabled="!validoSolicitud"
-              >
-                {{ esEdicion ? 'Actualizar' : 'Crear' }} Solicitud
-              </v-btn>
+              <v-btn color="primary" @click="guardarSolicitud" :disabled="!validoSolicitud">Crear Solicitud</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -188,61 +134,28 @@
               <v-form ref="formRendicion" v-model="validoRendicion">
                 <v-row>
                   <v-col cols="12" md="6">
-                    <v-text-field
-                      v-model="rendicionActual.montoUtilizado"
-                      label="Monto utilizado"
-                      type="number"
-                      prefix="$"
-                      :rules="[reglas.requerido, reglas.montoValido]"
-                      required
-                    ></v-text-field>
+                    <v-text-field v-model="rendicionActual.montoUtilizado" label="Monto utilizado" type="number" prefix="$"
+                      :rules="[v => !!v || 'Requerido', v => v <= solicitudActual.monto || 'No mayor al solicitado']" required />
                   </v-col>
 
                   <v-col cols="12" md="6">
-                    <v-menu
-                      v-model="menuFechaRendicion"
-                      :close-on-content-click="false"
-                      transition="scale-transition"
-                      offset-y
-                      min-width="auto"
-                    >
+                    <v-menu v-model="menuFechaRendicion" :close-on-content-click="false" transition="scale-transition" offset-y>
                       <template v-slot:activator="{ on, attrs }">
-                        <v-text-field
-                          v-model="rendicionActual.fecha"
-                          label="Fecha de rendición"
-                          prepend-icon="mdi-calendar"
-                          readonly
-                          v-bind="attrs"
-                          v-on="on"
-                          :rules="[reglas.requerido]"
-                        ></v-text-field>
+                        <v-text-field v-model="rendicionActual.fecha" label="Fecha de rendición" prepend-icon="mdi-calendar"
+                          readonly v-bind="attrs" v-on="on" :rules="[v => !!v || 'Requerido']" />
                       </template>
-                      <v-date-picker
-                        v-model="rendicionActual.fecha"
-                        @input="menuFechaRendicion = false"
-                        locale="es"
-                      ></v-date-picker>
+                      <v-date-picker v-model="rendicionActual.fecha" @input="menuFechaRendicion = false" locale="es" />
                     </v-menu>
                   </v-col>
 
                   <v-col cols="12">
-                    <v-textarea
-                      v-model="rendicionActual.detalle"
-                      label="Detalle de gastos"
-                      rows="3"
-                      :rules="[reglas.requerido]"
-                      required
-                    ></v-textarea>
+                    <v-textarea v-model="rendicionActual.detalle" label="Detalle de gastos" rows="3"
+                      :rules="[v => !!v || 'Requerido']" required />
                   </v-col>
 
                   <v-col cols="12">
-                    <v-file-input
-                      v-model="rendicionActual.comprobantes"
-                      label="Comprobantes (opcional)"
-                      multiple
-                      prepend-icon="mdi-paperclip"
-                      chips
-                    ></v-file-input>
+                    <v-file-input v-model="rendicionActual.comprobantes" label="Comprobantes (opcional)" multiple
+                      prepend-icon="mdi-paperclip" chips />
                   </v-col>
                 </v-row>
               </v-form>
@@ -251,13 +164,7 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="grey" text @click="cerrarDialogRendicion">Cancelar</v-btn>
-              <v-btn
-                color="green"
-                @click="guardarRendicion"
-                :disabled="!validoRendicion"
-              >
-                Guardar Rendición
-              </v-btn>
+              <v-btn color="green" @click="guardarRendicion" :disabled="!validoRendicion">Guardar Rendición</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -276,226 +183,159 @@
   </v-app>
 </template>
 
-<script>
-import { ref, reactive, onMounted } from 'vue';
+<script setup>
+import { ref, reactive, onMounted, computed } from 'vue';
 
-export default {
-  name: 'SistemaFondos',
-  setup() {
-    // Estados de los diálogos
-    const dialogSolicitud = ref(false);
-    const dialogRendicion = ref(false);
-    const menuFecha = ref(false);
-    const menuFechaRendicion = ref(false);
+// Estados
+const dialogSolicitud = ref(false);
+const dialogRendicion = ref(false);
+const menuFecha = ref(false);
+const menuFechaRendicion = ref(false);
+const validoSolicitud = ref(false);
+const validoRendicion = ref(false);
+const solicitudes = ref([]);
 
-    // Estados de validación
-    const validoSolicitud = ref(false);
-    const validoRendicion = ref(false);
+// Nuevo estado para controlar el bloqueo
+const bloquearNuevaSolicitud = ref(false);
 
-    // Bandera para saber si estamos editando
-    const esEdicion = ref(false);
+const solicitudActual = reactive({
+  id: null,
+  monto: '',
+  motivo: '',
+  descripcion: '',
+  fecha: new Date().toISOString().slice(0, 10)
+});
 
-    // Datos de las solicitudes
-    const solicitudes = ref([]);
+const rendicionActual = reactive({
+  id: null,
+  solicitudId: null,
+  montoUtilizado: '',
+  detalle: '',
+  fecha: new Date().toISOString().slice(0, 10),
+  comprobantes: []
+});
 
-    // Datos actuales para formularios
-    const solicitudActual = reactive({
-      id: null,
-      monto: '',
-      motivo: '',
-      descripcion: '',
-      fecha: new Date().toISOString().substr(0, 10)
-    });
+const snackbar = reactive({
+  visible: false,
+  mensaje: '',
+  color: 'success'
+});
 
-    const rendicionActual = reactive({
-      id: null,
-      solicitudId: null,
-      montoUtilizado: '',
-      detalle: '',
-      fecha: new Date().toISOString().substr(0, 10),
-      comprobantes: []
-    });
+// Computed para verificar si hay solicitudes pendientes
+const haySolicitudesPendientes = computed(() => {
+  return solicitudes.value.some(solicitud => !solicitud.rendicion);
+});
 
-    // Snackbar para mensajes
-    const snackbar = reactive({
-      visible: false,
-      mensaje: '',
-      color: 'success'
-    });
+// Funciones de utilidad
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value || 0);
+};
 
-    // Reglas de validación
-    const reglas = {
-      requerido: value => !!value || 'Este campo es requerido',
-      montoMinimo: value => parseFloat(value) > 0 || 'El monto debe ser mayor a 0',
-      montoValido: value => {
-        const montoSolicitud = parseFloat(solicitudActual.monto);
-        const montoUtilizado = parseFloat(value);
-        return montoUtilizado <= montoSolicitud || `El monto utilizado no puede ser mayor al solicitado (${formatCurrency(montoSolicitud)})`;
-      }
-    };
+const formatDate = (dateString) => {
+  return dateString ? new Date(dateString).toLocaleDateString('es-AR') : '';
+};
 
-    // Funciones de utilidad
-    function formatCurrency(value) {
-      if (!value) return '$0';
-      return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value);
-    }
+// Funciones para solicitudes
+const nuevaSolicitud = () => {
+  if (bloquearNuevaSolicitud.value) return;
 
-    function formatDate(dateString) {
-      if (!dateString) return '';
-      return new Date(dateString).toLocaleDateString('es-AR');
-    }
+  Object.assign(solicitudActual, {
+    id: null,
+    monto: '',
+    motivo: '',
+    descripcion: '',
+    fecha: new Date().toISOString().slice(0, 10)
+  });
+  dialogSolicitud.value = true;
+};
 
-    // Funciones para solicitudes
-    function nuevaSolicitud() {
-      esEdicion.value = false;
-      Object.assign(solicitudActual, {
-        id: null,
-        monto: '',
-        motivo: '',
-        descripcion: '',
-        fecha: new Date().toISOString().substr(0, 10)
-      });
-      dialogSolicitud.value = true;
-    }
+const guardarSolicitud = () => {
+  if (!validoSolicitud.value) return;
 
-    function editarSolicitud(solicitud) {
-      esEdicion.value = true;
-      Object.assign(solicitudActual, {...solicitud});
-      dialogSolicitud.value = true;
-    }
+  const nuevaSolicitud = {
+    ...solicitudActual,     // Copia todas las propiedades existentes
+    id: Date.now(),         // Asigna un ID único basado en el timestamp
+    rendicion: null         // Inicializa la rendición como nula
+  };
 
-    function guardarSolicitud() {
-      if (!validoSolicitud.value) return;
+  solicitudes.value.push(nuevaSolicitud);
+  mostrarMensaje('Solicitud creada correctamente');
+  cerrarDialogSolicitud();
+  guardarEnLocalStorage();
 
-      if (esEdicion.value) {
-        // Actualizar solicitud existente
-        const index = solicitudes.value.findIndex(s => s.id === solicitudActual.id);
-        if (index !== -1) {
-          solicitudes.value[index] = {...solicitudActual};
-          mostrarMensaje('Solicitud actualizada correctamente', 'success');
-        }
-      } else {
-        // Crear nueva solicitud
-        const nuevaSolicitud = {
-          ...solicitudActual,
-          id: Date.now(), // ID único basado en timestamp
-          rendicion: null
-        };
-        solicitudes.value.push(nuevaSolicitud);
-        mostrarMensaje('Solicitud creada correctamente', 'success');
-      }
+  // Bloquear nueva solicitud hasta que se complete la rendición
+  bloquearNuevaSolicitud.value = true;
+};
 
-      cerrarDialogSolicitud();
-      guardarEnLocalStorage();
-    }
+const abrirRendicion = (solicitud) => {
+  Object.assign(solicitudActual, { ...solicitud });
+  Object.assign(rendicionActual, {
+    id: null,
+    solicitudId: solicitud.id,
+    montoUtilizado: '',
+    detalle: '',
+    fecha: new Date().toISOString().slice(0, 10),
+    comprobantes: []
+  });
+  dialogRendicion.value = true;
+};
 
-    function cerrarDialogSolicitud() {
-      dialogSolicitud.value = false;
-      setTimeout(() => {
-        if (window.$refs.formSolicitud) {
-          window.$refs.formSolicitud.resetValidation();
-        }
-      }, 100);
-    }
+const guardarRendicion = () => {
+  if (!validoRendicion.value) return;
 
-    // Funciones para rendición de cuentas
-    function abrirRendicion(solicitud) {
-      Object.assign(solicitudActual, {...solicitud});
-      Object.assign(rendicionActual, {
-        id: null,
-        solicitudId: solicitud.id,
-        montoUtilizado: '',
-        detalle: '',
-        fecha: new Date().toISOString().substr(0, 10),
-        comprobantes: []
-      });
-      dialogRendicion.value = true;
-    }
+  const rendicion = {
+    ...rendicionActual,
+    id: Date.now()
+  };
 
-    function guardarRendicion() {
-      if (!validoRendicion.value) return;
+  const index = solicitudes.value.findIndex(s => s.id === rendicion.solicitudId);
+  if (index !== -1) {
+    solicitudes.value[index].rendicion = rendicion;
+    mostrarMensaje('Rendición de cuentas guardada correctamente');
 
-      const rendicion = {
-        ...rendicionActual,
-        id: Date.now() // ID único
-      };
+    // Desbloquear nueva solicitud después de guardar la rendición
+    bloquearNuevaSolicitud.value = false;
+  }
 
-      // Asociar la rendición con la solicitud
-      const index = solicitudes.value.findIndex(s => s.id === rendicion.solicitudId);
-      if (index !== -1) {
-        solicitudes.value[index].rendicion = rendicion;
-        mostrarMensaje('Rendición de cuentas guardada correctamente', 'success');
-      }
+  cerrarDialogRendicion();
+  guardarEnLocalStorage();
+};
 
-      cerrarDialogRendicion();
-      guardarEnLocalStorage();
-    }
+const cerrarDialogSolicitud = () => {
+  dialogSolicitud.value = false;
+};
 
-    function cerrarDialogRendicion() {
-      dialogRendicion.value = false;
-      setTimeout(() => {
-        if (window.$refs.formRendicion) {
-          window.$refs.formRendicion.resetValidation();
-        }
-      }, 100);
-    }
+const cerrarDialogRendicion = () => {
+  dialogRendicion.value = false;
+};
 
-    // Otras funciones
-    function mostrarMensaje(mensaje, color = 'success') {
-      snackbar.mensaje = mensaje;
-      snackbar.color = color;
-      snackbar.visible = true;
-    }
+const mostrarMensaje = (mensaje, color = 'success') => {
+  snackbar.mensaje = mensaje;
+  snackbar.color = color;
+  snackbar.visible = true;
+};
 
-    function mostrarTodasSolicitudes() {
-      // Esta función podría expandirse para mostrar un listado detallado
-      mostrarMensaje(`Mostrando ${solicitudes.value.length} solicitudes`, 'info');
-    }
+const mostrarTodasSolicitudes = () => {
+  mostrarMensaje(`Mostrando ${solicitudes.value.length} solicitudes`, 'info');
+};
 
-    // Persistencia en localStorage
-    function guardarEnLocalStorage() {
-      localStorage.setItem('solicitudesFondos', JSON.stringify(solicitudes.value));
-    }
+const guardarEnLocalStorage = () => {
+  localStorage.setItem('solicitudesFondos', JSON.stringify(solicitudes.value));
+};
 
-    function cargarDesdeLocalStorage() {
-      const datos = localStorage.getItem('solicitudesFondos');
-      if (datos) {
-        solicitudes.value = JSON.parse(datos);
-      }
-    }
+const cargarDesdeLocalStorage = () => {
+  const datos = localStorage.getItem('solicitudesFondos');
+  if (datos) {
+    solicitudes.value = JSON.parse(datos);
 
-    // Inicialización
-    onMounted(() => {
-      cargarDesdeLocalStorage();
-    });
-
-    // Exponer variables y funciones al template
-    return {
-      dialogSolicitud,
-      dialogRendicion,
-      menuFecha,
-      menuFechaRendicion,
-      validoSolicitud,
-      validoRendicion,
-      esEdicion,
-      solicitudes,
-      solicitudActual,
-      rendicionActual,
-      snackbar,
-      reglas,
-      formatCurrency,
-      formatDate,
-      nuevaSolicitud,
-      editarSolicitud,
-      guardarSolicitud,
-      cerrarDialogSolicitud,
-      abrirRendicion,
-      guardarRendicion,
-      cerrarDialogRendicion,
-      mostrarTodasSolicitudes
-    };
+    // Al cargar, verificar si hay solicitudes pendientes para bloquear el botón
+    const hayPendientes = solicitudes.value.some(s => !s.rendicion);
+    bloquearNuevaSolicitud.value = hayPendientes;
   }
 };
+
+// Inicialización
+onMounted(cargarDesdeLocalStorage);
 </script>
 
 <style scoped>
@@ -509,8 +349,8 @@ export default {
 }
 
 .solicitud-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .v-btn {
@@ -519,5 +359,10 @@ export default {
 
 .headline {
   padding: 16px;
+}
+
+/* Estilo para botón deshabilitado con tooltip */
+.v-btn--disabled {
+  cursor: not-allowed;
 }
 </style>

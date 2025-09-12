@@ -56,24 +56,12 @@
                   {{ status.text }}
                 </v-chip>
               </v-chip-group>
-
-              <!-- Filtro por procedencia de fondos -->
-              <v-select
-                v-model="procedenciaFilter"
-                :items="procedenciaFondos"
-                item-value="value"
-                item-title="text"
-                label="Procedencia fondos"
-                clearable
-                variant="outlined"
-                density="compact"
-                style="min-width: 200px"
-              ></v-select>
             </div>
           </v-card-text>
+          <v-divider class="my-4"></v-divider>
 
           <v-list v-if="!loading" class="py-0">
-            <template v-for="(actividad, index) in actividadesPaginadas" :key="`actividad-${actividad.id}-${index}`">
+            <template v-for="(actividad, index) in actividadesPaginadasOrdenadas" :key="`actividad-${actividad.id}-${index}`">
               <v-list-item :value="actividad.id" @click="toggleExpanded(actividad.id)" class="mb-2">
                 <template v-slot:prepend>
                   <v-avatar :color="getStatusColor(actividad.estado)" class="mr-4">
@@ -112,9 +100,11 @@
                         <v-btn
                           v-if="parseInt($route.query.showButton) === 1"
                           v-bind="props"
-                          icon="mdi-file-document-edit-outline"
+                          icon="mdi-cash-plus"
                           variant="text"
                           color="primary"
+                          size="small"
+                          :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos || false"
                           :to="`/monitoreo/formulario01/${actividad.id}`"
                           @click.stop
                         ></v-btn>
@@ -127,25 +117,11 @@
                         <v-btn
                           v-if="parseInt($route.query.showButton) === 1"
                           v-bind="props"
-                          icon="mdi-file-document-edit-outline"
+                          icon="mdi-cash-refund"
                           variant="text"
                           color="warning"
+                          size="small"
                           :to="`/monitoreo/formulario03/${actividad.id}`"
-                          @click.stop
-                        ></v-btn>
-                      </template>
-                    </v-tooltip>
-
-                    <!-- Rendición de cuentas -->
-                    <v-tooltip text="Rendición de Cuentas" location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-btn
-                          v-if="parseInt($route.query.showButton) === 2"
-                          v-bind="props"
-                          icon="mdi-file-document-edit-outline"
-                          variant="text"
-                          color="error"
-                          :to="`/monitoreo/formulario02/${actividad.id}`"
                           @click.stop
                         ></v-btn>
                       </template>
@@ -157,9 +133,10 @@
                         <v-btn
                           v-if="parseInt($route.query.showButton) === 1"
                           v-bind="props"
-                          icon="mdi-file-document-edit-outline"
+                          icon="mdi-bag-suitcase"
                           variant="text"
                           color="deep-purple"
+                          size="small"
                           :to="`/monitoreo/formulario05/${actividad.id}`"
                           @click.stop
                         ></v-btn>
@@ -172,10 +149,31 @@
                         <v-btn
                           v-if="parseInt($route.query.showButton) === 1"
                           v-bind="props"
-                          icon="mdi-file-document-edit-outline"
+                          icon="mdi-credit-card-check"
                           variant="text"
                           color="teal-lighten-2"
+                          size="small"
                           :to="`/monitoreo/formulario08/${actividad.id}`"
+                          @click.stop
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
+                    <!-- Separador visual -->
+                    <v-divider vertical inset class="mx-1 my-1"></v-divider>
+
+                    <!-- Rendición de cuentas para ACTIVIDADES-->
+                    <v-tooltip :text="getRendicionText(actividad.id)" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-if="parseInt($route.query.showButton) === 2"
+                          :disabled="!getSolicitudFondosInfo(actividad.id,0)?.bloquearIconosSolFondos"
+                          v-bind="props"
+                          icon="mdi-cash-check"
+                          variant="text"
+                          color="error"
+                          size="small"
+                          :to="`/monitoreo/formulario02/${actividad.id}`"
                           @click.stop
                         ></v-btn>
                       </template>
@@ -187,9 +185,10 @@
                         <v-btn
                           v-if="parseInt($route.query.showButton) === 3"
                           v-bind="props"
-                          icon="mdi-file-document-edit-outline"
+                          icon="mdi-file-chart"
                           variant="text"
                           color="info"
+                          size="small"
                           :to="`/monitoreo/formularioinf/${actividad.id}`"
                           @click.stop
                         ></v-btn>
@@ -229,119 +228,137 @@
                               </v-icon>
                             </template>
                             <template v-slot:append>
-                              <!-- Solicitud de Fondos -->
-                              <v-tooltip text="Solicitud de Fondos" location="top">
-                                <template v-slot:activator="{ props }">
-                                  <v-btn
-                                    v-if="parseInt($route.query.showButton) === 1"
-                                    v-bind="props"
-                                    icon="mdi-file-document-edit-outline"
-                                    variant="text"
-                                    color="primary"
-                                    :to="`/monitoreo/formulario01/${actividad.id}?tarea_id=${tarea.id}`"
-                                    @click.stop
-                                  ></v-btn>
-                                </template>
-                              </v-tooltip>
+                              <div class="d-flex">
+                                <!-- Solicitud de Fondos para TAREA -->
+                                <v-tooltip text="Solicitud de Fondos" location="top">
+                                  <template v-slot:activator="{ props }">
+                                    <v-btn
+                                      v-if="parseInt($route.query.showButton) === 1"
+                                      v-bind="props"
+                                      icon="mdi-cash-plus"
+                                      variant="text"
+                                      color="primary"
+                                      size="small"
+                                      :disabled="getSolicitudFondosInfo(actividad.id, tarea.id)?.bloquearIconosSolFondos || pruebaBloqueo"
+                                      :to="`/monitoreo/formulario01/${actividad.id}?tarea_id=${tarea.id}`"
+                                      @click.stop
+                                    ></v-btn>
+                                  </template>
+                                </v-tooltip>
 
-                              <!-- Solicitud de Reposición -->
-                              <v-tooltip text="Solicitud de Reposición" location="top">
-                                <template v-slot:activator="{ props }">
-                                  <v-btn
-                                    v-if="parseInt($route.query.showButton) === 1"
-                                    v-bind="props"
-                                    icon="mdi-file-document-edit-outline"
-                                    variant="text"
-                                    color="warning"
-                                    :to="`/monitoreo/formulario03/${actividad.id}?tarea_id=${tarea.id}`"
-                                    @click.stop
-                                  ></v-btn>
-                                </template>
-                              </v-tooltip>
+                                <!-- Solicitud de Reposición para TAREA -->
+                                <v-tooltip text="Solicitud de Reposición" location="top">
+                                  <template v-slot:activator="{ props }">
+                                    <v-btn
+                                      v-if="parseInt($route.query.showButton) === 1"
+                                      v-bind="props"
+                                      icon="mdi-cash-refund"
+                                      variant="text"
+                                      color="warning"
+                                      size="small"
+                                      :to="`/monitoreo/formulario03/${actividad.id}?tarea_id=${tarea.id}`"
+                                      @click.stop
+                                    ></v-btn>
+                                  </template>
+                                </v-tooltip>
 
-                              <!-- Rendición de cuentas -->
-                              <v-tooltip text="Rendición de Cuentas" location="top">
-                                <template v-slot:activator="{ props }">
-                                  <v-btn
-                                    v-if="parseInt($route.query.showButton) === 2"
-                                    v-bind="props"
-                                    icon="mdi-file-document-edit-outline"
-                                    variant="text"
-                                    color="error"
-                                    :to="`/monitoreo/formulario02/${actividad.id}?tarea_id=${tarea.id}`"
-                                    @click.stop
-                                  ></v-btn>
-                                </template>
-                              </v-tooltip>
+                                <!-- Solicitud de Viaje para TAREA -->
+                                <v-tooltip text="Solicitud de Viaje" location="top">
+                                  <template v-slot:activator="{ props }">
+                                    <v-btn
+                                      v-if="parseInt($route.query.showButton) === 1"
+                                      v-bind="props"
+                                      icon="mdi-bag-suitcase"
+                                      variant="text"
+                                      color="deep-purple"
+                                      size="small"
+                                      :to="`/monitoreo/formulario05/${actividad.id}?tarea_id=${tarea.id}`"
+                                      @click.stop
+                                    ></v-btn>
+                                  </template>
+                                </v-tooltip>
 
-                              <!-- Solicitud de Viaje -->
-                              <v-tooltip text="Solicitud de Viaje" location="top">
-                                <template v-slot:activator="{ props }">
-                                  <v-btn
-                                    v-if="parseInt($route.query.showButton) === 1"
-                                    v-bind="props"
-                                    icon="mdi-file-document-edit-outline"
-                                    variant="text"
-                                    color="deep-purple"
-                                    :to="`/monitoreo/formulario05/${actividad.id}?tarea_id=${tarea.id}`"
-                                    @click.stop
-                                  ></v-btn>
-                                </template>
-                              </v-tooltip>
+                                <!-- Solicitud de Pago Directo para TAREA -->
+                                <v-tooltip text="Solicitud de Pago Directo" location="top">
+                                  <template v-slot:activator="{ props }">
+                                    <v-btn
+                                      v-if="parseInt($route.query.showButton) === 1"
+                                      v-bind="props"
+                                      icon="mdi-credit-card-check"
+                                      variant="text"
+                                      color="teal-lighten-2"
+                                      size="small"
+                                      :to="`/monitoreo/formulario08/${actividad.id}?tarea_id=${tarea.id}`"
+                                      @click.stop
+                                    ></v-btn>
+                                  </template>
+                                </v-tooltip>
 
-                              <!-- Solicitud de Pago Directo -->
-                              <v-tooltip text="Solicitud de Pago Directo" location="top">
-                                <template v-slot:activator="{ props }">
-                                  <v-btn
-                                    v-if="parseInt($route.query.showButton) === 1"
-                                    v-bind="props"
-                                    icon="mdi-file-document-edit-outline"
-                                    variant="text"
-                                    color="teal-lighten-2"
-                                    :to="`/monitoreo/formulario08/${actividad.id}?tarea_id=${tarea.id}`"
-                                    @click.stop
-                                  ></v-btn>
-                                </template>
-                              </v-tooltip>
+                                <!-- Separador visual -->
+                                <v-divider vertical inset class="mx-1 my-1"></v-divider>
 
-                              <!-- Informe de Actividad -->
-                              <v-tooltip text="Informe de Actividad" location="top">
-                                <template v-slot:activator="{ props }">
-                                  <v-btn
-                                    v-if="parseInt($route.query.showButton) === 3"
-                                    v-bind="props"
-                                    icon="mdi-file-document-edit-outline"
-                                    variant="text"
-                                    color="info"
-                                    :to="`/monitoreo/formularioinf/${actividad.id}?tarea_id=${tarea.id}`"
-                                    @click.stop
-                                  ></v-btn>
-                                </template>
-                              </v-tooltip>
-                              <v-tooltip text="Editar tarea" location="top">
-                                <template v-slot:activator="{ props }">
-                                  <v-btn
-                                    v-bind="props"
-                                    icon="mdi-pencil"
-                                    variant="text"
-                                    color="warning"
-                                    size="small"
-                                    @click.stop="openTareaDialog(actividad.id, tarea)"
-                                  ></v-btn>
-                                </template>
-                              </v-tooltip>
-                              <v-tooltip text="Eliminar tarea" location="top">
-                                <template v-slot:activator="{ props }">
-                                  <v-btn
-                                    v-bind="props"
-                                    icon="mdi-delete"
-                                    variant="text"
-                                    color="error"
-                                    size="small"
-                                    @click.stop="confirmDeleteTarea(actividad.id, tarea)"
-                                  ></v-btn>
-                                </template>
-                              </v-tooltip>
+                                <!-- Rendición de cuentas para TAREAS-->
+                                <v-tooltip :text="getRendicionText(actividad.id, tarea.id)" location="top">
+                                  <template v-slot:activator="{ props }">
+                                    <v-btn
+                                      v-if="parseInt($route.query.showButton) === 2"
+                                      :disabled="!getSolicitudFondosInfo(actividad.id, tarea.id)?.bloquearIconosSolFondos || getSolicitudFondosInfo(actividad.id, tarea.id)?.bloquearIconoRC"
+                                      v-bind="props"
+                                      icon="mdi-cash-check"
+                                      variant="text"
+                                      color="error"
+                                      size="small"
+                                      :to="`/monitoreo/formulario02/${actividad.id}?tarea_id=${tarea.id}`"
+                                      @click.stop
+                                    ></v-btn>
+                                  </template>
+                                </v-tooltip>
+
+                                <!-- Informe de Actividad para TAREA -->
+                                <v-tooltip text="Informe de Actividad" location="top">
+                                  <template v-slot:activator="{ props }">
+                                    <v-btn
+                                      v-if="parseInt($route.query.showButton) === 3"
+                                      v-bind="props"
+                                      icon="mdi-file-chart"
+                                      variant="text"
+                                      color="info"
+                                      size="small"
+                                      :to="`/monitoreo/formularioinf/${actividad.id}?tarea_id=${tarea.id}`"
+                                      @click.stop
+                                    ></v-btn>
+                                  </template>
+                                </v-tooltip>
+
+                                <!-- Separador visual -->
+                                <v-divider vertical inset class="mx-1 my-1"></v-divider>
+
+                                <!-- Acciones de tarea -->
+                                <v-tooltip text="Editar tarea" location="top">
+                                  <template v-slot:activator="{ props }">
+                                    <v-btn
+                                      v-bind="props"
+                                      icon="mdi-pencil"
+                                      variant="text"
+                                      color="warning"
+                                      size="small"
+                                      @click.stop="openTareaDialog(actividad.id, tarea)"
+                                    ></v-btn>
+                                  </template>
+                                </v-tooltip>
+                                <v-tooltip text="Eliminar tarea" location="top">
+                                  <template v-slot:activator="{ props }">
+                                    <v-btn
+                                      v-bind="props"
+                                      icon="mdi-delete"
+                                      variant="text"
+                                      color="error"
+                                      size="small"
+                                      @click.stop="confirmDeleteTarea(actividad.id, tarea)"
+                                    ></v-btn>
+                                  </template>
+                                </v-tooltip>
+                              </div>
                             </template>
                           </v-list-item>
                           <v-list-item v-if="actividad.tareas.length === 0">
@@ -521,6 +538,15 @@ const {
   eliminarTareaDeActividad,
 } = useActividad()
 
+// const formData = ref({
+// const pruebaBloqueo =ref(false)
+// const offIconoSF = getSolicitudFondosInfo(actividad.id,0)?.bloquearIconosSolFondos
+// })
+
+// --- NUEVAS VARIABLES PARA SOLICITUDES DE FONDOS ---
+const solicitudesFondos = ref([])
+const loadingSolicitudes = ref(false)
+
 // --- ESTADOS REACTIVOS ---
 const loading = ref(true)
 const emptyResponse = ref(false)
@@ -615,17 +641,20 @@ onMounted(async () => {
   await cargar()
 })
 
+// Modificar la función cargar para que también cargue las solicitudes de fondos
 const cargar = async () => {
   loading.value = true
   try {
-    await actividadesTareas()
+    await Promise.all([
+      actividadesTareas(),
+      cargarSolicitudesFondos() // Cargar solicitudes de fondos en paralelo
+    ])
 
-    // Procesar los datos de la API
+    // [Procesamiento existente de actividades]
     if (Array.isArray(actividadesFromApi.value)) {
       actividades.value = actividadesFromApi.value.map((actividad) => ({
         ...actividad,
         estadoFrontend: mapEstadoBackendToFrontend(actividad.estado),
-        // Asegurar que tareas siempre sea un array
         tareas: Array.isArray(actividad.tareas)
           ? actividad.tareas.map(tarea => ({
               ...tarea,
@@ -639,14 +668,76 @@ const cargar = async () => {
 
     emptyResponse.value = actividades.value.length === 0
   } catch (error) {
-    console.error('Error al cargar actividades:', error)
+    console.error('Error al cargar datos:', error)
     actividades.value = []
     emptyResponse.value = true
-    mostrarSnackbar('Error al cargar actividades: ' + (error.message || 'Error desconocido'), 'error')
+    mostrarSnackbar('Error al cargar datos: ' + (error.message || 'Error desconocido'), 'error')
   } finally {
     loading.value = false
   }
 }
+
+// Alternativa usando fetch en lugar de axios
+const cargarSolicitudesFondos = async () => {
+  loadingSolicitudes.value = true
+  try {
+    console.log('Cargando solicitudes de fondos con fetch...')
+
+    const response = await fetch('http://127.0.0.1:8000/api/solicitud-fondos/', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('Datos recibidos con fetch:', data)
+    solicitudesFondos.value = data
+
+  } catch (error) {
+    console.error('Error con fetch:', error)
+    mostrarSnackbar(`Error al cargar solicitudes: ${error.message}`, 'error')
+  } finally {
+    loadingSolicitudes.value = false
+  }
+}
+
+// Obtener información de solicitud de fondos para una actividad (y opcionalmente una tarea)
+const getSolicitudFondosInfo = (actividadId, tareaId = null) => {
+  if (!solicitudesFondos.value.length) return null
+
+  // Buscar solicitud que coincida con actividad y tarea (si se proporciona)
+  const solicitud = solicitudesFondos.value.find(sf => {
+    const matchActividad = sf.actividad === actividadId
+    const matchTarea = tareaId ? sf.tarea === tareaId : true
+    return matchActividad && matchTarea
+  })
+
+  return solicitud || null
+}
+
+// Obtener texto para el tooltip de rendición de cuentas
+const getRendicionText = (actividadId, tareaId = null) => {
+  const solicitud = getSolicitudFondosInfo(actividadId, tareaId)
+  if (solicitud && solicitud.numeroFormulario) {
+    return `Rendición de Cuentas (${solicitud.numeroFormulario})`
+  }
+  return 'Rendición de Cuentas - Pendiente solicitud'
+}
+
+// Verificar si la solicitud está aprobada para habilitar la rendición
+const isSolicitudAprobada = (actividadId, tareaId = null) => {
+  const solicitud = getSolicitudFondosInfo(actividadId, tareaId)
+  // Asumiendo que tienes un campo 'estado' en la solicitud
+  console.log('*********aaaaaaaa', solicitud)
+  return solicitud && solicitud.estado === 'APROBADO' // Ajusta según tu modelo de datos
+}
+
 
 // Función helper para mostrar notificaciones
 const mostrarSnackbar = (texto, color = 'success') => {
@@ -861,6 +952,19 @@ const formatDate = (dateString) => {
   const date = new Date(dateString)
   return date.toLocaleDateString('es-ES')
 }
+
+const actividadesPaginadasOrdenadas = computed(() => {
+  if (!Array.isArray(actividadesPaginadas.value)) return []
+
+  // Ordenar por ID (o fecha de creación si está disponible) de forma descendente
+  return [...actividadesPaginadas.value].sort((a, b) => {
+    // Si tienes un campo de fecha de creación, úsalo:
+    // return new Date(b.fecha_creacion) - new Date(a.fecha_creacion);
+
+    // Si no, ordenar por ID (asumiendo que IDs más altos son más recientes)
+    return b.id - a.id;
+  });
+});
 </script>
 
 <style scoped>

@@ -41,7 +41,7 @@
 
             <v-row>
               <v-col cols="12" sm="6" md="4">
-                <v-text-field v-model="formData.formulario_numero" label="Formulario Número" bg-color="blue-lighten-5" required></v-text-field>
+                <v-text-field v-model="formData.formulario_numero" label="Formulario Número" readonly></v-text-field>
               </v-col>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field v-model="formData.cpte_diario" label="Cpte. Diario" bg-color="blue-lighten-5" required></v-text-field>
@@ -57,7 +57,7 @@
               </v-col>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field
-                  v-model="formData.monto_asignado"
+                  v-model="formData.monto_solicitado"
                   label="Monto Asignado (Bs.)"
                   readonly
                 ></v-text-field>
@@ -86,7 +86,7 @@
               </v-col>
               <v-col cols="12">
                 <v-textarea
-                  v-model="formData.descripcion"
+                  v-model="formData.descripcion_actividad"
                   label="Descripción de la Actividad"
                   bg-color="blue-lighten-5"
                   rows="3"
@@ -206,23 +206,6 @@
                   label="Responsable del Cargo de Cuenta"
                   required
                 ></v-select>
-
-
-
-                      <!-- <v-select
-                        v-model="formData.idcoordinador"
-                        :items="coordinadoresList"
-                        :item-title="getNombreCompleto"
-                        item-value="id"
-                        label="Coordinador"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-select> -->
-
-
-
-
               </v-col>
               <v-col cols="12" md="6">
                 <v-checkbox
@@ -309,28 +292,36 @@
       </div>
     </div>
   </div>
-   {{ datosFormulario }}
-   {{ "*******" }}
-   {{ formData }}
+   <pre>{{ datosFormulario }}</pre>
 </template>
 
 <script setup>
 
 import { ref, onMounted, computed, watch } from 'vue';
-import axios from 'axios';
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
-import { formulariosServicios } from '@/modules/formularios/services/formulariosServices';
 import * as XLSX from 'xlsx'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
-
+const router = useRouter()
 const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
-console.log('ID de Actividad desde la ruta:', idActividad)
-console.log('ID de Tarea:', idTarea)
+const idSolicitud = route.query.solicitud_id || null
+console.log('ID Actividad:', idActividad)
+console.log('ID Tarea:', idTarea)
+console.log('ID SolFondos:', idSolicitud)
 
-const { usuario, informacionUsuarioPorNick } = useUsuario();
+const { usuario } = useUsuario();
+
+const idRendicionCreada = ref(null)
+
+// --- NUEVAS VARIABLES PARA SOLICITUDES DE FONDOS ---
+const solicitudesFondos = ref([])
+const loadingSolicitudes = ref(false)
+const solicitud = ref(null)
+
+// Notificaciones
+const snackbar = ref({ show: false, text: '', color: 'success' })
 
 // Variables de estado
 const loading = ref(false);
@@ -348,7 +339,6 @@ const isLoading = ref(false)
 // Estado reactivo
 const cargandoGeneral = ref(true)
 //const loading = ref(false)
-const form = ref(null)
 const responsablesList = ref([])
 const coordinadoresList = ref([])
 const contadoresList = ref([])
@@ -363,6 +353,8 @@ const formData = ref({
   documento_identidad: '',
   // Campos de la actividad
   descripcion_actividad: '',
+  lugar_actividad:'',
+  fecha_actividad:'',
   objetivo_actividad: '',
   fecha_irealizacion: '',
   fecha_frealizacion: '',
@@ -370,7 +362,7 @@ const formData = ref({
   id_actividad: 0,
   id_usuario: 0,
   // Resto de campos del formulario
-  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [{ factura_recibo: '', descripcion: '', monto: 0 }],
   forma_pago: null,
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
@@ -379,38 +371,13 @@ const formData = ref({
   idresponsable: null,
   validacion_coordinador: false,
   idcoordinador: null,
+  monto_asignado: 0,
+  formulario_numero:'',
+  validacion_contador: false,
+  validacion_administrador: false,
+  idcontador: null,
+  idadministrador: null
 })
-// const formData = ref({
-//   nombre: '',
-//   paterno: '',
-//   materno: '',
-//   cargo: '',
-//   documento_identidad_beneficiario: '',
-//   //formulario_numero: '',
-//   cpte_diario: '',
-//   fecha_desembolso: '',
-//   monto_asignado: 0,//
-//   monto_descargado: 0,//
-//   saldo: 0,//
-//   detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
-//   validacion_contador: false,
-//   idcontador: null,
-//   validacion_responsable: false,
-//   idresponsable: null,//para enviar datos al backend
-//   validacion_coordinador: false,
-//   idcoordinador: null,
-//   validacion_administrador: false,
-//   idadministrador: null,
-//   id_usuario: null,
-//   id_actividad: null,
-
-
-
-//   // descripcion: '',
-//   // lugar_actividad: '',
-//   // fecha_actividad: '',
-
-// });
 
 const actividadData = ref({
   codigo: 'ACT-2023-005',
@@ -425,7 +392,7 @@ const actividadData = ref({
 
 // Propiedades computadas
 const saldoPorReembolsar = computed(() => {
-  const montoAsignado = Number(formData.value.monto_asignado) || 0;
+  const montoAsignado = Number(formData.value.monto_solicitado) || 0;
   const montoGastado = Number(totalMontoGastado.value) || 0;
   return (montoAsignado - montoGastado).toFixed(2);
 });
@@ -437,17 +404,17 @@ const totalMontoGastado = computed(() => {
   ).toFixed(2);
 });
 
-// Watcher para actualizar monto_gastado en formData
-// watch(totalMontoGastado, (newValue) => {
-//   formData.value.monto_gastado = Number(newValue);
-// });
+ //Watcher para actualizar monto_gastado en formData
+ watch(totalMontoGastado, (newValue) => {
+   formData.value.monto_gastado = Number(newValue);
+ });
 
-// ✅ WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
+// WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
 watch(
   datosFormulario,
   (newVal) => {
     if (newVal && newVal.usuario) {
-      console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
+      //console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
 
       const usuario = newVal.usuario
 
@@ -461,9 +428,9 @@ watch(
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
-        console.log('Auto-llenando datos de actividad:', newVal.actividad)
+        //console.log('Auto-llenando datos de actividad:', newVal.actividad)
 
-        formData.value.descripcion_actividad = newVal.actividad.descripcion || ''
+        //formData.value.descripcion_actividad = newVal.actividad.descripcion || ''
         formData.value.objetivo_actividad = newVal.actividad.objetivo_de_actividad || ''
         formData.value.fecha_irealizacion = newVal.actividad.fecha_inicio || ''
         formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
@@ -471,7 +438,7 @@ watch(
         formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
-          console.log('Formas de pago disponibles:', newVal.formaPago)
+          //console.log('Formas de pago disponibles:', newVal.formaPago)
         }
 
         // También actualizar actividadData para el componente ActividadInformacion
@@ -485,7 +452,6 @@ watch(
 
       // Llenar lista de validadores si existen
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
-        console.log('Cargando validadores:', newVal.validadores)
         responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
         coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
         contadoresList.value = newVal.validadores.filter((user) => user.cargo === 'contador')
@@ -507,53 +473,6 @@ const nombreCompletoSolicitante = computed(() => {
   const materno = usuario.value?.materno || '';
   return `${nombre} ${paterno} ${materno}`.trim();
 });
-
-async function prefillFormData() {
-  try {
-    await informacionUsuarioPorNick({ usuario: 'ACarvajal' }); // Asume que 'ACarvajal' es el nick del usuario logueado
-    if (usuario.value) {
-      formData.value.nombre = usuario.value.nombre || '';
-      formData.value.paterno = usuario.value.paterno || '';
-      formData.value.materno = usuario.value.materno || '';
-      formData.value.cargo = usuario.value.cargo || '';
-      formData.value.documento_identidad_beneficiario = usuario.value.ci || '';
-      //formData.value.id_usuario = usuario.value.id || null;
-      //isAdmin.value = usuario.value.rol === 'administrador'; // Establece isAdmin
-    }
-  } catch (err) {
-    console.error('Error al pre-llenar los datos del usuario:', err);
-  }
-}
-
-// async function cargarUsuarios() {
-//   try {
-//     const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/listaUsuarios/');
-//     const allUsers = response.data.usuarios;
-//     lista_responsables.value = allUsers.filter(user => user.rol === 'responsable').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-//     lista_coordinadores.value = allUsers.filter(user => user.rol === 'coordinador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-//     lista_contadores.value = allUsers.filter(user => user.rol === 'contador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-//     lista_administradores.value = allUsers.filter(user => user.rol === 'administrador').map(user => ({ ...user, getNombreCompleto: getNombreCompleto(user) }));
-//   } catch (error) {
-//     console.error('Error al cargar usuarios:', error);
-//     alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
-//   }
-// }
-
-// async function cargarCargoCuenta() {
-//   try {
-//     const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/cargo_cuenta/');
-//     if (response.data.cuenta && response.data.cuenta.length > 0) {
-//       const activity = response.data.cuenta[0];
-//       formData.value.formulario_numero = activity.formulario_numero;
-//       formData.value.monto_asignado = activity.monto;
-//       formData.value.fuente_financiamiento = activity.fuente_financiamiento;
-//       formData.value.id_actividad = activity.id;
-//     }
-//   } catch (error) {
-//     console.error('Error al cargar cargo de cuenta:', error);
-//     alert('No se pudieron cargar los cargos de cuenta. Por favor recargue la página.');
-//   }
-// }
 
 function getCurrentDate() {
   const today = new Date()
@@ -597,6 +516,131 @@ async function cargarDatos() {
   }
 }
 
+// Alternativa usando fetch en lugar de axios
+const cargarSolicitudesFondos = async () => {
+  loadingSolicitudes.value = true
+  try {
+    //console.log('Cargando solicitudes de fondos con fetch...')
+
+    const response = await fetch('http://127.0.0.1:8000/api/solicitud-fondos/', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('Datos recibidos con fetch:', data)
+    solicitudesFondos.value = data
+
+  } catch (error) {
+    console.error('Error con fetch:', error)
+    mostrarSnackbar(`Error al cargar solicitudes: ${error.message}`, 'error')
+  } finally {
+    loadingSolicitudes.value = false
+  }
+}
+
+// Obtener información de solicitud de fondos para una actividad (y opcionalmente una tarea)
+const getSolicitudFondosInfo = (actividadId, tareaId = null) => {
+  if (!solicitudesFondos.value.length) return null
+
+  console.log('Buscando solicitud para actividad:', actividadId, 'tarea:', tareaId)
+
+  // Buscar solicitud que coincida con actividad y tarea (si se proporciona)
+  const solicitudEncontrada = solicitudesFondos.value.find(sf => {
+    // Convertir a números para comparación segura
+    const sfActividadId = sf.actividad ? parseInt(sf.actividad) : null
+    const sfTareaId = sf.tarea ? parseInt(sf.tarea) : null
+    const buscarActividadId = actividadId ? parseInt(actividadId) : null
+    const buscarTareaId = tareaId ? parseInt(tareaId) : null
+
+    // Si se busca por tarea, debe coincidir actividad Y tarea
+    if (buscarTareaId !== null) {
+      return sfActividadId === buscarActividadId && sfTareaId === buscarTareaId
+    }
+    // Si no se busca por tarea, solo coincidir por actividad
+    else {
+      return sfActividadId === buscarActividadId
+    }
+  })
+
+  console.log('Solicitud encontrada:', solicitudEncontrada)
+  return solicitudEncontrada || null
+}
+
+watch(solicitudesFondos, (newSolicitudes) => {
+  if (newSolicitudes.length > 0) {
+    console.log('Solicitudes cargadas, buscando coincidencia...')
+
+    // Buscar la solicitud que coincida con los parámetros de la ruta
+    const solicitudEncontrada = getSolicitudFondosInfo(idActividad, idTarea)
+    solicitud.value = solicitudEncontrada
+
+    if (solicitudEncontrada) {
+      console.log('Solicitud encontrada, pre-llenando datos:', solicitudEncontrada)
+
+      // Pre-llenar campos con los datos de la solicitud
+      formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+      formData.value.monto_asignado = solicitudEncontrada.montoSolicitado || 0 // Asumiendo que monto asignado = monto solicitado
+
+      // También puedes pre-llenar otros campos si es necesario
+      if (solicitudEncontrada.numeroFormulario) {
+        formData.value.formulario_numero = solicitudEncontrada.numeroFormulario
+      }
+
+      console.log('Monto solicitado asignado:', formData.value.monto_solicitado)
+    } else {
+      console.log('No se encontró solicitud para actividad:', idActividad, 'tarea:', idTarea)
+    }
+  }
+}, { deep: true, immediate: true })
+
+// Función para convertir IDs a números de forma segura
+const safeParseInt = (value) => {
+  if (value === null || value === undefined || value === '') return null
+  const parsed = parseInt(value)
+  return isNaN(parsed) ? null : parsed
+}
+
+// Y actualiza el onMounted para usar esta función
+onMounted(() => {
+  cargarDatos()
+  cargarSolicitudesFondos()
+
+  // Convertir IDs a números para búsqueda consistente
+  const actividadId = safeParseInt(idActividad)
+  const tareaId = safeParseInt(idTarea)
+
+  console.log('IDs convertidos - Actividad:', actividadId, 'Tarea:', tareaId)
+})
+
+watch(solicitudesFondos, (newSolicitudes) => {
+  if (newSolicitudes.length > 0) {
+    const solicitudEncontrada = getSolicitudFondosInfo(idActividad, idTarea || 0)
+    solicitud.value = solicitudEncontrada
+
+    if (solicitudEncontrada) {
+      formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+      formData.value.monto_asignado = solicitudEncontrada.formaPago || 0
+    }
+  }
+}, { deep: true })
+
+// Función helper para mostrar notificaciones
+const mostrarSnackbar = (texto, color = 'success') => {
+  snackbar.value = {
+    show: true,
+    text: texto,
+    color: color
+  }
+}
+
 function agregarGasto() {
   formData.value.detalle_destino_fondos.push({ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 });
 }
@@ -614,7 +658,7 @@ async function submitForm() {
     const requiredFields = [
       'cpte_diario',
       'fecha_desembolso',
-      'descripcion',
+      'descripcion_actividad',
       'lugar_actividad',
       'fecha_actividad',
       'idresponsable',
@@ -622,62 +666,90 @@ async function submitForm() {
       'idcontador',
       'idadministrador'
     ];
+
     for (const field of requiredFields) {
       if (!formData.value[field]) {
         throw new Error(`El campo '${field}' es requerido.`);
       }
     }
+
     if (!formData.value.detalle_destino_fondos || formData.value.detalle_destino_fondos.length === 0) {
       throw new Error('Debe agregar al menos un gasto.');
     }
+
     if (formData.value.detalle_destino_fondos.some(gasto => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0)) {
       throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.');
     }
 
-    // Preparar payload para la rendición de cuentas con todos los campos necesarios
+    // Obtener información de la solicitud de fondos
+    const solicitudInfo = getSolicitudFondosInfo(idActividad, idTarea);
+
+    // Preparar payload para la rendición de cuentas
     const payload = {
-      // Campos de la rendición de cuentas
-      cpte_diario: formData.value.cpte_diario,
-      fecha_desembolso: formData.value.fecha_desembolso,
-      descripcion: formData.value.descripcion,
-      lugar_actividad: formData.value.lugar_actividad,
-      fecha_actividad: formData.value.fecha_actividad,
-      monto_asignado: Number(formData.value.monto_asignado),
-      monto_gastado: Number(totalMontoGastado.value),
-      monto_descargado: Number(formData.value.monto_descargado), // Asegúrate de que esto se llene correctamente
-      saldo: Number(saldoPorReembolsar.value), // O el saldo que el backend necesite
-      id_actividad: formData.value.id_actividad,
-      fuente_financiamiento: formData.value.fuente_financiamiento,
-
-      // Detalle de los gastos
-      detalle_destino_fondos: JSON.stringify(formData.value.detalle_destino_fondos),
-
-      // Validaciones y responsables
-      validacion_responsable: formData.value.validacion_responsable,
-      id_responsable: formData.value.idresponsable,
-      validacion_coordinador: formData.value.validacion_coordinador,
-      id_coordinador: formData.value.idcoordinador,
-      validacion_contador: formData.value.validacion_contador,
-      id_contador: formData.value.idcontador,
-      validacion_administrador: formData.value.validacion_administrador,
-      id_administrador: formData.value.idadministrador,
-
-      // ID del usuario
-      id_usuario: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
+      numeroFormulario: formData.value.formulario_numero || "",
+      montoDescargado: Number(totalMontoGastado.value),
+      cpteDiario: formData.value.cpte_diario,
+      fechaDesembolso: formData.value.fecha_desembolso,
+      saldo: Number(saldoPorReembolsar.value),
+      detalleDestinoFondos: formData.value.detalle_destino_fondos.map(gasto => ({
+        factura_recibo: gasto.factura_recibo || "",
+        descripcion: gasto.descripcion_gasto || "",
+        monto: Number(gasto.monto) || 0,
+      })),
+      validacionResponsable: Boolean(formData.value.validacion_responsable),
+      validacionCoordinador: Boolean(formData.value.validacion_coordinador),
+      validacionContador: Boolean(formData.value.validacion_contador),
+      validacionAdministrador: Boolean(formData.value.validacion_administrador),
+      idadministrador: Number(formData.value.idadministrador),
+      idcontador: Number(formData.value.idcontador),
+      idcoordinador: Number(formData.value.idcoordinador),
+      idresponsable: Number(formData.value.idresponsable),
+      idusuarioLogeado: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
+      idActividad: idActividad ? parseInt(idActividad) : null,
+      idTarea: idTarea ? parseInt(idTarea) : null,
+      descripcionActividad: formData.value.descripcion_actividad,
+      lugarActividad: formData.value.lugar_actividad,
+      fechaActividad: formData.value.fecha_actividad,
+      bloquearIconoRC: true,
+      idSolicitudReembolso: null,
+      idSolicitudViaje: null,
+      idSolicitudPagoDirecto: null,
+      idSolicitudFondos: solicitudInfo ? solicitudInfo.id : null,
     };
 
-    console.log('Payload a enviar:', payload);
+    console.log('Payload a enviar:', JSON.stringify(payload, null, 2));
 
-    // Usar la función del servicio importado para la rendición de cuentas
-    const respuesta = await formulariosServicios.crearRendicionCuentas(payload);
-    console.log('Rendición enviada con éxito:', respuesta.data);
+    // Enviar la solicitud
+    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/crear-rendicion-cuentas/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    console.log('Rendición enviada con éxito:', responseData);
+
+    // GUARDAR EL ID DE LA RENDICIÓN CREADA
+    idRendicionCreada.value = responseData.id || responseData.rendicion_id;
 
     alert('Rendición enviada con éxito');
     exportToExcel();
     resetForm();
+
+    setTimeout(() => {
+      router.push('/pei/listaactividades')
+    }, 1000)
+
   } catch (error) {
-    console.error('Error completo:', error.response?.data || error.message);
-    alert(`Error: ${error.response?.data?.mensaje || error.message}`);
+    console.error('Error completo:', error);
+    alert(`Error: ${error.message}`);
   } finally {
     loading.value = false;
   }
@@ -685,90 +757,232 @@ async function submitForm() {
 
 function resetForm() {
   Object.assign(formData.value, {
-    //nombre: '',
-    //paterno: '',
-    //materno: '',
-    //cargo: '',
-    //documento_identidad_beneficiario: '',
-    //formulario_numero: '',
     cpte_diario: '',
     fecha_desembolso: '',
-    //monto_asignado: 0,
-    //monto_gastado: 0,
-    //fuente_financiamiento: '',
-    descripcion: '',
+    descripcion_actividad: '',
     lugar_actividad: '',
     fecha_actividad: '',
     detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
     idresponsable: null,
-    //validacion_responsable: false,
     idcoordinador: null,
-    //validacion_coordinador: false,
     idcontador: null,
-    //validacion_contador: false,
     idadministrador: null,
-    //validacion_administrador: false,
-    //id_usuario: null,
-    //id_actividad: null,
   });
 }
 
 function exportToExcel() {
-  const responsable = lista_responsables.value.find(user => user.id === formData.value.idresponsable);
-  const coordinador = lista_coordinadores.value.find(user => user.id === formData.value.idcoordinador);
-  const contador = lista_contadores.value.find(user => user.id === formData.value.idcontador);
-  const administrador = lista_administradores.value.find(user => user.id === formData.value.idadministrador);
+  // 1. Crear datos principales con formato de formulario
   const mainData = [
-    ["Formulario F-02:", "Rendicion de Cuenta"],
-    [],
-    ["Nombre del Solicitante:", nombreCompletoSolicitante.value],
-    ["Documento de Identidad:", formData.value.documento_identidad_beneficiario],
-    ["Cargo:", formData.value.cargo],
-    ["Formulario Número:", formData.value.formulario_numero],
-    ["Cpte. Diario:", formData.value.cpte_diario],
-    ["Fecha de Desembolso:", formData.value.fecha_desembolso],
-    ["Monto Asignado (Bs.):", formData.value.monto_asignado],
-    ["Monto Gastado (Bs.):", formData.value.monto_gastado],
-    ["Saldo por Reembolsar (Bs.):", saldoPorReembolsar.value],
-    ["Fuente de Financiamiento:", formData.value.fuente_financiamiento],
-    ["Descripcion de Actividad:", formData.value.descripcion],
-    ["Lugar de Actividad:", formData.value.lugar_actividad],
-    ["Fecha de Realizacion de Actividad:", formData.value.fecha_actividad],
-    //["Forma de Pago", formData.value.forma_pago],
-    //["Lugar de Solicitud", formData.value.lugar_solicitud],
-    //["Fecha de Solicitud", getCurrentDate()],
-    //["Monto Total Solicitado (Bs.):", totalMontoSolicitado.value],
-    ["Responsable:", responsable ? getNombreCompleto(responsable) : ''],
-    ["Coordinador:", coordinador ? getNombreCompleto(coordinador) : ''],
-    ["Contador:", contador ? getNombreCompleto(contador) : ''],
-    ["Administrador:", administrador ? getNombreCompleto(administrador) : ''],
-  ];
+    ['FORMULARIO F-02: RENDICION DE CUENTAS', '', '', ''],
+    [''],
+      ['Nombre del Solicitante:', formData.value.nombre, formData.value.paterno, formData.value.materno],
+      ['Documento de Identidad:', formData.value.documento_identidad, '', ''],
+      ['Cargo:', formData.value.cargo, '', ''],
+      ['Formulario Número:', formData.value.formulario_numero || '', '', ''],
+      ['Cpte. Diario:', formData.value.cpte_diario, '', ''],
+      ['Fecha de Desembolso:', formData.value.fecha_desembolso, '', ''],
+      ['Monto Asignado (Bs.):', formData.value.monto_solicitado, '', ''],
+      ['Monto Gastado (Bs.):', Number(totalMontoGastado.value), '', ''],
+      ['Saldo por Reembolsar (Bs.):', Number(saldoPorReembolsar.value), '', ''],
+      ['Fuente de Financiamiento:', formData.value.fuente_financiamiento, '', ''],
+      ['Descripcion de Actividad:',formData.value.descripcion_actividad, '', ''],
+      ['Lugar de Actividad:', formData.value.lugar_actividad, '', ''],
+      ['Fecha de Actividad:', formData.value.fecha_actividad, '', ''],
+    ['Responsable:', formData.value.idresponsable, '', ''],
+    ['Coordinador:', formData.value.idcoordinador, '', ''],
+    ['Contador:', formData.value.idcontador, '', ''],
+    ['Administrador', formData.value.idadministrador, '', ''],
+    [''],
+    ['DETALLE DEL DESTINO DE FONDOS', '', '', ''],
+  ]
 
-  const expensesHeaders = ["Partida", "Descripción del Gasto", "Monto (Bs.)"];
+  // 2. Encabezados de la tabla de gastos
+  const expensesHeaders = ['Fecha', 'PARTIDA', 'Factura/Recibo', 'DESCRIPCIÓN DEL GASTO', 'MONTO (BS.)']
+
+  // 3. Datos de gastos
   const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
+    gasto.fecha,
     gasto.partida,
+    gasto.factura_recibo,
     gasto.descripcion_gasto,
     gasto.monto,
-  ]);
+  ])
 
-  const wb = XLSX.utils.book_new();
-  const wsMain = XLSX.utils.aoa_to_sheet(mainData);
-  const wsExpenses = XLSX.utils.aoa_to_sheet([expensesHeaders, ...expensesData]);
+  // 4. Total al final de la tabla
+  const totalRow = ['TOTAL', '', '', '', Number(totalMontoGastado.value), '']
 
-  XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud Principal');
-  XLSX.utils.book_append_sheet(wb, wsExpenses, 'Detalle de Gastos');
+  // 5. Crear workbook
+  const wb = XLSX.utils.book_new()
 
-  wsExpenses['!cols'] = [{ wch: 15 }, { wch: 40 }, { wch: 15 }];
-  XLSX.writeFile(wb, 'Rendicion_Cuentas_F-02.xlsx');
+  // 6. Hoja principal con formato de formulario
+  const wsMain = XLSX.utils.aoa_to_sheet([...mainData, expensesHeaders, ...expensesData, totalRow])
+
+  // 7. Aplicar estilos y formatos
+  applyExcelStyles(
+    wsMain,
+    mainData.length,
+    expensesData.length,
+    formData.value.descripcion_actividad,
+    formData.value.objetivo_actividad,
+  )
+
+  // 8. Agregar hoja al workbook y guardar
+  XLSX.utils.book_append_sheet(wb, wsMain, 'Rendicion de Cuentas')
+  XLSX.writeFile(wb, `Rendicion_Cuentas_F-02_${getCurrentDate1()}.xlsx`)
+}
+
+function applyExcelStyles(
+  worksheet,
+  mainDataRows,
+  expensesRows,
+  descripcionActividad,
+  objetivoActividad,
+) {
+  if (!worksheet['!merges']) worksheet['!merges'] = []
+
+  // Fusionar celdas para títulos y secciones
+  worksheet['!merges'].push(
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } },
+    { s: { r: 7, c: 0 }, e: { r: 7, c: 3 } },
+    { s: { r: 12, c: 0 }, e: { r: 12, c: 3 } },
+    { s: { r: 18, c: 0 }, e: { r: 18, c: 3 } },
+    { s: { r: 21 + mainDataRows, c: 0 }, e: { r: 21 + mainDataRows, c: 3 } },
+  )
+
+  // Configurar anchos de columnas
+  worksheet['!cols'] = [{ wch: 30 }, { wch: 40 }, { wch: 20 }, { wch: 25 }]
+
+  // Aplicar formatos a celdas específicas
+  Object.keys(worksheet).forEach((cellAddress) => {
+    if (cellAddress !== '!ref' && cellAddress !== '!merges' && cellAddress !== '!cols') {
+      const cell = worksheet[cellAddress]
+      const cellRef = XLSX.utils.decode_cell(cellAddress)
+
+      // Estilo para títulos y encabezados de sección
+      if (
+        cellRef.r === 0 ||
+        cellRef.r === 2 ||
+        cellRef.r === 7 ||
+        cellRef.r === 12 ||
+        cellRef.r === 18 ||
+        cellRef.r === 21 + mainDataRows
+      ) {
+        cell.s = {
+          font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 14 },
+          fill: { fgColor: { rgb: '4472C4' } },
+          alignment: { horizontal: 'center', vertical: 'center' },
+        }
+      }
+
+      // Estilo para etiquetas
+      else if (cellRef.c === 0 && cellRef.r > 0 && cellRef.r < 21 + mainDataRows) {
+        cell.s = {
+          font: { bold: true, color: { rgb: '000000' } },
+          fill: { fgColor: { rgb: 'D9E1F2' } },
+        }
+      }
+
+      // Estilo para encabezados de tabla
+      else if (cellRef.r === 22 + mainDataRows) {
+        cell.s = {
+          font: { bold: true, color: { rgb: 'FFFFFF' } },
+          fill: { fgColor: { rgb: '5B9BD5' } },
+          alignment: { horizontal: 'center' },
+        }
+      }
+
+      // Estilo para la fila total
+      else if (cellRef.r === 23 + mainDataRows + expensesRows) {
+        cell.s = {
+          font: { bold: true },
+          fill: { fgColor: { rgb: 'F2F2F2' } },
+        }
+      }
+
+      // Formato de moneda para columna de montos (columna C)
+      else if (
+        cellRef.c === 2 &&
+        cellRef.r >= 23 + mainDataRows &&
+        cellRef.r <= 22 + mainDataRows + expensesRows
+      ) {
+        cell.z = '"Bs." #,##0.00'
+      }
+
+      // Formato de fecha para celdas de fecha
+      else if (
+        (cell.v && typeof cell.v === 'string' && cell.v.match(/\d{4}-\d{2}-\d{2}/)) ||
+        (cellRef.c === 2 && cellRef.r === 9)
+      ) {
+        cell.z = 'dd/mm/yyyy'
+      }
+
+      // Estilo específico para la celda de descripción de actividad (B9)
+      if (cellRef.r === 8 && cellRef.c === 1) {
+        if (!cell.s) cell.s = {}
+        cell.s.alignment = cell.s.alignment || {}
+        cell.s.alignment.wrapText = true
+        cell.s.alignment.vertical = 'top'
+      }
+
+      // Estilo específico para la celda de objetivo de actividad (B11)
+      if (cellRef.r === 10 && cellRef.c === 1) {
+        if (!cell.s) cell.s = {}
+        cell.s.alignment = cell.s.alignment || {}
+        cell.s.alignment.wrapText = true
+        cell.s.alignment.vertical = 'top'
+      }
+    }
+  })
+
+  // Agregar bordes a la tabla de gastos
+  const tableStartRow = 22 + mainDataRows
+  const tableEndRow = 23 + mainDataRows + expensesRows
+
+  for (let r = tableStartRow; r <= tableEndRow; r++) {
+    for (let c = 0; c < 4; c++) {
+      const cellAddress = XLSX.utils.encode_cell({ r, c })
+      if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: '' }
+      if (!worksheet[cellAddress].s) worksheet[cellAddress].s = {}
+      worksheet[cellAddress].s.border = {
+        top: { style: 'thin', color: { rgb: '000000' } },
+        right: { style: 'thin', color: { rgb: '000000' } },
+        bottom: { style: 'thin', color: { rgb: '000000' } },
+        left: { style: 'thin', color: { rgb: '000000' } },
+      }
+    }
+  }
+
+  // Ajustar altura de filas para las celdas con texto largo
+  if (!worksheet['!rows']) worksheet['!rows'] = []
+
+  // Ajustar altura de la fila de descripción (fila 9)
+  if (descripcionActividad && descripcionActividad.length > 100) {
+    worksheet['!rows'][8] = { hpt: 60 }
+  }
+
+  // Ajustar altura de la fila de objetivo (fila 11)
+  if (objetivoActividad && objetivoActividad.length > 100) {
+    worksheet['!rows'][10] = { hpt: 60 }
+  }
+}
+
+function getCurrentDate1() {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${day}/${month}/${year}`
 }
 
 // Hooks de ciclo de vida
 onMounted(() => {
-  //prefillFormData();
-  //cargarUsuarios();
-  //cargarCargoCuenta();
   cargarDatos()
+  cargarSolicitudesFondos()
+  getSolicitudFondosInfo(idActividad,idTarea)
+
 });
+
 </script>
 
 <style scoped>

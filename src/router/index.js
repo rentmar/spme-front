@@ -55,7 +55,7 @@ const router = createRouter({
     },
     {
       path: '/monitoreo/formulario01/:id/',
-      // name: 'editarIndicadores',
+       // name: 'editarIndicadores',
       component: () => import('../views/monitoreo/PeiFormulario01.vue'),
     },
     {
