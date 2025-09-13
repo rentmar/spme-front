@@ -251,79 +251,110 @@
         <v-card-title>{{ isEditing ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</v-card-title>
         <v-card-text>
           <v-form ref="userForm" @submit.prevent="saveUser">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="currentUser.name"
-                  label="Nombre completo"
-                  :rules="[required]"
-                  variant="outlined"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="currentUser.email"
-                  label="Email"
-                  :rules="[required, emailRule]"
-                  type="email"
-                  variant="outlined"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6" v-if="!isEditing">
-                <v-text-field
-                  v-model="currentUser.password"
-                  label="Contraseña"
-                  :rules="[required, minLength(8)]"
-                  type="password"
-                  variant="outlined"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6" v-if="!isEditing">
-                <v-text-field
-                  v-model="currentUser.passwordConfirm"
-                  label="Confirmar contraseña"
-                  :rules="[required, passwordMatch]"
-                  type="password"
-                  variant="outlined"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-select
-                  v-model="currentUser.roles"
-                  :items="availableRoles"
-                  label="Roles"
-                  :rules="[required]"
-                  multiple
-                  chips
-                  variant="outlined"
-                ></v-select>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="currentUser.status"
-                  :items="statusOptions"
-                  label="Estado"
-                  :rules="[required]"
-                  variant="outlined"
-                ></v-select>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="currentUser.phone"
-                  label="Teléfono"
-                  variant="outlined"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="currentUser.notes"
-                  label="Notas"
-                  variant="outlined"
-                  rows="2"
-                ></v-textarea>
-              </v-col>
-            </v-row>
-          </v-form>
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="currentUser.nombre"
+                label="Nombre"
+                :rules="[required]"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="currentUser.paterno"
+                label="Apellido Paterno"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="currentUser.materno"
+                label="Apellido Materno"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="currentUser.ci"
+                label="C.I."
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="currentUser.usuario"
+                label="Nombre de Usuario"
+                :rules="[required]"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="currentUser.cargo"
+                label="Cargo"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="currentUser.banco"
+                label="Banco"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="currentUser.numero_cuenta"
+                label="Número de Cuenta"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="currentUser.tipo_cuenta"
+                label="Tipo de Cuenta"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6" v-if="!isEditing">
+              <v-text-field
+                v-model="currentUser.password"
+                label="Contraseña"
+                :rules="[required, minLength(8)]"
+                type="password"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6" v-if="!isEditing">
+              <v-text-field
+                v-model="currentUser.passwordConfirm"
+                label="Confirmar contraseña"
+                :rules="[required, passwordMatch]"
+                type="password"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="currentUser.permisos"
+                :items="availablePermissions"
+                label="Permisos"
+                :rules="[required]"
+                variant="outlined"
+              ></v-select>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="currentUser.is_active"
+                :items="statusOptions"
+                label="Estado"
+                :rules="[required]"
+                variant="outlined"
+              ></v-select>
+            </v-col>
+          </v-row>
+        </v-form>
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn color="grey" @click="userDialog = false">Cancelar</v-btn>
@@ -458,6 +489,7 @@
 </template>
 
 <script setup>
+import axios from 'axios'
 import { ref, computed, onMounted } from 'vue'
 //import { useAuthStore } from '@/stores/auth'
 import { useSnackbar } from '@/composables/useSnackbar'
@@ -476,6 +508,8 @@ const importFile = ref(null)
 const previewData = ref([])
 const importError = ref('')
 const fileInput = ref(null)
+const availablePermissions = ['A', 'B', 'C', 'D'] // Ajustar según tus permisos
+const userForm = ref(null)
 
 const previewHeaders = [
   { title: 'Nombre', key: 'name' },
@@ -502,15 +536,19 @@ const filterDialog = ref(false)
 const isEditing = ref(false)
 
 const currentUser = ref({
-  id: '',
-  name: '',
-  email: '',
+  usuario: '',
+  nombre: '',
+  paterno: '',
+  materno: '',
+  ci: '',
+  cargo: '',
+  banco: '',
+  numero_cuenta: '',
+  tipo_cuenta: '',
+  is_active: true,
   password: '',
   passwordConfirm: '',
-  roles: [],
-  status: 'active',
-  phone: '',
-  notes: '',
+  permisos: '',
 })
 
 const userToDelete = ref(null)
@@ -550,7 +588,6 @@ const headers = [
 
 // Reglas de validación
 const required = (v) => !!v || 'Campo requerido'
-const emailRule = (v) => /.+@.+\..+/.test(v) || 'Email inválido'
 const minLength = (length) => (v) => (v && v.length >= length) || `Mínimo ${length} caracteres`
 const passwordMatch = () =>
   newPassword.value === newPasswordConfirm.value || 'Las contraseñas no coinciden'
@@ -585,67 +622,18 @@ const filteredUsers = computed(() => {
 const fetchUsers = async () => {
   try {
     tableLoading.value = true
-    // Simulación de API - en un proyecto real usarías tu llamada API
-    users.value = [
-      {
-        id: '1',
-        name: 'Admin Principal',
-        email: 'admin@example.com',
-        roles: ['admin'],
-        status: 'active',
-        avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-        lastLogin: '2023-06-20T10:30:00Z',
-        createdAt: '2023-01-15',
-        phone: '+1234567890',
-        notes: 'Usuario administrador principal',
-      },
-      {
-        id: '2',
-        name: 'Editor Ejemplo',
-        email: 'editor@example.com',
-        roles: ['editor'],
-        status: 'active',
-        avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
-        lastLogin: '2023-06-19T15:45:00Z',
-        createdAt: '2023-02-20',
-        phone: '+1234567891',
-        notes: 'Editor de contenido',
-      },
-      {
-        id: '3',
-        name: 'Usuario Normal',
-        email: 'user@example.com',
-        roles: ['user'],
-        status: 'inactive',
-        lastLogin: '2023-05-28T09:20:00Z',
-        createdAt: '2023-03-10',
-        phone: '+1234567892',
-        notes: 'Usuario regular',
-      },
-      {
-        id: '4',
-        name: 'Invitado Temporal',
-        email: 'guest@example.com',
-        roles: ['guest'],
-        status: 'pending',
-        lastLogin: null,
-        createdAt: '2023-06-01',
-        phone: '+1234567893',
-        notes: 'Acceso temporal',
-      },
-      {
-        id: '5',
-        name: 'Gerente',
-        email: 'manager@example.com',
-        roles: ['manager'],
-        status: 'active',
-        avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
-        lastLogin: '2023-06-20T08:15:00Z',
-        createdAt: '2023-04-05',
-        phone: '+1234567894',
-        notes: 'Gerente de departamento',
-      },
-    ]
+    loading.value = true
+    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/listaUsuarios/');
+    const data = response.data;
+    users.value = data.usuarios.map(user => ({
+    id: user.id,
+    name: `${user.nombre} ${user.paterno} ${user.materno}`,
+    email: user.usuario,
+    roles: [user.cargo],
+    status: user.es_activo ? 'active' : 'inactive',
+    avatar: null,
+    lastLogin: null,
+    }));
   } catch (error) {
     errorMsg('Error al cargar usuarios')
     console.error('Error fetching users:', error)
@@ -657,15 +645,19 @@ const fetchUsers = async () => {
 
 const openCreateDialog = () => {
   currentUser.value = {
-    id: '',
-    name: '',
-    email: '',
+    usuario: '',
+    nombre: '',
+    paterno: '',
+    materno: '',
+    ci: '',
+    cargo: '',
+    banco: '',
+    numero_cuenta: '',
+    tipo_cuenta: '',
+    is_active: true,
     password: '',
     passwordConfirm: '',
-    roles: ['user'],
-    status: 'active',
-    phone: '',
-    notes: '',
+    permisos: '',
   }
   isEditing.value = false
   userDialog.value = true
@@ -678,26 +670,41 @@ const openEditDialog = (user) => {
 }
 
 const saveUser = async () => {
+  const { valid } = await userForm.value.validate()
+
+  if (!valid) {
+    return
+  }
+
   try {
     savingUser.value = true
 
-    // Simulación de API - en un proyecto real harías una llamada API aquí
     if (isEditing.value) {
-      // Actualizar usuario
-      const index = users.value.findIndex((u) => u.id === currentUser.value.id)
-      if (index !== -1) {
-        users.value[index] = { ...currentUser.value }
-      }
-      successMsg('Usuario actualizado correctamente')
+      // API de actualización
+      // await axios.put(...)
+      successMsg('Usuario actualizado correctamente (simulado)')
     } else {
       // Crear usuario
-      const newUser = {
-        ...currentUser.value,
-        id: (users.value.length + 1).toString(),
-        createdAt: new Date().toISOString().split('T')[0],
-        lastLogin: null,
+      const payload = {
+        usuario: currentUser.value.usuario,
+        nombre: currentUser.value.nombre,
+        paterno: currentUser.value.paterno,
+        materno: currentUser.value.materno,
+        ci: currentUser.value.ci,
+        cargo: currentUser.value.cargo,
+        banco: currentUser.value.banco,
+        numero_cuenta: currentUser.value.numero_cuenta,
+        tipo_cuenta: currentUser.value.tipo_cuenta,
+        is_active: currentUser.value.is_active,
+        password: currentUser.value.password,
+        permisos: currentUser.value.permisos,
       }
-      users.value.unshift(newUser)
+
+      await axios.post(
+        'http://127.0.0.1:8000/autenticacion_api/crearUsuario/',
+        payload
+      )
+
       successMsg('Usuario creado correctamente')
     }
 
@@ -705,6 +712,9 @@ const saveUser = async () => {
   } catch (error) {
     errorMsg('Error al guardar usuario')
     console.error('Error saving user:', error)
+    if (error.response) {
+      console.error('Datos de error:', error.response.data)
+    }
   } finally {
     savingUser.value = false
   }
