@@ -790,10 +790,10 @@ const columns = ref([
     data: 'tipo',
     title: 'Tipo de Actividad',
     type: 'dropdown',
-    width: 110,
+    width: 250,
     source: function (query, process) {
       const tipos = storePlanificacion.listaTiposAct
-      const siglas = tipos ? tipos.map((t) => t.sigla) : []
+      const siglas = tipos ? tipos.map((t) => t.sigla + '-' + t.tipo_actividad) : []
       process(siglas)
     },
   },
