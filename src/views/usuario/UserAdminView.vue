@@ -25,7 +25,7 @@
               Nuevo Usuario
             </v-btn>
 
-            <v-btn
+            <!-- <v-btn
               color="success"
               prepend-icon="mdi-upload"
               @click="openImportDialog"
@@ -48,7 +48,7 @@
               :loading="exportingUsers"
             >
               Exportar Excel
-            </v-btn>
+            </v-btn> -->
 
             <v-text-field
               v-model="search"
@@ -87,11 +87,11 @@
                 <div class="d-flex align-center">
                   <v-avatar size="36" color="grey-lighten-2" class="mr-3">
                     <v-img v-if="item.avatar" :src="item.avatar"></v-img>
-                    <span v-else class="text-caption">{{ getInitials(item.name) }}</span>
+                    <span v-else class="text-caption">{{ getInitials(item.nombre) }}</span>
                   </v-avatar>
                   <div>
-                    <div class="font-weight-medium">{{ item.name }}</div>
-                    <div class="text-caption text-medium-emphasis">{{ item.email }}</div>
+                    <div class="font-weight-medium">{{ item.nombre }} {{ item.paterno }}  {{ item.marterno }}</div>
+                    <div class="text-caption text-medium-emphasis">{{ item.usuario }}</div>
                   </div>
                 </div>
               </template>
@@ -118,8 +118,8 @@
               </template>
 
               <!-- Último acceso -->
-              <template v-slot:item.lastLogin="{ item }">
-                {{ formatDate(item.lastLogin) || 'Nunca' }}
+              <template v-slot:item.permisos="{ item }">
+                {{ item.permisos || 'No definido' }}
               </template>
 
               <!-- Acciones -->
@@ -135,17 +135,7 @@
                   >
                     <v-icon>mdi-pencil</v-icon>
                   </v-btn>
-                  <v-btn
-                    icon
-                    size="small"
-                    color="error"
-                    variant="text"
-                    @click="confirmDeleteUser(item)"
-                    class="ml-1"
-                    :loading="loadingDelete"
-                  >
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
+
                   <v-menu>
                     <template v-slot:activator="{ props }">
                       <v-btn
@@ -156,7 +146,7 @@
                         v-bind="props"
                         class="ml-1"
                       >
-                        <v-icon>mdi-dots-vertical</v-icon>
+                      <v-icon>mdi-dots-vertical</v-icon>
                       </v-btn>
                     </template>
                     <v-list density="compact">
@@ -196,7 +186,7 @@
 
     <!-- Diálogos -->
     <!-- Diálogo de importación -->
-    <v-dialog v-model="importDialog" max-width="600" persistent>
+    <!-- <v-dialog v-model="importDialog" max-width="600" persistent>
       <v-card>
         <v-card-title>Importar Usuarios desde Excel</v-card-title>
         <v-card-text>
@@ -244,7 +234,7 @@
           </v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
     <!-- Crear/Editar Usuario -->
     <v-dialog v-model="userDialog" max-width="800" persistent>
       <v-card>
@@ -395,7 +385,7 @@
     </v-dialog>
 
     <!-- Confirmar eliminación -->
-    <v-dialog v-model="confirmDeleteDialog" max-width="500" persistent>
+    <!-- <v-dialog v-model="confirmDeleteDialog" max-width="500" persistent>
       <v-card>
         <v-card-title class="bg-error text-white">
           <v-icon icon="mdi-alert-circle" class="mr-2"></v-icon>
@@ -413,7 +403,7 @@
           <v-btn color="error" @click="deleteUser" :loading="loadingDelete">Eliminar</v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
 
     <!-- Filtros -->
     <v-dialog v-model="filterDialog" max-width="600" persistent>
@@ -494,48 +484,49 @@ import { ref, computed, onMounted } from 'vue'
 //import { useAuthStore } from '@/stores/auth'
 import { useSnackbar } from '@/composables/useSnackbar'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
-import * as XLSX from 'xlsx'
+//import * as XLSX from 'xlsx'
 
 const { successMsg, errorMsg } = useSnackbar()
 //const authStore = useAuthStore()
 
 // Nuevas propiedades para importación/exportación
-const loadingMessage = ref('Cargando usuarios...')
-const importingUsers = ref(false)
-const exportingUsers = ref(false)
-const importDialog = ref(false)
-const importFile = ref(null)
-const previewData = ref([])
-const importError = ref('')
-const fileInput = ref(null)
+//const loadingMessage = ref('Cargando usuarios...')
+// const importingUsers = ref(false)
+// const exportingUsers = ref(false)
+// const importDialog = ref(false)
+// const importFile = ref(null)
+// const previewData = ref([])
+// const importError = ref('')
+// const fileInput = ref(null)
 const availablePermissions = ['A', 'B', 'C', 'D'] // Ajustar según tus permisos
 const userForm = ref(null)
 
-const previewHeaders = [
-  { title: 'Nombre', key: 'name' },
-  { title: 'Email', key: 'email' },
-  { title: 'Roles', key: 'roles' },
-  { title: 'Estado', key: 'status' },
-  { title: 'Teléfono', key: 'phone' },
-]
+// const previewHeaders = [
+//   { title: 'Nombre', key: 'name' },
+//   { title: 'Email', key: 'email' },
+//   { title: 'Roles', key: 'roles' },
+//   { title: 'Estado', key: 'status' },
+//   { title: 'Teléfono', key: 'phone' },
+// ]
 
 // Datos y estado
 const loading = ref(true)
 const tableLoading = ref(false)
 const savingUser = ref(false)
 const loadingEdit = ref(false)
-const loadingDelete = ref(false)
+//const loadingDelete = ref(false)
 const resettingPassword = ref(false)
 
 const users = ref([])
 const search = ref('')
 const userDialog = ref(false)
 const resetPasswordDialog = ref(false)
-const confirmDeleteDialog = ref(false)
+//const confirmDeleteDialog = ref(false)
 const filterDialog = ref(false)
 const isEditing = ref(false)
 
 const currentUser = ref({
+  id:null,
   usuario: '',
   nombre: '',
   paterno: '',
@@ -551,7 +542,8 @@ const currentUser = ref({
   permisos: '',
 })
 
-const userToDelete = ref(null)
+//const userToDelete = ref(null)
+const userIdToReset = ref(null);
 const newPassword = ref('')
 const newPasswordConfirm = ref('')
 
@@ -582,7 +574,7 @@ const headers = [
   { title: 'Usuario', key: 'user', sortable: false },
   { title: 'Estado', key: 'status', width: '120px' },
   { title: 'Roles', key: 'roles', sortable: false },
-  { title: 'Último acceso', key: 'lastLogin', width: '150px' },
+  { title: 'Permisos', key: 'permisos', width: '150px' },
   { title: 'Acciones', key: 'actions', sortable: false, width: '150px' },
 ]
 
@@ -627,8 +619,17 @@ const fetchUsers = async () => {
     const data = response.data;
     users.value = data.usuarios.map(user => ({
     id: user.id,
-    name: `${user.nombre} ${user.paterno} ${user.materno}`,
-    email: user.usuario,
+    nombre: user.nombre,
+    paterno: user.paterno,
+    materno: user.materno,
+    ci: user.ci,
+    usuario: user.usuario,
+    cargo: user.cargo,
+    banco: user.banco,
+    numero_cuenta: user.numero_cuenta,
+    tipo_cuenta: user.tipo_cuenta,
+    permisos: user.permisos,
+    is_active: user.es_activo,
     roles: [user.cargo],
     status: user.es_activo ? 'active' : 'inactive',
     avatar: null,
@@ -664,6 +665,7 @@ const openCreateDialog = () => {
 }
 
 const openEditDialog = (user) => {
+  console.log(user)
   currentUser.value = { ...user }
   isEditing.value = true
   userDialog.value = true
@@ -679,35 +681,43 @@ const saveUser = async () => {
   try {
     savingUser.value = true
 
+    const payload = {
+      usuario: currentUser.value.usuario,
+      nombre: currentUser.value.nombre,
+      paterno: currentUser.value.paterno,
+      materno: currentUser.value.materno,
+      ci: currentUser.value.ci,
+      cargo: currentUser.value.cargo,
+      banco: currentUser.value.banco,
+      numero_cuenta: currentUser.value.numero_cuenta,
+      tipo_cuenta: currentUser.value.tipo_cuenta,
+      is_active: currentUser.value.is_active,
+      permisos: currentUser.value.permisos,
+    };
+
     if (isEditing.value) {
-      // API de actualización
-      // await axios.put(...)
-      successMsg('Usuario actualizado correctamente (simulado)')
+      const updatePayload = {
+        ...payload,
+        id_usuario: currentUser.value.id,
+      };
+       await axios.put(
+        'http://127.0.0.1:8000/autenticacion_api/actualizarUsuario/',
+        updatePayload
+      );
+      successMsg('Usuario actualizado correctamente');
     } else {
-      // Crear usuario
-      const payload = {
-        usuario: currentUser.value.usuario,
-        nombre: currentUser.value.nombre,
-        paterno: currentUser.value.paterno,
-        materno: currentUser.value.materno,
-        ci: currentUser.value.ci,
-        cargo: currentUser.value.cargo,
-        banco: currentUser.value.banco,
-        numero_cuenta: currentUser.value.numero_cuenta,
-        tipo_cuenta: currentUser.value.tipo_cuenta,
-        is_active: currentUser.value.is_active,
+
+      const createPayload = {
+        ...payload,
         password: currentUser.value.password,
-        permisos: currentUser.value.permisos,
-      }
+      };
 
       await axios.post(
         'http://127.0.0.1:8000/autenticacion_api/crearUsuario/',
-        payload
+        createPayload
       )
-
       successMsg('Usuario creado correctamente')
     }
-
     userDialog.value = false
   } catch (error) {
     errorMsg('Error al guardar usuario')
@@ -720,29 +730,29 @@ const saveUser = async () => {
   }
 }
 
-const confirmDeleteUser = (user) => {
-  userToDelete.value = user
-  confirmDeleteDialog.value = true
-}
+// const confirmDeleteUser = (user) => {
+//   userToDelete.value = user
+//   confirmDeleteDialog.value = true
+// }
 
-const deleteUser = async () => {
-  try {
-    loadingDelete.value = true
+// const deleteUser = async () => {
+//   try {
+//     loadingDelete.value = true
 
-    // Simulación de API - en un proyecto real harías una llamada API aquí
-    users.value = users.value.filter((u) => u.id !== userToDelete.value.id)
-    successMsg('Usuario eliminado correctamente')
-    confirmDeleteDialog.value = false
-  } catch (error) {
-    errorMsg('Error al eliminar usuario')
-    console.error('Error deleting user:', error)
-  } finally {
-    loadingDelete.value = false
-  }
-}
+//     // Simulación de API - en un proyecto real harías una llamada API aquí
+//     users.value = users.value.filter((u) => u.id !== userToDelete.value.id)
+//     successMsg('Usuario eliminado correctamente')
+//     confirmDeleteDialog.value = false
+//   } catch (error) {
+//     errorMsg('Error al eliminar usuario')
+//     console.error('Error deleting user:', error)
+//   } finally {
+//     loadingDelete.value = false
+//   }
+// }
 
 const openResetPasswordDialog = (user) => {
-  currentUser.value = { ...user }
+  userIdToReset.value = user.id;
   newPassword.value = ''
   newPasswordConfirm.value = ''
   resetPasswordDialog.value = true
@@ -752,7 +762,24 @@ const resetPassword = async () => {
   try {
     resettingPassword.value = true
 
-    // Simulación de API - en un proyecto real harías una llamada API aquí
+    const userId = userIdToReset.value;
+    const newPwd = newPassword.value;
+
+    if (!userId || !newPwd) {
+      errorMsg('ID de usuario y nueva contraseña son requeridos.');
+      return;
+    }
+
+    const payload = {
+      id_usuario: userId,
+      password: newPwd,
+    };
+
+    await axios.put(
+      'http://127.0.0.1:8000/autenticacion_api/cambiarPwdUsuario/',
+      payload
+    );
+
     successMsg('Contraseña actualizada correctamente')
     resetPasswordDialog.value = false
   } catch (error) {
@@ -767,7 +794,23 @@ const toggleUserStatus = async (user) => {
   try {
     loadingEdit.value = true
 
-    // Simulación de API - en un proyecto real harías una llamada API aquí
+    const nuevoEstado = !user.is_active;
+
+    const payload = {
+      id_usuario: user.id,
+      activo: nuevoEstado,
+    };
+
+    await axios.put(
+      'http://127.0.0.1:8000/autenticacion_api/cambiarEstadoUsuario/',
+      payload
+    );
+
+    const userToUpdate = users.value.find((u) => u.id === user.id);
+    if (userToUpdate) {
+      userToUpdate.is_active = nuevoEstado;
+    }
+
     const index = users.value.findIndex((u) => u.id === user.id)
     if (index !== -1) {
       users.value[index].status = user.status === 'active' ? 'inactive' : 'active'
@@ -800,11 +843,11 @@ const clearFilters = () => {
   filterDialog.value = false
 }
 
-const formatDate = (dateString) => {
-  if (!dateString) return ''
-  const options = { year: 'numeric', month: 'short', day: 'numeric' }
-  return new Date(dateString).toLocaleDateString(undefined, options)
-}
+// const formatDate = (dateString) => {
+//   if (!dateString) return ''
+//   const options = { year: 'numeric', month: 'short', day: 'numeric' }
+//   return new Date(dateString).toLocaleDateString(undefined, options)
+// }
 
 const getInitials = (name) => {
   if (!name) return ''
@@ -853,160 +896,160 @@ onMounted(() => {
 })
 
 //*************** Exportar a Excel ********************/
-const openImportDialog = () => {
-  importDialog.value = true
-  importFile.value = null
-  previewData.value = []
-  importError.value = ''
-}
+// const openImportDialog = () => {
+//   importDialog.value = true
+//   importFile.value = null
+//   previewData.value = []
+//   importError.value = ''
+// }
 
-const cancelImport = () => {
-  importDialog.value = false
-  importFile.value = null
-  previewData.value = []
-}
+// const cancelImport = () => {
+//   importDialog.value = false
+//   importFile.value = null
+//   previewData.value = []
+// }
 
-const handleFileImport = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    importFile.value = file
-    previewImport()
-  }
-}
+// const handleFileImport = (event) => {
+//   const file = event.target.files[0]
+//   if (file) {
+//     importFile.value = file
+//     previewImport()
+//   }
+// }
 
-const previewImport = async () => {
-  if (!importFile.value) return
+// const previewImport = async () => {
+//   if (!importFile.value) return
 
-  try {
-    loadingMessage.value = 'Procesando archivo Excel...'
-    importingUsers.value = true
+//   try {
+//     loadingMessage.value = 'Procesando archivo Excel...'
+//     importingUsers.value = true
 
-    const data = await readExcelFile(importFile.value)
-    previewData.value = data.map((item) => ({
-      name: item.Nombre || item.name || '',
-      email: item.Email || item.email || '',
-      roles: item.Roles || item.roles || 'user',
-      status: item.Estado || item.status || 'active',
-      phone: item.Teléfono || item.phone || '',
-    }))
+//     const data = await readExcelFile(importFile.value)
+//     previewData.value = data.map((item) => ({
+//       name: item.Nombre || item.name || '',
+//       email: item.Email || item.email || '',
+//       roles: item.Roles || item.roles || 'user',
+//       status: item.Estado || item.status || 'active',
+//       phone: item.Teléfono || item.phone || '',
+//     }))
 
-    importError.value = ''
-  } catch (error) {
-    console.error('Error al procesar archivo:', error)
-    importError.value = 'Error al procesar el archivo. Verifique el formato.'
-    previewData.value = []
-  } finally {
-    importingUsers.value = false
-    loadingMessage.value = 'Cargando usuarios...'
-  }
-}
+//     importError.value = ''
+//   } catch (error) {
+//     console.error('Error al procesar archivo:', error)
+//     importError.value = 'Error al procesar el archivo. Verifique el formato.'
+//     previewData.value = []
+//   } finally {
+//     importingUsers.value = false
+//     loadingMessage.value = 'Cargando usuarios...'
+//   }
+// }
 
-const readExcelFile = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
+// const readExcelFile = (file) => {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader()
 
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target.result)
-        const workbook = XLSX.read(data, { type: 'array' })
-        const firstSheetName = workbook.SheetNames[0]
-        const worksheet = workbook.Sheets[firstSheetName]
-        const jsonData = XLSX.utils.sheet_to_json(worksheet)
-        resolve(jsonData)
-      } catch (error) {
-        reject(error)
-      }
-    }
+//     reader.onload = (e) => {
+//       try {
+//         const data = new Uint8Array(e.target.result)
+//         const workbook = XLSX.read(data, { type: 'array' })
+//         const firstSheetName = workbook.SheetNames[0]
+//         const worksheet = workbook.Sheets[firstSheetName]
+//         const jsonData = XLSX.utils.sheet_to_json(worksheet)
+//         resolve(jsonData)
+//       } catch (error) {
+//         reject(error)
+//       }
+//     }
 
-    reader.onerror = () => {
-      reject(new Error('Error al leer el archivo'))
-    }
+//     reader.onerror = () => {
+//       reject(new Error('Error al leer el archivo'))
+//     }
 
-    reader.readAsArrayBuffer(file)
-  })
-}
+//     reader.readAsArrayBuffer(file)
+//   })
+// }
 
-const confirmImport = async () => {
-  if (previewData.value.length === 0) return
+// const confirmImport = async () => {
+//   if (previewData.value.length === 0) return
 
-  try {
-    loadingMessage.value = 'Importando usuarios...'
-    importingUsers.value = true
+//   try {
+//     loadingMessage.value = 'Importando usuarios...'
+//     importingUsers.value = true
 
-    // Validar datos antes de importar
-    const invalidUsers = previewData.value.filter(
-      (user) => !user.name || !user.email || !validateEmail(user.email),
-    )
+//     // Validar datos antes de importar
+//     const invalidUsers = previewData.value.filter(
+//       (user) => !user.name || !user.email || !validateEmail(user.email),
+//     )
 
-    if (invalidUsers.length > 0) {
-      throw new Error(`${invalidUsers.length} usuarios tienen datos inválidos (nombre o email)`)
-    }
+//     if (invalidUsers.length > 0) {
+//       throw new Error(`${invalidUsers.length} usuarios tienen datos inválidos (nombre o email)`)
+//     }
 
-    // Simular llamada API para importar
-    // En un proyecto real, aquí enviarías los datos al backend
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+//     // Simular llamada API para importar
+//     // En un proyecto real, aquí enviarías los datos al backend
+//     await new Promise((resolve) => setTimeout(resolve, 1500))
 
-    // Agregar usuarios importados a la lista
-    const newUsers = previewData.value.map((user, index) => ({
-      id: `import-${Date.now()}-${index}`,
-      name: user.name,
-      email: user.email,
-      roles: user.roles.split(',').map((r) => r.trim()),
-      status: user.status || 'active',
-      phone: user.phone || '',
-      createdAt: new Date().toISOString().split('T')[0],
-      lastLogin: null,
-      notes: 'Importado desde Excel',
-    }))
+//     // Agregar usuarios importados a la lista
+//     const newUsers = previewData.value.map((user, index) => ({
+//       id: `import-${Date.now()}-${index}`,
+//       name: user.name,
+//       email: user.email,
+//       roles: user.roles.split(',').map((r) => r.trim()),
+//       status: user.status || 'active',
+//       phone: user.phone || '',
+//       createdAt: new Date().toISOString().split('T')[0],
+//       lastLogin: null,
+//       notes: 'Importado desde Excel',
+//     }))
 
-    users.value = [...newUsers, ...users.value]
-    successMsg(`${previewData.value.length} usuarios importados correctamente`)
-    importDialog.value = false
-  } catch (error) {
-    console.error('Error al importar usuarios:', error)
-    importError.value = error.message
-  } finally {
-    importingUsers.value = false
-    loadingMessage.value = 'Cargando usuarios...'
-  }
-}
+//     users.value = [...newUsers, ...users.value]
+//     successMsg(`${previewData.value.length} usuarios importados correctamente`)
+//     importDialog.value = false
+//   } catch (error) {
+//     console.error('Error al importar usuarios:', error)
+//     importError.value = error.message
+//   } finally {
+//     importingUsers.value = false
+//     loadingMessage.value = 'Cargando usuarios...'
+//   }
+// }
 
-const exportToExcel = async () => {
-  try {
-    exportingUsers.value = true
+// const exportToExcel = async () => {
+//   try {
+//     exportingUsers.value = true
 
-    // Preparar datos para exportación
-    const dataToExport = filteredUsers.value.map((user) => ({
-      Nombre: user.name,
-      Email: user.email,
-      Roles: user.roles.join(', '),
-      Estado: getStatusText(user.status),
-      Teléfono: user.phone,
-      'Último acceso': user.lastLogin ? formatDate(user.lastLogin) : 'Nunca',
-      'Fecha creación': user.createdAt,
-    }))
+//     // Preparar datos para exportación
+//     const dataToExport = filteredUsers.value.map((user) => ({
+//       Nombre: user.name,
+//       Email: user.email,
+//       Roles: user.roles.join(', '),
+//       Estado: getStatusText(user.status),
+//       Teléfono: user.phone,
+//       'Último acceso': user.lastLogin ? formatDate(user.lastLogin) : 'Nunca',
+//       'Fecha creación': user.createdAt,
+//     }))
 
-    // Crear libro de Excel
-    const workbook = XLSX.utils.book_new()
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport)
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuarios')
+//     // Crear libro de Excel
+//     const workbook = XLSX.utils.book_new()
+//     const worksheet = XLSX.utils.json_to_sheet(dataToExport)
+//     XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuarios')
 
-    // Generar archivo y descargar
-    const dateStr = new Date().toISOString().slice(0, 10)
-    XLSX.writeFile(workbook, `usuarios_${dateStr}.xlsx`)
+//     // Generar archivo y descargar
+//     const dateStr = new Date().toISOString().slice(0, 10)
+//     XLSX.writeFile(workbook, `usuarios_${dateStr}.xlsx`)
 
-    successMsg('Exportación completada correctamente')
-  } catch (error) {
-    console.error('Error al exportar a Excel:', error)
-    errorMsg('Error al exportar los datos')
-  } finally {
-    exportingUsers.value = false
-  }
-}
+//     successMsg('Exportación completada correctamente')
+//   } catch (error) {
+//     console.error('Error al exportar a Excel:', error)
+//     errorMsg('Error al exportar los datos')
+//   } finally {
+//     exportingUsers.value = false
+//   }
+// }
 
-const validateEmail = (email) => {
-  return /.+@.+\..+/.test(email)
-}
+// const validateEmail = (email) => {
+//   return /.+@.+\..+/.test(email)
+// }
 
 //*************** Fin Exportar a Excel ********************/
 </script>
