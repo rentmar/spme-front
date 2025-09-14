@@ -18,10 +18,10 @@
       :idactividad="idactividad"
     ></indicador-registro-bitacora>
 
-    <encabezado-contribucion
+    <!-- <encabezado-contribucion
       :datos-estructura="estructuraProcedencia"
       @payload-actualizado="recibirContribuciones"
-    ></encabezado-contribucion>
+    ></encabezado-contribucion> -->
   </div>
   <h1>Contribuciones</h1>
   {{ proyectoContribuciones }}
@@ -33,7 +33,7 @@ import IndicadorLineChart from '@/modules/reportes/components/partials-indicador
 import IndicadorRegistroBitacora from '@/modules/reportes/components/IndicadorRegistroBitacora.vue'
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
 
-const idactividad = ref(15)
+const idactividad = ref(21)
 
 const modalAbierto = ref(false)
 

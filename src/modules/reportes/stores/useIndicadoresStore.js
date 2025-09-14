@@ -4,15 +4,15 @@ import { ref } from 'vue'
 import { useReportes } from '../composables/useReportes'
 
 export const useIndicadoresStore = defineStore('reportes', () => {
-  //Estados
+  // Estados
   const loading = ref(false)
   const error = ref(null)
   const actividadInfo = ref(null)
 
-  //Inicializar el composable
+  // Inicializar el composable
   const { actividadIndicadores, cargarActividadIndicadoresInfo } = useReportes()
 
-  //Filtra y retorna todos los nodos tipo indicador
+  // Filtra y retorna todos los nodos tipo indicador
   const filtrarIndicadores = () => {
     if (!actividadInfo.value || !actividadInfo.value.estructuraProcedencia?.nodosRelacionados) {
       return []
@@ -28,12 +28,15 @@ export const useIndicadoresStore = defineStore('reportes', () => {
   const getIndicadoresForSelect = () => {
     const indicadores = filtrarIndicadores()
     return indicadores.map((indicador) => {
-      // Devolvemos directamente el objeto completo de nodoProyecto
-      return indicador.data.nodoProyecto || {}
+      // Modificación: se incluye el 'type' del indicador principal
+      return {
+        ...indicador.data.nodoProyecto,
+        type: indicador.type,
+      }
     })
   }
 
-  //Cargar la informacion de la actividad
+  // Cargar la informacion de la actividad
   const cargarActividad = async (idindicador) => {
     loading.value = true
     error.value = null

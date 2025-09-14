@@ -122,6 +122,7 @@
         <v-card v-if="indicadorSeleccionado" flat class="ma-4">
           <v-card-title class="text-h6 font-weight-medium">Registro de Avance</v-card-title>
           <v-card-text>
+            {{ indicadorSeleccionado }}
             <v-row>
               <!-- Formulario de registro -->
               <v-col cols="12" md="6">
@@ -247,7 +248,7 @@
         </v-card>
 
         <!-- Gráfica de avance -->
-        <div v-if="indicadorSeleccionado.tipo !== 'A-Z'">
+        <div>
           <v-card
             v-if="indicadorSeleccionado && datosGrafica.labels.length > 0"
             flat
@@ -433,6 +434,7 @@ const nuevoAvance = ref({
 
 // Avances registrados durante la sesión
 const avancesRegistrados = ref([])
+console.log('avances registrdos:', avancesRegistrados.value)
 
 // Computed properties
 const indicadoresParaSelect = computed(() => {
@@ -677,6 +679,7 @@ const crearGraficaAvance = () => {
 const agregarAvance = async () => {
   if (!formValido.value) return
 
+  //Este es el dato del avance
   const avance = {
     indicadorId: indicadorSeleccionado.value.id,
     valor: parseFloat(nuevoAvance.value.valor),
@@ -687,15 +690,17 @@ const agregarAvance = async () => {
   }
 
   // Agregar a la lista de avances registrados
-  avancesRegistrados.value.push(avance)
+  //avancesRegistrados.value.push(avance)
 
   // Actualizar la bitácora localmente
-  bitacoraIndicador.value.push({
+  /*bitacoraIndicador.value.push({
     valor: avance.valor,
     observaciones: avance.observaciones,
     fecha: avance.fecha,
     usuario: avance.usuario,
-  })
+  })*/
+
+  //Detectar el tipo de indicador
 
   // Marcar como ya registrado
   indicadorYaRegistrado.value = true
