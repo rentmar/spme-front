@@ -46,7 +46,6 @@
                     <v-list-item-title>{{ indicadorSeleccionado.descripcion }}</v-list-item-title>
                     <v-list-item-subtitle>Descripcion del Indicador</v-list-item-subtitle>
                   </v-list-item>
-
                   <v-list-item>
                     <template v-slot:prepend>
                       <v-icon color="primary">mdi-format-list-numbered</v-icon>
@@ -122,7 +121,6 @@
         <v-card v-if="indicadorSeleccionado" flat class="ma-4">
           <v-card-title class="text-h6 font-weight-medium">Registro de Avance</v-card-title>
           <v-card-text>
-            {{ indicadorSeleccionado }}
             <v-row>
               <!-- Formulario de registro -->
               <v-col cols="12" md="6">
@@ -131,7 +129,6 @@
                   <v-card-text class="pa-4">
                     <v-form ref="formAvance" v-model="formValido">
                       <v-text-field
-                        v-if="indicadorSeleccionado.tipo !== 'A-Z'"
                         v-model="nuevoAvance.valor"
                         :label="`Valor de avance (${unidadMedida})`"
                         variant="outlined"
@@ -248,21 +245,22 @@
         </v-card>
 
         <!-- Gráfica de avance -->
-        <div>
-          <v-card
-            v-if="indicadorSeleccionado && datosGrafica.labels.length > 0"
-            flat
-            class="ma-4 mb-8"
-          >
-            <v-card-title class="text-h6 font-weight-medium">Evolución del Avance</v-card-title>
-            <v-card-text>
-              <div style="height: 300px">
-                <canvas ref="graficaAvance"></canvas>
-              </div>
-              <div class="text-caption text-medium-emphasis mt-2"></div>
-            </v-card-text>
-          </v-card>
-        </div>
+        <v-card
+          v-if="indicadorSeleccionado && datosGrafica.labels.length > 0"
+          flat
+          class="ma-4 mb-8"
+        >
+          <v-card-title class="text-h6 font-weight-medium">Evolución del Avance</v-card-title>
+          <v-card-text>
+            <div style="height: 300px">
+              <canvas ref="graficaAvance"></canvas>
+            </div>
+            <div class="text-caption text-medium-emphasis mt-2">
+              * La gráfica incluye el valor baseline inicial y muestra la evolución del indicador a
+              lo largo del tiempo.
+            </div>
+          </v-card-text>
+        </v-card>
       </v-card-text>
 
       <!-- Footer con acciones -->
@@ -434,7 +432,6 @@ const nuevoAvance = ref({
 
 // Avances registrados durante la sesión
 const avancesRegistrados = ref([])
-console.log('avances registrdos:', avancesRegistrados.value)
 
 // Computed properties
 const indicadoresParaSelect = computed(() => {
@@ -679,7 +676,6 @@ const crearGraficaAvance = () => {
 const agregarAvance = async () => {
   if (!formValido.value) return
 
-  //Este es el dato del avance
   const avance = {
     indicadorId: indicadorSeleccionado.value.id,
     valor: parseFloat(nuevoAvance.value.valor),
@@ -689,46 +685,16 @@ const agregarAvance = async () => {
     usuario: 'Usuario Actual',
   }
 
-  switch (indicadorSeleccionado.value.type) {
-    case 'indicadorog':
-      console.log('Registrando avance para Indicador de Objetivo General:', avance)
-      const avanceindicadorog = {
-        fechaBitacora: avance.fecha,
-        cantidadAvance: avance.valor,
-        reporteEscrito: avance.observaciones,
-        tipoIndicador: indicadorSeleccionado.value.type,
-        indicadoroe: 30,
-      }
-      break
-    case 'indicadoroe':
-      console.log('Registrando avance para Indicador de Objetivo Estratégico:', avance)
-      // Lógica para 'indicadoroe'
-      break
-    case 'indicadorrog':
-      console.log('Registrando avance para Indicador de Resultado de Objetivo General:', avance)
-      // Lógica para 'indicadorrog'
-      break
-    case 'indicadorroe':
-      console.log('Registrando avance para Indicador de Resultado de Objetivo Estratégico:', avance)
-      // Lógica para 'indicadorroe'
-      break
-    default:
-      console.error('Tipo de indicador no reconocido:', indicadorSeleccionado.value.type)
-      break
-  }
-
   // Agregar a la lista de avances registrados
   avancesRegistrados.value.push(avance)
 
   // Actualizar la bitácora localmente
-  /*bitacoraIndicador.value.push({
+  bitacoraIndicador.value.push({
     valor: avance.valor,
     observaciones: avance.observaciones,
     fecha: avance.fecha,
     usuario: avance.usuario,
-  })*/
-
-  //Detectar el tipo de indicador
+  })
 
   // Marcar como ya registrado
   indicadorYaRegistrado.value = true
