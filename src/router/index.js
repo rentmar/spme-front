@@ -1,33 +1,46 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
+import LoginView from '@/views/LoginView.vue'
+import { useUserStore } from '@/stores/user'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
+      name: 'Login',
+      component: LoginView,
+      meta: { requiresAuth: false },
+    },
+    {
+      path: '/home',
       name: 'home',
       component: () => import('@/views/DashBoardView.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/profile',
       name: 'perfil',
       component: HomeView,
+      meta: { requiresAuth: true, requiredRole: 'admin' },
     },
 
     {
       path: '/pei',
       name: 'pei',
       component: () => import('../views/pei/PeiViewList.vue'),
+      meta: { requiresAuth: true, requiredRole: 'admin' },
     },
     {
       path: '/pei/nuevo',
       name: 'peiNuevo',
       component: () => import('../views/pei/PeiNuevoView.vue'),
+      meta: { requiresAuth: true, requiredRole: 'admin' },
     },
     {
       path: '/pei/:id/detalle',
       name: 'detallePei',
       component: () => import('../views/pei/PeiDetalleView.vue'),
+      meta: { requiresAuth: true, requiredRole: 'admin' },
     },
     {
       path: '/pei/:id/editar',
@@ -108,7 +121,8 @@ const router = createRouter({
     {
       path: '/planificacion/cronogramas',
       name: 'cronogramas',
-      component: () => import('@/views/planeamiento/ActividadesCronogramaView.vue'),
+      component: () => import('@/views/planeamiento/ActividadesGantView.vue'),
+      meta: { requiresAuth: true, requiredRole: 'A' },
     },
     {
       path: '/usuario/perfil/',
@@ -283,6 +297,39 @@ const router = createRouter({
       component: () => import('@/views/HomeView.vue'),
     },
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  const userStore = useUserStore()
+
+  // Cargar datos del usuario desde sessionStorage si no están en memoria
+  if (!userStore.userData) {
+    userStore.loadFromSession()
+  }
+
+  // Verificar autenticación
+  if (to.meta.requiresAuth && !userStore.isAuthenticated) {
+    next('/')
+    return
+  }
+
+  // Verificar rol requerido
+  if (to.meta.requiredRole && !userStore.hasRole(to.meta.requiredRole)) {
+    console.warn(`Acceso denegado. Se requiere rol: ${to.meta.requiredRole}`)
+    next('/home')
+    return
+  }
+
+  // Verificar múltiples roles
+  if (to.meta.requiredRoles && !userStore.hasAnyRole(to.meta.requiredRoles)) {
+    console.warn(
+      `Acceso denegado. Se requiere uno de estos roles: ${to.meta.requiredRoles.join(', ')}`,
+    )
+    next('/home')
+    return
+  }
+
+  next()
 })
 
 export default router
