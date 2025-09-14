@@ -1,5 +1,5 @@
 <template>
-  <div class="v-container v-locale--is-ltr">
+  <div v-if="data" class="v-container v-locale--is-ltr">
     <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
       <!-- Encabezado diferenciado -->
       <div class="header-gradient">
@@ -19,10 +19,16 @@
         </div>
       </div>
 
+<EncabezadoContribucion
+  :datos-estructura="data.estructuraProcedencia"
+  @payload-actualizado="recibirdatos">
+
+</EncabezadoContribucion>
+
       <div class="v-card-text">
         <form class="v-form" novalidate @submit.prevent="submitForm">
           <!-- Sección 1: Datos Generales del Informe -->
-          <div class="form-section">
+          <!-- <div class="form-section">
             <v-divider class="my-4"></v-divider>
             <v-card-subtitle class="text-h6">Datos Generales del Informe</v-card-subtitle>
             <br>
@@ -55,11 +61,11 @@
                 ></v-text-field>
               </v-col>
             </v-row>
-          </div>
+          </div> -->
 
-          <v-divider class="my-4"></v-divider>
+          <!-- <v-divider class="my-4"></v-divider> -->
 
-          <v-col cols="12">
+          <!-- <v-col cols="12">
             <v-text-field
               v-model="formData.contribucion_proyecto"
               label="Contribuciones del Proyecto"
@@ -75,11 +81,11 @@
               bg-color="blue-lighten-5"
               required
             ></v-text-field>
-          </v-col>
+          </v-col> -->
 
           <v-col cols="12">
             <v-text-field
-              v-model="objetivoActividadExtraida"
+              v-model="formData.objetivo_de_actividad"
               label="Objetivo de la Actividad"
               required
               readonly
@@ -88,7 +94,7 @@
 
           <v-col cols="12">
             <v-text-field
-              v-model="formData.informe_objetivo"
+              v-model="formData.informe_de_objetivo_de_actividad"
               label="Informe de objetivo de la actividad"
               bg-color="blue-lighten-5"
               required
@@ -97,7 +103,7 @@
 
           <v-col cols="12">
             <v-text-field
-              v-model="tipoActividadExtraida"
+              v-model="formData.tipo_de_actividad"
               label="Tipo de actividad"
               required
               readonly
@@ -288,7 +294,15 @@
       </v-card>
     </v-dialog>
   </div>
-   <!-- <pre>{{ data }}</pre> -->
+
+  <pre>{{ formData }}</pre>
+
+    <!-- <pre>{{ formData }}</pre>
+    <br>
+    <br>
+    <br>
+    <br>
+    {{ payload1 }} -->
 </template>
 
 <script setup>
@@ -297,6 +311,7 @@ import { useRoute } from 'vue-router'
 import axios from 'axios'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
 import IndicadorRegistroBitacora from '@/modules/reportes/components/IndicadorRegistroBitacora.vue';
+import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue';
 
 const modalAbierto = ref(false);
 
@@ -308,14 +323,21 @@ const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 
+const payload1 = ref(null);
+const recibirdatos = (payload) => {
+  console.log('Datos recibidos del componente hijo:', payload);
+  payload1.value = payload;
+  formData.contribucion_actividad = payload;
+  console.log('formData actualizado:', formData);
+};
 // Estado reactivo
 const loading = ref(false)
 const indicatorDialog = ref(false)
 const data = ref(null)
 
 // Datos para cargar el formulario
-const tipoActividadExtraida = ref('')
-const objetivoActividadExtraida = ref('')
+//const tipoActividadExtraida = ref('')
+//const objetivoActividadExtraida = ref('')
 
 // const tiposActividad = [
 //   'Capacitación',
@@ -334,20 +356,20 @@ const indicadores = [
 ]
 
 const formData = reactive({
-  contribucion_proyecto: '',
+  //contribucion_proyecto: '',
   contribucion_actividad: '',
-  objetivoActividadExtraida: '',
+  objetivo_de_actividad: '',
   informe_de_objetivo_de_actividad: '',
-  tipoActividadExtraida: '',
-  reporte_por_tipo: '',
+  tipo_de_actividad: '',
+  reporte_tipo: '',
   avance_en_indicador: '',
   informacion_cuantitativa: '',
-  archivos_cuantitativos: [],
-  herramientas_de_evaluacion_y_resultados: '',
-  herramientas_archivos: [],
-  descripcion_de_medios_de_verificacion: '',
-  medios_archivos: [],
+  descripcion_herramientas: '',
+  medios_verificacion: '',
   comentarios_recomendaciones: '',
+  archivos_cuantitativos: [],
+  herramientas_archivos: [],
+  medios_archivos: [],
 })
 
 const acceptedFormats = {
@@ -373,8 +395,8 @@ async function obtenerDatosProyecto(id) {
     console.log('Datos obtenidos:', result);
     data.value = result;
 
-    tipoActividadExtraida.value = data.value?.tipo_info?.tipo_actividad || '';
-    objetivoActividadExtraida.value = data.value?.objetivo_de_actividad || '';
+    formData.objetivo_de_actividad = data.value?.objetivo_de_actividad || 'objetivo de actividad datosF';
+    formData.tipo_de_actividad = data.value?.tipo_info?.tipo_actividad || 'tipo de actividad datosF';
 
     return result;
   } catch (error) {
@@ -414,35 +436,33 @@ async function submitForm() {
   try {
     // Validación de campos requeridos
     if (
-
-      !formData.contribucion_proyecto ||
-      !formData.contribucion_actividad ||
+      !formData.objetivo_de_actividad ||
       !formData.informe_de_objetivo_de_actividad ||
-      !formData.reporte_por_tipo ||
-      !formData.avance_en_indicador ||
+      !formData.tipo_de_actividad ||
+      !formData.reporte_tipo ||
       !formData.informacion_cuantitativa ||
-      !formData.herramientas_de_evaluacion_y_resultados ||
-      !formData.descripcion_de_medios_de_verificacion ||
+      !formData.descripcion_herramientas ||
+      !formData.medios_verificacion ||
       !formData.comentarios_recomendaciones
     ) {
       throw new Error('Por favor complete todos los campos requeridos del Informe de Actividades.');
     }
 
-    const payload = new FormData();
+    const payload = {
+      contribucion_actividad: formData.contribucion_actividad,
+      objetivo_de_actividad: formData.objetivo_de_actividad,
+      informe_de_objetivo_de_actividad: formData.informe_de_objetivo_de_actividad,
+      tipo_de_actividad: formData.tipo_de_actividad,
+      reporte_tipo: formData.reporte_por_tipo,
+      informacion_cuantitativa: formData.informacion_cuantitativa,
+      descripcion_herramientas: formData.descripcion_herramientas,
+      medios_verificacion: formData.medios_verificacion,
+      comentarios_recomendaciones: formData.comentarios_recomendaciones,
 
-    // Agregar todos los campos al FormData
-    Object.keys(formData).forEach(key => {
-      if (key.includes('archivos') || key.includes('_archivos')) {
-        // Manejar arrays de archivos
-        if (formData[key] && formData[key].length > 0) {
-          formData[key].forEach(file => {
-            payload.append(key, file);
-          });
-        }
-      } else {
-        payload.append(key, formData[key]);
-      }
-    });
+      archivos_cuantitativos: [],
+      herramientas_archivos: [],
+      medios_archivos: [],
+    }
 
     const response = await axios.post(
       'http://127.0.0.1:8000/tu_api_de_informes/crearInforme/',

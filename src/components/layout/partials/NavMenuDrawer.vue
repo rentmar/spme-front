@@ -70,7 +70,7 @@
         to="/planificacion/actividades"
       ></v-list-item>
 
-      <v-list-item  v-if="hasRole('B')"
+      <v-list-item  v-if="hasRole('A')"
         prepend-icon="mdi-chart-timeline-variant"
         title="Cronogramas"
         value="planning-schedules"
