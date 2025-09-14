@@ -7,6 +7,8 @@ const loading = ref(null)
 const error = ref(null)
 const estructuraJerarquicaProyecto = ref([])
 const actividadIndicadores = ref(null)
+const estructuraProyectoReportesUIX = ref(null)
+const trazabitacora = ref(null)
 
 export function useReportes() {
   //fecth kpis
@@ -36,12 +38,41 @@ export function useReportes() {
     }
   }
 
+  async function cargarEstructuraProyectoReportesUIXPorId(idproyecto) {
+    loading.value = true
+    try {
+      const respuesta = await reportesServicios.estructuraProyectoReporte(idproyecto)
+      estructuraProyectoReportesUIX.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Registrar
+  async function registrarIndicadorBitacora(data) {
+    loading.value = true
+    try {
+      const respuesta = await reportesServicios.grabarBitacora(data)
+      trazabitacora.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading, //ref
     error, //ref
     estructuraJerarquicaProyecto,
     actividadIndicadores,
+    estructuraProyectoReportesUIX,
+    trazabitacora,
     cargarEstructuraJerarquicaProyecto,
     cargarActividadIndicadoresInfo,
+    cargarEstructuraProyectoReportesUIXPorId,
+    registrarIndicadorBitacora,
   }
 }

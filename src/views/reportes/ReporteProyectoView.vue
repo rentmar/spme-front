@@ -1,291 +1,456 @@
 <template>
-  <v-container class="pa-6" fluid v-if="!cargando">
-    <!-- Header -->
-    <div class="d-flex justify-space-between align-center mb-6">
-      <div>
-        <h1 class="text-h5 font-weight-bold">Generador de Reportes</h1>
-        <p class="text-caption text-grey">Proyecto: TESTREP - Proyecto Test de Reportes</p>
-      </div>
-      <v-btn color="primary" variant="flat" @click="generarReporte">
-        <v-icon start>mdi-file-export</v-icon>
-        Generar Reporte
-      </v-btn>
-    </div>
-    <diagrama-reportes :id-proyecto="idproyecto"></diagrama-reportes>
+  <v-container v-if="!isLoading && proyecto">
+    <!-- Primera Tarjeta: Jerarquía de Proyecto -->
+    <v-card class="mb-6">
+      <v-card-title class="bg-primary">
+        <v-icon color="white" class="mr-2">mdi-file-tree</v-icon>
+        <span class="text-white">Reportes - Proyecto</span>
+      </v-card-title>
 
-    <v-row>
-      <!-- Panel de selección -->
-      <v-col cols="12" md="5">
-        <v-card variant="outlined" class="h-100">
-          <v-card-title class="px-4 py-3">Nodos del Proyecto</v-card-title>
-          <v-divider></v-divider>
-          <v-card-text class="pa-0">
-            <v-list density="compact" class="py-0">
-              <v-list-item
-                v-for="nodo in nodosDisponibles"
-                :key="nodo.id"
-                :class="{ 'bg-grey-lighten-3': estaSeleccionado(nodo.id) }"
-                @click="toggleSeleccion(nodo)"
-              >
-                <template v-slot:prepend>
-                  <v-icon :color="colorPorTipo(nodo.type)" size="small">
-                    {{ iconoPorTipo(nodo.type) }}
-                  </v-icon>
-                </template>
-
-                <v-list-item-title class="text-body-2">
-                  {{ nodo.label }}
-                </v-list-item-title>
-                <v-list-item-subtitle class="text-caption">
-                  {{ obtenerCodigo(nodo) }}
-                </v-list-item-subtitle>
-
-                <template v-slot:append>
-                  <v-icon :color="estaSeleccionado(nodo.id) ? 'primary' : 'grey'" size="small">
-                    {{
-                      estaSeleccionado(nodo.id)
-                        ? 'mdi-checkbox-marked'
-                        : 'mdi-checkbox-blank-outline'
-                    }}
-                  </v-icon>
-                </template>
-              </v-list-item>
-            </v-list>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <!-- Vista previa -->
-      <v-col cols="12" md="7">
-        <v-card variant="outlined" class="h-100">
-          <v-card-title class="px-4 py-3">Vista Previa del Reporte</v-card-title>
-          <v-divider></v-divider>
-
-          <v-card-text>
-            <div v-if="nodosSeleccionados.length === 0" class="text-center py-8 text-grey">
-              <v-icon size="large" class="mb-2">mdi-file-document-outline</v-icon>
-              <p>Selecciona nodos para incluirlos en tu reporte</p>
-            </div>
-
-            <div v-else>
-              <div v-for="nodo in nodosSeleccionados" :key="nodo.id" class="mb-3">
-                <div class="d-flex align-start">
-                  <v-icon :color="colorPorTipo(nodo.type)" size="small" class="mt-1 mr-2">
-                    {{ iconoPorTipo(nodo.type) }}
-                  </v-icon>
-                  <div class="flex-grow-1">
-                    <div class="text-body-2 font-weight-medium">{{ nodo.label }}</div>
-                    <div class="text-caption text-grey">{{ obtenerCodigo(nodo) }}</div>
-                    <div v-if="obtenerDescripcion(nodo)" class="text-caption mt-1">
-                      {{ obtenerDescripcion(nodo) }}
-                    </div>
-                  </div>
-                  <v-btn
-                    icon
-                    size="x-small"
-                    variant="text"
-                    @click="removerNodo(nodo.id)"
-                    class="ml-1"
-                  >
-                    <v-icon size="small">mdi-close</v-icon>
-                  </v-btn>
+      <v-card-text>
+        <!-- Proyecto -->
+        <div class="mb-4">
+          <div class="d-flex align-center justify-space-between mb-4 item-container">
+            <div class="d-flex align-center item-content">
+              <v-icon color="primary" class="mr-2">mdi-folder</v-icon>
+              <div>
+                <div class="text-h6">{{ proyecto.codigo }} - {{ proyecto.titulo }}</div>
+                <div v-if="proyecto.descripcion" class="text-caption text-grey mt-1">
+                  {{ proyecto.descripcion }}
                 </div>
-                <v-divider
-                  class="my-2"
-                  v-if="nodosSeleccionados.indexOf(nodo) < nodosSeleccionados.length - 1"
-                ></v-divider>
               </div>
             </div>
-          </v-card-text>
-        </v-card>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  color="primary"
+                  size="small"
+                  @click="generarReporte('proyecto', proyecto.id)"
+                  icon="mdi-file-download"
+                  class="ml-2"
+                />
+              </template>
+              <span>Generar reporte del proyecto</span>
+            </v-tooltip>
+          </div>
 
-        <!-- Opciones -->
-        <v-card variant="outlined" class="mt-4">
-          <v-card-title class="px-4 py-3">Opciones de Reporte</v-card-title>
-          <v-divider></v-divider>
-          <v-card-text class="pa-4">
-            <v-row dense>
-              <v-col cols="12" sm="6">
-                <v-select
-                  v-model="formato"
-                  :items="formatos"
-                  label="Formato"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                ></v-select>
-              </v-col>
-              <!-- <v-col cols="12" sm="6">
-                <v-select
-                  v-model="nivelDetalle"
-                  :items="nivelesDetalle"
-                  label="Nivel de detalle"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                ></v-select>
-              </v-col> -->
-            </v-row>
+          <!-- Objetivo General -->
+          <div v-if="proyecto.objetivo_general" class="ml-4 mb-3">
+            <div class="d-flex align-center justify-space-between mb-2 item-container">
+              <div class="d-flex align-center item-content">
+                <v-icon color="green" class="mr-2">mdi-target</v-icon>
+                <div>
+                  <div class="text-subtitle-1">
+                    Objetivo General: {{ proyecto.objetivo_general.codigo }}
+                  </div>
+                  <div
+                    v-if="proyecto.objetivo_general.descripcion"
+                    class="text-caption text-grey mt-1"
+                  >
+                    {{ proyecto.objetivo_general.descripcion }}
+                  </div>
+                </div>
+              </div>
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    color="green"
+                    size="small"
+                    @click="generarReporte('objetivo_general', proyecto.objetivo_general.id)"
+                    icon="mdi-file-download"
+                    class="ml-2"
+                  />
+                </template>
+                <span>Generar reporte del objetivo general</span>
+              </v-tooltip>
+            </div>
 
-            <!-- <v-checkbox
-              v-model="incluirConexiones"
-              label="Incluir relaciones entre nodos"
-              density="compact"
-              hide-details
-              class="mt-2"
-            ></v-checkbox> -->
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-    <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
-    <!-- <diagrama-reportes-grafico-main></diagrama-reportes-grafico-main> -->
+            <!-- Resultados OG -->
+            <div
+              v-if="
+                proyecto.objetivo_general.resultados_og &&
+                proyecto.objetivo_general.resultados_og.length
+              "
+              class="ml-4 mb-2"
+            >
+              <div
+                v-for="resultado in proyecto.objetivo_general.resultados_og"
+                :key="resultado.id"
+                class="mb-2"
+              >
+                <div class="d-flex align-center justify-space-between item-container">
+                  <div class="d-flex align-center item-content">
+                    <v-icon color="blue" class="mr-2">mdi-chart-tree</v-icon>
+                    <div>
+                      <div class="text-body-1">Resultado OG: {{ resultado.codigo }}</div>
+                      <div v-if="resultado.descripcion" class="text-caption text-grey mt-1">
+                        {{ resultado.descripcion }}
+                      </div>
+                    </div>
+                  </div>
+                  <v-tooltip location="top">
+                    <template v-slot:activator="{ props }">
+                      <v-btn
+                        v-bind="props"
+                        color="blue"
+                        size="small"
+                        @click="generarReporte('resultado_og', resultado.id)"
+                        icon="mdi-file-download"
+                        class="ml-2"
+                      />
+                    </template>
+                    <span>Generar reporte del resultado OG</span>
+                  </v-tooltip>
+                </div>
+              </div>
+            </div>
+
+            <!-- Objetivos Específicos -->
+            <div
+              v-if="
+                proyecto.objetivo_general.objetivos_especificos &&
+                proyecto.objetivo_general.objetivos_especificos.length
+              "
+              class="ml-4"
+            >
+              <div
+                v-for="objetivo in proyecto.objetivo_general.objetivos_especificos"
+                :key="objetivo.id"
+                class="mb-3"
+              >
+                <div class="d-flex align-center justify-space-between mb-2 item-container">
+                  <div class="d-flex align-center item-content">
+                    <v-icon color="orange" class="mr-2">mdi-bullseye-arrow</v-icon>
+                    <div>
+                      <div class="text-subtitle-1">Objetivo Específico: {{ objetivo.codigo }}</div>
+                      <div v-if="objetivo.descripcion" class="text-caption text-grey mt-1">
+                        {{ objetivo.descripcion }}
+                      </div>
+                    </div>
+                  </div>
+                  <v-tooltip location="top">
+                    <template v-slot:activator="{ props }">
+                      <v-btn
+                        v-bind="props"
+                        color="orange"
+                        size="small"
+                        @click="generarReporte('objetivo_especifico', objetivo.id)"
+                        icon="mdi-file-download"
+                        class="ml-2"
+                      />
+                    </template>
+                    <span>Generar reporte del objetivo específico</span>
+                  </v-tooltip>
+                </div>
+
+                <!-- Resultados OE -->
+                <div
+                  v-if="objetivo.resultados_oe && objetivo.resultados_oe.length"
+                  class="ml-4 mb-2"
+                >
+                  <div v-for="resultado in objetivo.resultados_oe" :key="resultado.id" class="mb-2">
+                    <div class="d-flex align-center justify-space-between item-container">
+                      <div class="d-flex align-center item-content">
+                        <v-icon color="purple" class="mr-2">mdi-chart-bell-curve</v-icon>
+                        <div>
+                          <div class="text-body-1">Resultado OE: {{ resultado.codigo }}</div>
+                          <div v-if="resultado.descripcion" class="text-caption text-grey mt-1">
+                            {{ resultado.descripcion }}
+                          </div>
+                        </div>
+                      </div>
+                      <v-tooltip location="top">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            color="purple"
+                            size="small"
+                            @click="generarReporte('resultado_oe', resultado.id)"
+                            icon="mdi-file-download"
+                            class="ml-2"
+                          />
+                        </template>
+                        <span>Generar reporte del resultado OE</span>
+                      </v-tooltip>
+                    </div>
+
+                    <!-- Productos Resultado OE -->
+                    <div
+                      v-if="resultado.productos_res_oe && resultado.productos_res_oe.length"
+                      class="ml-4"
+                    >
+                      <div
+                        v-for="producto in resultado.productos_res_oe"
+                        :key="producto.id"
+                        class="mb-1"
+                      >
+                        <div class="d-flex align-center justify-space-between item-container">
+                          <div class="d-flex align-center item-content">
+                            <v-icon color="teal" class="mr-2">mdi-package-variant</v-icon>
+                            <div>
+                              <div class="text-caption">Producto ROE: {{ producto.codigo }}</div>
+                              <div v-if="producto.descripcion" class="text-caption text-grey mt-1">
+                                {{ producto.descripcion }}
+                              </div>
+                            </div>
+                          </div>
+                          <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                              <v-btn
+                                v-bind="props"
+                                color="teal"
+                                size="small"
+                                @click="generarReporte('producto_resultado_oe', producto.id)"
+                                icon="mdi-file-download"
+                                class="ml-2"
+                              />
+                            </template>
+                            <span>Generar reporte del producto ROE</span>
+                          </v-tooltip>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Productos OE -->
+                <div v-if="objetivo.productos_oe && objetivo.productos_oe.length" class="ml-4">
+                  <div v-for="producto in objetivo.productos_oe" :key="producto.id" class="mb-1">
+                    <div class="d-flex align-center justify-space-between item-container">
+                      <div class="d-flex align-center item-content">
+                        <v-icon color="indigo" class="mr-2">mdi-package</v-icon>
+                        <div>
+                          <div class="text-body-1">Producto OE: {{ producto.codigo }}</div>
+                          <div v-if="producto.descripcion" class="text-caption text-grey mt-1">
+                            {{ producto.descripcion }}
+                          </div>
+                        </div>
+                      </div>
+                      <v-tooltip location="top">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            color="indigo"
+                            size="small"
+                            @click="generarReporte('producto_oe', producto.id)"
+                            icon="mdi-file-download"
+                            class="ml-2"
+                          />
+                        </template>
+                        <span>Generar reporte del producto OE</span>
+                      </v-tooltip>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </v-card-text>
+    </v-card>
+
+    <!-- Segunda Tarjeta: Actividades del Proyecto -->
+    <v-card>
+      <v-card-title class="bg-secondary">
+        <v-icon color="white" class="mr-2">mdi-calendar-check</v-icon>
+        <span class="text-white">Actividades del Proyecto</span>
+      </v-card-title>
+
+      <v-card-text>
+        <div v-if="proyecto.actividades && proyecto.actividades.length">
+          <div v-for="actividad in proyecto.actividades" :key="actividad.id" class="mb-2">
+            <div class="d-flex align-center justify-space-between item-container">
+              <div class="d-flex align-center item-content">
+                <v-icon color="brown" class="mr-2">mdi-checkbox-marked-circle-outline</v-icon>
+                <div>
+                  <div class="text-body-1">
+                    {{ actividad.codigo }} - {{ actividad.nombreCorto }}
+                  </div>
+                  <div v-if="actividad.descripcion" class="text-caption text-grey mt-1">
+                    {{ actividad.descripcion }}
+                  </div>
+                </div>
+              </div>
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    color="brown"
+                    size="small"
+                    @click="generarReporte('actividad', actividad.id)"
+                    icon="mdi-file-download"
+                    class="ml-2"
+                  />
+                </template>
+                <span>Generar reporte de la actividad</span>
+              </v-tooltip>
+            </div>
+          </div>
+        </div>
+      </v-card-text>
+    </v-card>
+
+    <!-- Snackbar para notificaciones -->
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
+      {{ snackbar.message }}
+    </v-snackbar>
   </v-container>
-  <p>Nodos seleccionados</p>
-  {{ nodosSeleccionados }}
-  <p>Diagrama programa</p>
-  {{ store.diagrama.nodos }}
+
+  <v-container v-else-if="isLoading">
+    <v-progress-circular indeterminate size="64"></v-progress-circular>
+    <span class="ml-3">Cargando estructura del proyecto...</span>
+  </v-container>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useProyectoEstructuraStore } from '@/modules/estructuraProyecto/store/useProyectoEstructuraStore'
+import { ref, onMounted, computed } from 'vue'
+import { useReportes } from '@/modules/reportes/composables/useReportes'
 import { useRoute } from 'vue-router'
-import DiagramaReportes from '@/modules/reportes/components/DiagramaReportes.vue'
-import DiagramaReportesGraficoMain from '@/modules/reportes/components/DiagramaReportesGraficoMain.vue'
+import { reportesServicios } from '@/modules/reportes/services/reportesService'
 
-// Inicializar las rutas y obtener el id de proyecto
 const ruta = useRoute()
 const idproyecto = ruta.params.id
 
-//Inicializar el store
-const store = useProyectoEstructuraStore()
+// Inicializar composable
+const { estructuraProyectoReportesUIX, cargarEstructuraProyectoReportesUIXPorId } = useReportes()
 
-// Datos de ejemplo basados en la estructura proporcionada
-const nodosDisponibles = ref([])
-console.log(nodosDisponibles)
-
-// Estado de la aplicación
-const nodosSeleccionados = ref([])
-const formato = ref('pdf')
-const nivelDetalle = ref('medio')
-const incluirConexiones = ref(true)
-
-// Opciones disponibles
-const formatos = ref([{ title: 'Word', value: 'word' }])
-
-const nivelesDetalle = ref([
-  { title: 'Básico', value: 'basico' },
-  { title: 'Medio', value: 'medio' },
-  { title: 'Completo', value: 'completo' },
-])
-
-// Métodos de utilidad
-const iconoPorTipo = (tipo) => {
-  const iconos = {
-    proyecto: 'mdi-folder-information',
-    objetivogeneral: 'mdi-target',
-    objetivoespecificoog: 'mdi-target',
-    indicadorog: 'mdi-chart-line',
-    indicadoroe: 'mdi-chart-line',
-    resultadooe: 'mdi-checkbox-marked-circle',
-    resultadoog: 'mdi-checkbox-marked-circle',
-  }
-  return iconos[tipo] || 'mdi-file-document'
-}
-
-const colorPorTipo = (tipo) => {
-  const colores = {
-    proyecto: 'blue',
-    objetivogeneral: 'red',
-    objetivoespecificoog: 'orange',
-    indicadorog: 'green',
-    indicadoroe: 'green',
-    resultadooe: 'purple',
-    resultadoog: 'purple',
-  }
-  return colores[tipo] || 'grey'
-}
-
-// Método seguro para obtener el código
-const obtenerCodigo = (nodo) => {
-  if (nodo.data.nodoProyecto && nodo.data.nodoProyecto.codigo) {
-    return nodo.data.nodoProyecto.codigo
-  } else if (nodo.data.datosNodo && nodo.data.datosNodo.codigo) {
-    return nodo.data.datosNodo.codigo
-  }
-  return 'Sin código'
-}
-
-// Método seguro para obtener la descripción
-const obtenerDescripcion = (nodo) => {
-  if (nodo.data.nodoProyecto && nodo.data.nodoProyecto.descripcion) {
-    return nodo.data.nodoProyecto.descripcion
-  } else if (nodo.data.datosNodo && nodo.data.datosNodo.descripcion) {
-    return nodo.data.datosNodo.descripcion
-  } else if (nodo.data.nodoProyecto && nodo.data.nodoProyecto.redaccion) {
-    return nodo.data.nodoProyecto.redaccion
-  }
-  return ''
-}
-
-// Métodos de interacción
-const estaSeleccionado = (id) => {
-  return nodosSeleccionados.value.some((nodo) => nodo.id === id)
-}
-
-const toggleSeleccion = (nodo) => {
-  if (estaSeleccionado(nodo.id)) {
-    removerNodo(nodo.id)
-  } else {
-    nodosSeleccionados.value.push(nodo)
-  }
-}
-
-const removerNodo = (id) => {
-  const index = nodosSeleccionados.value.findIndex((nodo) => nodo.id === id)
-  if (index !== -1) {
-    nodosSeleccionados.value.splice(index, 1)
-  }
-}
-
-const generarReporte = () => {
-  // Simular generación de reporte
-  console.log('Generando reporte con:', {
-    nodos: nodosSeleccionados.value,
-    formato: formato.value,
-    nivelDetalle: nivelDetalle.value,
-    incluirConexiones: incluirConexiones.value,
-  })
-
-  // Aquí normalmente se haría una llamada a la API
-  alert(`Reporte generado con ${nodosSeleccionados.value.length} nodos seleccionados`)
-}
-//Hook
-onMounted(async () => {
-  await cargarDatos()
+// Estados reactivos
+const isLoading = ref(false)
+const snackbar = ref({
+  show: false,
+  message: '',
+  color: 'success',
 })
 
-const cargando = ref(true)
-//Cargar datos
-const cargarDatos = async () => {
-  cargando.value = true
+// Computed para el proyecto (para reactividad)
+const proyecto = computed(() => estructuraProyectoReportesUIX.value)
+
+// Función para generar reportes
+const generarReporte = async (tipo, id) => {
+  console.log(`Generando reporte de ${tipo} con ID: ${id}`)
   try {
-    await store.obtenerDiagramaPorId(idproyecto)
-    if (store.diagrama) {
-      nodosDisponibles.value = store.diagrama.nodos
-    }
-  } catch (err) {
-    console.error(err)
-    throw err
-  } finally {
-    cargando.value = false
+    await reportesServicios.reporteProyecto(id)
+  } catch (error) {
+    console.error(error)
+  }
+
+  snackbar.value = {
+    show: true,
+    message: `Reporte de ${tipo} generado exitosamente`,
+    color: 'success',
   }
 }
+
+// Cargar datos
+const cargarDatos = async () => {
+  isLoading.value = true
+  try {
+    await cargarEstructuraProyectoReportesUIXPorId(idproyecto)
+    console.log('Proyecto cargado:', estructuraProyectoReportesUIX.value)
+  } catch (error) {
+    console.error('Error cargando proyecto:', error)
+    snackbar.value = {
+      show: true,
+      message: 'Error al cargar la estructura del proyecto',
+      color: 'error',
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  if (idproyecto) {
+    cargarDatos()
+  }
+})
 </script>
 
 <style scoped>
-.h-100 {
-  height: 150%;
+.ml-4 {
+  margin-left: 1rem;
+  border-left: 2px solid #e0e0e0;
+  padding-left: 1rem;
+}
+
+.bg-primary {
+  background-color: #1976d2 !important;
+}
+
+.bg-secondary {
+  background-color: #26a69a !important;
+}
+
+/* Espaciado consistente */
+.mb-1 {
+  margin-bottom: 0.5rem;
+}
+
+.mb-2 {
+  margin-bottom: 1rem;
+}
+
+.mb-3 {
+  margin-bottom: 1.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 2rem;
+}
+
+/* Estilo para los textos grises */
+.text-grey {
+  color: #757575 !important;
+}
+
+/* Asegurar que el contenido y botones estén alineados */
+.d-flex.align-center {
+  min-height: 40px;
+}
+
+/* Espaciado para los botones */
+.v-btn {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* Línea vertical conectando item con botón */
+.item-container {
+  position: relative;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.item-container:hover {
+  background-color: #f5f5f5;
+}
+
+.item-container::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 40px;
+  transform: translateY(-50%);
+  width: calc(100% - 80px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #e0e0e0 20%, #e0e0e0 80%, transparent 100%);
+  pointer-events: none;
+}
+
+.item-content {
+  position: relative;
+  z-index: 2;
+  background-color: white;
+  padding-right: 8px;
+}
+
+.item-container .v-btn {
+  position: relative;
+  z-index: 3;
+  background-color: white;
+  border: 1px solid #e0e0e0;
 }
 </style>
