@@ -123,7 +123,7 @@
               </template>
 
               <!-- Acciones -->
-              <template v-slot:item.actions="{ item }">
+              <!-- <template v-slot:item.actions="{ item }">
                 <div class="d-flex">
                   <v-btn
                     icon
@@ -177,6 +177,59 @@
                     </v-list>
                   </v-menu>
                 </div>
+              </template> -->
+              <template v-slot:item.actions="{ item }">
+              <div class="d-flex">
+                <v-menu>
+                  <template v-slot:activator="{ props }">
+                    <v-btn
+                      icon
+                      size="small"
+                      color="secondary"
+                      variant="text"
+                      v-bind="props"
+                      class="ml-1"
+                    >
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item @click="openEditDialog(item)" :loading="loadingEdit">
+                      <template v-slot:prepend>
+                        <v-icon icon="mdi-pencil"></v-icon>
+                      </template>
+                      <v-list-item-title>Editar</v-list-item-title>
+                    </v-list-item>
+
+                    <v-list-item @click="openResetPasswordDialog(item)">
+                      <template v-slot:prepend>
+                        <v-icon icon="mdi-key"></v-icon>
+                      </template>
+                      <v-list-item-title>Resetear contraseña</v-list-item-title>
+                    </v-list-item>
+
+                    <v-list-item @click="toggleUserStatus(item)">
+                      <template v-slot:prepend>
+                        <v-icon
+                          :icon="
+                            item.status === 'active' ? 'mdi-account-off' : 'mdi-account-check'
+                          "
+                        ></v-icon>
+                      </template>
+                      <v-list-item-title>
+                        {{ item.status === 'active' ? 'Desactivar' : 'Activar' }}
+                      </v-list-item-title>
+                    </v-list-item>
+
+                    <v-list-item @click="viewUserDetails(item)">
+                      <template v-slot:prepend>
+                        <v-icon icon="mdi-eye"></v-icon>
+                      </template>
+                      <v-list-item-title>Ver detalles</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </div>
               </template>
             </v-data-table>
           </v-card>

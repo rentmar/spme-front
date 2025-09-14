@@ -53,19 +53,29 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, computed } from 'vue'
+import { useUserStore } from '@/stores/user';
+
+const userStore = useUserStore();
+
+const usuario = computed(() => {
+  return {
+    nombre: userStore.usuario,
+    role: userStore.rol,
+  };
+});
 
 defineProps({
-  usuario: {
-    type: Object,
-    required: true,
-    default: () => ({
-      nombre: 'Usuario',
-      role: 'Invitado',
-      activo: false,
-      avatar: null,
-    }),
-  },
+  // usuario: {
+  //   type: Object,
+  //   required: true,
+  //   default: () => ({
+  //     nombre: 'Usuario',
+  //     role: 'Invitado',
+  //     activo: false,
+  //     avatar: null,
+  //   }),
+  // },
   rail: {
     type: Boolean,
     default: false,

@@ -9,7 +9,7 @@
       to="/dashboard"
     ></v-list-item> -->
 
-    <v-list-item prepend-icon="mdi-home" title="Inicio" value="home" to="/"></v-list-item>
+    <v-list-item prepend-icon="mdi-home" title="Inicio" value="home" to="/Home"></v-list-item>
 
     <v-list-group value="estructuracion">
       <template v-slot:activator="{ props }">
