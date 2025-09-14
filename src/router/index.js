@@ -116,7 +116,7 @@ const router = createRouter({
       path: '/planificacion/cronogramas',
       name: 'cronogramas',
       component: () => import('@/views/planeamiento/ActividadesGantView.vue'),
-      meta: { requiresAuth: true, requiredRole: 'B' },
+      meta: { requiresAuth: true, requiredRole: 'A' },
     },
     {
       path: '/usuario/perfil/',
