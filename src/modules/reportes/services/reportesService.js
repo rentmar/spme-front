@@ -28,4 +28,12 @@ export const reportesServicios = {
     }
   },
   /****** Crear bitacora **********/
+  grabarBitacora: async (data) => {
+    try {
+      const respuesta = await apiRep.post('/bitacora-indicadores/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios, error de registro en el bitacor', error)
+    }
+  },
 }

@@ -689,8 +689,36 @@ const agregarAvance = async () => {
     usuario: 'Usuario Actual',
   }
 
+  switch (indicadorSeleccionado.value.type) {
+    case 'indicadorog':
+      console.log('Registrando avance para Indicador de Objetivo General:', avance)
+      const avanceindicadorog = {
+        fechaBitacora: avance.fecha,
+        cantidadAvance: avance.valor,
+        reporteEscrito: avance.observaciones,
+        tipoIndicador: indicadorSeleccionado.value.type,
+        indicadoroe: 30,
+      }
+      break
+    case 'indicadoroe':
+      console.log('Registrando avance para Indicador de Objetivo Estratégico:', avance)
+      // Lógica para 'indicadoroe'
+      break
+    case 'indicadorrog':
+      console.log('Registrando avance para Indicador de Resultado de Objetivo General:', avance)
+      // Lógica para 'indicadorrog'
+      break
+    case 'indicadorroe':
+      console.log('Registrando avance para Indicador de Resultado de Objetivo Estratégico:', avance)
+      // Lógica para 'indicadorroe'
+      break
+    default:
+      console.error('Tipo de indicador no reconocido:', indicadorSeleccionado.value.type)
+      break
+  }
+
   // Agregar a la lista de avances registrados
-  //avancesRegistrados.value.push(avance)
+  avancesRegistrados.value.push(avance)
 
   // Actualizar la bitácora localmente
   /*bitacoraIndicador.value.push({
