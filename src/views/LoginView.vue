@@ -57,7 +57,7 @@ const btnlogin = async () => {
     if (response.data.validacion === true) {
        userStore.setUserData({
         usuario: response.data.usuario,
-        rol: response.data.rol
+        rol: response.data.rol,
       });
       router.push('/home');
     } else {
