@@ -82,7 +82,7 @@
               </v-card-text>
             </v-card>
           </v-dialog>
-          <v-tooltip text="Agregar nueva actividad Variante" location="bottom">
+          <!-- <v-tooltip text="Agregar nueva actividad Variante" location="bottom">
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
@@ -94,7 +94,7 @@
                 <v-icon size="18">mdi-clipboard-text-outline</v-icon>
               </v-btn>
             </template>
-          </v-tooltip>
+          </v-tooltip> -->
 
           <v-dialog v-model="mostrarModalActividadVariante" fullscreen>
             <v-card>
@@ -793,7 +793,7 @@ const columns = ref([
     width: 250,
     source: function (query, process) {
       const tipos = storePlanificacion.listaTiposAct
-      const siglas = tipos ? tipos.map((t) => t.sigla + '-' + t.tipo_actividad) : []
+      const siglas = tipos ? tipos.map((t) => t.sigla + ' - ' + t.tipo_actividad) : []
       process(siglas)
     },
   },
