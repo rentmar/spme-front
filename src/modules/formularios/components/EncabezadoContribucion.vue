@@ -1,108 +1,428 @@
 <template>
   <div>
-    <v-textarea label="Objetivo General" hint="codigo" clearable variant="outlined"></v-textarea>
+    <!-- Objetivo General -->
+    <v-textarea
+      v-if="objetivogeneral"
+      v-model="caberaContribucion.objetivogeneral.contribucion"
+      label="Objetivo General"
+      hint="Contribución del objetivo general"
+      clearable
+      variant="outlined"
+      @update:modelValue="emitirPayloadCompleto"
+      @blur="emitirPayloadCompleto('blur')"
+    ></v-textarea>
+
+    <!-- Objetivo Específico Proyecto -->
+    <v-textarea
+      v-if="objetivoespecifico"
+      v-model="caberaContribucion.objetivoespecifico.contribucion"
+      label="Objetivo Específico Proyecto"
+      hint="Contribución del objetivo específico proyecto"
+      clearable
+      variant="outlined"
+      @update:modelValue="emitirPayloadCompleto"
+      @blur="emitirPayloadCompleto('blur')"
+    ></v-textarea>
+
+    <!-- Objetivo Específico OG -->
+    <v-textarea
+      v-if="objetivoespecificoog"
+      v-model="caberaContribucion.objetivoespecificoog.contribucion"
+      label="Objetivo Específico OG"
+      hint="Contribución del objetivo específico OG"
+      clearable
+      variant="outlined"
+      @update:modelValue="emitirPayloadCompleto"
+      @blur="emitirPayloadCompleto('blur')"
+    ></v-textarea>
+
+    <!-- Resultado OG -->
+    <v-textarea
+      v-if="resultadoog"
+      v-model="caberaContribucion.resultadoog.contribucion"
+      label="Resultado OG"
+      hint="Contribución del resultado OG"
+      clearable
+      variant="outlined"
+      @update:modelValue="emitirPayloadCompleto"
+      @blur="emitirPayloadCompleto('blur')"
+    ></v-textarea>
+
+    <!-- Resultado OE -->
+    <v-textarea
+      v-if="resultadooe"
+      v-model="caberaContribucion.resultadooe.contribucion"
+      label="Resultado OE"
+      hint="Contribución del resultado OE"
+      clearable
+      variant="outlined"
+      @update:modelValue="emitirPayloadCompleto"
+      @blur="emitirPayloadCompleto('blur')"
+    ></v-textarea>
+
+    <!-- Producto OE -->
+    <v-textarea
+      v-if="productooe"
+      v-model="caberaContribucion.productooe.contribucion"
+      label="Producto OE"
+      hint="Contribución del producto OE"
+      clearable
+      variant="outlined"
+      @update:modelValue="emitirPayloadCompleto"
+      @blur="emitirPayloadCompleto('blur')"
+    ></v-textarea>
+
+    <!-- Producto ROE -->
+    <v-textarea
+      v-if="productoroe"
+      v-model="caberaContribucion.productoroe.contribucion"
+      label="Producto ROE"
+      hint="Contribución del producto ROE"
+      clearable
+      variant="outlined"
+      @update:modelValue="emitirPayloadCompleto"
+      @blur="emitirPayloadCompleto('blur')"
+    ></v-textarea>
+
+    <!-- Producto -->
+    <v-textarea
+      v-if="producto"
+      v-model="caberaContribucion.producto.contribucion"
+      label="Producto"
+      hint="Contribución del producto"
+      clearable
+      variant="outlined"
+      @update:modelValue="emitirPayloadCompleto"
+      @blur="emitirPayloadCompleto('blur')"
+    ></v-textarea>
+
+    <!-- Debug: Mostrar payload actual -->
+    <div v-if="debugMode" class="debug-container">
+      <h4>Último Payload Emitido:</h4>
+      <pre>{{ JSON.stringify(lastPayload, null, 2) }}</pre>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 
-//props del componente
+// Props del componente
 const props = defineProps({
   datosEstructura: { type: Object, required: true },
+  debugMode: { type: Boolean, default: false },
 })
 
-console.log(props.datosEstructura)
+// Estado principal - Estructura única del payload
+const caberaContribucion = reactive({
+  objetivogeneral: {
+    tipo: 'objetivogeneral',
+    data: {
+      id: '',
+      codigo: '',
+      descripcion: '',
+      supuestos: '',
+      riesgos: '',
+      contribucion: '',
+      proyecto: '',
+    },
+  },
+  objetivoespecifico: {
+    tipo: 'objetivoespecifico',
+    data: {
+      id: '',
+      codigo: '',
+      descripcion: '',
+      supuestos: '',
+      riesgos: '',
+      contribucion: '',
+      objetivo_general: '',
+    },
+  },
+  objetivoespecificoog: {
+    tipo: 'objetivoespecificoog',
+    data: {
+      id: '',
+      codigo: '',
+      descripcion: '',
+      supuestos: '',
+      riesgos: '',
+      contribucion: '',
+      objetivo_general: '',
+    },
+  },
+  resultadoog: {
+    tipo: 'resultadoog',
+    data: {
+      id: '',
+      codigo: '',
+      descripcion: '',
+      supuestos: '',
+      riesgos: '',
+      contribucion: '',
+      objetivo_general: '',
+    },
+  },
+  resultadooe: {
+    tipo: 'resultadooe',
+    data: {
+      id: '',
+      codigo: '',
+      descripcion: '',
+      supuestos: '',
+      riesgos: '',
+      contribucion: '',
+      objetivo_especifico: '',
+    },
+  },
+  productooe: {
+    tipo: 'productooe',
+    data: {
+      id: '',
+      codigo: '',
+      descripcion: '',
+      supuestos: '',
+      riesgos: '',
+      contribucion: '',
+      entregado: false,
+      objetivo_especifico: '',
+    },
+  },
+  productoroe: {
+    tipo: 'productoroe',
+    data: {
+      id: '',
+      codigo: '',
+      descripcion: '',
+      supuestos: '',
+      riesgos: '',
+      contribucion: '',
+      entregado: false,
+      resultado_obj_especifico: '',
+    },
+  },
+  producto: {
+    tipo: 'producto',
+    data: {
+      id: '',
+      codigo: '',
+      descripcion: '',
+      supuestos: '',
+      riesgos: '',
+      contribucion: '',
+      entregado: false,
+    },
+  },
+})
 
-//Estado del componente
-const objetivogeneral = ref()
-const objetivoespecifico = ref()
-const objetivoespecificoog = ref()
-const resultadoog = ref()
-const resultadooe = ref()
-const productooe = ref()
-const productoroe = ref()
-const producto = ref()
+// Referencias para controlar la visibilidad de los textareas
+const objetivogeneral = ref(false)
+const objetivoespecifico = ref(false)
+const objetivoespecificoog = ref(false)
+const resultadoog = ref(false)
+const resultadooe = ref(false)
+const productooe = ref(false)
+const productoroe = ref(false)
+const producto = ref(false)
 
-//Funcion para el llenado de datos:
-const llenarDatos = (datosFiltrados) => {
-  if (datosFiltrados && datosFiltrados.datosProcedencia) {
-    // Asigna los datos a la propiedad .value de cada ref
-    objetivogeneral.value = datosFiltrados.datosProcedencia.objetivogeneral
-    objetivoespecifico.value = datosFiltrados.datosProcedencia.objetivoespecifico
-    objetivoespecificoog.value = datosFiltrados.datosProcedencia.objetivoespecificoog
-    resultadoog.value = datosFiltrados.datosProcedencia.resultadoog
-    resultadooe.value = datosFiltrados.datosProcedencia.resultadooe
-    productooe.value = datosFiltrados.datosProcedencia.productoe
-    productoroe.value = datosFiltrados.datosProcedencia.productoroe
-    producto.value = datosFiltrados.datosProcedencia.producto
+// Para almacenar el último payload emitido (solo debug)
+const lastPayload = ref(null)
+
+// Emit para enviar el payload al componente padre
+const emit = defineEmits(['payload-actualizado'])
+
+// Función para emitir el payload completo
+const emitirPayloadCompleto = (evento = 'input') => {
+  const payload = {
+    timestamp: new Date().toISOString(),
+    evento: evento,
+    caberaContribucion: { ...caberaContribucion },
   }
+
+  // Emitir el payload completo
+  emit('payload-actualizado', payload)
+
+  // Guardar último payload para debug
+  if (props.debugMode) {
+    lastPayload.value = payload
+  }
+
+  console.log('Payload emitido:', payload)
 }
 
-//Funcion para el filtrado de datos existentes
-function filtrarDatosPorTipo(data, tiposAFiltrar) {
-  // Objeto para almacenar los resultados filtrados
-  const datosFiltrados = {
-    datosProcedencia: {},
-  }
+// Función para inicializar los datos desde la estructura de procedencia
+const inicializarDesdeProcedencia = (datos) => {
+  if (!datos?.datosProcedencia) return
 
-  // 1. Filtrar los elementos de "datosProcedencia"
-  for (const key in data.datosProcedencia) {
-    if (Object.prototype.hasOwnProperty.call(data.datosProcedencia, key)) {
-      // Verifica si la clave del objeto está en la lista de tipos a filtrar
-      if (tiposAFiltrar.includes(key)) {
-        datosFiltrados.datosProcedencia[key] = data.datosProcedencia[key]
-      }
+  const procedencia = datos.datosProcedencia
+
+  // Inicializar cada campo si existe en los datos de procedencia
+  if (procedencia.objetivogeneral) {
+    objetivogeneral.value = true
+    const data = procedencia.objetivogeneral.data
+    caberaContribucion.objetivogeneral.data = {
+      id: data.id || '',
+      codigo: data.codigo || '',
+      descripcion: data.descripcion || '',
+      supuestos: data.supuestos || '',
+      riesgos: data.riesgos || '',
+      contribucion: data.contribucion || '',
+      proyecto: data.proyecto || '',
     }
   }
 
-  return datosFiltrados
+  if (procedencia.objetivoespecifico) {
+    objetivoespecifico.value = true
+    const data = procedencia.objetivoespecifico.data
+    caberaContribucion.objetivoespecifico.data = {
+      id: data.id || '',
+      codigo: data.codigo || '',
+      descripcion: data.descripcion || '',
+      supuestos: data.supuestos || '',
+      riesgos: data.riesgos || '',
+      contribucion: data.contribucion || '',
+      objetivo_general: data.objetivo_general || '',
+    }
+  }
+
+  if (procedencia.objetivoespecificoog) {
+    objetivoespecificoog.value = true
+    const data = procedencia.objetivoespecificoog.data
+    caberaContribucion.objetivoespecificoog.data = {
+      id: data.id || '',
+      codigo: data.codigo || '',
+      descripcion: data.descripcion || '',
+      supuestos: data.supuestos || '',
+      riesgos: data.riesgos || '',
+      contribucion: data.contribucion || '',
+      objetivo_general: data.objetivo_general || '',
+    }
+  }
+
+  if (procedencia.resultadoog) {
+    resultadoog.value = true
+    const data = procedencia.resultadoog.data
+    caberaContribucion.resultadoog.data = {
+      id: data.id || '',
+      codigo: data.codigo || '',
+      descripcion: data.descripcion || '',
+      supuestos: data.supuestos || '',
+      riesgos: data.riesgos || '',
+      contribucion: data.contribucion || '',
+      objetivo_general: data.objetivo_general || '',
+    }
+  }
+
+  if (procedencia.resultadooe) {
+    resultadooe.value = true
+    const data = procedencia.resultadooe.data
+    caberaContribucion.resultadooe.data = {
+      id: data.id || '',
+      codigo: data.codigo || '',
+      descripcion: data.descripcion || '',
+      supuestos: data.supuestos || '',
+      riesgos: data.riesgos || '',
+      contribucion: data.contribucion || '',
+      objetivo_especifico: data.objetivo_especifico || '',
+    }
+  }
+
+  if (procedencia.productooe) {
+    productooe.value = true
+    const data = procedencia.productooe.data
+    caberaContribucion.productooe.data = {
+      id: data.id || '',
+      codigo: data.codigo || '',
+      descripcion: data.descripcion || '',
+      supuestos: data.supuestos || '',
+      riesgos: data.riesgos || '',
+      contribucion: data.contribucion || '',
+      entregado: data.entregado || false,
+      objetivo_especifico: data.objetivo_especifico || '',
+    }
+  }
+
+  if (procedencia.productoroe) {
+    productoroe.value = true
+    const data = procedencia.productoroe.data
+    caberaContribucion.productoroe.data = {
+      id: data.id || '',
+      codigo: data.codigo || '',
+      descripcion: data.descripcion || '',
+      supuestos: data.supuestos || '',
+      riesgos: data.riesgos || '',
+      contribucion: data.contribucion || '',
+      entregado: data.entregado || false,
+      resultado_obj_especifico: data.resultado_obj_especifico || '',
+    }
+  }
+
+  if (procedencia.producto) {
+    producto.value = true
+    const data = procedencia.producto.data
+    caberaContribucion.producto.data = {
+      id: data.id || '',
+      codigo: data.codigo || '',
+      descripcion: data.descripcion || '',
+      supuestos: data.supuestos || '',
+      riesgos: data.riesgos || '',
+      contribucion: data.contribucion || '',
+      entregado: data.entregado || false,
+    }
+  }
+
+  // Emitir el estado inicial después de cargar los datos
+  setTimeout(() => {
+    emitirPayloadCompleto('load')
+  }, 100)
 }
 
-// Lista de tipos para filtrar
-const tiposDeFiltro = [
-  'objetivogeneral',
-  'objetivoespecifico',
-  'objetivoespecificoog',
-  'resultadoog',
-  'resultadooe',
-  'productooe',
-  'productoroe',
-  'producto',
-]
+// Watcher para cambios en los datos de entrada
+watch(
+  () => props.datosEstructura,
+  (newData) => {
+    if (newData) {
+      inicializarDesdeProcedencia(newData)
+    }
+  },
+  { immediate: true, deep: true },
+)
 
-//Datos filtrados
-const datosFiltrados = ref()
-
-const emit = defineEmits('enviarFormulario')
-
-//Cargar la informacion del componente
+// Cargar la información del componente
 onMounted(() => {
-  if (props.datosEstructura) cargarDatos()
+  if (props.datosEstructura) {
+    inicializarDesdeProcedencia(props.datosEstructura)
+  }
 })
 
-const cargarDatos = async () => {
-  datosFiltrados.value = filtrarDatosPorTipo(props.datosEstructura, tiposDeFiltro)
-  console.log('Datos filtrados')
-  console.log(datosFiltrados)
-  llenarDatos(datosFiltrados.value)
-  console.log('objetivo general')
-  console.log(objetivogeneral.value)
-  console.log('objetivo especifico')
-  console.log(objetivoespecifico.value)
-  console.log('objetivoespecificoog')
-  console.log(objetivoespecificoog.value)
-  console.log('resultadoog')
-  console.log(resultadoog.value)
-  console.log('resultadooe')
-  console.log(resultadooe.value)
-  console.log('productooe')
-  console.log(productooe.value)
-  console.log('productoroe')
-  console.log(productoroe.value)
-  console.log('producto')
-  console.log(producto.value)
-}
+// También emitir cuando el componente se monta (por si acaso)
+onMounted(() => {
+  emitirPayloadCompleto('mounted')
+})
 </script>
 
-<style scoped></style>
+<style scoped>
+.debug-container {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.debug-container h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.debug-container pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 12px;
+  color: #666;
+  max-height: 300px;
+  overflow-y: auto;
+}
+</style>
