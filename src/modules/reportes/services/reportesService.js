@@ -36,4 +36,47 @@ export const reportesServicios = {
       console.error('Axios, error de registro en el bitacor', error)
     }
   },
+  /*************REPORTES********************/
+  reporteProyecto: async (idproyecto) => {
+    try {
+      const respuesta = await apiRep.get('/proyectos/' + idproyecto + '/descargar-reporte/', {
+        responseType: 'blob',
+      })
+
+      // 2. Extrae los datos del archivo (el Blob) de la respuesta
+      const blob = new Blob([respuesta.data], {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      })
+
+      // 3. Crea una URL de objeto temporal para el Blob
+      const fileURL = window.URL.createObjectURL(blob)
+
+      // 4. Crea un elemento de anclaje (<a>) en la memoria
+      const link = document.createElement('a')
+      link.href = fileURL
+
+      // 5. Establece el nombre del archivo para la descarga
+      // Puedes obtener el nombre del servidor si lo envía en el header 'Content-Disposition'
+      const disposition = respuesta.headers['content-disposition']
+      let filename = 'reporte_proyecto.docx' // Nombre por defecto
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+        const matches = filenameRegex.exec(disposition)
+        if (matches != null && matches[1]) {
+          filename = matches[1].replace(/['"]/g, '')
+        }
+      }
+      link.setAttribute('download', filename)
+
+      // 6. Simula un clic en el enlace para iniciar la descarga
+      document.body.appendChild(link)
+      link.click()
+
+      // 7. Limpia el elemento y la URL para liberar memoria
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(fileURL)
+    } catch (erro) {
+      console.error('axios: error reporte de proyecto', erro)
+    }
+  },
 }

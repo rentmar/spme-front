@@ -308,6 +308,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useReportes } from '@/modules/reportes/composables/useReportes'
 import { useRoute } from 'vue-router'
+import { reportesServicios } from '@/modules/reportes/services/reportesService'
 
 const ruta = useRoute()
 const idproyecto = ruta.params.id
@@ -327,8 +328,13 @@ const snackbar = ref({
 const proyecto = computed(() => estructuraProyectoReportesUIX.value)
 
 // Función para generar reportes
-const generarReporte = (tipo, id) => {
+const generarReporte = async (tipo, id) => {
   console.log(`Generando reporte de ${tipo} con ID: ${id}`)
+  try {
+    await reportesServicios.reporteProyecto(id)
+  } catch (error) {
+    console.error(error)
+  }
 
   snackbar.value = {
     show: true,
