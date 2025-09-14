@@ -127,7 +127,7 @@ const btnlogin = async () => {
               </form>
             </div>
             <div class="col-sm-6 d-flex align-items-center justify-content-center">
-              <img src="../assets/img/logo.svg" alt="Logo" class="logo img-fluid">
+              <img src="../assets/img/logo.png" alt="Logo" class="logo img-fluid">
             </div>
           </div>
         </div>
