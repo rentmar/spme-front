@@ -33,7 +33,7 @@
       <!--Encabezado de la Actividad-->
       <ActividadInformacion
         v-if="datosFormulario.actividad"
-        :actividad="datosFormulario.actividad"
+        :actividad-id="idActividad"
       />
 
       <v-row>

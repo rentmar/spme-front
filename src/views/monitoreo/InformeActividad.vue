@@ -367,9 +367,9 @@ const formData = reactive({
   descripcion_herramientas: '',
   medios_verificacion: '',
   comentarios_recomendaciones: '',
-  archivos_cuantitativos: [],
-  herramientas_archivos: [],
-  medios_archivos: [],
+  // archivos_cuantitativos: [],
+  // herramientas_archivos: [],
+  // medios_archivos: [],
 })
 
 const acceptedFormats = {
@@ -449,23 +449,24 @@ async function submitForm() {
     }
 
     const payload = {
-      contribucion_actividad: formData.contribucion_actividad,
-      objetivo_de_actividad: formData.objetivo_de_actividad,
-      informe_de_objetivo_de_actividad: formData.informe_de_objetivo_de_actividad,
-      tipo_de_actividad: formData.tipo_de_actividad,
-      reporte_tipo: formData.reporte_por_tipo,
-      informacion_cuantitativa: formData.informacion_cuantitativa,
-      descripcion_herramientas: formData.descripcion_herramientas,
-      medios_verificacion: formData.medios_verificacion,
-      comentarios_recomendaciones: formData.comentarios_recomendaciones,
+      numeroInforme: 1,
+      contribucionesProyecto: formData.informe_de_objetivo_de_actividad,
+      contribucionesActividad: formData.contribucion_actividad,
+      informaObjetivoActividad: formData.objetivo_de_actividad,
+      reporteTipo: formData.reporte_tipo,
+      indicador: formData.informacion_cuantitativa,
+      herramientaEvaluacion: formData.descripcion_herramientas,
+      descripcionMediosVerificacion: formData.medios_verificacion,
+      comentariosRecomendacion: formData.comentarios_recomendaciones,
+      actividad: formData.tipo_de_actividad,
 
-      archivos_cuantitativos: [],
-      herramientas_archivos: [],
-      medios_archivos: [],
+      // archivos_cuantitativos: [],
+      // herramientas_archivos: [],
+      // medios_archivos: [],
     }
 
     const response = await axios.post(
-      'http://127.0.0.1:8000/tu_api_de_informes/crearInforme/',
+      'http://127.0.0.1:8000/api/informe-actividad/',
       payload,
       {
         headers: {
@@ -499,7 +500,7 @@ function resetForm() {
     descripcion_de_medios_de_verificacion:'',
     comentarios_recomendaciones:'',
   });
-  prefillFormData();
+  //prefillFormData();
 }
 
 // Ciclo de vida
@@ -507,7 +508,7 @@ onMounted(async () => {
   console.log('ID de Actividad:', idActividad);
   console.log('ID de Tarea:', idTarea);
 
-  await prefillFormData();
+  //await prefillFormData();
 
   if (idActividad) {
     await obtenerDatosProyecto(idActividad);
@@ -515,27 +516,27 @@ onMounted(async () => {
 });
 
 // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
-watch(
-  data,
-  (newVal) => {
-    if (newVal) {
-      formData.contribucion_proyecto = newVal.contribucion_proyecto || '';
-      formData.contribucion_actividad = newVal.contribucion_actividad || '';
-      formData.nombre_actividad = newVal.nombre_actividad || '';
-      formData.fecha_realizacion = newVal.fecha_realizacion || '';
-      formData.objetivo_actividad = newVal.objetivo_actividad || '';
-      formData.informe_objetivo = newVal.informe_objetivo || '';
-      formData.tipo_actividad = newVal.tipo_actividad || '';
-      formData.reporte_tipo = newVal.reporte_tipo || '';
-      formData.indicador_seleccionado = newVal.indicador_seleccionado || '';
-      formData.informacion_cuantitativa = newVal.informacion_cuantitativa || '';
-      formData.descripcion_herramientas = newVal.descripcion_herramientas || '';
-      formData.medios_verificacion = newVal.medios_verificacion || '';
-      formData.comentarios_recomendaciones = newVal.comentarios_recomendaciones || '';
-    }
-  },
-  { deep: true },
-)
+// watch(
+//   data,
+//   (newVal) => {
+//     if (newVal) {
+//       formData.contribucion_proyecto = newVal.contribucion_proyecto || '';
+//       formData.contribucion_actividad = newVal.contribucion_actividad || '';
+//       formData.nombre_actividad = newVal.nombre_actividad || '';
+//       formData.fecha_realizacion = newVal.fecha_realizacion || '';
+//       formData.objetivo_actividad = newVal.objetivo_actividad || '';
+//       formData.informe_objetivo = newVal.informe_objetivo || '';
+//       formData.tipo_actividad = newVal.tipo_actividad || '';
+//       formData.reporte_tipo = newVal.reporte_tipo || '';
+//       formData.indicador_seleccionado = newVal.indicador_seleccionado || '';
+//       formData.informacion_cuantitativa = newVal.informacion_cuantitativa || '';
+//       formData.descripcion_herramientas = newVal.descripcion_herramientas || '';
+//       formData.medios_verificacion = newVal.medios_verificacion || '';
+//       formData.comentarios_recomendaciones = newVal.comentarios_recomendaciones || '';
+//     }
+//   },
+//   { deep: true },
+// )
 
 // Watchers
 watch(() => route.params.id, (newId) => {
