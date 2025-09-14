@@ -46,6 +46,7 @@
                     <v-list-item-title>{{ indicadorSeleccionado.descripcion }}</v-list-item-title>
                     <v-list-item-subtitle>Descripcion del Indicador</v-list-item-subtitle>
                   </v-list-item>
+
                   <v-list-item>
                     <template v-slot:prepend>
                       <v-icon color="primary">mdi-format-list-numbered</v-icon>
@@ -129,6 +130,7 @@
                   <v-card-text class="pa-4">
                     <v-form ref="formAvance" v-model="formValido">
                       <v-text-field
+                        v-if="indicadorSeleccionado.tipo !== 'A-Z'"
                         v-model="nuevoAvance.valor"
                         :label="`Valor de avance (${unidadMedida})`"
                         variant="outlined"
@@ -245,22 +247,21 @@
         </v-card>
 
         <!-- Gráfica de avance -->
-        <v-card
-          v-if="indicadorSeleccionado && datosGrafica.labels.length > 0"
-          flat
-          class="ma-4 mb-8"
-        >
-          <v-card-title class="text-h6 font-weight-medium">Evolución del Avance</v-card-title>
-          <v-card-text>
-            <div style="height: 300px">
-              <canvas ref="graficaAvance"></canvas>
-            </div>
-            <div class="text-caption text-medium-emphasis mt-2">
-              * La gráfica incluye el valor baseline inicial y muestra la evolución del indicador a
-              lo largo del tiempo.
-            </div>
-          </v-card-text>
-        </v-card>
+        <div v-if="indicadorSeleccionado.tipo !== 'A-Z'">
+          <v-card
+            v-if="indicadorSeleccionado && datosGrafica.labels.length > 0"
+            flat
+            class="ma-4 mb-8"
+          >
+            <v-card-title class="text-h6 font-weight-medium">Evolución del Avance</v-card-title>
+            <v-card-text>
+              <div style="height: 300px">
+                <canvas ref="graficaAvance"></canvas>
+              </div>
+              <div class="text-caption text-medium-emphasis mt-2"></div>
+            </v-card-text>
+          </v-card>
+        </div>
       </v-card-text>
 
       <!-- Footer con acciones -->

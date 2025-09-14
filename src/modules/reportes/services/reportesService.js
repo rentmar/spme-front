@@ -19,5 +19,13 @@ export const reportesServicios = {
       throw error
     }
   },
+  estructuraProyectoReporte: async (idproyecto) => {
+    try {
+      const respuesta = await apiRep.get('/proyectos/' + idproyecto + '/estructura-reportes/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error fectch estruc jerar proy idproy: ' + idproyecto, error)
+    }
+  },
   /****** Crear bitacora **********/
 }

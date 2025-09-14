@@ -3,7 +3,7 @@
     <h1>Notificaciones</h1>
     <!-- <indicador-line-chart></indicador-line-chart> -->
     <!-- Botón para abrir el modal -->
-    <!-- <v-btn
+    <v-btn
       color="blue-darken-1"
       variant="elevated"
       block
@@ -16,7 +16,7 @@
     <indicador-registro-bitacora
       v-model="modalAbierto"
       :idactividad="idactividad"
-    ></indicador-registro-bitacora> -->
+    ></indicador-registro-bitacora>
 
     <encabezado-contribucion
       :datos-estructura="estructuraProcedencia"

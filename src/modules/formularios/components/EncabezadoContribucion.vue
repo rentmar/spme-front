@@ -3,8 +3,8 @@
     <!-- Objetivo General -->
     <v-textarea
       v-if="objetivogeneral"
-      v-model="caberaContribucion.objetivogeneral.contribucion"
-      label="Objetivo General"
+      v-model="caberaContribucion.objetivogeneral.data.contribucion"
+      :label="getLabel('objetivogeneral')"
       hint="Contribución del objetivo general"
       clearable
       variant="outlined"
@@ -15,8 +15,8 @@
     <!-- Objetivo Específico Proyecto -->
     <v-textarea
       v-if="objetivoespecifico"
-      v-model="caberaContribucion.objetivoespecifico.contribucion"
-      label="Objetivo Específico Proyecto"
+      v-model="caberaContribucion.objetivoespecifico.data.contribucion"
+      :label="getLabel('objetivoespecifico')"
       hint="Contribución del objetivo específico proyecto"
       clearable
       variant="outlined"
@@ -27,8 +27,8 @@
     <!-- Objetivo Específico OG -->
     <v-textarea
       v-if="objetivoespecificoog"
-      v-model="caberaContribucion.objetivoespecificoog.contribucion"
-      label="Objetivo Específico OG"
+      v-model="caberaContribucion.objetivoespecificoog.data.contribucion"
+      :label="getLabel('objetivoespecificoog')"
       hint="Contribución del objetivo específico OG"
       clearable
       variant="outlined"
@@ -39,8 +39,8 @@
     <!-- Resultado OG -->
     <v-textarea
       v-if="resultadoog"
-      v-model="caberaContribucion.resultadoog.contribucion"
-      label="Resultado OG"
+      v-model="caberaContribucion.resultadoog.data.contribucion"
+      :label="getLabel('resultadoog')"
       hint="Contribución del resultado OG"
       clearable
       variant="outlined"
@@ -51,8 +51,8 @@
     <!-- Resultado OE -->
     <v-textarea
       v-if="resultadooe"
-      v-model="caberaContribucion.resultadooe.contribucion"
-      label="Resultado OE"
+      v-model="caberaContribucion.resultadooe.data.contribucion"
+      :label="getLabel('resultadooe')"
       hint="Contribución del resultado OE"
       clearable
       variant="outlined"
@@ -63,8 +63,8 @@
     <!-- Producto OE -->
     <v-textarea
       v-if="productooe"
-      v-model="caberaContribucion.productooe.contribucion"
-      label="Producto OE"
+      v-model="caberaContribucion.productooe.data.contribucion"
+      :label="getLabel('productooe')"
       hint="Contribución del producto OE"
       clearable
       variant="outlined"
@@ -75,8 +75,8 @@
     <!-- Producto ROE -->
     <v-textarea
       v-if="productoroe"
-      v-model="caberaContribucion.productoroe.contribucion"
-      label="Producto ROE"
+      v-model="caberaContribucion.productoroe.data.contribucion"
+      :label="getLabel('productoroe')"
       hint="Contribución del producto ROE"
       clearable
       variant="outlined"
@@ -87,8 +87,8 @@
     <!-- Producto -->
     <v-textarea
       v-if="producto"
-      v-model="caberaContribucion.producto.contribucion"
-      label="Producto"
+      v-model="caberaContribucion.producto.data.contribucion"
+      :label="getLabel('producto')"
       hint="Contribución del producto"
       clearable
       variant="outlined"
@@ -105,7 +105,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
 
 // Props del componente
 const props = defineProps({
@@ -228,8 +228,43 @@ const producto = ref(false)
 // Para almacenar el último payload emitido (solo debug)
 const lastPayload = ref(null)
 
-// Emit para enviar el payload al componente padre
+// Emit para enviar the payload al componente padre
 const emit = defineEmits(['payload-actualizado'])
+
+// Función para generar labels dinámicos
+const getLabel = (tipo) => {
+  const data = caberaContribucion[tipo]?.data
+  if (!data) return tipo
+
+  // Si tiene código y descripción
+  if (data.codigo && data.descripcion) {
+    return `${data.codigo} - ${data.descripcion}`
+  }
+
+  // Si solo tiene código
+  if (data.codigo) {
+    return data.codigo
+  }
+
+  // Si solo tiene descripción
+  if (data.descripcion) {
+    return data.descripcion
+  }
+
+  // Fallback al nombre del tipo
+  const tipoNames = {
+    objetivogeneral: 'Objetivo General',
+    objetivoespecifico: 'Objetivo Específico',
+    objetivoespecificoog: 'Objetivo Específico OG',
+    resultadoog: 'Resultado OG',
+    resultadooe: 'Resultado OE',
+    productooe: 'Producto OE',
+    productoroe: 'Producto ROE',
+    producto: 'Producto',
+  }
+
+  return tipoNames[tipo] || tipo
+}
 
 // Función para emitir el payload completo
 const emitirPayloadCompleto = (evento = 'input') => {
