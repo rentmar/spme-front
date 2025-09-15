@@ -867,6 +867,7 @@ const openTareaDialog = (actividadId, tarea = null) => {
   }
   tareaDialog.value = true
 }
+const pruebaBloqueo = ref(false)
 
 const saveTarea = async () => {
 
@@ -880,8 +881,9 @@ const saveTarea = async () => {
        titulo: tareaForm.value.titulo,
        descripcion: tareaForm.value.descripcion,
        estado: tareaForm.value.estado,
-       actividad: actividadIdParaTarea.value.id
+       actividad: actividadIdParaTarea.value
      }
+     console.log('Datos de tarea a guardar:', tareaData)
 
      let resultado
 
@@ -952,7 +954,8 @@ const deleteTarea = async () => {
   loading.value = true
   try {
     //await eliminarTareaDeActividad(actividadIdParaEliminarTarea.value, tareaToDelete.value.id)
-    await tareasServicios.delete(actividadIdParaEliminarTarea.value, tareaToDelete.value.id)
+
+    await tareasServicios.del( tareaToDelete.value.id)
     const actividad = actividades.value.find((a) => a.id === actividadIdParaEliminarTarea.value)
     if (actividad && actividad.tareas) {
       actividad.tareas = actividad.tareas.filter((t) => t.id !== tareaToDelete.value.id)
