@@ -4,6 +4,24 @@
       <v-card-title class="text-h5 font-weight-bold">
         Formulario F-05:<br> Solicitud de Viaje (Participación en Eventos)
       </v-card-title>
+
+      <PaginaTituloIcono
+        :titulo="'Solicitud de Viaje'"
+        :icon="'mdi-file-document-multiple'"
+      ></PaginaTituloIcono>
+      <br />
+      <!--<ProyectoIdHeader
+        v-if="data"
+        :proyecto-id=""
+      ></ProyectoIdHeader>-->0
+
+      <br />
+      <ActividadInformacion
+        v-if="idActividad"
+        :actividad-id="idActividad"
+      ></ActividadInformacion>
+      <br />
+
       <v-card-text>
         <v-form @submit.prevent="submitForm">
           <div class="form-section">
@@ -261,6 +279,11 @@ import html2canvas from 'html2canvas';
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
+
+import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
+import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
+import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+
 
 // ===================================
 //  COMPOSABLES

@@ -1,10 +1,6 @@
 <template>
   <div class="v-container v-locale--is-ltr">
 
-
-
-
-
   <div v-if="!cargandoGeneral">
     <PaginaTituloIcono
       :titulo="'Rendición de Cuentas'"
@@ -27,11 +23,6 @@
   <div v-else>
     <v-progress-circular indeterminate color="primary"></v-progress-circular>
   </div>
-
-
-
-
-
 
     <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
       <div class="v-card-title text-h5 font-weight-bold">
