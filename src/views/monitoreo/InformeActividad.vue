@@ -3,7 +3,23 @@
     <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
       <!-- Encabezado diferenciado -->
       <div class="header-gradient">
-        <div class="d-flex align-center">
+
+      <PaginaTituloIcono
+        :titulo="'Informe de Actividades'"
+        :icon="'mdi-file-document-multiple'"
+      ></PaginaTituloIcono>
+      <br />
+      <ProyectoIdHeader
+        v-if="data"
+        :proyecto-id="data.proyecto"
+      ></ProyectoIdHeader>
+      <br />
+      <ActividadInformacion
+        v-if="idActividad"
+        :actividad-id="idActividad"
+      ></ActividadInformacion>
+
+        <!-- <div class="d-flex align-center">
           <v-avatar class="mr-4" size="60" color="white">
             <v-icon size="x-large" color="primary">mdi-file-document-multiple</v-icon>
           </v-avatar>
@@ -11,7 +27,7 @@
             <div class="text-h4 font-weight-bold white--text">Informe de Actividades</div>
             <div class="text-subtitle-1 white--text mt-1">Sistema de Gestión de Proyectos</div>
           </div>
-        </div>
+        </div> -->
         <div class="header-decoration">
           <div class="decoration-circle decoration-circle-1"></div>
           <div class="decoration-circle decoration-circle-2"></div>
@@ -312,6 +328,12 @@ import axios from 'axios'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
 import IndicadorRegistroBitacora from '@/modules/reportes/components/IndicadorRegistroBitacora.vue';
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue';
+
+
+import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
+import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
+import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+
 
 const modalAbierto = ref(false);
 
