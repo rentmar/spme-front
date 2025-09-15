@@ -1,5 +1,29 @@
 <template>
   <div class="v-container v-locale--is-ltr">
+
+  <div v-if="!cargandoGeneral">
+    <PaginaTituloIcono
+      :titulo="'Rendición de Cuentas'"
+      :icon="'mdi-file-document-check'"
+    ></PaginaTituloIcono>
+    <ProyectoIdHeader
+      v-if="datosFormulario"
+      :proyecto-id="datosFormulario.actividad.proyecto"
+    ></ProyectoIdHeader>
+    <br />
+    <ActividadInformacion
+      v-if="datosFormulario.actividad"
+      :actividad-id="idActividad"
+    />
+
+    <br />
+    <v-form ref="form" v-model="valid" lazy-validation>
+      </v-form>
+  </div>
+  <div v-else>
+    <v-progress-circular indeterminate color="primary"></v-progress-circular>
+  </div>
+
     <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
       <div class="v-card-title text-h5 font-weight-bold">
         Formulario F-02:<br> Rendición de Cuentas
@@ -292,13 +316,23 @@
       </div>
     </div>
   </div>
-   <pre>{{ datosFormulario }}</pre>
+    <!-- <pre>{{ fuente_financiamiento0 }}</pre>
+  <br>
+  <br>
+    <pre>{{ datosFormulario }}</pre> -->
 </template>
 
 <script setup>
 
 import { ref, onMounted, computed, watch } from 'vue';
+
+import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
+import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
+import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+
+
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
+import {useUserStore} from '@/stores/user';
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -379,6 +413,23 @@ const formData = ref({
   idadministrador: null
 })
 
+ const userStore = useUserStore();
+ const usuario1 = computed(() => {
+ return {
+ 	nombre: userStore.usuario,
+ 	role: userStore.rol,
+   };
+ });
+
+const fuente_financiamiento0 = ref()
+
+// Computed property para filtrar
+const fondosPropios = computed(() => {
+  return formData.value.fuente_financiamiento.filter(
+    fuente => fuente.nombre === "FONDOS PROPIOS"
+  )
+})
+
 const actividadData = ref({
   codigo: 'ACT-2023-005',
   descripcion: 'Capacitación en gestión de proyectos para equipos técnicos',
@@ -435,7 +486,12 @@ watch(
         formData.value.fecha_irealizacion = newVal.actividad.fecha_inicio || ''
         formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
         formData.value.id_actividad = newVal.actividad.id || 0
-        formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
+        // formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.nombre || ''
+        if (newVal.actividad.procedencia_fondos) {
+  formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(item => item.nombre);
+} else {
+  formData.value.fuente_financiamiento = [];
+}
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
           //console.log('Formas de pago disponibles:', newVal.formaPago)
@@ -461,6 +517,20 @@ watch(
   },
   { deep: true },
 )
+
+const filtrarProcedenciaFondos = () => {
+  if (datosFormulario.value.actividad && datosFormulario.value.actividad.procedencia_fondos) {
+    fuente_financiamiento0.value = datosFormulario.value.actividad.procedencia_fondos.map(
+      (item) => item.nombre
+    );
+  }
+};
+
+watch(datosFormulario, (newVal) => {
+  if (newVal) {
+    filtrarProcedenciaFondos();
+  }
+}, { immediate: true });
 
 // Métodos
 function getNombreCompleto(user) {
@@ -493,7 +563,7 @@ async function cargarDatos() {
       },
       body: JSON.stringify({
         id_actividad: idActividad,
-        usuario: 'chave',
+        usuario: usuario1.value.nombre,
       }),
     })
 
@@ -986,14 +1056,125 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.form-section {
-  margin-bottom: 24px;
-}
-.v-card {
-  max-width: 900px;
+.solicitud-fondos-container {
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 20px 16px;
 }
-.v-table {
-  margin: 16px 0;
+
+.v-card {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.v-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border: 1px solid #e0e0e0;
+}
+
+.form-section h3 {
+  color: #1976d2;
+  border-bottom: 2px solid #1976d2;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.info-item {
+  padding: 8px 0;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.users-table {
+  width: 100%;
+}
+
+.users-table th {
+  background-color: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 960px) {
+  .solicitud-fondos-container {
+    padding: 16px 12px;
+  }
+
+  .form-section {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .d-flex.justify-end {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .d-flex.justify-end .v-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .v-card {
+    margin: 8px 0;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+}
+
+/* Mejora el aspecto de la tabla */
+:deep(.v-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.v-table th) {
+  background-color: #1976d2 !important;
+  color: white !important;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 16px 12px;
+}
+
+:deep(.v-table td) {
+  padding: 12px;
+  background-color: #fafafa;
+}
+
+.narrow-column {
+  width: 15%;
+}
+
+.wide-column {
+  width: 50%;
+}
+
+.action-column {
+  width: 15%;
+}
+
+.compact-field {
+  font-size: 14px;
+  max-width: 100px;
 }
 </style>
