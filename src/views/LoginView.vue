@@ -122,7 +122,7 @@ const btnlogin = async () => {
                 <br><br>
 
                 <div class="d-grid gap-2">
-                  <button type="submit" class="btn btn-success" id="btnlogin">Ingresar</button>
+                  <button type="submit" class="btn custom-btn" id="btnlogin">Ingresar</button>
                 </div>
               </form>
             </div>
@@ -135,5 +135,23 @@ const btnlogin = async () => {
     </div>
   </div>
 </template>
-<style>
+<style scoped>
+body {
+  background-color: #EFE0BC;
+}
+
+.card {
+  background-color: #DDD3D3;
+}
+
+.custom-btn {
+  background-color: #DB7810;
+  border-color: #DB7810;
+  color: white;
+}
+
+.custom-btn:hover {
+  background-color: #C1670F;
+  border-color: #C1670F;
+}
 </style>
