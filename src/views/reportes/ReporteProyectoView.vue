@@ -279,7 +279,7 @@
                     v-bind="props"
                     color="brown"
                     size="small"
-                    @click="generarReporte('actividad', actividad.id)"
+                    @click="generarReporteActividad(actividad.id)"
                     icon="mdi-file-download"
                     class="ml-2"
                   />
@@ -340,6 +340,14 @@ const generarReporte = async (tipo, id) => {
     show: true,
     message: `Reporte de ${tipo} generado exitosamente`,
     color: 'success',
+  }
+}
+
+const generarReporteActividad = async (id) => {
+  try {
+    await reportesServicios.reporteActividad(id)
+  } catch (error) {
+    console.error(error)
   }
 }
 
