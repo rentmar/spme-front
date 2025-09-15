@@ -36,6 +36,17 @@ export const reportesServicios = {
       console.error('Axios, error de registro en el bitacor', error)
     }
   },
+  /******** Bitacora por Indicador *********************/
+  obtenerBitacoraPorIdIndicador:async (idIndicador, tipoIndicador) => {
+    try {
+      const respuesta = await apiRep.post('')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios, error fetch ', error)
+      throw error
+    }
+
+  }
   /*************REPORTES PARA DESCARGA********************/
   //Reporte de poryecto por su id
   reporteProyecto: async (idproyecto) => {

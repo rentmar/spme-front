@@ -214,23 +214,26 @@
                       >
                         <template v-slot:prepend>
                           <v-avatar color="primary" size="40">
-                            <span class="white--text"
-                              >{{ registro.valor
-                              }}{{ unidadMedida === 'Porcentaje' ? '%' : '' }}</span
-                            >
+                            <span class="white--text">
+                              {{ registro.cantidadAvance || registro.valor }}
+                              {{ obtenerSimboloUnidad(registro) }}
+                            </span>
                           </v-avatar>
                         </template>
 
                         <v-list-item-title class="font-weight-medium">
-                          {{ formatFecha(registro.fecha) }}
+                          {{ formatFecha(registro.fechaBitacora || registro.fecha) }}
                         </v-list-item-title>
 
                         <v-list-item-subtitle>
-                          {{ registro.observaciones }}
+                          {{ registro.reporteEscrito || registro.observaciones }}
                         </v-list-item-subtitle>
 
                         <v-list-item-subtitle class="text-caption text-medium-emphasis">
-                          Registrado por: {{ registro.usuario }}
+                          Registrado por: {{ registro.usuario || 'Sistema' }}
+                          <span v-if="registro.tipoIndicador" class="ml-2">
+                            ({{ formatoTipoIndicador(registro.tipoIndicador) }})
+                          </span>
                         </v-list-item-subtitle>
                       </v-list-item>
                     </v-list>
@@ -571,12 +574,13 @@ const reiniciarEstado = () => {
 /**
  * Carga los datos del indicador seleccionado
  */
+
 const cargarDatosIndicador = (indicadorId) => {
   // Cargar bitácora del indicador
   cargarBitacoraIndicador(indicadorId)
 
-  // Verificar si ya se registró un avance para este indicador
-  indicadorYaRegistrado.value = avancesRegistrados.value.some((a) => a.indicadorId === indicadorId)
+  // Verificar si ya se registró un avance para este indicador en esta sesión
+  indicadorYaRegistrado.value = avancesRegistrados.value.some((a) => a.idIndicador === indicadorId)
 }
 
 /**
@@ -602,6 +606,9 @@ const cargarBitacoraIndicador = async (indicadorId) => {
 /**
  * Prepara los datos para la gráfica incluyendo el baseline
  */
+/**
+ * Prepara los datos para la gráfica incluyendo el baseline
+ */
 const prepararDatosGrafica = () => {
   datosGrafica.labels = []
   datosGrafica.valores = []
@@ -613,16 +620,20 @@ const prepararDatosGrafica = () => {
     indicadorSeleccionado.value.baseline !== null
   ) {
     datosGrafica.labels.push('Línea Base')
-    datosGrafica.valores.push(indicadorSeleccionado.value.baseline)
+    datosGrafica.valores.push(parseFloat(indicadorSeleccionado.value.baseline))
   }
 
-  // Agregar datos de la bitácora
+  // Agregar datos de la bitácora (usar cantidadAvance en lugar de valor)
   bitacoraIndicador.value.forEach((registro) => {
-    datosGrafica.labels.push(formatFechaCorta(registro.fecha))
-    datosGrafica.valores.push(registro.valor)
+    // Usar fechaBitacora si está disponible, sino usar fecha
+    const fecha = registro.fechaBitacora || registro.fecha
+    datosGrafica.labels.push(formatFechaCorta(fecha))
+
+    // Usar cantidadAvance convertido a número si está disponible, sino usar valor
+    const valor = registro.cantidadAvance ? parseFloat(registro.cantidadAvance) : registro.valor
+    datosGrafica.valores.push(valor)
   })
 }
-
 /**
  * Crea la gráfica de avance del indicador
  */
@@ -690,77 +701,74 @@ const crearGraficaAvance = () => {
 /**
  * Agrega un nuevo avance al indicador
  */
+/**
+ * Agrega un nuevo avance al indicador
+ */
 const agregarAvance = async () => {
   if (!formValido.value) return
-  //Insercion a la base de datos
-  console.log('Indicador seleccionado, bitacora:', indicadorSeleccionado.value)
 
-  const avance = {
-    indicadorId: indicadorSeleccionado.value.id,
-    valor: parseFloat(nuevoAvance.value.valor),
-    observaciones: nuevoAvance.value.observaciones,
-    fecha: nuevoAvance.value.fecha,
-    unidadMedida: unidadMedida.value,
-    usuario: 'Usuario Actual',
-  }
-
-  //Preparar para la insercion
+  // Preparar para la inserción
   const datoBitacora = {
-    fechaBitacora: avance.fecha,
-    cantidadAvance: avance.valor,
-    reporteEscrito: avance.observaciones,
+    fechaBitacora: nuevoAvance.value.fecha,
+    cantidadAvance: nuevoAvance.value.valor.toString(), // Asegurar que sea string
+    reporteEscrito: nuevoAvance.value.observaciones,
     linkSubida: '',
     tipoIndicador: indicadorSeleccionado.value.type,
     idIndicador: indicadorSeleccionado.value.id,
   }
 
   console.log('Datos endpoint', datoBitacora)
-  //INsertar el registro a la bitacora
+
+  // Insertar el registro a la bitácora
   try {
-    await registrarIndicadorBitacora(datoBitacora)
-    console.log('traza devuleta', trazabitacora)
+    const respuesta = await registrarIndicadorBitacora(datoBitacora)
     successMsg('Registro creado')
+
+    console.log('Traza bitacora: ', trazabitacora)
+
+    // Agregar a la lista de avances registrados usando la respuesta del backend
+    avancesRegistrados.value.push({
+      ...datoBitacora,
+      // Usar los datos de la traza que viene en la respuesta
+      idPadre: trazabitacora.value.traza?.id_padre,
+      idHijo: trazabitacora.value.traza?.id_hijo,
+      tipo: trazabitacora.value.traza?.tipo,
+      idbitacora: trazabitacora.value.traza?.idBitacora,
+    })
+
+    // Actualizar la bitácora localmente con los datos reales del backend
+    bitacoraIndicador.value.push({
+      valor: parseFloat(nuevoAvance.value.valor),
+      observaciones: nuevoAvance.value.observaciones,
+      fecha: nuevoAvance.value.fecha,
+      usuario: 'Usuario Actual',
+      // Datos adicionales de la respuesta
+      idBitacora: trazabitacora.value.traza?.idBitacora, // o algún ID de la bitácora si está disponible
+      tipoIndicador: datoBitacora.tipoIndicador,
+    })
+
+    // Reiniciar formulario
+    nuevoAvance.value = {
+      valor: '',
+      observaciones: '',
+      fecha: new Date().toISOString().substr(0, 10),
+    }
+
+    // Actualizar datos de la gráfica
+    prepararDatosGrafica()
+
+    // Actualizar gráfica
+    if (chartInstance) {
+      chartInstance.destroy()
+    }
+    nextTick(() => {
+      crearGraficaAvance()
+    })
   } catch (err) {
     console.error('Error crear registro', err)
-    errorMsg('Error al crear el registro')
-    return
+    errorMsg('Error al crear el registro: ' + (err.message || 'Intente nuevamente'))
   }
-
-  // Agregar a la lista de avances registrados
-  avancesRegistrados.value.push(datoBitacora)
-
-  console.log('avances reg', avancesRegistrados)
-
-  // Actualizar la bitácora localmente
-  bitacoraIndicador.value.push({
-    valor: avance.valor,
-    observaciones: avance.observaciones,
-    fecha: avance.fecha,
-    usuario: avance.usuario,
-  })
-
-  // Marcar como ya registrado
-  //indicadorYaRegistrado.value = true
-
-  // Reiniciar formulario
-  nuevoAvance.value = {
-    valor: '',
-    observaciones: '',
-    fecha: new Date().toISOString().substr(0, 10),
-  }
-
-  // Actualizar datos de la gráfica
-  prepararDatosGrafica()
-
-  // Actualizar gráfica
-  if (chartInstance) {
-    chartInstance.destroy()
-  }
-  nextTick(() => {
-    crearGraficaAvance()
-  })
 }
-
 /**
  * Muestra el resumen de avances antes de guardar
  */
@@ -771,13 +779,22 @@ const mostrarResumenGuardado = () => {
 /**
  * Prepara el payload para enviar
  */
+/**
+ * Prepara el payload para enviar
+ */
 const prepararPayload = () => {
   return {
     traza_bitacora: avancesRegistrados.value.map((avance) => ({
-      indicador_id: avance.indicadorId,
-      valor: avance.valor,
-      observaciones: avance.observaciones,
-      fecha: avance.fecha,
+      indicador_id: avance.idIndicador,
+      tipo_indicador: avance.tipoIndicador,
+      valor: avance.cantidadAvance,
+      observaciones: avance.reporteEscrito,
+      fecha: avance.fechaBitacora,
+      // Incluir datos de la traza si están disponibles
+      id_padre: avance.idPadre,
+      id_hijo: avance.idHijo,
+      id_bitacora: avance.idBitacora,
+      tipo: avance.tipo,
     })),
   }
 }
@@ -843,6 +860,31 @@ const formatFechaCorta = (fecha) => {
 const obtenerNombreIndicador = (id) => {
   const indicador = indicadoresParaSelect.value.find((i) => i.id === id)
   return indicador ? indicador.descripcion : 'Indicador desconocido'
+}
+
+// Función para obtener símbolo de unidad basado en el tipo de indicador
+const obtenerSimboloUnidad = (registro) => {
+  // Si el registro tiene tipo específico, usarlo
+  if (registro.tipo === 'Porcentual' || registro.unidadMedida === 'Porcentaje') {
+    return '%'
+  }
+  // Si no, determinar basado en el valor
+  const valor = registro.cantidadAvance || registro.valor
+  if (typeof valor === 'string' && valor.includes('%')) {
+    return '%'
+  }
+  return ''
+}
+
+// Función para formatear el tipo de indicador para mostrar
+const formatoTipoIndicador = (tipo) => {
+  const tipos = {
+    indicadorog: 'Indicador OG',
+    indicadoroe: 'Indicador OE',
+    indicadorrog: 'Indicador R OG',
+    indicadorroe: 'Indicador R OE',
+  }
+  return tipos[tipo] || tipo
 }
 
 /******************** Cargar datos ***************************/
