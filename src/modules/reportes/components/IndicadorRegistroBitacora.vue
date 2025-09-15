@@ -122,6 +122,8 @@
           <v-card-title class="text-h6 font-weight-medium">Registro de Avance</v-card-title>
           <v-card-text>
             <v-row>
+              {{ indicadorSeleccionado }}
+
               <!-- Formulario de registro -->
               <v-col cols="12" md="6">
                 <v-card v-if="!indicadorYaRegistrado" variant="outlined">
@@ -269,6 +271,7 @@
         <v-spacer></v-spacer>
         <v-btn
           color="grey-darken-1"
+          error
           variant="outlined"
           class="rounded-lg font-weight-medium mr-2"
           @click="mostrarConfirmacionCierre"
@@ -377,6 +380,8 @@
 import { ref, watch, onMounted, nextTick, computed, reactive } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { useIndicadoresStore } from '../stores/useIndicadoresStore'
+import { useReportes } from '../composables/useReportes'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 // Registrar componentes de Chart.js
 Chart.register(...registerables)
@@ -397,6 +402,10 @@ const emit = defineEmits(['update:modelValue', 'guardarAvances'])
 
 //Iniciar el store
 const storeIndicadores = useIndicadoresStore()
+
+//Iniciar  composables
+const { trazabitacora, registrarIndicadorBitacora } = useReportes()
+const { successMsg, errorMsg, infoMsg } = useSnackbar()
 
 // Estado interno del modal principal
 const internalDialog = ref(props.modelValue)
@@ -451,6 +460,14 @@ const datosBitacora = {
       observaciones: 'Avance inicial del primer trimestre',
       fecha: '2023-01-15',
       usuario: 'Ana García',
+    },
+    {
+      fechaBitacora: '2024-01-15',
+      cantidadAvance: '75',
+      reporteEscrito: 'Avance significativo en el indicador',
+      linkSubida: 'https://ejemplo.com/documento.pdf',
+      tipoIndicador: 'indicadorog',
+      idIndicador: 27,
     },
     {
       valor: 50,
@@ -675,6 +692,8 @@ const crearGraficaAvance = () => {
  */
 const agregarAvance = async () => {
   if (!formValido.value) return
+  //Insercion a la base de datos
+  console.log('Indicador seleccionado, bitacora:', indicadorSeleccionado.value)
 
   const avance = {
     indicadorId: indicadorSeleccionado.value.id,
@@ -685,8 +704,32 @@ const agregarAvance = async () => {
     usuario: 'Usuario Actual',
   }
 
+  //Preparar para la insercion
+  const datoBitacora = {
+    fechaBitacora: avance.fecha,
+    cantidadAvance: avance.valor,
+    reporteEscrito: avance.observaciones,
+    linkSubida: '',
+    tipoIndicador: indicadorSeleccionado.value.type,
+    idIndicador: indicadorSeleccionado.value.id,
+  }
+
+  console.log('Datos endpoint', datoBitacora)
+  //INsertar el registro a la bitacora
+  try {
+    await registrarIndicadorBitacora(datoBitacora)
+    console.log('traza devuleta', trazabitacora)
+    successMsg('Registro creado')
+  } catch (err) {
+    console.error('Error crear registro', err)
+    errorMsg('Error al crear el registro')
+    return
+  }
+
   // Agregar a la lista de avances registrados
-  avancesRegistrados.value.push(avance)
+  avancesRegistrados.value.push(datoBitacora)
+
+  console.log('avances reg', avancesRegistrados)
 
   // Actualizar la bitácora localmente
   bitacoraIndicador.value.push({
@@ -697,7 +740,7 @@ const agregarAvance = async () => {
   })
 
   // Marcar como ya registrado
-  indicadorYaRegistrado.value = true
+  //indicadorYaRegistrado.value = true
 
   // Reiniciar formulario
   nuevoAvance.value = {
