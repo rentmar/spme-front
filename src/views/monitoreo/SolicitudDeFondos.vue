@@ -33,7 +33,7 @@
       <!--Encabezado de la Actividad-->
       <ActividadInformacion
         v-if="datosFormulario.actividad"
-        :actividad="datosFormulario.actividad"
+        :actividad-id="idActividad"
       />
 
       <v-row>
@@ -226,7 +226,7 @@
                       variant="outlined"
                       density="compact"
                       bg-color="blue-lighten-5"
-                      readonly
+                      required
                     ></v-text-field>
                   </v-col>
                 </div>
@@ -457,10 +457,7 @@
       </v-row>
     </div>
   </v-container>
-  {{ datosFormulario }}
-  <!-- {{ formData.fuente_financiamiento.mensaje }}-->
-  <!-- {{ '*******************' }} -->
-  <!-- {{ numeroFormularioSF }} -->
+  <!-- <pre>{{ usuario }}</pre> -->
   <!-- <pre>{{ datosFormulario }}</pre> -->
 </template>
 
@@ -468,8 +465,8 @@
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
-//import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import {useUserStore} from '@/stores/user';
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -524,6 +521,14 @@ const formData = ref({
 const idSolicitudFondos = ref(null)
 const numeroFormularioSF = ref(null)
 // Nuevo estado para controlar el bloqueo
+
+ const userStore = useUserStore();
+ const usuario = computed(() => {
+ return {
+ 	nombre: userStore.usuario,
+ 	role: userStore.rol,
+   };
+ });
 
 const actividadData = ref({
   codigo: 'ACT-2023-005',
@@ -658,7 +663,7 @@ async function cargarDatos() {
       },
       body: JSON.stringify({
         id_actividad: idActividad,
-        usuario: 'chave',
+        usuario: usuario.value.nombre,
       }),
     })
 

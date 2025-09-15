@@ -1,5 +1,5 @@
 <template>
-  <div class="v-container v-locale--is-ltr">
+  <div v-if="data" class="v-container v-locale--is-ltr">
     <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
       <!-- Encabezado diferenciado -->
       <div class="header-gradient">
@@ -19,10 +19,16 @@
         </div>
       </div>
 
+<EncabezadoContribucion
+  :datos-estructura="data.estructuraProcedencia"
+  @payload-actualizado="recibirdatos">
+
+</EncabezadoContribucion>
+
       <div class="v-card-text">
         <form class="v-form" novalidate @submit.prevent="submitForm">
           <!-- Sección 1: Datos Generales del Informe -->
-          <div class="form-section">
+          <!-- <div class="form-section">
             <v-divider class="my-4"></v-divider>
             <v-card-subtitle class="text-h6">Datos Generales del Informe</v-card-subtitle>
             <br>
@@ -55,11 +61,11 @@
                 ></v-text-field>
               </v-col>
             </v-row>
-          </div>
+          </div> -->
 
-          <v-divider class="my-4"></v-divider>
+          <!-- <v-divider class="my-4"></v-divider> -->
 
-          <v-col cols="12">
+          <!-- <v-col cols="12">
             <v-text-field
               v-model="formData.contribucion_proyecto"
               label="Contribuciones del Proyecto"
@@ -75,11 +81,11 @@
               bg-color="blue-lighten-5"
               required
             ></v-text-field>
-          </v-col>
+          </v-col>-->
 
           <v-col cols="12">
             <v-text-field
-              v-model="objetivoActividadExtraida"
+              v-model="formData.objetivo_de_actividad"
               label="Objetivo de la Actividad"
               required
               readonly
@@ -87,17 +93,18 @@
           </v-col>
 
           <v-col cols="12">
-            <v-text-field
-              v-model="formData.informe_objetivo"
+            <v-textarea
+              v-model="formData.informe_de_objetivo_de_actividad"
               label="Informe de objetivo de la actividad"
               bg-color="blue-lighten-5"
               required
-            ></v-text-field>
+              rows="3"
+            ></v-textarea>
           </v-col>
 
           <v-col cols="12">
             <v-text-field
-              v-model="tipoActividadExtraida"
+              v-model="formData.tipo_de_actividad"
               label="Tipo de actividad"
               required
               readonly
@@ -105,12 +112,13 @@
           </v-col>
 
           <v-col cols="12">
-            <v-text-field
+            <v-textarea
               v-model="formData.reporte_tipo"
               label="Reporte por Tipo"
               bg-color="blue-lighten-5"
               required
-            ></v-text-field>
+              rows="3"
+            ></v-textarea>
           </v-col>
 
           <v-btn
@@ -288,7 +296,13 @@
       </v-card>
     </v-dialog>
   </div>
-   <!-- <pre>{{ data }}</pre> -->
+
+  <!-- <pre>{{ formData }}</pre> -->
+
+    <!-- <pre>{{ formData }}</pre>-->
+    <br>
+    <br>
+   <!-- <pre> {{ payload1 }}</pre> -->
 </template>
 
 <script setup>
@@ -297,6 +311,7 @@ import { useRoute } from 'vue-router'
 import axios from 'axios'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
 import IndicadorRegistroBitacora from '@/modules/reportes/components/IndicadorRegistroBitacora.vue';
+import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue';
 
 const modalAbierto = ref(false);
 
@@ -308,14 +323,21 @@ const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 
+const payload1 = ref(null);
+const recibirdatos = (payload) => {
+  console.log('Datos recibidos del componente hijo:', payload);
+  payload1.value = payload;
+  //formData.contribucion_actividad = payload;
+  console.log('formData actualizado:', formData);
+};
 // Estado reactivo
 const loading = ref(false)
 const indicatorDialog = ref(false)
 const data = ref(null)
 
 // Datos para cargar el formulario
-const tipoActividadExtraida = ref('')
-const objetivoActividadExtraida = ref('')
+//const tipoActividadExtraida = ref('')
+//const objetivoActividadExtraida = ref('')
 
 // const tiposActividad = [
 //   'Capacitación',
@@ -334,20 +356,20 @@ const indicadores = [
 ]
 
 const formData = reactive({
-  contribucion_proyecto: '',
+  //contribucion_proyecto: '',
   contribucion_actividad: '',
-  objetivoActividadExtraida: '',
+  objetivo_de_actividad: '',
   informe_de_objetivo_de_actividad: '',
-  tipoActividadExtraida: '',
-  reporte_por_tipo: '',
+  tipo_de_actividad: '',
+  reporte_tipo: '',
   avance_en_indicador: '',
   informacion_cuantitativa: '',
-  archivos_cuantitativos: [],
-  herramientas_de_evaluacion_y_resultados: '',
-  herramientas_archivos: [],
-  descripcion_de_medios_de_verificacion: '',
-  medios_archivos: [],
+  descripcion_herramientas: '',
+  medios_verificacion: '',
   comentarios_recomendaciones: '',
+  // archivos_cuantitativos: [],
+  // herramientas_archivos: [],
+  // medios_archivos: [],
 })
 
 const acceptedFormats = {
@@ -373,8 +395,8 @@ async function obtenerDatosProyecto(id) {
     console.log('Datos obtenidos:', result);
     data.value = result;
 
-    tipoActividadExtraida.value = data.value?.tipo_info?.tipo_actividad || '';
-    objetivoActividadExtraida.value = data.value?.objetivo_de_actividad || '';
+    formData.objetivo_de_actividad = data.value?.objetivo_de_actividad || 'objetivo de actividad datosF';
+    formData.tipo_de_actividad = data.value?.tipo_info?.tipo_actividad || 'tipo de actividad datosF';
 
     return result;
   } catch (error) {
@@ -414,44 +436,38 @@ async function submitForm() {
   try {
     // Validación de campos requeridos
     if (
-
-      !formData.contribucion_proyecto ||
-      !formData.contribucion_actividad ||
+      !formData.objetivo_de_actividad ||
       !formData.informe_de_objetivo_de_actividad ||
-      !formData.reporte_por_tipo ||
-      !formData.avance_en_indicador ||
+      !formData.tipo_de_actividad ||
+      !formData.reporte_tipo ||
       !formData.informacion_cuantitativa ||
-      !formData.herramientas_de_evaluacion_y_resultados ||
-      !formData.descripcion_de_medios_de_verificacion ||
+      !formData.descripcion_herramientas ||
+      !formData.medios_verificacion ||
       !formData.comentarios_recomendaciones
     ) {
       throw new Error('Por favor complete todos los campos requeridos del Informe de Actividades.');
     }
 
-    const payload = new FormData();
+    const payload = {
+      numeroInforme: 1,
+      contribucionesProyecto: formData.informe_de_objetivo_de_actividad,
+      contribucionesActividad: formData.contribucion_actividad,
+      informaObjetivoActividad: formData.objetivo_de_actividad,
+      reporteTipo: formData.reporte_tipo,
+      indicador: formData.informacion_cuantitativa,
+      herramientaEvaluacion: formData.descripcion_herramientas,
+      descripcionMediosVerificacion: formData.medios_verificacion,
+      comentariosRecomendacion: formData.comentarios_recomendaciones,
+      actividad: idActividad,
 
-    // Agregar todos los campos al FormData
-    Object.keys(formData).forEach(key => {
-      if (key.includes('archivos') || key.includes('_archivos')) {
-        // Manejar arrays de archivos
-        if (formData[key] && formData[key].length > 0) {
-          formData[key].forEach(file => {
-            payload.append(key, file);
-          });
-        }
-      } else {
-        payload.append(key, formData[key]);
-      }
-    });
+      // archivos_cuantitativos: [],
+      // herramientas_archivos: [],
+      // medios_archivos: [],
+    }
 
     const response = await axios.post(
-      'http://127.0.0.1:8000/tu_api_de_informes/crearInforme/',
-      payload,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
+      'http://127.0.0.1:8000/api/informe-actividad/',
+      payload
     );
 
     alert('Informe de Actividades y archivos enviados con éxito');
@@ -479,7 +495,7 @@ function resetForm() {
     descripcion_de_medios_de_verificacion:'',
     comentarios_recomendaciones:'',
   });
-  prefillFormData();
+  //prefillFormData();
 }
 
 // Ciclo de vida
@@ -487,7 +503,7 @@ onMounted(async () => {
   console.log('ID de Actividad:', idActividad);
   console.log('ID de Tarea:', idTarea);
 
-  await prefillFormData();
+  //await prefillFormData();
 
   if (idActividad) {
     await obtenerDatosProyecto(idActividad);
@@ -495,27 +511,27 @@ onMounted(async () => {
 });
 
 // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
-watch(
-  data,
-  (newVal) => {
-    if (newVal) {
-      formData.contribucion_proyecto = newVal.contribucion_proyecto || '';
-      formData.contribucion_actividad = newVal.contribucion_actividad || '';
-      formData.nombre_actividad = newVal.nombre_actividad || '';
-      formData.fecha_realizacion = newVal.fecha_realizacion || '';
-      formData.objetivo_actividad = newVal.objetivo_actividad || '';
-      formData.informe_objetivo = newVal.informe_objetivo || '';
-      formData.tipo_actividad = newVal.tipo_actividad || '';
-      formData.reporte_tipo = newVal.reporte_tipo || '';
-      formData.indicador_seleccionado = newVal.indicador_seleccionado || '';
-      formData.informacion_cuantitativa = newVal.informacion_cuantitativa || '';
-      formData.descripcion_herramientas = newVal.descripcion_herramientas || '';
-      formData.medios_verificacion = newVal.medios_verificacion || '';
-      formData.comentarios_recomendaciones = newVal.comentarios_recomendaciones || '';
-    }
-  },
-  { deep: true },
-)
+// watch(
+//   data,
+//   (newVal) => {
+//     if (newVal) {
+//       formData.contribucion_proyecto = newVal.contribucion_proyecto || '';
+//       formData.contribucion_actividad = newVal.contribucion_actividad || '';
+//       formData.nombre_actividad = newVal.nombre_actividad || '';
+//       formData.fecha_realizacion = newVal.fecha_realizacion || '';
+//       formData.objetivo_actividad = newVal.objetivo_actividad || '';
+//       formData.informe_objetivo = newVal.informe_objetivo || '';
+//       formData.tipo_actividad = newVal.tipo_actividad || '';
+//       formData.reporte_tipo = newVal.reporte_tipo || '';
+//       formData.indicador_seleccionado = newVal.indicador_seleccionado || '';
+//       formData.informacion_cuantitativa = newVal.informacion_cuantitativa || '';
+//       formData.descripcion_herramientas = newVal.descripcion_herramientas || '';
+//       formData.medios_verificacion = newVal.medios_verificacion || '';
+//       formData.comentarios_recomendaciones = newVal.comentarios_recomendaciones || '';
+//     }
+//   },
+//   { deep: true },
+// )
 
 // Watchers
 watch(() => route.params.id, (newId) => {
@@ -526,71 +542,125 @@ watch(() => route.params.id, (newId) => {
 </script>
 
 <style scoped>
-/* Encabezado con gradiente y diseño mejorado */
-.header-gradient {
-  background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
-  border-radius: 8px;
-  padding: 24px;
-  margin-bottom: 24px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 20px 0 rgba(13, 71, 161, 0.2);
-}
-
-/* Elementos decorativos para el encabezado */
-.header-decoration {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.decoration-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.decoration-circle-1 {
-  width: 100px;
-  height: 100px;
-  top: -30px;
-  right: -30px;
-}
-
-.decoration-circle-2 {
-  width: 60px;
-  height: 60px;
-  bottom: -20px;
-  right: 70px;
-}
-
-.decoration-circle-3 {
-  width: 80px;
-  height: 80px;
-  bottom: 40px;
-  left: -40px;
-}
-
-/* Ajustes para el formulario */
-.v-card {
-  max-width: 900px;
+.solicitud-fondos-container {
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 20px 16px;
+}
+
+.v-card {
+  border-radius: 8px;
   overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.v-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
 .form-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 24px;
+  border-radius: 8px;
   margin-bottom: 24px;
+  border: 1px solid #e0e0e0;
 }
 
-/* Mejora visual para los títulos de sección */
-:deep(.v-card-subtitle.text-h6) {
+.form-section h3 {
   color: #1976d2;
+  border-bottom: 2px solid #1976d2;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
   font-weight: 600;
-  padding-left: 8px;
-  border-left: 4px solid #1976d2;
+  display: flex;
+  align-items: center;
+}
+
+.info-item {
+  padding: 8px 0;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.users-table {
+  width: 100%;
+}
+
+.users-table th {
+  background-color: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 960px) {
+  .solicitud-fondos-container {
+    padding: 16px 12px;
+  }
+
+  .form-section {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .d-flex.justify-end {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .d-flex.justify-end .v-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .v-card {
+    margin: 8px 0;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+}
+
+/* Mejora el aspecto de la tabla */
+:deep(.v-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.v-table th) {
+  background-color: #1976d2 !important;
+  color: white !important;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 16px 12px;
+}
+
+:deep(.v-table td) {
+  padding: 12px;
+  background-color: #fafafa;
+}
+
+.narrow-column {
+  width: 15%;
+}
+
+.wide-column {
+  width: 50%;
+}
+
+.action-column {
+  width: 15%;
+}
+
+.compact-field {
+  font-size: 14px;
+  max-width: 100px;
 }
 </style>
