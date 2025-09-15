@@ -684,7 +684,7 @@ const confirmarCreacion = async () => {
   const actividadCompleta = {
     codigo: nuevaActividad.value.codigo,
     nombreCorto: nuevaActividad.value.titulo,
-    estado: 'CRD',
+    estado: 'PLAN',
     estructuraProcedencia: {
       datosProcedencia: collectedData.value,
       nodosRelacionados: proyectoStore.nodosVinculadosActividad,

@@ -56,12 +56,12 @@
         ></v-list-item>
       </template>
 
-      <v-list-item
+      <!-- <v-list-item
         prepend-icon="mdi-format-list-checkbox"
         title="Tareas"
         value="planning-tareas"
         to="/proyecto/actividades/tareas/"
-      ></v-list-item>
+      ></v-list-item> -->
 
       <v-list-item
         prepend-icon="mdi-playlist-check"
@@ -70,7 +70,7 @@
         to="/planificacion/actividades"
       ></v-list-item>
 
-      <v-list-item  v-if="hasRole('B')"
+      <v-list-item
         prepend-icon="mdi-chart-timeline-variant"
         title="Cronogramas"
         value="planning-schedules"
@@ -249,7 +249,7 @@
 import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 
-const userStore = useUserStore();
+const userStore = useUserStore()
 const unreadNotificationsCount = ref(0)
 
 const userIsAdmin = ref(true)

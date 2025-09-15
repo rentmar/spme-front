@@ -36,27 +36,27 @@ export const reportesServicios = {
       console.error('Axios, error de registro en el bitacor', error)
     }
   },
-  /*************REPORTES********************/
+  /*************REPORTES PARA DESCARGA********************/
+  //Reporte de poryecto por su id
   reporteProyecto: async (idproyecto) => {
     try {
       const respuesta = await apiRep.get('/proyectos/' + idproyecto + '/descargar-reporte/', {
         responseType: 'blob',
       })
 
-      // 2. Extrae los datos del archivo (el Blob) de la respuesta
+      //Extrae los datos del archivo (el Blob) de la respuesta
       const blob = new Blob([respuesta.data], {
         type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       })
 
-      // 3. Crea una URL de objeto temporal para el Blob
+      //Crea una URL de objeto temporal para el Blob
       const fileURL = window.URL.createObjectURL(blob)
 
-      // 4. Crea un elemento de anclaje (<a>) en la memoria
+      //Crea un elemento de anclaje (<a>) en la memoria
       const link = document.createElement('a')
       link.href = fileURL
 
-      // 5. Establece el nombre del archivo para la descarga
-      // Puedes obtener el nombre del servidor si lo envía en el header 'Content-Disposition'
+      //Establece el nombre del archivo para la descarga
       const disposition = respuesta.headers['content-disposition']
       let filename = 'reporte_proyecto.docx' // Nombre por defecto
       if (disposition && disposition.indexOf('attachment') !== -1) {
@@ -68,11 +68,11 @@ export const reportesServicios = {
       }
       link.setAttribute('download', filename)
 
-      // 6. Simula un clic en el enlace para iniciar la descarga
+      //Simula un clic en el enlace para iniciar la descarga
       document.body.appendChild(link)
       link.click()
 
-      // 7. Limpia el elemento y la URL para liberar memoria
+      //Limpia el elemento y la URL, para liberar memoria
       document.body.removeChild(link)
       window.URL.revokeObjectURL(fileURL)
     } catch (erro) {

@@ -528,7 +528,7 @@
                     multiple
                     chips
                     :return-object="false"
-                    :rules="[(v) => !!v || 'La instancia gestora es requerida']"
+                    :rules="instanciaGestoraRules"
                   ></v-select>
                 </v-col>
               </v-row>
@@ -558,7 +558,6 @@
                 </v-col>
 
                 <v-col cols="12" md="6">
-                  {{ proyecto.procedencia_fondos }}
                   <v-select
                     variant="outlined"
                     v-model="proyecto.procedencia_fondos"
@@ -569,7 +568,7 @@
                     multiple
                     chips
                     :return-object="false"
-                    :rules="[(v) => !!v || 'La instancia gestora es requerida']"
+                    :rules="procedenciaFondosRules"
                   ></v-select>
                 </v-col>
               </v-row>
@@ -910,6 +909,17 @@ const tituloRules = [
   (v) => !!v || 'El título es requerido',
   (v) => (v && v.length <= 200) || 'Máximo 200 caracteres',
   (v) => /^[\w\sáéíóúÁÉÍÓÚñÑ.,;:¿?¡!()-]+$/.test(v) || 'Caracteres no válidos',
+]
+const instanciaGestoraRules = [
+  (v) => !!v || 'La instancia gestora es requerida',
+  (v) => (v && v.length > 0) || 'Debe seleccionar al menos una instancia gestora',
+  (v) => (v && v.length <= 5) || 'Máximo 5 instancias gestoras',
+]
+
+const procedenciaFondosRules = [
+  (v) => !!v || 'La procedencia de fondos es requerida',
+  (v) => (v && v.length > 0) || 'Debe seleccionar al menos una fuente de financiamiento',
+  (v) => (v && v.length <= 3) || 'Máximo 3 fuentes de financiamiento',
 ]
 
 // Métodos
