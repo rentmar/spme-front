@@ -81,7 +81,7 @@
               bg-color="blue-lighten-5"
               required
             ></v-text-field>
-          </v-col> -->
+          </v-col>-->
 
           <v-col cols="12">
             <v-text-field
@@ -93,12 +93,13 @@
           </v-col>
 
           <v-col cols="12">
-            <v-text-field
+            <v-textarea
               v-model="formData.informe_de_objetivo_de_actividad"
               label="Informe de objetivo de la actividad"
               bg-color="blue-lighten-5"
               required
-            ></v-text-field>
+              rows="3"
+            ></v-textarea>
           </v-col>
 
           <v-col cols="12">
@@ -111,12 +112,13 @@
           </v-col>
 
           <v-col cols="12">
-            <v-text-field
+            <v-textarea
               v-model="formData.reporte_tipo"
               label="Reporte por Tipo"
               bg-color="blue-lighten-5"
               required
-            ></v-text-field>
+              rows="3"
+            ></v-textarea>
           </v-col>
 
           <v-btn
@@ -295,14 +297,12 @@
     </v-dialog>
   </div>
 
-  <pre>{{ formData }}</pre>
+  <!-- <pre>{{ formData }}</pre> -->
 
-    <!-- <pre>{{ formData }}</pre>
+    <!-- <pre>{{ formData }}</pre>-->
     <br>
     <br>
-    <br>
-    <br>
-    {{ payload1 }} -->
+   <!-- <pre> {{ payload1 }}</pre> -->
 </template>
 
 <script setup>
@@ -327,7 +327,7 @@ const payload1 = ref(null);
 const recibirdatos = (payload) => {
   console.log('Datos recibidos del componente hijo:', payload);
   payload1.value = payload;
-  formData.contribucion_actividad = payload;
+  //formData.contribucion_actividad = payload;
   console.log('formData actualizado:', formData);
 };
 // Estado reactivo
@@ -458,7 +458,7 @@ async function submitForm() {
       herramientaEvaluacion: formData.descripcion_herramientas,
       descripcionMediosVerificacion: formData.medios_verificacion,
       comentariosRecomendacion: formData.comentarios_recomendaciones,
-      actividad: formData.tipo_de_actividad,
+      actividad: idActividad,
 
       // archivos_cuantitativos: [],
       // herramientas_archivos: [],
@@ -467,12 +467,7 @@ async function submitForm() {
 
     const response = await axios.post(
       'http://127.0.0.1:8000/api/informe-actividad/',
-      payload,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
+      payload
     );
 
     alert('Informe de Actividades y archivos enviados con éxito');
@@ -547,71 +542,125 @@ watch(() => route.params.id, (newId) => {
 </script>
 
 <style scoped>
-/* Encabezado con gradiente y diseño mejorado */
-.header-gradient {
-  background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
-  border-radius: 8px;
-  padding: 24px;
-  margin-bottom: 24px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 20px 0 rgba(13, 71, 161, 0.2);
-}
-
-/* Elementos decorativos para el encabezado */
-.header-decoration {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.decoration-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.decoration-circle-1 {
-  width: 100px;
-  height: 100px;
-  top: -30px;
-  right: -30px;
-}
-
-.decoration-circle-2 {
-  width: 60px;
-  height: 60px;
-  bottom: -20px;
-  right: 70px;
-}
-
-.decoration-circle-3 {
-  width: 80px;
-  height: 80px;
-  bottom: 40px;
-  left: -40px;
-}
-
-/* Ajustes para el formulario */
-.v-card {
-  max-width: 900px;
+.solicitud-fondos-container {
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 20px 16px;
+}
+
+.v-card {
+  border-radius: 8px;
   overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.v-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
 .form-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 24px;
+  border-radius: 8px;
   margin-bottom: 24px;
+  border: 1px solid #e0e0e0;
 }
 
-/* Mejora visual para los títulos de sección */
-:deep(.v-card-subtitle.text-h6) {
+.form-section h3 {
   color: #1976d2;
+  border-bottom: 2px solid #1976d2;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
   font-weight: 600;
-  padding-left: 8px;
-  border-left: 4px solid #1976d2;
+  display: flex;
+  align-items: center;
+}
+
+.info-item {
+  padding: 8px 0;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.users-table {
+  width: 100%;
+}
+
+.users-table th {
+  background-color: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 960px) {
+  .solicitud-fondos-container {
+    padding: 16px 12px;
+  }
+
+  .form-section {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .d-flex.justify-end {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .d-flex.justify-end .v-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .v-card {
+    margin: 8px 0;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+}
+
+/* Mejora el aspecto de la tabla */
+:deep(.v-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.v-table th) {
+  background-color: #1976d2 !important;
+  color: white !important;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 16px 12px;
+}
+
+:deep(.v-table td) {
+  padding: 12px;
+  background-color: #fafafa;
+}
+
+.narrow-column {
+  width: 15%;
+}
+
+.wide-column {
+  width: 50%;
+}
+
+.action-column {
+  width: 15%;
+}
+
+.compact-field {
+  font-size: 14px;
+  max-width: 100px;
 }
 </style>
