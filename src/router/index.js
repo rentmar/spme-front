@@ -14,8 +14,8 @@ const router = createRouter({
     {
       path: '/home',
       name: 'home',
-      //component: () => import('@/views/DashBoardView.vue'),
-      component: HomeView,
+      component: () => import('@/views/DashBoardView.vue'),
+      //component: HomeView,
       //meta: { requiresAuth: true },
     },
     {

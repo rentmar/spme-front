@@ -3,21 +3,14 @@
     <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
       <!-- Encabezado diferenciado -->
       <div class="header-gradient">
-
-      <PaginaTituloIcono
-        :titulo="'Informe de Actividades'"
-        :icon="'mdi-file-document-multiple'"
-      ></PaginaTituloIcono>
-      <br />
-      <ProyectoIdHeader
-        v-if="data"
-        :proyecto-id="data.proyecto"
-      ></ProyectoIdHeader>
-      <br />
-      <ActividadInformacion
-        v-if="idActividad"
-        :actividad-id="idActividad"
-      ></ActividadInformacion>
+        <PaginaTituloIcono
+          :titulo="'Informe de Actividades'"
+          :icon="'mdi-file-document-multiple'"
+        ></PaginaTituloIcono>
+        <br />
+        <ProyectoIdHeader v-if="data" :proyecto-id="data.proyecto"></ProyectoIdHeader>
+        <br />
+        <ActividadInformacion v-if="idActividad" :actividad-id="idActividad"></ActividadInformacion>
 
         <!-- <div class="d-flex align-center">
           <v-avatar class="mr-4" size="60" color="white">
@@ -35,11 +28,11 @@
         </div>
       </div>
 
-<EncabezadoContribucion
-  :datos-estructura="data.estructuraProcedencia"
-  @payload-actualizado="recibirdatos">
-
-</EncabezadoContribucion>
+      <EncabezadoContribucion
+        :datos-estructura="data.estructuraProcedencia"
+        @payload-actualizado="recibirdatos"
+      >
+      </EncabezadoContribucion>
 
       <div class="v-card-text">
         <form class="v-form" novalidate @submit.prevent="submitForm">
@@ -148,11 +141,12 @@
             Seleccionar Indicador de Proyecto
           </v-btn>
           <Indicador-registro-bitacora
-            v-model = "modalAbierto"
-            :idactividad = "idActividad"
-            @guardarAvances = "actualizarIndicadores"          >
+            v-model="modalAbierto"
+            :idactividad="idActividad"
+            @guardarAvances="actualizarIndicadores"
+          >
           </Indicador-registro-bitacora>
-          <br>
+          <br />
 
           <!-- <v-col cols="12" class="mt-4">
             <v-text-field
@@ -176,7 +170,7 @@
 
           <div class="form-section">
             <v-card-subtitle class="text-h6">Informacion Cuantitativa</v-card-subtitle>
-            <br>
+            <br />
             <v-row>
               <v-col cols="12">
                 <v-textarea
@@ -206,7 +200,7 @@
           <!-- Sección 2: Herramientas Aplicadas y Resultados -->
           <div class="form-section">
             <v-card-subtitle class="text-h6">Herramientas Aplicadas y Resultados</v-card-subtitle>
-            <br>
+            <br />
             <v-row>
               <v-col cols="12">
                 <v-textarea
@@ -235,7 +229,7 @@
           <!-- Sección 3: Medios de Verificación -->
           <div class="form-section">
             <v-card-subtitle class="text-h6">Medios de Verificación</v-card-subtitle>
-            <br>
+            <br />
             <v-row>
               <v-col cols="12">
                 <v-textarea
@@ -264,7 +258,7 @@
           <!-- Sección 4: Comentarios y Recomendaciones -->
           <div class="form-section">
             <v-card-subtitle class="text-h6">Comentarios y Recomendaciones</v-card-subtitle>
-            <br>
+            <br />
             <v-row>
               <v-col cols="12">
                 <v-textarea
@@ -315,43 +309,41 @@
 
   <!-- <pre>{{ formData }}</pre> -->
 
-    <!-- <pre>{{ formData }}</pre>-->
-    <br>
-    <br>
-   <!-- <pre> {{ payload1 }}</pre> -->
+  <!-- <pre>{{ formData }}</pre>-->
+  <br />
+  <br />
+  <!-- <pre> {{ payload1 }}</pre> -->
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
-import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
-import IndicadorRegistroBitacora from '@/modules/reportes/components/IndicadorRegistroBitacora.vue';
-import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue';
-
+import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
+import IndicadorRegistroBitacora from '@/modules/reportes/components/IndicadorRegistroBitacora.vue'
+import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
 
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
-
-const modalAbierto = ref(false);
+const modalAbierto = ref(false)
 
 // Composables
-const { usuario, informacionUsuarioPorNick } = useUsuario();
+const { usuario, informacionUsuarioPorNick } = useUsuario()
 
 // Router
 const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 
-const payload1 = ref(null);
+const payload1 = ref(null)
 const recibirdatos = (payload) => {
-  console.log('Datos recibidos del componente hijo:', payload);
-  payload1.value = payload;
+  console.log('Datos recibidos del componente hijo:', payload)
+  payload1.value = payload
   //formData.contribucion_actividad = payload;
-  console.log('formData actualizado:', formData);
-};
+  console.log('formData actualizado:', formData)
+}
 // Estado reactivo
 const loading = ref(false)
 const indicatorDialog = ref(false)
@@ -374,7 +366,7 @@ const indicadores = [
   { id: 1, nombre: 'Número de participantes capacitados' },
   { id: 2, nombre: 'Porcentaje de avance en metas' },
   { id: 3, nombre: 'Nivel de satisfacción de beneficiarios' },
-  { id: 4, nombre: 'Cumplimiento de cronograma' }
+  { id: 4, nombre: 'Cumplimiento de cronograma' },
 ]
 
 const formData = reactive({
@@ -400,47 +392,49 @@ const acceptedFormats = {
 }
 
 const actualizarIndicadores = (payload) => {
-  formData.avance_en_indicador = payload;
-};
+  formData.avance_en_indicador = payload
+}
 
 // Métodos
 async function obtenerDatosProyecto(id) {
   try {
-    const url = `http://127.0.0.1:8000/api/actividad-indicadores-proyecto/${id}/`;
-    const response = await fetch(url);
+    const url = `http://127.0.0.1:8000/api/actividad-indicadores-proyecto/${id}/`
+    const response = await fetch(url)
 
     if (!response.ok) {
-      throw new Error('Error al obtener los datos');
+      throw new Error('Error al obtener los datos')
     }
 
-    const result = await response.json();
-    console.log('Datos obtenidos:', result);
-    data.value = result;
+    const result = await response.json()
+    console.log('Datos obtenidos:', result)
+    data.value = result
 
-    formData.objetivo_de_actividad = data.value?.objetivo_de_actividad || 'objetivo de actividad datosF';
-    formData.tipo_de_actividad = data.value?.tipo_info?.tipo_actividad || 'tipo de actividad datosF';
+    formData.objetivo_de_actividad =
+      data.value?.objetivo_de_actividad || 'objetivo de actividad datosF'
+    formData.tipo_de_actividad = data.value?.tipo_info?.tipo_actividad || 'tipo de actividad datosF'
 
-    return result;
+    return result
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', error)
   }
 }
 
 function getCurrentUserNick() {
   // Esta función debería obtener el nick del usuario actualmente autenticado
-  return 'ACarvajal';
+  return 'ACarvajal'
 }
 
 async function prefillFormData() {
   try {
-    const currentNick = getCurrentUserNick();
-    await informacionUsuarioPorNick({ usuario: currentNick });
+    const currentNick = getCurrentUserNick()
+    await informacionUsuarioPorNick({ usuario: currentNick })
 
     if (usuario.value) {
-      formData.responsable_actividad = `${usuario.value.nombre} ${usuario.value.paterno} ${usuario.value.materno}`.trim();
+      formData.responsable_actividad =
+        `${usuario.value.nombre} ${usuario.value.paterno} ${usuario.value.materno}`.trim()
     }
   } catch (err) {
-    console.error('Error al pre-llenar los datos del usuario:', err);
+    console.error('Error al pre-llenar los datos del usuario:', err)
   }
 }
 
@@ -449,12 +443,12 @@ async function prefillFormData() {
 // }
 
 function seleccionarIndicador(indicador) {
-  formData.indicador_seleccionado = indicador.nombre;
-  indicatorDialog.value = false;
+  formData.indicador_seleccionado = indicador.nombre
+  indicatorDialog.value = false
 }
 
 async function submitForm() {
-  loading.value = true;
+  loading.value = true
   try {
     // Validación de campos requeridos
     if (
@@ -467,7 +461,7 @@ async function submitForm() {
       !formData.medios_verificacion ||
       !formData.comentarios_recomendaciones
     ) {
-      throw new Error('Por favor complete todos los campos requeridos del Informe de Actividades.');
+      throw new Error('Por favor complete todos los campos requeridos del Informe de Actividades.')
     }
 
     const payload = {
@@ -487,20 +481,19 @@ async function submitForm() {
       // medios_archivos: [],
     }
 
-    const response = await axios.post(
-      'http://127.0.0.1:8000/api/informe-actividad/',
-      payload
-    );
+    const response = await axios.post('http://127.0.0.1:8000/api/informe-actividad/', payload)
 
-    alert('Informe de Actividades y archivos enviados con éxito');
-    resetForm();
+    alert('Informe de Actividades y archivos enviados con éxito')
+    resetForm()
   } catch (error) {
-    console.error('Error completo al enviar el informe:', error.response?.data || error.message);
+    console.error('Error completo al enviar el informe:', error.response?.data || error.message)
     const errorMessage =
-      error.response?.data?.message || error.message || 'Ocurrió un error inesperado al enviar el informe.';
-    alert(`Error: ${errorMessage}`);
+      error.response?.data?.message ||
+      error.message ||
+      'Ocurrió un error inesperado al enviar el informe.'
+    alert(`Error: ${errorMessage}`)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
@@ -508,29 +501,29 @@ function resetForm() {
   Object.assign(formData, {
     contribucion_proyecto: '',
     contribucion_actividad: '',
-    informe_objetivo:'',
+    informe_objetivo: '',
     //informe_de_objetivo_de_actividad:'',
-    reporte_tipo:'',
-    avance_en_indicador:'',
-    informacion_cuantitativa:'',
-    herramientas_de_evaluacion_y_resultados:'',
-    descripcion_de_medios_de_verificacion:'',
-    comentarios_recomendaciones:'',
-  });
+    reporte_tipo: '',
+    avance_en_indicador: '',
+    informacion_cuantitativa: '',
+    herramientas_de_evaluacion_y_resultados: '',
+    descripcion_de_medios_de_verificacion: '',
+    comentarios_recomendaciones: '',
+  })
   //prefillFormData();
 }
 
 // Ciclo de vida
 onMounted(async () => {
-  console.log('ID de Actividad:', idActividad);
-  console.log('ID de Tarea:', idTarea);
+  console.log('ID de Actividad:', idActividad)
+  console.log('ID de Tarea:', idTarea)
 
   //await prefillFormData();
 
   if (idActividad) {
-    await obtenerDatosProyecto(idActividad);
+    await obtenerDatosProyecto(idActividad)
   }
-});
+})
 
 // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
 // watch(
@@ -556,11 +549,14 @@ onMounted(async () => {
 // )
 
 // Watchers
-watch(() => route.params.id, (newId) => {
-  if (newId) {
-    obtenerDatosProyecto(newId);
-  }
-});
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId) {
+      obtenerDatosProyecto(newId)
+    }
+  },
+)
 </script>
 
 <style scoped>

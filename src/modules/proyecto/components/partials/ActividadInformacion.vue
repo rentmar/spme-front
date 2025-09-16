@@ -13,11 +13,7 @@
             <h3 class="text-h6 font-weight-bold activity-title mr-2">
               {{ actividad.codigo }}
             </h3>
-            <v-chip
-              :color="estadoColor(actividad.estado)"
-              size="x-small"
-              class="status-chip"
-            >
+            <v-chip :color="estadoColor(actividad.estado)" size="x-small" class="status-chip">
               {{ actividad.estado }}
             </v-chip>
           </div>
@@ -27,12 +23,7 @@
         </div>
         <v-spacer></v-spacer>
         <div class="d-flex">
-          <v-chip
-            class="ml-1"
-            color="indigo-lighten-4"
-            density="compact"
-            size="x-small"
-          >
+          <v-chip class="ml-1" color="indigo-lighten-4" density="compact" size="x-small">
             <v-icon start icon="mdi-school" size="x-small"></v-icon>
             {{ actividad.tipo }}
           </v-chip>
@@ -64,14 +55,8 @@
             >
           </div>
           <div class="d-flex align-center mb-1">
-            <v-icon
-              icon="mdi-calendar-end"
-              class="mr-1"
-              size="x-small"
-            ></v-icon>
-            <span class="text-caption"
-              ><strong>Cierre:</strong> {{ actividad.fecha_cierre }}</span
-            >
+            <v-icon icon="mdi-calendar-end" class="mr-1" size="x-small"></v-icon>
+            <span class="text-caption"><strong>Cierre:</strong> {{ actividad.fecha_cierre }}</span>
           </div>
         </v-col>
       </v-row>
@@ -80,54 +65,57 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
 const props = defineProps({
   actividadId: {
     type: [Number, String],
-    required: true
-  }
-});
+    required: true,
+  },
+})
 
-console.log('Actividad ID desde props:', props.actividadId);
+console.log('Actividad ID desde props:', props.actividadId)
 
 // 1. Define una variable reactiva para guardar los datos de la actividad
-const actividad = ref({});
+const actividad = ref({})
 
 // 2. Función para determinar el color del chip según el estado
 function estadoColor(estado) {
   switch (estado) {
     case 'Planificada':
-      return 'blue-lighten-1';
+      return 'blue-lighten-1'
     case 'En Ejecución':
-      return 'green-darken-1';
+      return 'green-darken-1'
     case 'Cerrada':
-      return 'grey';
+      return 'grey'
     default:
-      return 'orange';
+      return 'orange'
   }
 }
 
 // 3. Función asíncrona para hacer la llamada a la API
 async function obtenerDatosActividad() {
-  const url = 'http://127.0.0.1:8000/actividades_api/obtenerEncabezadoActividadId/';
+  const url = 'http://127.0.0.1:8000/actividades_api/obtenerEncabezadoActividadId/'
   const data = {
-    actividad_id: props.actividadId
-  };
+    actividad_id: props.actividadId,
+  }
   try {
-    const response = await axios.post(url, data);
+    const response = await axios.post(url, data)
+    console.log('response', response.data)
     // 4. Actualiza la variable reactiva con los datos de la respuesta
-    actividad.value = response.data;
+    actividad.value = response.data
   } catch (error) {
-    console.error('Error al obtener los datos de la actividad:', error);
+    console.error('Error al obtener los datos de la actividad:', error)
   }
 }
 
 // 5. Usa onMounted para llamar a la función cuando el componente se renderiza
 onMounted(() => {
-  obtenerDatosActividad();
-});
+  if (props.actividadId) {
+    obtenerDatosActividad()
+  }
+})
 </script>
 
 <style scoped>

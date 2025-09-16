@@ -262,6 +262,7 @@ const tiposFiltro = ref([
   { value: 'proyectos', title: 'Solo Proyectos' },
   { value: 'actividades', title: 'Solo Actividades' },
   { value: 'ambos', title: 'Proyectos y Actividades' },
+  { value: 'pei', title: 'PEI 2022 - 2027' },
 ])
 
 //El pei vigente
