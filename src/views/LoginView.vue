@@ -1,79 +1,81 @@
 <script setup>
-import { ref } from 'vue';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
-import { useUserStore } from '@/stores/user';
+import { ref } from 'vue'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
-const usuario = ref('');
-const password = ref('');
-const usuarioError = ref('');
-const passwordError = ref('');
-const showAlert = ref(false);
-const alertMessage = ref('');
-const alertType = ref('danger');
-const router = useRouter();
-const userStore = useUserStore();
-
+const usuario = ref('')
+const password = ref('')
+const usuarioError = ref('')
+const passwordError = ref('')
+const showAlert = ref(false)
+const alertMessage = ref('')
+const alertType = ref('danger')
+const router = useRouter()
+const userStore = useUserStore()
 
 const displayAlert = (message, type) => {
-  alertMessage.value = message;
-  alertType.value = type;
-  showAlert.value = true;
+  alertMessage.value = message
+  alertType.value = type
+  showAlert.value = true
   setTimeout(() => {
-    showAlert.value = false;
-    alertMessage.value = '';
-  }, 5000);
-};
+    showAlert.value = false
+    alertMessage.value = ''
+  }, 5000)
+}
 
 const validateLoginForm = () => {
-  usuarioError.value = '';
-  passwordError.value = '';
+  usuarioError.value = ''
+  passwordError.value = ''
 
-  let isValid = true;
+  let isValid = true
 
   if (usuario.value.trim() === '') {
-    usuarioError.value = 'Ingresa Nombre de usuario.';
-    isValid = false;
+    usuarioError.value = 'Ingresa Nombre de usuario.'
+    isValid = false
   }
 
   if (password.value.trim() === '') {
-    passwordError.value = 'Ingresa Contraseña.';
-    isValid = false;
+    passwordError.value = 'Ingresa Contraseña.'
+    isValid = false
   }
 
-  return isValid;
-};
+  return isValid
+}
 
 const btnlogin = async () => {
   if (!validateLoginForm()) {
-    return;
+    return
   }
   try {
-    const response = await axios.post('http://127.0.0.1:8000/autenticacion_api/autenticarUsuario/', {
-      usuario: usuario.value,
-      password: password.value
-    });
+    const response = await axios.post(
+      'http://127.0.0.1:8000/autenticacion_api/autenticarUsuario/',
+      {
+        usuario: usuario.value,
+        password: password.value,
+      },
+    )
     if (response.data.validacion === true) {
-       userStore.setUserData({
+      userStore.setUserData({
         usuario: response.data.usuario,
         rol: response.data.rol,
-      });
-      router.push('/home');
+        permisos: response.data.permisos,
+      })
+      router.push('/home')
     } else {
-      displayAlert(response.data.mensaje, 'danger');
+      displayAlert(response.data.mensaje, 'danger')
     }
   } catch (error) {
-    console.error('Login failed:', error);
-    displayAlert('Error de servicio. Por favor, inténtelo mas tarde.', 'danger');
+    console.error('Login failed:', error)
+    displayAlert('Error de servicio. Por favor, inténtelo mas tarde.', 'danger')
   }
-};
+}
 </script>
 <template>
   <div class="container d-flex justify-content-center align-items-center min-vh-100">
     <div class="row w-100 justify-content-center">
       <div class="col-sm-10 col-md-8 col-lg-6">
-
         <div v-if="showAlert" :class="`alert alert-${alertType} mb-3`" role="alert">
           {{ alertMessage }}
         </div>
@@ -94,13 +96,18 @@ const btnlogin = async () => {
                     required
                   />
                   <span class="input-group-text">
-                    <img src="../assets/img/person-circle.svg" alt="Usuario" class="icono" style="height: 1.25rem;">
+                    <img
+                      src="../assets/img/person-circle.svg"
+                      alt="Usuario"
+                      class="icono"
+                      style="height: 1.25rem"
+                    />
                   </span>
                   <div class="invalid-feedback" v-if="usuarioError">
                     {{ usuarioError }}
                   </div>
                 </div>
-                <br>
+                <br />
 
                 <div class="input-group has-validation">
                   <input
@@ -113,13 +120,18 @@ const btnlogin = async () => {
                     required
                   />
                   <span class="input-group-text">
-                    <img src="../assets/img/lock-fill.svg" alt="Password" class="icono" style="height: 1.25rem;">
+                    <img
+                      src="../assets/img/lock-fill.svg"
+                      alt="Password"
+                      class="icono"
+                      style="height: 1.25rem"
+                    />
                   </span>
                   <div class="invalid-feedback" v-if="passwordError">
                     {{ passwordError }}
                   </div>
                 </div>
-                <br><br>
+                <br /><br />
 
                 <div class="d-grid gap-2">
                   <button type="submit" class="btn custom-btn" id="btnlogin">Ingresar</button>
@@ -127,7 +139,7 @@ const btnlogin = async () => {
               </form>
             </div>
             <div class="col-sm-6 d-flex align-items-center justify-content-center">
-              <img src="../assets/img/logo.png" alt="Logo" class="logo img-fluid">
+              <img src="../assets/img/logo.png" alt="Logo" class="logo img-fluid" />
             </div>
           </div>
         </div>
@@ -137,21 +149,21 @@ const btnlogin = async () => {
 </template>
 <style scoped>
 body {
-  background-color: #EFE0BC;
+  background-color: #efe0bc;
 }
 
 .card {
-  background-color: #DDD3D3;
+  background-color: #ddd3d3;
 }
 
 .custom-btn {
-  background-color: #DB7810;
-  border-color: #DB7810;
+  background-color: #db7810;
+  border-color: #db7810;
   color: white;
 }
 
 .custom-btn:hover {
-  background-color: #C1670F;
-  border-color: #C1670F;
+  background-color: #c1670f;
+  border-color: #c1670f;
 }
 </style>
