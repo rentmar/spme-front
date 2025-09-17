@@ -54,16 +54,17 @@
 
 <script setup>
 import { defineProps, defineEmits, computed } from 'vue'
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/user'
 
-const userStore = useUserStore();
+const userStore = useUserStore()
 
 const usuario = computed(() => {
   return {
     nombre: userStore.usuario,
     role: userStore.rol,
-  };
-});
+    permisos: userStore.permisos,
+  }
+})
 
 defineProps({
   // usuario: {
