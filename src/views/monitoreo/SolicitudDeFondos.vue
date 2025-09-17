@@ -207,7 +207,7 @@
                     required
                   ></v-textarea>
                   <v-text-field
-                    v-model="formData.fuente_financiamiento.mensaje"
+                    v-model=" textoProcedencia "
                     label="Fuente de Financiamiento"
                     variant="outlined"
                     density="compact"
@@ -454,8 +454,8 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ usuario }}</pre> -->
-  <!-- <pre>{{ datosFormulario }}</pre> -->
+   <!-- <pre>{{ textoProcedencia }}</pre> -->
+   <!-- <pre>{{ datosFormulario }}</pre> -->
 </template>
 
 <script setup>
@@ -527,6 +527,12 @@ const usuario = computed(() => {
   }
 })
 
+const textoProcedencia = computed(() => {
+  return formData.value.fuente_financiamiento
+    .map(({ nombre, monto }) => `${nombre} : Bs. ${monto}`)
+    .join(', ')
+})
+
 const actividadData = ref({
   codigo: 'ACT-2023-005',
   descripcion: 'Capacitación en gestión de proyectos para equipos técnicos',
@@ -595,6 +601,7 @@ watch(
         formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
         formData.value.id_actividad = newVal.actividad.id || 0
         formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
+
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
           console.log('Formas de pago disponibles:', newVal.formaPago)
@@ -1009,6 +1016,7 @@ function getCurrentDate1() {
 // Ciclo de vida
 onMounted(async () => {
   await cargarDatos()
+  await textoProcedencia()
 })
 </script>
 
