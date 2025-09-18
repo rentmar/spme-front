@@ -111,7 +111,7 @@ export default {
               'Content-Type': 'application/json',
               //'Authorization': `Bearer ${token}`
             },
-          }
+          },
         )
 
         this.datos = response.data
