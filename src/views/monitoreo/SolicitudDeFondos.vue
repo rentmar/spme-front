@@ -31,10 +31,7 @@
       ></ProyectoIdHeader>
       <br />
       <!--Encabezado de la Actividad-->
-      <ActividadInformacion
-        v-if="datosFormulario.actividad"
-        :actividad-id="idActividad"
-      />
+      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
       <v-row>
         <!-- Panel lateral de información -->
@@ -210,7 +207,7 @@
                     required
                   ></v-textarea>
                   <v-text-field
-                    v-model="formData.fuente_financiamiento.mensaje"
+                    v-model=" textoProcedencia "
                     label="Fuente de Financiamiento"
                     variant="outlined"
                     density="compact"
@@ -457,8 +454,8 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ usuario }}</pre> -->
-  <!-- <pre>{{ datosFormulario }}</pre> -->
+   <!-- <pre>{{ textoProcedencia }}</pre> -->
+   <!-- <pre>{{ datosFormulario }}</pre> -->
 </template>
 
 <script setup>
@@ -466,7 +463,7 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
-import {useUserStore} from '@/stores/user';
+import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -522,13 +519,19 @@ const idSolicitudFondos = ref(null)
 const numeroFormularioSF = ref(null)
 // Nuevo estado para controlar el bloqueo
 
- const userStore = useUserStore();
- const usuario = computed(() => {
- return {
- 	nombre: userStore.usuario,
- 	role: userStore.rol,
-   };
- });
+const userStore = useUserStore()
+const usuario = computed(() => {
+  return {
+    nombre: userStore.usuario,
+    role: userStore.rol,
+  }
+})
+
+const textoProcedencia = computed(() => {
+  return formData.value.fuente_financiamiento
+    .map(({ nombre, monto }) => `${nombre} : Bs. ${monto}`)
+    .join(', ')
+})
 
 const actividadData = ref({
   codigo: 'ACT-2023-005',
@@ -598,6 +601,7 @@ watch(
         formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
         formData.value.id_actividad = newVal.actividad.id || 0
         formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
+
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
           console.log('Formas de pago disponibles:', newVal.formaPago)
@@ -1012,6 +1016,7 @@ function getCurrentDate1() {
 // Ciclo de vida
 onMounted(async () => {
   await cargarDatos()
+  await textoProcedencia()
 })
 </script>
 

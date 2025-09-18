@@ -24,6 +24,7 @@ export const useUserStore = defineStore('user', () => {
   const isAuthenticated = computed(() => !!userData.value)
   const usuario = computed(() => userData.value?.usuario || '')
   const rol = computed(() => userData.value?.rol || '')
+  const permisos = computed(() => userData.value?.permisos || '')
 
   const hasRole = (requiredRole) => {
     if (!userData.value || !userData.value.rol) return false
@@ -43,7 +44,8 @@ export const useUserStore = defineStore('user', () => {
     isAuthenticated,
     usuario,
     rol,
+    permisos,
     hasRole,
-    hasAnyRole
+    hasAnyRole,
   }
 })

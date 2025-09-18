@@ -8,6 +8,7 @@
       hint="Contribución del objetivo general"
       clearable
       variant="outlined"
+      class="custom-textarea"
       @update:modelValue="emitirPayloadCompleto"
       @blur="emitirPayloadCompleto('blur')"
     ></v-textarea>
@@ -437,6 +438,24 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Estilos para solucionar el problema de etiquetas recortadas */
+:deep(.v-label) {
+  white-space: normal !important;
+  height: auto !important;
+  line-height: 1.5 !important;
+  max-width: 100% !important;
+}
+
+:deep(.custom-textarea .v-label) {
+  white-space: normal !important;
+  height: auto !important;
+  line-height: 1.5 !important;
+}
+
+:deep(.v-textarea .v-field__input) {
+  align-items: flex-start !important;
+}
+
 .debug-container {
   margin-top: 20px;
   padding: 15px;
