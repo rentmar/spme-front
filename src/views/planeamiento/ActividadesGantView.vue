@@ -104,11 +104,8 @@ export default {
 
       try {
         // const token = this.userStore.token;
-        const response = await axios.post(
+        const response = await axios.get(
           'http://127.0.0.1:8000/actividades_api/obtenerActividadesGantt/',
-          {
-            user_id: 4,
-          },
           {
             headers: {
               'Content-Type': 'application/json',
@@ -265,7 +262,8 @@ export default {
           <v-card-title class="pa-0 bg-primary lblpadding">Detalles de Actividad</v-card-title>
           <v-divider></v-divider>
           <v-card-text class="pa-0 pt-2">
-            <p><strong>codigo:</strong> {{ selectedActividad.codigo }}</p>
+            <p><strong>Responsable:</strong> {{ selectedActividad.nombre_responsable }}</p>
+            <p><strong>Codigo:</strong> {{ selectedActividad.codigo }}</p>
             <p>
               <strong>Fecha Programada:</strong>
               {{ formatFecha(selectedActividad.fecha_programada) }}
