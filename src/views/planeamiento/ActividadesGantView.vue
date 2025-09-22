@@ -1,5 +1,6 @@
 <script>
 import axios from 'axios'
+const BASEURL=import.meta.env.VITE_API_BASE
 
 export default {
   data() {
@@ -102,13 +103,13 @@ export default {
       this.loading = true
       this.error = null
 
+      console.log('BASEURL', BASEURL);
+
       try {
         // const token = this.userStore.token;
-        const response = await axios.post(
-          'http://127.0.0.1:8000/actividades_api/obtenerActividadesGantt/',
-          {
-            user_id: 4,
-          },
+        const response = await axios.get(
+          BASEURL+'/actividades_api/obtenerActividadesGantt/',
+
           {
             headers: {
               'Content-Type': 'application/json',

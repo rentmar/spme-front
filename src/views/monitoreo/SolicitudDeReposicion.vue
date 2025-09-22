@@ -27,13 +27,14 @@
       <!--Encabezado del Proyecto-->
       <ProyectoIdHeader
         v-if="datosFormulario"
-        :proyecto-id="datosFormulario.actividad.proyecto"
+        :proyecto-id="datosFormulario.actividad?.proyecto ?? ''"
       ></ProyectoIdHeader>
       <br />
       <!--Encabezado de la Actividad-->
       <ActividadInformacion
         v-if="datosFormulario.actividad"
         :actividad="datosFormulario.actividad"
+        :actividad-id="datosFormulario.actividad.id"
       />
 
       <v-row>
@@ -455,11 +456,11 @@
    <!-- {{ formData.fuente_financiamiento }}
   {{ '*******************' }} -->
    <!-- {{ numeroFormularioSF }} -->
-  <!-- <pre>{{ datosFormulario }}</pre> -->
+   <pre>{{ datosFormulario }}</pre>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
@@ -568,56 +569,117 @@ const isFrozen = computed(() => {
 })
 
 // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
+// watch(
+//   datosFormulario,
+//   (newVal) => {
+//     if (newVal && newVal.usuario) {
+//       console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
+
+//       const usuario = newVal.usuario
+
+//       // Llenar campos del usuario
+//       formData.value.nombre = usuario.nombre || ''
+//       formData.value.paterno = usuario.paterno || ''
+//       formData.value.materno = usuario.materno || ''
+//       formData.value.cargo = usuario.cargo || ''
+//       formData.value.documento_identidad = usuario.ci || ''
+//       formData.value.id_usuario = usuario.id || 0
+
+//       // Llenar campos de la actividad si existen
+//       if (newVal.actividad) {
+//         console.log('Auto-llenando datos de actividad:', newVal.actividad)
+
+//         formData.value.descripcion_actividad = newVal.actividad.descripcion || ''
+//         formData.value.objetivo_actividad = newVal.actividad.objetivo_de_actividad || ''
+//         formData.value.fecha_irealizacion = newVal.actividad.fecha_inicio || ''
+//         formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
+//         formData.value.id_actividad = newVal.actividad.id || 0
+//         //formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
+//         if (newVal.actividad.procedencia_fondos) {
+//   formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(item => item.nombre);
+// } else {
+//   formData.value.fuente_financiamiento = [];
+// }
+
+//         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
+//           console.log('Formas de pago disponibles:', newVal.formaPago)
+//         }
+
+//         // También actualizar actividadData para el componente ActividadInformacion
+//         actividadData.value = {
+//           ...actividadData.value,
+//           descripcion: newVal.actividad.descripcion || actividadData.value.descripcion,
+//           fecha_programada: newVal.actividad.fecha_inicio || actividadData.value.fecha_programada,
+//           fecha_cierre: newVal.actividad.fecha_cierre || actividadData.value.fecha_cierre,
+//         }
+//       }
+
+//       // Llenar lista de validadores si existen
+//       if (newVal.validadores && Array.isArray(newVal.validadores)) {
+//         console.log('Cargando validadores:', newVal.validadores)
+//         responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
+//         coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
+//       }
+//     }
+//   },
+//   { deep: true },
+// )
+
+// WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
 watch(
   datosFormulario,
   (newVal) => {
     if (newVal && newVal.usuario) {
-      console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
+      //console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
 
       const usuario = newVal.usuario
 
+      // Función helper para manejar valores null/undefined
+      const getSafeValue = (value, defaultValue = '') => {
+        return value !== null && value !== undefined ? value : defaultValue
+      }
+
       // Llenar campos del usuario
-      formData.value.nombre = usuario.nombre || ''
-      formData.value.paterno = usuario.paterno || ''
-      formData.value.materno = usuario.materno || ''
-      formData.value.cargo = usuario.cargo || ''
-      formData.value.documento_identidad = usuario.ci || ''
-      formData.value.id_usuario = usuario.id || 0
+      formData.value.nombre = getSafeValue(usuario.nombre)//usuario.nombre || ''
+      formData.value.paterno = getSafeValue(usuario.paterno)//usuario.paterno || ''
+      formData.value.materno = getSafeValue(usuario.materno)//usuario.materno || ''
+      formData.value.cargo = getSafeValue(usuario.cargo)//usuario.cargo || ''
+      formData.value.documento_identidad = getSafeValue(usuario.ci)//usuario.ci || ''
+      formData.value.id_usuario = getSafeValue(usuario.id,0)//usuario.id || 0
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
-        console.log('Auto-llenando datos de actividad:', newVal.actividad)
+        //console.log('Auto-llenando datos de actividad:', newVal.actividad)
 
-        formData.value.descripcion_actividad = newVal.actividad.descripcion || ''
-        formData.value.objetivo_actividad = newVal.actividad.objetivo_de_actividad || ''
-        formData.value.fecha_irealizacion = newVal.actividad.fecha_inicio || ''
-        formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
-        formData.value.id_actividad = newVal.actividad.id || 0
-        //formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
-        if (newVal.actividad.procedencia_fondos) {
-  formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(item => item.nombre);
-} else {
-  formData.value.fuente_financiamiento = [];
-}
+        formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)//newVal.actividad.descripcion || ''
+        formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)//newVal.actividad.objetivo_de_actividad || ''
+        formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)//newVal.actividad.fecha_inicio || ''
+        formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)//newVal.actividad.fecha_cierre || ''
+        formData.value.id_actividad = getSafeValue(newVal.actividad.id,0)//newVal.actividad.id || 0
+        formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)//newVal.actividad.procedencia_fondos || ''
+
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
-          console.log('Formas de pago disponibles:', newVal.formaPago)
+          //console.log('Formas de pago disponibles:', newVal.formaPago)
         }
 
         // También actualizar actividadData para el componente ActividadInformacion
         actividadData.value = {
           ...actividadData.value,
-          descripcion: newVal.actividad.descripcion || actividadData.value.descripcion,
-          fecha_programada: newVal.actividad.fecha_inicio || actividadData.value.fecha_programada,
-          fecha_cierre: newVal.actividad.fecha_cierre || actividadData.value.fecha_cierre,
+          descripcion: getSafeValue(newVal.actividad.descripcion, actividadData.value.descripcion),//newVal.actividad.descripcion || actividadData.value.descripcion,
+          fecha_programada: getSafeValue(newVal.actividad.fecha_inicio, actividadData.value.fecha_programada),//newVal.actividad.fecha_inicio || actividadData.value.fecha_programada,
+          fecha_cierre: getSafeValue(newVal.actividad.fecha_cierre, actividadData.value.fecha_cierre),//newVal.actividad.fecha_cierre || actividadData.value.fecha_cierre,
         }
       }
 
       // Llenar lista de validadores si existen
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
-        console.log('Cargando validadores:', newVal.validadores)
-        responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
-        coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
+        //console.log('Cargando validadores:', newVal.validadores)
+        responsablesList.value = newVal.validadores.filter((user) => user && user.cargo === 'responsable') || []
+        coordinadoresList.value = newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
+      } else {
+        responsablesList.value = []
+        coordinadoresList.value = []
       }
     }
   },
@@ -641,11 +703,30 @@ const formasPagoTexto = computed(() => {
 })
 
 const fuente_financiamiento0 = ref();
+// const filtrarProcedenciaFondos = () => {
+//   if (datosFormulario.value.actividad && datosFormulario.value.actividad.procedencia_fondos) {
+//     fuente_financiamiento0.value = datosFormulario.value.actividad.procedencia_fondos.map(
+//       (item) => item.nombre
+//     );
+//   }
+// };
+
 const filtrarProcedenciaFondos = () => {
   if (datosFormulario.value.actividad && datosFormulario.value.actividad.procedencia_fondos) {
-    fuente_financiamiento0.value = datosFormulario.value.actividad.procedencia_fondos.map(
-      (item) => item.nombre
-    );
+    const procedencia = datosFormulario.value.actividad.procedencia_fondos;
+
+    if (Array.isArray(procedencia)) {
+      fuente_financiamiento0.value = procedencia.map((item) => item.nombre);
+    } else if (typeof procedencia === 'object' && procedencia !== null) {
+      // Si es un objeto, extraer los valores o manejarlo de otra forma
+      fuente_financiamiento0.value = Object.values(procedencia).map(item =>
+        item?.nombre || item
+      );
+    } else {
+      fuente_financiamiento0.value = [];
+    }
+  } else {
+    fuente_financiamiento0.value = [];
   }
 };
 
@@ -670,6 +751,40 @@ function getCurrentDate() {
   return `${year}-${month}-${day}`
 }
 
+// async function cargarDatos() {
+//   isLoading.value = true
+//   error.value = null
+//   try {
+//     const response = await fetch('http://127.0.0.1:8000/api/monitoreo/obtener-datos-formulario/', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({
+//         id_actividad: idActividad,
+//         usuario: usuario.value.nombre,
+//       }),
+//     })
+
+//     if (!response.ok) {
+//       const errorData = await response.json()
+//       throw new Error(
+//         `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+//       )
+//     }
+
+//     const data = await response.json()
+//     datosFormulario.value = data
+//     console.log('Datos cargados exitosamente:', datosFormulario.value)
+//   } catch (err) {
+//     error.value = err.message
+//     console.error('Ha ocurrido un error:', err)
+//   } finally {
+//     isLoading.value = false
+//     cargandoGeneral.value = false
+//   }
+// }
+
 async function cargarDatos() {
   isLoading.value = true
   error.value = null
@@ -692,8 +807,8 @@ async function cargarDatos() {
       )
     }
 
-    const data = await response.json()
-    datosFormulario.value = data
+    const rawData = await response.json()
+    datosFormulario.value = strictSanitizeData(rawData)
     console.log('Datos cargados exitosamente:', datosFormulario.value)
   } catch (err) {
     error.value = err.message
@@ -702,6 +817,64 @@ async function cargarDatos() {
     isLoading.value = false
     cargandoGeneral.value = false
   }
+}
+
+function sanitizeData(data) {
+  if (data === null || data === undefined) {
+    return '';
+  }
+
+  if (typeof data === 'string') {
+    // Limpiar strings: trim y convertir empty strings a ''
+    const trimmed = data.trim();
+    return trimmed === '' ? '' : trimmed;
+  }
+
+  if (typeof data === 'number') {
+    // Validar que sea un número finito
+    return isFinite(data) ? data : 0;
+  }
+
+  if (typeof data === 'boolean') {
+    return data;
+  }
+
+  if (Array.isArray(data)) {
+    // Sanitizar cada elemento del array
+    return data.map(item => sanitizeData(item)).filter(item =>
+      item !== null && item !== undefined && item !== ''
+    );
+  }
+
+  if (typeof data === 'object') {
+    const sanitized = {};
+    for (const key in data) {
+      if (Object.hasOwn(data, key)){//(data.hasOwnProperty(key)) {
+        const value = data[key];
+        // Solo incluir propiedades con valores válidos
+        if (value !== null && value !== undefined && value !== '') {
+          sanitized[key] = sanitizeData(value);
+        }
+      }
+    }
+    return sanitized;
+  }
+
+  // Para cualquier otro tipo de dato, retornar string vacío
+  return '';
+}
+
+function strictSanitizeData(data) {
+  const sanitized = sanitizeData(data);
+
+  // Si el resultado es un objeto vacío, retornar string vacío
+  if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
+    if (Object.keys(sanitized).length === 0) {
+      return '';
+    }
+  }
+
+  return sanitized;
 }
 
 function addGasto() {

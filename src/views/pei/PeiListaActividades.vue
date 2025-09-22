@@ -120,7 +120,7 @@
                           color="primary"
                           size="small"
                           :disabled="
-                            getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos || false
+                            getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
                           "
                           :to="`/monitoreo/formulario01/${actividad.id}`"
                           @click.stop
@@ -148,7 +148,7 @@
                     <v-tooltip text="Solicitud de Viaje" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
-                          v-if="parseInt($route.query.showButton) === 5"
+                          v-if="parseInt($route.query.showButton) === 1"
                           v-bind="props"
                           icon="mdi-bag-suitcase"
                           variant="text"

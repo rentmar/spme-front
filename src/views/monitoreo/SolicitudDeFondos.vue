@@ -25,18 +25,21 @@
         :icon="'mdi-cash-check'"
       ></PaginaTituloIcono>
       <!--Encabezado del Proyecto-->
-      <ProyectoIdHeader
+       <ProyectoIdHeader
         v-if="datosFormulario"
-        :proyecto-id="datosFormulario.actividad.proyecto"
+        :proyecto-id="datosFormulario.actividad?.proyecto ?? ''"
       ></ProyectoIdHeader>
       <br />
       <!--Encabezado de la Actividad-->
-      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
+        <ActividadInformacion
+        v-if="datosFormulario.actividad"
+        :actividad-id="idActividad" />
+
 
       <v-row>
         <!-- Panel lateral de información -->
         <v-col cols="12" md="4" lg="3">
-          <v-card elevation="2" rounded="lg" class="mb-4">
+           <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="primary" density="compact">
               <v-toolbar-title class="text-white">Información General</v-toolbar-title>
             </v-toolbar>
@@ -44,14 +47,14 @@
               <div class="info-item mb-3">
                 <div class="text-subtitle-2 text-medium-emphasis">Actividad:</div>
                 <div class="text-body-1 font-weight-medium">
-                  {{ datosFormulario.actividad.nombreCorto }}
+                   {{ datosFormulario.actividad.nombreCorto }}
                 </div>
               </div>
               <div class="info-item mb-3">
                 <div class="text-subtitle-2 text-medium-emphasis">Estado:</div>
                 <v-chip color="warning" size="small" class="mt-1">
                   <v-icon small class="mr-1">mdi-progress-clock</v-icon>
-                  {{ datosFormulario.actividad.estado }}
+                   {{ datosFormulario.actividad.estado }}
                 </v-chip>
               </div>
             </v-card-text>
@@ -455,11 +458,13 @@
     </div>
   </v-container>
    <!-- <pre>{{ textoProcedencia }}</pre> -->
-   <!-- <pre>{{ datosFormulario }}</pre> -->
+    <pre>{{ datosFormulario }}</pre>
+    <!-- <p>{{ userStore }}</p> -->
+     <p>{{ usuario }}</p>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
@@ -528,8 +533,12 @@ const usuario = computed(() => {
 })
 
 const textoProcedencia = computed(() => {
-  return formData.value.fuente_financiamiento
-    .map(({ nombre, monto }) => `${nombre} : Bs. ${monto}`)
+  const fuentes = Array.isArray(formData.value?.fuente_financiamiento)
+    ? formData.value.fuente_financiamiento
+    : []
+
+  return fuentes
+    .map(({ nombre = '', monto = 0 } = {}) => `${nombre} : Bs. ${monto}`)
     .join(', ')
 })
 
@@ -579,48 +588,56 @@ watch(
   datosFormulario,
   (newVal) => {
     if (newVal && newVal.usuario) {
-      console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
+      //console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
 
       const usuario = newVal.usuario
 
+      // Función helper para manejar valores null/undefined
+      const getSafeValue = (value, defaultValue = '') => {
+        return value !== null && value !== undefined ? value : defaultValue
+      }
+
       // Llenar campos del usuario
-      formData.value.nombre = usuario.nombre || ''
-      formData.value.paterno = usuario.paterno || ''
-      formData.value.materno = usuario.materno || ''
-      formData.value.cargo = usuario.cargo || ''
-      formData.value.documento_identidad = usuario.ci || ''
-      formData.value.id_usuario = usuario.id || 0
+      formData.value.nombre = getSafeValue(usuario.nombre)//usuario.nombre || ''
+      formData.value.paterno = getSafeValue(usuario.paterno)//usuario.paterno || ''
+      formData.value.materno = getSafeValue(usuario.materno)//usuario.materno || ''
+      formData.value.cargo = getSafeValue(usuario.cargo)//usuario.cargo || ''
+      formData.value.documento_identidad = getSafeValue(usuario.ci)//usuario.ci || ''
+      formData.value.id_usuario = getSafeValue(usuario.id,0)//usuario.id || 0
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
-        console.log('Auto-llenando datos de actividad:', newVal.actividad)
+        //console.log('Auto-llenando datos de actividad:', newVal.actividad)
 
-        formData.value.descripcion_actividad = newVal.actividad.descripcion || ''
-        formData.value.objetivo_actividad = newVal.actividad.objetivo_de_actividad || ''
-        formData.value.fecha_irealizacion = newVal.actividad.fecha_inicio || ''
-        formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
-        formData.value.id_actividad = newVal.actividad.id || 0
-        formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
+        formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)//newVal.actividad.descripcion || ''
+        formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)//newVal.actividad.objetivo_de_actividad || ''
+        formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)//newVal.actividad.fecha_inicio || ''
+        formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)//newVal.actividad.fecha_cierre || ''
+        formData.value.id_actividad = getSafeValue(newVal.actividad.id,0)//newVal.actividad.id || 0
+        formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)//newVal.actividad.procedencia_fondos || ''
 
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
-          console.log('Formas de pago disponibles:', newVal.formaPago)
+          //console.log('Formas de pago disponibles:', newVal.formaPago)
         }
 
         // También actualizar actividadData para el componente ActividadInformacion
         actividadData.value = {
           ...actividadData.value,
-          descripcion: newVal.actividad.descripcion || actividadData.value.descripcion,
-          fecha_programada: newVal.actividad.fecha_inicio || actividadData.value.fecha_programada,
-          fecha_cierre: newVal.actividad.fecha_cierre || actividadData.value.fecha_cierre,
+          descripcion: getSafeValue(newVal.actividad.descripcion, actividadData.value.descripcion),//newVal.actividad.descripcion || actividadData.value.descripcion,
+          fecha_programada: getSafeValue(newVal.actividad.fecha_inicio, actividadData.value.fecha_programada),//newVal.actividad.fecha_inicio || actividadData.value.fecha_programada,
+          fecha_cierre: getSafeValue(newVal.actividad.fecha_cierre, actividadData.value.fecha_cierre),//newVal.actividad.fecha_cierre || actividadData.value.fecha_cierre,
         }
       }
 
       // Llenar lista de validadores si existen
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
-        console.log('Cargando validadores:', newVal.validadores)
-        responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
-        coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
+        //console.log('Cargando validadores:', newVal.validadores)
+        responsablesList.value = newVal.validadores.filter((user) => user && user.cargo === 'responsable') || []
+        coordinadoresList.value = newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
+      } else {
+        responsablesList.value = []
+        coordinadoresList.value = []
       }
     }
   },
@@ -655,7 +672,9 @@ function getCurrentDate() {
   const day = String(today.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
-
+//**********************************
+// *********************************
+// ********************************* */
 async function cargarDatos() {
   isLoading.value = true
   error.value = null
@@ -678,8 +697,8 @@ async function cargarDatos() {
       )
     }
 
-    const data = await response.json()
-    datosFormulario.value = data
+    const rawData = await response.json()
+    datosFormulario.value = strictSanitizeData(rawData)
     console.log('Datos cargados exitosamente:', datosFormulario.value)
   } catch (err) {
     error.value = err.message
@@ -688,6 +707,64 @@ async function cargarDatos() {
     isLoading.value = false
     cargandoGeneral.value = false
   }
+}
+
+function sanitizeData(data) {
+  if (data === null || data === undefined) {
+    return '';
+  }
+
+  if (typeof data === 'string') {
+    // Limpiar strings: trim y convertir empty strings a ''
+    const trimmed = data.trim();
+    return trimmed === '' ? '' : trimmed;
+  }
+
+  if (typeof data === 'number') {
+    // Validar que sea un número finito
+    return isFinite(data) ? data : 0;
+  }
+
+  if (typeof data === 'boolean') {
+    return data;
+  }
+
+  if (Array.isArray(data)) {
+    // Sanitizar cada elemento del array
+    return data.map(item => sanitizeData(item)).filter(item =>
+      item !== null && item !== undefined && item !== ''
+    );
+  }
+
+  if (typeof data === 'object') {
+    const sanitized = {};
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        const value = data[key];
+        // Solo incluir propiedades con valores válidos
+        if (value !== null && value !== undefined && value !== '') {
+          sanitized[key] = sanitizeData(value);
+        }
+      }
+    }
+    return sanitized;
+  }
+
+  // Para cualquier otro tipo de dato, retornar string vacío
+  return '';
+}
+
+function strictSanitizeData(data) {
+  const sanitized = sanitizeData(data);
+
+  // Si el resultado es un objeto vacío, retornar string vacío
+  if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
+    if (Object.keys(sanitized).length === 0) {
+      return '';
+    }
+  }
+
+  return sanitized;
 }
 
 function addGasto() {
@@ -1016,7 +1093,7 @@ function getCurrentDate1() {
 // Ciclo de vida
 onMounted(async () => {
   await cargarDatos()
-  await textoProcedencia()
+  await textoProcedencia.value
 })
 </script>
 

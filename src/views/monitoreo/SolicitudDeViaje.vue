@@ -270,7 +270,8 @@
       </v-card-text>
     </v-card>
   </v-container>
-  <pre>{{ datosFormulario }}</pre>
+  <!-- <pre>{{ datosFormulario }}</pre> -->
+   <p>{{ usuario }}</p>
 </template>
 
 <script setup>
@@ -292,7 +293,6 @@ const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 console.log('ID de Actividad:', idActividad)
 console.log('ID de Tarea:', idTarea)
-
 
 // ===================================
 //  COMPOSABLES
@@ -364,9 +364,9 @@ const totalMontoSolicitado = computed(() => {
 });
 
 const nombreCompletoSolicitante = computed(() => {
-  const nombre = datosFormulario.usuario.nombre || '';
-  const paterno = datosFormulario.value?.paterno || '';
-  const materno = datosFormulario.value?.materno || '';
+  const nombre = datosFormulario.value?.usuario.nombre || '';
+  const paterno = datosFormulario.value?.usuario.paterno || '';
+  const materno = datosFormulario.value?.usuario.materno || '';
   return `${nombre} ${paterno} ${materno}`.trim();
 });
 
@@ -468,8 +468,8 @@ async function cargarDatos() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        id_actividad: 1,//idActividad,
-        usuario: 'chave',//usuario.value.nombre,
+        id_actividad: idActividad,
+        usuario: usuario.value.nombre,
       }),
     })
 
@@ -534,8 +534,8 @@ async function submitForm() {
 
     const requiredFields = [
       'evento',
-      'fecha_inicio',
-      'fecha_fin',
+      // 'fecha_inicio',
+      // 'fecha_fin',
       'lugar_evento',
       'instituciones_participantes',
       'institucion_queinvita',
