@@ -371,6 +371,7 @@
       <v-btn variant="text" @click="snackbar.show = false">Cerrar</v-btn>
     </template>
   </v-snackbar>
+  {{ tableData }}
 </template>
 
 <script setup>
@@ -382,13 +383,12 @@ import 'handsontable/dist/handsontable.full.css'
 import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 
-import TrazadorActividad from './parciales/TrazadorActividad.vue'
 //Composables
 import { useActividad } from '../../proyecto/composables/useActividad'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { usePlanificacion } from '../composables/usePlanificacion'
+import { useSnackbar } from '@/composables/useSnackbar'
 //Precargas
-import { SELECT_OPTIONS } from '@/utility/selectOptions'
 import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
 //Estructuras
 import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
@@ -400,6 +400,9 @@ import { usePlanificacionStore } from '../store/usePlanificacionStore'
 import { storeToRefs } from 'pinia'
 import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
 import ActividadRelacionEstructura from './parciales/ActividadRelacionEstructura.vue'
+//Libreria de fechas
+import { parse, format, isValid, isBefore } from 'date-fns'
+
 // Importaciones para Excel
 import * as XLSX from 'xlsx'
 
@@ -442,6 +445,7 @@ const {
 } = useActividad()
 const { usuarios, obtenerUsuarios, loading: loadingUsuarios } = useUsuario()
 const { contadorPlan, contarPlanPorIdProyecto } = usePlanificacion()
+const { successMsg, infoMsg, errorMsg } = useSnackbar()
 
 // Snackbar para mensajes
 const snackbar = ref({
@@ -610,7 +614,7 @@ const obtenerConfiguracionTabla = () => {
 
 //Guardar procedencia
 const crearActividadPlan = async () => {
-  mostrarMensaje('Actividad creada exitosamente', 'success')
+  //mostrarMensaje('Actividad creada exitosamente', 'success')
   refrescarDatos()
   cerrarNuevaActividad()
 }
@@ -622,13 +626,6 @@ const confirmarGuardado = async () => {
     // Crear copia simple de los datos sin reactividad
     const datosSimples = JSON.parse(JSON.stringify(tableData.value))
 
-    // Obtener datos anteriores (simplificado para pruebas)
-    //const datosAnteriores = await obtenerDatosAnterioresSimple(idproyecto)
-
-    // Determinar tipo de cambio básico
-    //const tipoCambio = datosAnteriores ? 'actualizacion' : 'creacion'
-
-    // Preparar la estructura que espera el backend (VERSIÓN SIMPLIFICADA)
     const datosEnvio = {
       table_config: obtenerConfiguracionTabla(),
       rows_data: datosSimples,
@@ -697,52 +694,19 @@ const mostrarMensaje = (mensaje, color = 'success') => {
   }
 }
 
-const reprogramarPlanificacion = async () => {
-  mostrarMensaje('Funcionalidad de reprogramación en desarrollo', 'info')
-}
+// const reprogramarPlanificacion = async () => {
+//   mostrarMensaje('Funcionalidad de reprogramación en desarrollo', 'info')
+// }
 
-const agregarNuevaActividad = () => {
-  // tableData.value.push({
-  //   id: 0,
-  //   responsable: '',
-  //   proyecto: idproyecto,
-  //   codigo: 'ACT-',
-  //   nombreCorto: 'Actividad',
-  //   descripcion: 'Describir',
-  //   supuestos: '',
-  //   riesgos: '',
-  //   objetivo_de_actividad: '',
-  //   descripcion_evaluacion: '',
-  //   descripcion_tipo_actividad: null,
-  //   tipo: 'NODEF',
-  //   fecha_programada: null,
-  //   fecha_inicio: null,
-  //   fecha_cierre: null,
-  //   presupuesto: 0,
-  //   presupuestoGlobal: 0,
-  //   totalReportado: 0,
-  //   totalEjecutado: 0,
-  //   saldo: 0,
-  //   gradoEjecucion: null,
-  //   procedencia_fondos: null,
-  //   estado: 'CRD',
-  //   proceso: null,
-  //   resultado_og: null,
-  //   resultado_oe: null,
-  //   producto_oe: null,
-  //   objetivo_pei: null,
-  //   indicador_pei: null,
-  // })
-  // mostrarMensaje('Nueva actividad agregada', 'info')
+// const agregarNuevaActividad = () => {
+//   modalEstructura.value = true
+//   mostrarMensaje('Actividad')
+// }
 
-  modalEstructura.value = true
-  mostrarMensaje('Actividad')
-}
-
-const eliminarFila = async () => {
-  // Implementar lógica de eliminación si es necesario
-  mostrarMensaje('Funcionalidad de eliminación en desarrollo', 'info')
-}
+// const eliminarFila = async () => {
+//   // Implementar lógica de eliminación si es necesario
+//   mostrarMensaje('Funcionalidad de eliminación en desarrollo', 'info')
+// }
 
 const exportarExcel = async () => {
   try {
@@ -847,12 +811,8 @@ const getActivityIcon = (tipos) => {
   return 'mdi-clipboard-text-outline'
 }
 
-//Precargas
-const tipoActividad = SELECT_OPTIONS.tipo_actividad
-
 /*********** VARIABLES Y ESTADOS DE LA TABLA EXCEL ********************************/
 const tableData = ref([])
-const actividadesEnTabla = ref([])
 const inicializado = ref(true)
 
 //Esconder columnas
@@ -957,6 +917,7 @@ const columns = ref([
     data: 'gradoEjecucion',
     type: 'dropdown',
     title: 'Grado Ejecucion',
+    readOnly: true,
     width: 120,
     source: [
       'PLANIFICADA',
@@ -966,6 +927,12 @@ const columns = ref([
       'EN REPORTE',
       'FINALIZADO',
     ],
+  },
+  {
+    data: 'estado',
+    type: 'text',
+    title: 'ESTADO',
+    width: 120,
   },
   {
     data: 'medioVerificacion',
@@ -1078,33 +1045,6 @@ const cargar = async () => {
   }
 }
 
-// Computed para los tipos de actividad - FORMA CORRECTA
-const tiposActividadStore = computed(() => {
-  console.log('Lista tipos del store:', listaTiposAct.value)
-  console.log('Siglas del store:', siglasTiposActividad.value)
-
-  // Verificar si hay datos en el store
-  if (listaTiposAct.value && listaTiposAct.value.length > 0) {
-    // Extraer las siglas/códigos de los tipos
-    const siglas = listaTiposAct.value.map(
-      (tipo) => tipo.codigo || tipo.siglas || tipo.nombre_corto || tipo.nombre,
-    )
-    console.log('Siglas extraídas:', siglas)
-    return siglas
-  }
-
-  // Si el store está vacío, verificar siglasTiposActividad
-  if (siglasTiposActividad.value && siglasTiposActividad.value.length > 0) {
-    console.log('Usando siglasTiposActividad:', siglasTiposActividad.value)
-    return siglasTiposActividad.value
-  }
-
-  // Fallback final a los tipos estáticos
-  console.log('Usando fallback estático')
-  return SELECT_OPTIONS.tipo_actividad
-})
-console.log(tiposActividadStore)
-
 onMounted(() => {
   cargar()
   // Verificar después de un tiempo que los usuarios se cargaron
@@ -1114,11 +1054,113 @@ onMounted(() => {
   }, 2000)
 })
 
-/*************** Manejo de cambios *************************/
+/*************** Manejo de cambios en la Tabla *************************/
 const handleChange = (changes, source) => {
-  // Lógica de cambios si es necesaria
+  if (source === 'loadData') {
+    //Ignora los cambios iniciales al cargar los datos
+    infoMsg('Actividades Cargadas')
+    return
+  }
+
+  //Procesar los cambios en las fechas para actualizar el gradoEjecucion
+  if (changes) {
+    changes.forEach(([row, prop, oldValue, newValue]) => {
+      //Verificar si se modifico fecha de inicio y cierre
+      if (prop === 'fecha_inicio' || prop === 'fecha_cierre') {
+        setTimeout(() => {
+          verificarFechas(row)
+        }, 50)
+      }
+    })
+  }
 }
 
+// Función simple para verificar fechas
+const verificarFechas = (rowIndex) => {
+  //Fila seleccionada
+  const fila = tableData.value[rowIndex]
+  //Si nohay fila seleccionada, se anula la ejecucion
+  if (!fila) return
+
+  // console.log('Fila Seleccionada')
+  // console.log(fila)
+
+  const convertirFechaMMDDYYYY = (fechaString) => {
+    if (!fechaString) return null
+    try {
+      // Si ya es un objeto Date válido, retornarlo directamente
+      if (fechaString instanceof Date && isValid(fechaString)) {
+        return fechaString
+      }
+      // Si es string, parsear con date-fns
+      if (typeof fechaString === 'string') {
+        // Intentar parsear como MM/DD/YYYY
+        const fechaParseada = parse(fechaString, 'dd/MM/yyyy', new Date())
+
+        if (isValid(fechaParseada)) {
+          return fechaParseada
+        }
+
+        // Si falla, intentar con formato ISO o nativo
+        const fechaNativa = new Date(fechaString)
+        return isValid(fechaNativa) ? fechaNativa : null
+      }
+      return null
+    } catch (error) {
+      console.error('Error al convertir la fecha: ', error)
+    }
+  }
+
+  const inicio = convertirFechaMMDDYYYY(fila.fecha_inicio)
+  const cierre = convertirFechaMMDDYYYY(fila.fecha_cierre)
+  // console.log('FECHAS')
+  // console.log('Inicio: ', inicio)
+  // console.log('Cierre: ', cierre)
+
+  // Verificar que ambas fechas sean válidas y que inicio sea antes de cierre
+  const fechasValidas = isValid(inicio) && isValid(cierre)
+  const inicioAntesDeCierre = fechasValidas && isBefore(inicio, cierre)
+
+  if (fila.fecha_inicio && fila.fecha_cierre && fechasValidas && inicioAntesDeCierre) {
+    // console.log('✅ Fechas válidas - Actividad cambia a PLANIFICADA')
+    fila.gradoEjecucion = 'PLANIFICADA'
+    successMsg('Actividad planificada')
+
+    // Actualizar en la tabla visualmente
+    if (hotTable.value?.hotInstance) {
+      setTimeout(() => {
+        hotTable.value.hotInstance.setDataAtRowProp(rowIndex, 'gradoEjecucion', 'PLANIFICADA')
+        hotTable.value.hotInstance.setDataAtRowProp(rowIndex, 'estado', 'PLAN')
+        hotTable.value.hotInstance.render()
+      }, 50)
+    }
+  } else {
+    // console.log('❌ Fechas inválidas - Actividad no cambia de grado de ejecucion')
+    // Mostrar razón específica del error
+    if (!fechasValidas) {
+      // console.log('❌ Razón: Fechas no válidas')
+      if (!isValid(inicio)) console.log('  - Fecha inicio inválida:', fila.fecha_inicio)
+      if (!isValid(cierre)) console.log('  - Fecha cierre inválida:', fila.fecha_cierre)
+    } else if (!inicioAntesDeCierre) {
+      // console.log('❌ Razón: Fecha inicio debe ser anterior a fecha cierre')
+      // console.log('  - Inicio:', format(inicio, 'MM/dd/yyyy'))
+      // console.log('  - Cierre:', format(cierre, 'MM/dd/yyyy'))
+      errorMsg('La Fecha de cierre es anterior a la de inicio')
+    }
+    fila.gradoEjecucion = ''
+    fila.fecha_cierre = null
+
+    // Actualizar en la tabla visualmente
+    if (hotTable.value?.hotInstance) {
+      setTimeout(() => {
+        hotTable.value.hotInstance.setDataAtRowProp(rowIndex, 'gradoEjecucion', '')
+        hotTable.value.hotInstance.render()
+      }, 50)
+    }
+  }
+}
+
+/************************** Handle Selection ****************************************/
 const selectedRowData = ref(null)
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('es-MX', {
@@ -1187,6 +1229,7 @@ const contextMenuOptions = ref({
   display: flex;
   gap: 16px;
   height: calc(100vh - 150px);
+  min-height: 700;
 }
 
 .excel-panel {
@@ -1194,7 +1237,7 @@ const contextMenuOptions = ref({
   min-width: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 300%;
 }
 
 .side-panel {

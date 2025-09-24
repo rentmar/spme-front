@@ -48,6 +48,8 @@ export function useUsuario() {
     }
   }
 
+  //Obtener el id de un usuario
+
   //Fecth usuarios
 
   //Carga de usuario por id
