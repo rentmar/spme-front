@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { useActividad } from '@/modules/proyecto/composables/useActividad'
 import { useTipoActividad } from '@/modules/proyecto/composables/useTipoActividad'
+import { usePlanificacion } from '../composables/usePlanificacion'
 
 export const usePlanificacionStore = defineStore('planificacion', () => {
   // Estados del store
@@ -11,11 +12,14 @@ export const usePlanificacionStore = defineStore('planificacion', () => {
   const listaActividades = ref([])
   const listaUsuariosCompleta = ref([])
   const listaTiposAct = ref([])
+  const planificacionProyecto = ref()
+  const listaPlanificacionProyecto = ref([])
 
   // Iniciar el composable
   const { usuarios, obtenerUsuarios } = useUsuario()
   const { actividades, cargarActividadesPorIdProyecto } = useActividad()
   const { tipoDeActividades, cargarListaTiposActividades } = useTipoActividad()
+  const { plan, planPorIdProyecto } = usePlanificacion()
 
   const tableData = ref([])
 
@@ -85,7 +89,7 @@ export const usePlanificacionStore = defineStore('planificacion', () => {
     console.log('Usuarios disponibles para dropdown:', usernamesParaDropdown.value)
   }
 
-  // NUEVO: Computed para obtener siglas de tipos de actividad
+  //Computed para obtener siglas de tipos de actividad
   const siglasTiposActividad = computed(() => {
     if (!listaTiposAct.value.length) {
       return tipoActividadFallback // Fallback estático
@@ -105,7 +109,7 @@ export const usePlanificacionStore = defineStore('planificacion', () => {
     'OTRO',
   ]
 
-  // NUEVO: Función para obtener el nombre completo del tipo por siglas
+  //Función para obtener el nombre completo del tipo por siglas
   const obtenerNombreCompletoPorSiglas = (siglas) => {
     const tipo = listaTiposAct.value.find(
       (t) => t.codigo === siglas || t.siglas === siglas || t.nombre_corto === siglas,

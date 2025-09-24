@@ -338,7 +338,7 @@
     <v-card>
       <v-card-title class="headline">
         <v-icon color="primary" class="mr-2">mdi-content-save</v-icon>
-        Confirmar Guardado
+        Confirmar Guardado - Planificacion
       </v-card-title>
 
       <v-card-text>
@@ -351,6 +351,26 @@
               Total de actividades: <strong>{{ tableData.length }}</strong>
             </li>
           </ul>
+        </div>
+        <div>
+          <v-select
+            :items="SELECT_OPTIONS.razon_cambio"
+            item-value="valor"
+            item-title="etiqueta"
+            variant="outlined"
+            label="Tipo de Modificacion"
+          ></v-select>
+          <v-text-field
+            label="Modificado por"
+            variant="outlined"
+            v-model="datosGuardado.usuario"
+            readonly
+          ></v-text-field>
+          <v-textarea
+            label="Razon de la modificacion"
+            variant="outlined"
+            v-model="datosGuardado.razon"
+          ></v-textarea>
         </div>
       </v-card-text>
 
@@ -402,9 +422,14 @@ import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto
 import ActividadRelacionEstructura from './parciales/ActividadRelacionEstructura.vue'
 //Libreria de fechas
 import { parse, format, isValid, isBefore } from 'date-fns'
-
 // Importaciones para Excel
 import * as XLSX from 'xlsx'
+//Importacion de los usuarios
+import { useUserStore } from '@/stores/user'
+//importacion de selecciones
+import { SELECT_OPTIONS } from '@/utility/selectOptions'
+//Historial
+import GestionCopiasPlanificacion from './gestion-seguimiento/GestionCopiasPlanificacion.vue'
 
 // Props del componente
 const props = defineProps({
@@ -452,6 +477,16 @@ const snackbar = ref({
   show: false,
   message: '',
   color: 'success',
+})
+/********************** USUARIO ***************************************/
+const userStore = useUserStore()
+
+const usuario = computed(() => {
+  return {
+    nombre: userStore.usuario,
+    role: userStore.rol,
+    permisos: userStore.permisos,
+  }
 })
 /******************** Trazador ****************************************/
 const trazadorRef = ref(null)
@@ -619,6 +654,13 @@ const crearActividadPlan = async () => {
   cerrarNuevaActividad()
 }
 
+//Informacion
+const datosGuardado = ref({
+  tipo_cambio: '',
+  razon: '',
+  usuario: usuario.value.nombre,
+})
+
 // Método para confirmar el guardado - ACTUALIZADO
 const confirmarGuardado = async () => {
   guardando.value = true
@@ -629,8 +671,8 @@ const confirmarGuardado = async () => {
     const datosEnvio = {
       table_config: obtenerConfiguracionTabla(),
       rows_data: datosSimples,
-      razon_cambio: 'Actualización de planificación',
-      usuario: 'admin',
+      razon_cambio: datosGuardado.value.razon,
+      usuario: datosGuardado.value.nombre,
 
       // DATOS MÍNIMOS para CambioPlanificacion
       cambio_planificacion: {
@@ -645,8 +687,10 @@ const confirmarGuardado = async () => {
       },
     }
 
+    console.log(datosEnvio)
+
     // Guardar en el backend
-    await guardarActividadesBulk(idproyecto, datosEnvio)
+    //await guardarActividadesBulk(idproyecto, datosEnvio)
 
     // Mostrar mensaje de éxito
     mostrarMensaje('Planificación guardada exitosamente', 'success')
