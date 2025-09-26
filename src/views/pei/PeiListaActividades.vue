@@ -128,6 +128,24 @@
                       </template>
                     </v-tooltip>
 
+                    <v-tooltip text="Validar Solicitud de Fondos" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-if="parseInt($route.query.showButton) === 1"
+                          v-bind="props"
+                          icon="mdi-cash-plus"
+                          variant="text"
+                          color="primary"
+                          size="small"
+                          :disabled="
+                            getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
+                          "
+                          :to="`/monitoreo/formulario011/${actividad.id}`"
+                          @click.stop
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
                     <!-- Solicitud de Reposición -->
                     <v-tooltip text="Solicitud de Reposición" location="top">
                       <template v-slot:activator="{ props }">

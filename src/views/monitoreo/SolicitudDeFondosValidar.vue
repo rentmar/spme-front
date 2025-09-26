@@ -174,8 +174,7 @@
                     label="Descripción de la Actividad"
                     variant="outlined"
                     rows="3"
-                    bg-color="blue-lighten-5"
-                    required
+                    readonly
                   ></v-textarea>
                   <v-row>
                     <v-col cols="12" md="4">
@@ -206,8 +205,7 @@
                     label="Objetivo de la Actividad"
                     variant="outlined"
                     rows="3"
-                    bg-color="blue-lighten-5"
-                    required
+                    readonly
                   ></v-textarea>
                   <v-text-field
                     v-model=" textoProcedencia "
@@ -225,8 +223,7 @@
                       type="date"
                       variant="outlined"
                       density="compact"
-                      bg-color="blue-lighten-5"
-                      required
+                      readonly
                     ></v-text-field>
                   </v-col>
                 </div>
@@ -240,13 +237,13 @@
                     Detalle de Gastos Solicitados
                   </h3>
 
-                  <v-alert type="info" variant="tonal" class="mb-4">
+                  <!-- <v-alert type="info" variant="tonal" class="mb-4">
                     <template v-slot:prepend>
                       <v-icon color="info">mdi-information</v-icon>
                     </template>
                     Agregue todos los gastos asociados a la actividad. Especifique partida,
                     descripción y monto.
-                  </v-alert>
+                  </v-alert> -->
 
                   <div class="d-flex justify-space-between align-center mb-4">
                     <v-btn
@@ -279,9 +276,9 @@
                             variant="outlined"
                             density="compact"
                             hide-details
-                            bg-color="blue-lighten-5"
                             placeholder="1.1.1"
                             class="compact-field"
+                            readonly
                           ></v-text-field>
                         </td>
                         <td class="wide-column">
@@ -290,8 +287,8 @@
                             variant="outlined"
                             density="compact"
                             hide-details
-                            bg-color="blue-lighten-5"
                             placeholder="Descripción del gasto"
+                            readonly
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
@@ -301,10 +298,9 @@
                             variant="outlined"
                             density="compact"
                             hide-details
-                            bg-color="blue-lighten-5"
                             placeholder="0.00"
-                            min="0"
                             class="compact-field"
+                            readonly
                           ></v-text-field>
                         </td>
                         <td class="text-center action-column">
@@ -341,15 +337,13 @@
                         item-value="id"
                         label="Forma de Pago"
                         variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
+                        readonly
                       ></v-select>
                       <v-text-field
                         v-model="formData.lugar_solicitud"
                         label="Lugar de la Solicitud"
                         variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
+                        readonly
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
@@ -384,8 +378,7 @@
                         item-value="id"
                         label="Responsable del Cargo de Cuenta"
                         variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
+                        readonly
                       ></v-select>
                     </v-col>
                     <v-col cols="12" md="6" class="d-flex align-center">
@@ -405,8 +398,7 @@
                         item-value="id"
                         label="Coordinador"
                         variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
+                        readonly
                       ></v-select>
                     </v-col>
                     <v-col cols="12" md="6" class="d-flex align-center">
