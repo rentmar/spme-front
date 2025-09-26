@@ -37,7 +37,7 @@ export const reportesServicios = {
     }
   },
   /******** Bitacora por Indicador *********************/
-  obtenerBitacoraPorIdIndicador:async (idIndicador, tipoIndicador) => {
+  obtenerBitacoraPorIdIndicador: async (idIndicador, tipoIndicador) => {
     try {
       const respuesta = await apiRep.post('')
       return respuesta.data
@@ -45,8 +45,7 @@ export const reportesServicios = {
       console.error('Axios, error fetch ', error)
       throw error
     }
-
-  }
+  },
   /*************REPORTES PARA DESCARGA********************/
   //Reporte de poryecto por su id
   reporteProyecto: async (idproyecto) => {

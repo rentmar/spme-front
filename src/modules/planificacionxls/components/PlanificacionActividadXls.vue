@@ -391,7 +391,6 @@
       <v-btn variant="text" @click="snackbar.show = false">Cerrar</v-btn>
     </template>
   </v-snackbar>
-  {{ tableData }}
 </template>
 
 <script setup>
@@ -429,7 +428,6 @@ import { useUserStore } from '@/stores/user'
 //importacion de selecciones
 import { SELECT_OPTIONS } from '@/utility/selectOptions'
 //Historial
-import GestionCopiasPlanificacion from './gestion-seguimiento/GestionCopiasPlanificacion.vue'
 
 // Props del componente
 const props = defineProps({

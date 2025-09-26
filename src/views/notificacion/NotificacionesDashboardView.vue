@@ -22,6 +22,7 @@
       :datos-estructura="estructuraProcedencia"
       @payload-actualizado="recibirContribuciones"
     ></encabezado-contribucion>
+    <gestion-copias-planificacion></gestion-copias-planificacion>
   </div>
   <h1>Contribuciones</h1>
   {{ proyectoContribuciones }}
@@ -32,6 +33,7 @@ import { ref } from 'vue'
 import IndicadorLineChart from '@/modules/reportes/components/partials-indicador-registro/IndicadorLineChart.vue'
 import IndicadorRegistroBitacora from '@/modules/reportes/components/IndicadorRegistroBitacora.vue'
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
+import GestionCopiasPlanificacion from '@/modules/planificacionxls/components/gestion-seguimiento/GestionCopiasPlanificacion.vue'
 
 const idactividad = ref(1)
 

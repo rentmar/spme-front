@@ -1,11 +1,16 @@
 // composables/useSeguimientoPlanificacion.js
 import { ref, computed } from 'vue'
+import { segPlanService } from '../services/segPlanService'
 
 export function useSeguimientoPlanificacion() {
   //Estado
   const loading = ref(false)
   const error = ref(null)
   const planificacionActual = ref(null)
+  const planificacion = ref(null)
+  const planificacionLista = ref([])
+  const cambioPlanificacion = ref(null)
+  const cambioPlanificacionLista = ref([])
   const historialRevisiones = ref([])
 
   /********************Propiedades computadas*****************/
@@ -26,6 +31,7 @@ export function useSeguimientoPlanificacion() {
   })
 
   /******************* METODOS *******************************************/
+  //Carga el historial de planificaciones del proyecto
 
   //Carga el historial de planificaciones del Proyecto
   /*
