@@ -29,22 +29,22 @@
         value="projects-list"
         to="/proyecto"
       ></v-list-item>
-
+      <!--
       <v-list-item
         prepend-icon="mdi-chart-gantt"
         title="Programas/Areas"
         value="programas-list"
         to="/programas"
-      ></v-list-item>
+      ></v-list-item> -->
 
-      <v-list-item prepend-icon="mdi-finance" title="FPP" value="fpd-list" to="/"></v-list-item>
+      <!-- <v-list-item prepend-icon="mdi-finance" title="FPP" value="fpd-list" to="/"></v-list-item> -->
 
-      <v-list-item
+      <!-- <v-list-item
         prepend-icon="mdi-cash-multiple"
         title="FONFOSC"
         value="fonfosc-list"
         to="/"
-      ></v-list-item>
+      ></v-list-item> -->
     </v-list-group>
 
     <v-list-group value="planning">
@@ -82,21 +82,21 @@
       <template v-slot:activator="{ props }">
         <v-list-item v-bind="props" prepend-icon="mdi-chart-line" title="Monitoreo"></v-list-item>
       </template>
-      <v-list-item
+      <!-- <v-list-item
         @click="goToPageWithButton(1)"
         prepend-icon="mdi-account-alert"
         title="Solicitud/Reposición"
         value="monitoring-requests"
         to="/pei/listaactividades?showButton=1"
-      ></v-list-item>
-
+      ></v-list-item> -->
+      <!--
       <v-list-item
         @click="goToPageWithButton(2)"
         prepend-icon="mdi-chart-box"
         title="Rendición Cuentas"
         value="monitoring-reports"
         to="/pei/listaactividades?showButton=2"
-      ></v-list-item>
+      ></v-list-item> -->
 
       <v-list-item
         @click="goToPageWithButton(3)"
