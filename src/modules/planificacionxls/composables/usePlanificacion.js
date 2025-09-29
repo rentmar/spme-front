@@ -1,6 +1,6 @@
 //Composable usePlanificacion
 //CRUD de Actividades
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { planificacionServicios } from '../services/planificacionService'
 
 //Estados
@@ -10,6 +10,17 @@ const planes = ref([])
 const plan = ref(null)
 const planesPorProyecto = ref([])
 const contadorPlan = ref(null)
+
+//Estados validos
+const estadosValidos = {
+  CRD: 'Creada',
+  PLAN: 'Planificada',
+  RETR: 'Retraso',
+  REPROG: 'Reprogramacion',
+  EJEC: 'En Ejecucion',
+  REP: 'En Reporte',
+  FIN: 'Finalizado',
+}
 
 export function usePlanificacion() {
   //fetch planes
@@ -123,6 +134,24 @@ export function usePlanificacion() {
     }
   }
 
+  //Propiedad computada para el conteo de actividades por estado
+  const conteoEstados = computed(() => {
+    const conteo = {}
+    //Inicializa el conteo para todos los estados validos en 0
+    for (const estado in estadosValidos) {
+      conteo[estado] = 0
+    }
+    //Itera sobre el Array
+    planes.value.forEach((item) => {
+      const estado = item.estado
+      if (estadosValidos[estado] !== undefined) {
+        conteo[estado]++
+      }
+    })
+
+    return conteo
+  })
+
   return {
     loading,
     error,
@@ -130,6 +159,7 @@ export function usePlanificacion() {
     plan,
     planesPorProyecto,
     contadorPlan,
+    conteoEstados,
     cargarPlanes,
     cargarPlanPorId,
     crearPlan,

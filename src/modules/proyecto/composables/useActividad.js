@@ -158,7 +158,7 @@ export function useActividad() {
   }
 
   // Cargar activ
-  const actividadTarea = ref([])
+  //const actividadTarea = ref([])
   async function actividadesTareas() {
     loading.value = true
     try {

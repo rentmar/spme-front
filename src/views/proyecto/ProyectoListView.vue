@@ -644,6 +644,7 @@
       <v-btn variant="text" @click="snackbar.show = false"> Cerrar </v-btn>
     </template>
   </v-snackbar>
+  {{ usuario }}
 </template>
 
 <script setup>
@@ -655,6 +656,7 @@ import { proyectoServicios } from '@/modules/proyecto/services/proyectoService'
 //Instancias Gestoras
 import { useInstanciaGestora } from '@/modules/instanciaGestora/composables/useInstanciaGestora'
 import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
+import { useUserStore } from '@/stores/user'
 
 //Instancias gestoras, des
 const { instancias, cargarInstancias } = useInstanciaGestora()
@@ -667,6 +669,17 @@ const snackbar = ref({
   show: false,
   text: '',
   color: 'success', // 'success' o 'error'
+})
+
+//Inicar el store de usuario
+const storeUser = useUserStore()
+
+const usuario = computed(() => {
+  return {
+    nombre: storeUser.usuario,
+    role: storeUser.rol,
+    permisos: storeUser.permisos,
+  }
 })
 
 //Estados para los modales CREACION DE PROYECTO
@@ -685,7 +698,7 @@ const proyecto = reactive({
   pei: peiVigente.value.id,
   estado: 'ES',
   instancia_gestora: [],
-  creado_por: 'Admin',
+  creado_por: usuario.value.nombre,
   fecha_inicio: null,
   fecha_finalizacion: null,
   presupuesto: null,
@@ -972,7 +985,7 @@ const resetForm = () => {
     pei: peiVigente.value.id, // Mantiene el valor actualizado
     estado: 'ES',
     instancia_gestora: [],
-    creado_por: 'Admin',
+    creado_por: usuario.value.nombre,
     fecha_inicio: null,
     fecha_finalizacion: null,
     presupuesto: null,
