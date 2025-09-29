@@ -23,6 +23,19 @@ export const segPlanService = {
       throw error
     }
   },
+  /* Historial de planificaciones por ID de proyecto */
+  planificacionPorIdProyecto: async (idproyecto) => {
+    try {
+      const respuesta = await apiPlan.get('/planificaciones/proyecto/' + idproyecto + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error(
+        'Axios: error al extraer el historial de seguimiento del proyecto con id: ' + idproyecto,
+        error,
+      )
+      throw error
+    }
+  },
   /* Lista los Cambios en la planificacion */
   cambioPlanLista: async () => {
     try {
@@ -45,5 +58,14 @@ export const segPlanService = {
       throw error
     }
   },
-  /*  */
+  /* Cambio de planificacion por id de planificacion */
+  cambiosPlanIdPlan: async (idplan) => {
+    try {
+      const respuesta = await apiPlan.get('/planificaciones/' + idplan + '/cambios/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: fetch ', error)
+      throw error
+    }
+  },
 }

@@ -332,15 +332,22 @@
       </template>
     </v-snackbar>
   </div>
+  {{}}
+  <br /><br /><br /><br /><br />
+  {{ storeSeguimiento.versionPlanificacionVigente }}
 </template>
 
 <script setup>
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { useSeguimientoPlanificacionStore } from '../../store/useSeguimientoPlanificacionStore'
 // import { useApi } from '@/composables/useApi'
 
 // Componente de comparación (se puede crear por separado)
 const ComparacionVersiones = defineAsyncComponent(() => import('./ComparacionVersiones.vue'))
+
+//Inicializar el store
+const storeSeguimiento = useSeguimientoPlanificacionStore()
 
 // Props
 const props = defineProps({
@@ -428,13 +435,20 @@ const cambiosVersion = computed(() => {
   return versionSeleccionada.value.cambios || []
 })
 
+onMounted(() => {
+  cargarPlanificaciones()
+})
+
 // Métodos
 const cargarPlanificaciones = async () => {
   loading.value = true
   try {
     // Simular carga de datos - reemplazar con API real
-    planificaciones.value = await generarDatosDummy()
-    versionActiva.value = Math.max(...planificaciones.value.map((p) => p.version))
+    await storeSeguimiento.cargarPlanificacionesDeProyecto(1)
+    planificaciones.value = storeSeguimiento.planificacionProyectoLista.data
+    versionActiva.value = storeSeguimiento.versionPlanificacionVigente
+    //planificaciones.value = await generarDatosDummy()
+    //versionActiva.value = Math.max(...planificaciones.value.map((p) => p.version))
   } catch (error) {
     console.error('Error al cargar planificaciones:', error)
     mostrarMensaje('Error al cargar el historial', 'error')

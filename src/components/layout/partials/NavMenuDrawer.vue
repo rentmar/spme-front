@@ -76,6 +76,12 @@
         value="planning-schedules"
         to="/planificacion/cronogramas"
       ></v-list-item>
+      <v-list-item
+        prepend-icon="mdi-history"
+        title="Historial"
+        value="planning-historial"
+        to="/planificacion/historial/"
+      ></v-list-item>
     </v-list-group>
 
     <v-list-group value="monitoreo">

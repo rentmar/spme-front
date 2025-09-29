@@ -207,7 +207,7 @@
                     required
                   ></v-textarea>
                   <v-text-field
-                    v-model=" textoProcedencia "
+                    v-model="textoProcedencia"
                     label="Fuente de Financiamiento"
                     variant="outlined"
                     density="compact"
@@ -454,8 +454,8 @@
       </v-row>
     </div>
   </v-container>
-   <!-- <pre>{{ textoProcedencia }}</pre> -->
-   <!-- <pre>{{ datosFormulario }}</pre> -->
+  <!-- <pre>{{ textoProcedencia }}</pre> -->
+  <!-- <pre>{{ datosFormulario }}</pre> -->
 </template>
 
 <script setup>
@@ -601,7 +601,6 @@ watch(
         formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
         formData.value.id_actividad = newVal.actividad.id || 0
         formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
-
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
           console.log('Formas de pago disponibles:', newVal.formaPago)

@@ -13,10 +13,10 @@
     >
       Abrir Registro de Bitácora
     </v-btn>
-    <indicador-registro-bitacora
+    <!-- <indicador-registro-bitacora
       v-model="modalAbierto"
       :idactividad="idactividad"
-    ></indicador-registro-bitacora>
+    ></indicador-registro-bitacora> -->
 
     <encabezado-contribucion
       :datos-estructura="estructuraProcedencia"

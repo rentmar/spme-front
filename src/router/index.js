@@ -109,6 +109,11 @@ const router = createRouter({
       component: () => import('@/views/planeamiento/PeiAddActividadView.vue'),
     },
     {
+      path: '/planificacion/historial/',
+      name: 'planificacionHistorial',
+      component: () => import('@/views/planeamiento/PlanificacionSeguimientoView.vue'),
+    },
+    {
       /* A la vista de planificacion del proyecto */
       path: '/proyecto/:id/planificar',
       name: 'planificarProyecto',
