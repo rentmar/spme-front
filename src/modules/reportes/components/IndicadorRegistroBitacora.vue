@@ -50,13 +50,6 @@
                     <template v-slot:prepend>
                       <v-icon color="primary">mdi-format-list-numbered</v-icon>
                     </template>
-                    <v-list-item-title>{{ indicadorSeleccionado.definicion }}</v-list-item-title>
-                    <v-list-item-subtitle>Definicion del Indicador</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon color="primary">mdi-format-list-numbered</v-icon>
-                    </template>
                     <v-list-item-title>{{ indicadorSeleccionado.redaccion }}</v-list-item-title>
                     <v-list-item-subtitle>Redaccion</v-list-item-subtitle>
                   </v-list-item>
@@ -64,7 +57,9 @@
                     <template v-slot:prepend>
                       <v-icon color="primary">mdi-format-list-numbered</v-icon>
                     </template>
-                    <v-list-item-title>{{ indicadorSeleccionado.tipo }}</v-list-item-title>
+                    <v-list-item-title class="text-capitalize">
+                      {{ indicadorSeleccionado.tipo }}
+                    </v-list-item-title>
                     <v-list-item-subtitle>TIPO</v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
@@ -122,70 +117,45 @@
           <v-card-title class="text-h6 font-weight-medium">Registro de Avance</v-card-title>
           <v-card-text>
             <v-row>
-              {{ indicadorSeleccionado }}
-
-              <!-- Formulario de registro -->
+              <!-- Formulario de registro según tipo de indicador -->
               <v-col cols="12" md="6">
                 <v-card v-if="!indicadorYaRegistrado" variant="outlined">
-                  <v-card-title class="bg-blue-lighten-5">Nuevo Registro</v-card-title>
+                  <v-card-title class="bg-blue-lighten-5">
+                    Nuevo Registro - {{ tipoIndicadorTexto }}
+                  </v-card-title>
                   <v-card-text class="pa-4">
-                    <v-form ref="formAvance" v-model="formValido">
-                      <v-text-field
-                        v-model="nuevoAvance.valor"
-                        :label="`Valor de avance (${unidadMedida})`"
-                        variant="outlined"
-                        type="number"
-                        :rules="[reglaRequerido, reglaValorPositivo]"
-                        class="mb-3"
-                      ></v-text-field>
+                    <!-- Formulario para indicador Porcentual -->
+                    <FormularioPorcentual
+                      v-if="indicadorSeleccionado.tipo === 'Porcentual'"
+                      v-model="nuevoAvance"
+                      @validacion="formPorcentualValido = $event"
+                    />
 
-                      <v-textarea
-                        v-model="nuevoAvance.observaciones"
-                        label="Observaciones"
-                        variant="outlined"
-                        rows="3"
-                        :rules="[reglaRequerido]"
-                        class="mb-3"
-                      ></v-textarea>
+                    <!-- Formulario para indicador Numérico -->
+                    <FormularioNumerico
+                      v-else-if="indicadorSeleccionado.tipo === 'Numérico'"
+                      v-model="nuevoAvance"
+                      @validacion="formNumericoValido = $event"
+                    />
 
-                      <v-menu
-                        v-model="menuFecha"
-                        :close-on-content-click="false"
-                        transition="scale-transition"
-                        offset-y
-                        max-width="290px"
-                        min-width="auto"
-                      >
-                        <template v-slot:activator="{ props }">
-                          <v-text-field
-                            v-model="nuevoAvance.fecha"
-                            label="Fecha de registro"
-                            prepend-inner-icon="mdi-calendar"
-                            readonly
-                            variant="outlined"
-                            v-bind="props"
-                            :rules="[reglaRequerido]"
-                          ></v-text-field>
-                        </template>
-                        <v-date-picker
-                          v-model="nuevoAvance.fecha"
-                          no-title
-                          scrollable
-                          @update:model-value="menuFecha = false"
-                        ></v-date-picker>
-                      </v-menu>
+                    <!-- Formulario para indicador Literal -->
+                    <FormularioLiteral
+                      v-else-if="indicadorSeleccionado.tipo === 'Literal'"
+                      v-model="nuevoAvance"
+                      @validacion="formLiteralValido = $event"
+                    />
 
-                      <v-btn
-                        color="primary"
-                        variant="flat"
-                        class="mt-4"
-                        @click="agregarAvance"
-                        :disabled="!formValido"
-                        block
-                      >
-                        Agregar Avance
-                      </v-btn>
-                    </v-form>
+                    <!-- Botón de agregar avance -->
+                    <v-btn
+                      color="primary"
+                      variant="flat"
+                      class="mt-4"
+                      @click="agregarAvance"
+                      :disabled="!formularioValido"
+                      block
+                    >
+                      Agregar Avance
+                    </v-btn>
                   </v-card-text>
                 </v-card>
 
@@ -201,49 +171,13 @@
                 </v-card>
               </v-col>
 
-              <!-- Bitácora del indicador -->
+              <!-- Componente independiente de historial -->
               <v-col cols="12" md="6">
-                <v-card variant="outlined">
-                  <v-card-title class="bg-blue-lighten-5">Historial de Avances</v-card-title>
-                  <v-card-text class="pa-0">
-                    <v-list lines="three" v-if="bitacoraIndicador.length > 0">
-                      <v-list-item
-                        v-for="(registro, index) in bitacoraIndicador"
-                        :key="index"
-                        :class="{ 'bg-blue-lighten-5': index % 2 === 0 }"
-                      >
-                        <template v-slot:prepend>
-                          <v-avatar color="primary" size="40">
-                            <span class="white--text">
-                              {{ registro.cantidadAvance || registro.valor }}
-                              {{ obtenerSimboloUnidad(registro) }}
-                            </span>
-                          </v-avatar>
-                        </template>
-
-                        <v-list-item-title class="font-weight-medium">
-                          {{ formatFecha(registro.fechaBitacora || registro.fecha) }}
-                        </v-list-item-title>
-
-                        <v-list-item-subtitle>
-                          {{ registro.reporteEscrito || registro.observaciones }}
-                        </v-list-item-subtitle>
-
-                        <v-list-item-subtitle class="text-caption text-medium-emphasis">
-                          Registrado por: {{ registro.usuario || 'Sistema' }}
-                          <span v-if="registro.tipoIndicador" class="ml-2">
-                            ({{ formatoTipoIndicador(registro.tipoIndicador) }})
-                          </span>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                    </v-list>
-
-                    <div v-else class="text-center py-8 text-medium-emphasis">
-                      <v-icon size="64" class="mb-2">mdi-history</v-icon>
-                      <p>No hay registros previos para este indicador.</p>
-                    </div>
-                  </v-card-text>
-                </v-card>
+                <HistorialAvance
+                  :indicador-id="indicadorSeleccionado.id"
+                  :tipo-indicador="indicadorSeleccionado.tipo"
+                  @datos-cargados="onDatosHistorialCargados"
+                />
               </v-col>
             </v-row>
           </v-card-text>
@@ -318,10 +252,10 @@
           </thead>
           <tbody>
             <tr v-for="(avance, index) in avancesRegistrados" :key="index">
-              <td>{{ obtenerNombreIndicador(avance.indicadorId) }}</td>
-              <td>{{ avance.valor }}{{ avance.unidadMedida === 'Porcentaje' ? '%' : '' }}</td>
-              <td>{{ formatFecha(avance.fecha) }}</td>
-              <td>{{ avance.observaciones }}</td>
+              <td>{{ obtenerNombreIndicador(avance.idIndicador) }}</td>
+              <td>{{ formatearValorAvance(avance) }}</td>
+              <td>{{ formatFecha(avance.fechaBitacora) }}</td>
+              <td>{{ avance.reporteEscrito }}</td>
             </tr>
           </tbody>
         </v-table>
@@ -329,13 +263,6 @@
         <v-alert type="info" variant="tonal" class="mt-4">
           Los datos se enviarán al sistema y no podrán modificarse posteriormente.
         </v-alert>
-
-        <div class="mt-4">
-          <h4 class="text-h6 mb-2">Estructura del payload que se enviará:</h4>
-          <pre class="pa-3 bg-grey-lighten-4 rounded">{{
-            JSON.stringify(prepararPayload(), null, 2)
-          }}</pre>
-        </div>
       </v-card-text>
 
       <v-card-actions class="justify-end pa-4">
@@ -385,6 +312,10 @@ import { Chart, registerables } from 'chart.js'
 import { useIndicadoresStore } from '../stores/useIndicadoresStore'
 import { useReportes } from '../composables/useReportes'
 import { useSnackbar } from '@/composables/useSnackbar'
+import HistorialAvance from './partials-indicador-registro/HistorialAvance.vue'
+import FormularioPorcentual from './partials-indicador-registro/FormularioPorcentual.vue'
+import FormularioNumerico from './partials-indicador-registro/FormularioNumerico.vue'
+import FormularioLiteral from './partials-indicador-registro/FormularioLiteral.vue'
 
 // Registrar componentes de Chart.js
 Chart.register(...registerables)
@@ -432,12 +363,16 @@ const datosGrafica = reactive({
   valores: [],
 })
 
-// Formulario de nuevo avance
-const formAvance = ref(null)
-const formValido = ref(false)
-const menuFecha = ref(false)
+// Referencias a los formularios
+const formPorcentualValido = ref(false)
+const formNumericoValido = ref(false)
+const formLiteralValido = ref(false)
+
+// Datos del nuevo avance
 const nuevoAvance = ref({
-  valor: '',
+  valorPorcentual: 0,
+  valorNumerico: '',
+  valorLiteral: '',
   observaciones: '',
   fecha: new Date().toISOString().substr(0, 10),
 })
@@ -450,86 +385,28 @@ const indicadoresParaSelect = computed(() => {
   return storeIndicadores.getIndicadoresForSelect()
 })
 
-const unidadMedida = computed(() => {
+const tipoIndicadorTexto = computed(() => {
   if (!indicadorSeleccionado.value) return ''
-  return indicadorSeleccionado.value.tipo === 'Porcentual' ? 'Porcentaje' : 'Unidades'
+  const tipos = {
+    Porcentual: 'Porcentual (%)',
+    Numérico: 'Numérico (0-9)',
+    Literal: 'Literal (A-Z)',
+  }
+  return tipos[indicadorSeleccionado.value.tipo] || indicadorSeleccionado.value.tipo
 })
 
-// Datos de ejemplo para las bitácoras
-const datosBitacora = {
-  1: [
-    {
-      valor: 25,
-      observaciones: 'Avance inicial del primer trimestre',
-      fecha: '2023-01-15',
-      usuario: 'Ana García',
-    },
-    {
-      fechaBitacora: '2024-01-15',
-      cantidadAvance: '75',
-      reporteEscrito: 'Avance significativo en el indicador',
-      linkSubida: 'https://ejemplo.com/documento.pdf',
-      tipoIndicador: 'indicadorog',
-      idIndicador: 27,
-    },
-    {
-      valor: 50,
-      observaciones: 'Avance del segundo trimestre según lo planificado',
-      fecha: '2023-03-20',
-      usuario: 'Ana García',
-    },
-    {
-      valor: 75,
-      observaciones: 'Tercer trimestre con buen progreso',
-      fecha: '2023-05-20',
-      usuario: 'Ana García',
-    },
-  ],
-  2: [
-    {
-      valor: 100,
-      observaciones: 'Primera producción del mes',
-      fecha: '2023-04-05',
-      usuario: 'Carlos López',
-    },
-    {
-      valor: 220,
-      observaciones: 'Aumento de producción después de optimización',
-      fecha: '2023-04-28',
-      usuario: 'Carlos López',
-    },
-    {
-      valor: 320,
-      observaciones: 'Meta parcial alcanzada antes de lo previsto',
-      fecha: '2023-05-18',
-      usuario: 'Carlos López',
-    },
-  ],
-  3: [
-    {
-      valor: 25,
-      observaciones: 'Tiempo inicial de atención',
-      fecha: '2023-03-10',
-      usuario: 'María Rodríguez',
-    },
-    {
-      valor: 20,
-      observaciones: 'Mejora después de capacitación',
-      fecha: '2023-04-15',
-      usuario: 'María Rodríguez',
-    },
-    {
-      valor: 18,
-      observaciones: 'Reducción adicional con nuevo proceso',
-      fecha: '2023-05-19',
-      usuario: 'María Rodríguez',
-    },
-  ],
-}
-
-// Reglas de validación
-const reglaRequerido = (value) => !!value || 'Campo requerido'
-const reglaValorPositivo = (value) => value > 0 || 'El valor debe ser positivo'
+const formularioValido = computed(() => {
+  switch (indicadorSeleccionado.value?.tipo) {
+    case 'Porcentual':
+      return formPorcentualValido.value
+    case 'Numérico':
+      return formNumericoValido.value
+    case 'Literal':
+      return formLiteralValido.value
+    default:
+      return false
+  }
+})
 
 // Observador para sincronizar el estado interno con la prop
 watch(
@@ -537,7 +414,6 @@ watch(
   (newVal) => {
     internalDialog.value = newVal
     if (newVal) {
-      // Reiniciar estado al abrir el diálogo
       reiniciarEstado()
     }
   },
@@ -565,47 +441,39 @@ const reiniciarEstado = () => {
   datosGrafica.labels = []
   datosGrafica.valores = []
   nuevoAvance.value = {
-    valor: '',
+    valorPorcentual: 0,
+    valorNumerico: '',
+    valorLiteral: '',
     observaciones: '',
     fecha: new Date().toISOString().substr(0, 10),
   }
+  formPorcentualValido.value = false
+  formNumericoValido.value = false
+  formLiteralValido.value = false
 }
 
 /**
  * Carga los datos del indicador seleccionado
  */
-
 const cargarDatosIndicador = (indicadorId) => {
-  // Cargar bitácora del indicador
-  cargarBitacoraIndicador(indicadorId)
-
   // Verificar si ya se registró un avance para este indicador en esta sesión
   indicadorYaRegistrado.value = avancesRegistrados.value.some((a) => a.idIndicador === indicadorId)
 }
 
 /**
- * Carga la bitácora del indicador
+ * Cuando el componente de historial carga datos
  */
-const cargarBitacoraIndicador = async (indicadorId) => {
-  // Simular una llamada a API con timeout
-  setTimeout(() => {
-    bitacoraIndicador.value = datosBitacora[indicadorId] || []
+const onDatosHistorialCargados = (datos) => {
+  bitacoraIndicador.value = datos
+  prepararDatosGrafica()
 
-    // Preparar datos para la gráfica incluyendo el baseline
-    prepararDatosGrafica()
-
-    // Si hay datos, crear la gráfica
-    if (datosGrafica.labels.length > 0) {
-      nextTick(() => {
-        crearGraficaAvance()
-      })
-    }
-  }, 300)
+  if (datosGrafica.labels.length > 0) {
+    nextTick(() => {
+      crearGraficaAvance()
+    })
+  }
 }
 
-/**
- * Prepara los datos para la gráfica incluyendo el baseline
- */
 /**
  * Prepara los datos para la gráfica incluyendo el baseline
  */
@@ -623,17 +491,27 @@ const prepararDatosGrafica = () => {
     datosGrafica.valores.push(parseFloat(indicadorSeleccionado.value.baseline))
   }
 
-  // Agregar datos de la bitácora (usar cantidadAvance en lugar de valor)
+  // Agregar datos de la bitácora
   bitacoraIndicador.value.forEach((registro) => {
-    // Usar fechaBitacora si está disponible, sino usar fecha
     const fecha = registro.fechaBitacora || registro.fecha
     datosGrafica.labels.push(formatFechaCorta(fecha))
 
-    // Usar cantidadAvance convertido a número si está disponible, sino usar valor
-    const valor = registro.cantidadAvance ? parseFloat(registro.cantidadAvance) : registro.valor
+    // Manejar diferentes formatos de valor según el tipo de indicador
+    let valor = 0
+    if (indicadorSeleccionado.value.tipo === 'Porcentual') {
+      valor = registro.cantidadAvance ? parseFloat(registro.cantidadAvance) : registro.valor
+    } else if (indicadorSeleccionado.value.tipo === 'Numérico') {
+      valor = registro.cantidadAvance ? parseFloat(registro.cantidadAvance) : registro.valor
+    } else if (indicadorSeleccionado.value.tipo === 'Literal') {
+      // Convertir literal a numérico para la gráfica (A=1, B=2, etc.)
+      const letra = (registro.cantidadAvance || registro.valor || 'A').charAt(0)
+      valor = letra.charCodeAt(0) - 64 // A=1, B=2, etc.
+    }
+
     datosGrafica.valores.push(valor)
   })
 }
+
 /**
  * Crea la gráfica de avance del indicador
  */
@@ -671,7 +549,7 @@ const crearGraficaAvance = () => {
           beginAtZero: true,
           title: {
             display: true,
-            text: `Valor (${unidadMedida.value})`,
+            text: getTituloEjeY(),
           },
         },
         x: {
@@ -688,8 +566,8 @@ const crearGraficaAvance = () => {
         },
         tooltip: {
           callbacks: {
-            label: function (context) {
-              return `Valor: ${context.raw}${unidadMedida.value === 'Porcentaje' ? '%' : ''}`
+            label: (context) => {
+              return getTooltipLabel(context.raw)
             },
           },
         },
@@ -699,65 +577,109 @@ const crearGraficaAvance = () => {
 }
 
 /**
- * Agrega un nuevo avance al indicador
+ * Obtiene el título del eje Y según el tipo de indicador
  */
+const getTituloEjeY = () => {
+  if (!indicadorSeleccionado.value) return 'Valor'
+
+  switch (indicadorSeleccionado.value.tipo) {
+    case 'Porcentual':
+      return 'Porcentaje (%)'
+    case 'Numérico':
+      return 'Valor Numérico'
+    case 'Literal':
+      return 'Valor (A=1, B=2, ...)'
+    default:
+      return 'Valor'
+  }
+}
+
+/**
+ * Obtiene la etiqueta del tooltip según el tipo de indicador
+ */
+const getTooltipLabel = (valor) => {
+  if (!indicadorSeleccionado.value) return `Valor: ${valor}`
+
+  switch (indicadorSeleccionado.value.tipo) {
+    case 'Porcentual':
+      return `Porcentaje: ${valor}%`
+    case 'Numérico':
+      return `Valor: ${valor}`
+    case 'Literal':
+      const letra = String.fromCharCode(64 + Math.round(valor)) // 1=A, 2=B, etc.
+      return `Valor: ${letra} (${valor})`
+    default:
+      return `Valor: ${valor}`
+  }
+}
+
 /**
  * Agrega un nuevo avance al indicador
  */
 const agregarAvance = async () => {
-  if (!formValido.value) return
+  if (!formularioValido.value) return
+
+  let valorFinal = ''
+
+  // Determinar el valor según el tipo de indicador
+  switch (indicadorSeleccionado.value.tipo) {
+    case 'Porcentual':
+      valorFinal = nuevoAvance.value.valorPorcentual.toString()
+      break
+    case 'Numérico':
+      valorFinal = nuevoAvance.value.valorNumerico.toString()
+      break
+    case 'Literal':
+      valorFinal = nuevoAvance.value.valorLiteral.charAt(0) // Solo la letra (A, B, C, etc.)
+      break
+  }
 
   // Preparar para la inserción
   const datoBitacora = {
     fechaBitacora: nuevoAvance.value.fecha,
-    cantidadAvance: nuevoAvance.value.valor.toString(), // Asegurar que sea string
+    cantidadAvance: valorFinal,
     reporteEscrito: nuevoAvance.value.observaciones,
     linkSubida: '',
     tipoIndicador: indicadorSeleccionado.value.type,
     idIndicador: indicadorSeleccionado.value.id,
   }
 
-  console.log('Datos endpoint', datoBitacora)
-
-  // Insertar el registro a la bitácora
+  // Insertar el registro a la bitácora (simulado con datos dummy)
   try {
-    const respuesta = await registrarIndicadorBitacora(datoBitacora)
-    successMsg('Registro creado')
+    // Simular llamada a API
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    console.log('Traza bitacora: ', trazabitacora)
+    successMsg('Registro creado exitosamente')
 
-    // Agregar a la lista de avances registrados usando la respuesta del backend
+    // Agregar a la lista de avances registrados
     avancesRegistrados.value.push({
       ...datoBitacora,
-      // Usar los datos de la traza que viene en la respuesta
-      idPadre: trazabitacora.value.traza?.id_padre,
-      idHijo: trazabitacora.value.traza?.id_hijo,
-      tipo: trazabitacora.value.traza?.tipo,
-      idbitacora: trazabitacora.value.traza?.idBitacora,
+      id: Date.now(), // ID temporal para la sesión
     })
 
-    // Actualizar la bitácora localmente con los datos reales del backend
+    // Actualizar la bitácora localmente
     bitacoraIndicador.value.push({
-      valor: parseFloat(nuevoAvance.value.valor),
-      observaciones: nuevoAvance.value.observaciones,
-      fecha: nuevoAvance.value.fecha,
+      cantidadAvance: valorFinal,
+      reporteEscrito: nuevoAvance.value.observaciones,
+      fechaBitacora: nuevoAvance.value.fecha,
       usuario: 'Usuario Actual',
-      // Datos adicionales de la respuesta
-      idBitacora: trazabitacora.value.traza?.idBitacora, // o algún ID de la bitácora si está disponible
       tipoIndicador: datoBitacora.tipoIndicador,
     })
 
     // Reiniciar formulario
     nuevoAvance.value = {
-      valor: '',
+      valorPorcentual: 0,
+      valorNumerico: '',
+      valorLiteral: '',
       observaciones: '',
       fecha: new Date().toISOString().substr(0, 10),
     }
 
+    // Marcar como registrado
+    indicadorYaRegistrado.value = true
+
     // Actualizar datos de la gráfica
     prepararDatosGrafica()
-
-    // Actualizar gráfica
     if (chartInstance) {
       chartInstance.destroy()
     }
@@ -769,6 +691,7 @@ const agregarAvance = async () => {
     errorMsg('Error al crear el registro: ' + (err.message || 'Intente nuevamente'))
   }
 }
+
 /**
  * Muestra el resumen de avances antes de guardar
  */
@@ -776,9 +699,6 @@ const mostrarResumenGuardado = () => {
   resumenDialog.value = true
 }
 
-/**
- * Prepara el payload para enviar
- */
 /**
  * Prepara el payload para enviar
  */
@@ -790,11 +710,6 @@ const prepararPayload = () => {
       valor: avance.cantidadAvance,
       observaciones: avance.reporteEscrito,
       fecha: avance.fechaBitacora,
-      // Incluir datos de la traza si están disponibles
-      id_padre: avance.idPadre,
-      id_hijo: avance.idHijo,
-      id_bitacora: avance.idBitacora,
-      tipo: avance.tipo,
     })),
   }
 }
@@ -862,29 +777,14 @@ const obtenerNombreIndicador = (id) => {
   return indicador ? indicador.descripcion : 'Indicador desconocido'
 }
 
-// Función para obtener símbolo de unidad basado en el tipo de indicador
-const obtenerSimboloUnidad = (registro) => {
-  // Si el registro tiene tipo específico, usarlo
-  if (registro.tipo === 'Porcentual' || registro.unidadMedida === 'Porcentaje') {
-    return '%'
+/**
+ * Formatea el valor del avance para mostrar en la tabla
+ */
+const formatearValorAvance = (avance) => {
+  if (indicadorSeleccionado.value?.tipo === 'Porcentual') {
+    return `${avance.cantidadAvance}%`
   }
-  // Si no, determinar basado en el valor
-  const valor = registro.cantidadAvance || registro.valor
-  if (typeof valor === 'string' && valor.includes('%')) {
-    return '%'
-  }
-  return ''
-}
-
-// Función para formatear el tipo de indicador para mostrar
-const formatoTipoIndicador = (tipo) => {
-  const tipos = {
-    indicadorog: 'Indicador OG',
-    indicadoroe: 'Indicador OE',
-    indicadorrog: 'Indicador R OG',
-    indicadorroe: 'Indicador R OE',
-  }
-  return tipos[tipo] || tipo
+  return avance.cantidadAvance
 }
 
 /******************** Cargar datos ***************************/
