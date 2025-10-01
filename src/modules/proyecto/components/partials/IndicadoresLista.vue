@@ -13,6 +13,7 @@
       <v-card-text>
         <!-- Chips con información adicional -->
         <div class="mb-3">
+          Descripcion de la actividad
           <v-chip size="small" class="mr-2">
             <v-icon icon="mdi-account-group" left size="small"></v-icon>
             {{ indicador.target_poblacion }}

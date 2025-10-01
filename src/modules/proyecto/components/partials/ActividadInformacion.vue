@@ -68,6 +68,10 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
+//BaseURL
+const baseurl = import.meta.env.VITE_API_BASE
+console.log('baseurl:', baseurl)
+
 const props = defineProps({
   actividadId: {
     type: [Number, String],
@@ -96,7 +100,7 @@ function estadoColor(estado) {
 
 // 3. Función asíncrona para hacer la llamada a la API
 async function obtenerDatosActividad() {
-  const url = 'http://127.0.0.1:8000/actividades_api/obtenerEncabezadoActividadId/'
+  const url = baseurl + '/actividades_api/obtenerEncabezadoActividadId/'
   const data = {
     actividad_id: props.actividadId,
   }

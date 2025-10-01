@@ -276,7 +276,7 @@ const proyectosStore = useProyectoStore()
 const { proyectosPlanificacion: proyectosRaw, cargando: cargandoProyecto } =
   storeToRefs(proyectosStore)
 // Funciones
-const { obtenerProyectosPlanificacion } = proyectosStore
+const { obtenerProyectosPlanificacionFiltrados } = proyectosStore
 
 // Procesar proyectos para agregar tipo
 const proyectos = computed(() => {
@@ -296,7 +296,8 @@ onMounted(async () => {
 // Funcion de carga de store
 const cargarDatos = async () => {
   try {
-    await obtenerProyectosPlanificacion(peiVigente.value.id)
+    //await obtenerProyectosPlanificacion(peiVigente.value.id)
+    await obtenerProyectosPlanificacionFiltrados(peiVigente.value.id)
   } catch (err) {
     console.log('Error al cargar la informacion stores', err)
   }
@@ -304,52 +305,6 @@ const cargarDatos = async () => {
 
 // Datos dummy para actividades PEI
 const actividades = ref([])
-// const actividades = ref([
-//   {
-//     id: 1,
-//     codigo: 'PEI-ACT-001',
-//     titulo: 'Elaboración del plan estratégico institucional',
-//     descripcion: 'Actualización del plan estratégico para el próximo periodo',
-//     avance: 75,
-//     fecha: '15/06/2024',
-//     responsable: 'Unidad de Planeamiento',
-//     estado: 'En progreso',
-//     tipo: 'actividad',
-//   },
-//   {
-//     id: 2,
-//     codigo: 'PEI-ACT-002',
-//     titulo: 'Capacitación en gestión por resultados',
-//     descripcion: 'Capacitación al personal en metodologías de gestión',
-//     avance: 30,
-//     fecha: '22/07/2024',
-//     responsable: 'Unidad de Recursos Humanos',
-//     estado: 'En progreso',
-//     tipo: 'actividad',
-//   },
-//   {
-//     id: 3,
-//     codigo: 'PEI-ACT-003',
-//     titulo: 'Actualización del sistema de monitoreo',
-//     descripcion: 'Implementación de nuevas funcionalidades en el sistema',
-//     avance: 100,
-//     fecha: '10/05/2024',
-//     responsable: 'Unidad de Tecnología',
-//     estado: 'Completado',
-//     tipo: 'actividad',
-//   },
-//   {
-//     id: 4,
-//     codigo: 'PEI-ACT-004',
-//     titulo: 'Evaluación de desempeño institucional',
-//     descripcion: 'Evaluación anual del desempeño institucional',
-//     avance: 0,
-//     fecha: '01/08/2024',
-//     responsable: 'Unidad de Calidad',
-//     estado: 'Pendiente',
-//     tipo: 'actividad',
-//   },
-// ])
 
 // Items combinados y filtrados
 const filteredItems = computed(() => {

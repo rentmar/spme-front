@@ -644,7 +644,6 @@
       <v-btn variant="text" @click="snackbar.show = false"> Cerrar </v-btn>
     </template>
   </v-snackbar>
-  {{ usuario }}
 </template>
 
 <script setup>
@@ -776,7 +775,8 @@ const cargarProyectos = async () => {
     loading.value = true
     error.value = null
     emptyResponse.value = false
-    await proyectoStore.obtenerProyectos()
+    //await proyectoStore.obtenerProyectos()
+    await proyectoStore.obtenerProyectosFiltradosPorUsuario()
     cargarInstancias()
     fetchOptions()
     if (proyectoStore.proyectos.length === 0) {

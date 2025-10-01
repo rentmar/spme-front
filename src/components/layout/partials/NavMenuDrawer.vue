@@ -76,12 +76,12 @@
         value="planning-schedules"
         to="/planificacion/cronogramas"
       ></v-list-item>
-      <v-list-item
+      <!-- <v-list-item
         prepend-icon="mdi-history"
         title="Historial"
         value="planning-historial"
         to="/planificacion/historial/"
-      ></v-list-item>
+      ></v-list-item> -->
     </v-list-group>
 
     <v-list-group value="monitoreo">
@@ -105,11 +105,10 @@
       ></v-list-item> -->
 
       <v-list-item
-        @click="goToPageWithButton(3)"
         prepend-icon="mdi-file-document-outline"
         title="Informe de Actividad"
         value="monitoring-activity"
-        to="/pei/listaactividades?showButton=3"
+        to="/actividades/informe/"
       ></v-list-item>
     </v-list-group>
 

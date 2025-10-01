@@ -81,4 +81,13 @@ export const actividadServicios = {
       console.log('Axios: fetch actividades tareas', err)
     }
   },
+  /*Lista de Actividades y tareas*/
+  actividadesTareasLista: async () => {
+    try {
+      const respuesta = await api.get('/actividades-tareas-lista/todas/')
+      return respuesta.data
+    } catch (err) {
+      console.log('Axios: fetch de actividades y tareas', err)
+    }
+  },
 }

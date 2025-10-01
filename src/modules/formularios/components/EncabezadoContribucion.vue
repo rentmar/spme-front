@@ -1,10 +1,10 @@
 <template>
   <div>
     <!-- Objetivo General -->
+    <label v-if="objetivogeneral">{{ getLabel('objetivogeneral') }}</label>
     <v-textarea
       v-if="objetivogeneral"
       v-model="caberaContribucion.objetivogeneral.data.contribucion"
-      :label="getLabel('objetivogeneral')"
       hint="Contribución del objetivo general"
       clearable
       variant="outlined"
@@ -14,10 +14,10 @@
     ></v-textarea>
 
     <!-- Objetivo Específico Proyecto -->
+    <label v-if="objetivoespecifico">{{ getLabel('objetivoespecifico') }}</label>
     <v-textarea
       v-if="objetivoespecifico"
       v-model="caberaContribucion.objetivoespecifico.data.contribucion"
-      :label="getLabel('objetivoespecifico')"
       hint="Contribución del objetivo específico proyecto"
       clearable
       variant="outlined"
@@ -26,10 +26,10 @@
     ></v-textarea>
 
     <!-- Objetivo Específico OG -->
+    <label v-if="objetivoespecificoog">{{ getLabel('objetivoespecificoog') }}</label>
     <v-textarea
       v-if="objetivoespecificoog"
       v-model="caberaContribucion.objetivoespecificoog.data.contribucion"
-      :label="getLabel('objetivoespecificoog')"
       hint="Contribución del objetivo específico OG"
       clearable
       variant="outlined"
@@ -38,6 +38,7 @@
     ></v-textarea>
 
     <!-- Resultado OG -->
+    <label v-if="resultadoog">{{ getLabel('resultadoog') }}</label>
     <v-textarea
       v-if="resultadoog"
       v-model="caberaContribucion.resultadoog.data.contribucion"
@@ -50,10 +51,10 @@
     ></v-textarea>
 
     <!-- Resultado OE -->
+    <label v-if="resultadooe"> {{ getLabel('resultadooe') }} </label>
     <v-textarea
       v-if="resultadooe"
       v-model="caberaContribucion.resultadooe.data.contribucion"
-      :label="getLabel('resultadooe')"
       hint="Contribución del resultado OE"
       clearable
       variant="outlined"
@@ -62,10 +63,10 @@
     ></v-textarea>
 
     <!-- Producto OE -->
+    <label v-if="productooe"> {{ getLabel('productooe') }} </label>
     <v-textarea
       v-if="productooe"
       v-model="caberaContribucion.productooe.data.contribucion"
-      :label="getLabel('productooe')"
       hint="Contribución del producto OE"
       clearable
       variant="outlined"
@@ -74,10 +75,10 @@
     ></v-textarea>
 
     <!-- Producto ROE -->
+    <label v-if="productoroe">{{ getLabel('productoroe') }}</label>
     <v-textarea
       v-if="productoroe"
       v-model="caberaContribucion.productoroe.data.contribucion"
-      :label="getLabel('productoroe')"
       hint="Contribución del producto ROE"
       clearable
       variant="outlined"
@@ -86,10 +87,10 @@
     ></v-textarea>
 
     <!-- Producto -->
+    <label v-if="producto">{{ getLabel('producto') }}</label>
     <v-textarea
       v-if="producto"
       v-model="caberaContribucion.producto.data.contribucion"
-      :label="getLabel('producto')"
       hint="Contribución del producto"
       clearable
       variant="outlined"
@@ -439,44 +440,4 @@ onMounted(() => {
 
 <style scoped>
 /* Estilos para solucionar el problema de etiquetas recortadas */
-:deep(.v-label) {
-  white-space: normal !important;
-  height: auto !important;
-  line-height: 1.5 !important;
-  max-width: 100% !important;
-}
-
-:deep(.custom-textarea .v-label) {
-  white-space: normal !important;
-  height: auto !important;
-  line-height: 1.5 !important;
-}
-
-:deep(.v-textarea .v-field__input) {
-  align-items: flex-start !important;
-}
-
-.debug-container {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-family: monospace;
-}
-
-.debug-container h4 {
-  margin: 0 0 10px 0;
-  color: #333;
-}
-
-.debug-container pre {
-  margin: 0;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  font-size: 12px;
-  color: #666;
-  max-height: 300px;
-  overflow-y: auto;
-}
 </style>

@@ -688,7 +688,7 @@ const confirmarGuardado = async () => {
     console.log(datosEnvio)
 
     // Guardar en el backend
-    //await guardarActividadesBulk(idproyecto, datosEnvio)
+    await guardarActividadesBulk(idproyecto, datosEnvio)
 
     // Mostrar mensaje de éxito
     mostrarMensaje('Planificación guardada exitosamente', 'success')

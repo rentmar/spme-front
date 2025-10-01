@@ -270,6 +270,26 @@ const router = createRouter({
       path: '/monitoreo/formularioInf/:id',
       component: () => import('@/views/monitoreo/InformeActividad.vue'),
     },
+    {
+      path: '/actividades/informe/',
+      name: 'actividades',
+      component: () => import('@/views/monitoreo/InformeListaActividadView.vue'),
+    },
+    {
+      path: '/monitoreo/informe-actividad/:id',
+      name: 'informeActividad',
+      component: () => import('@/views/monitoreo/InformeActividadView.vue'),
+    },
+    {
+      path: '/monitoreo/informe-subactividad/:id',
+      name: 'informeSubActividad',
+      component: () => import('@/views/monitoreo/InformeSubActividadView.vue'),
+    },
+    {
+      path: '/monitoreo/informes-actividad-subactividad/:id',
+      name: 'listaInformeSubActividad',
+      component: () => import('@/views/monitoreo/InformesActividadSubactividadView.vue'),
+    },
 
     /*************************  Reportes  **************************************************** */
     {

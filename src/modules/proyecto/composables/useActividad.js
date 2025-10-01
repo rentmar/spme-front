@@ -13,6 +13,7 @@ const actividad = ref(null)
 const proyectoDatos = ref(null)
 const mensaje = ref(null)
 const actividadTarea = ref([])
+const actividadesTareasListas = ref()
 
 // Estados específicos para tareas
 const tareasActividad = ref([])
@@ -173,6 +174,20 @@ export function useActividad() {
     }
   }
 
+  //Obtener lista de actividades sin filtrar
+  async function obtenerListaActividadesConTareas() {
+    loading.value = true
+    try {
+      const respuesta = await actividadServicios.actividadesTareasLista()
+      actividadesTareasListas.value = respuesta
+    } catch (err) {
+      error.value = err
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading, //ref
     error, //ref
@@ -181,6 +196,7 @@ export function useActividad() {
     mensaje,
     actividadTarea,
     tareaActual,
+    actividadesTareasListas, //Actividades con tareas sin filtrado
     cargarActividades,
     cargarActividadPorId,
     cargarActividadesPorIdProyecto, //
@@ -191,5 +207,6 @@ export function useActividad() {
     obtenerListaActividadesTareas,
     cargarTareasDeActividad,
     actividadesTareas,
+    obtenerListaActividadesConTareas,
   }
 }

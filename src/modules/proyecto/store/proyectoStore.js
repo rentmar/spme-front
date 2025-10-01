@@ -5,6 +5,7 @@ import {
   proyectoObjetivos,
   proyectoResultadoProducto,
 } from '../services/proyectoService'
+import { useUserStore } from '@/stores/user'
 
 //Store de los proyectos
 export const useProyectoStore = defineStore('proyecto', () => {
@@ -23,6 +24,9 @@ export const useProyectoStore = defineStore('proyecto', () => {
   const cargando = ref(false) //Indicador de carga
   const error = ref(null) //Mensaje de error
 
+  //Store de usuario
+  const userStore = useUserStore()
+
   /***  ACCIONES    ***/
   //Obtener todos los Proyectos
   const obtenerProyectos = async () => {
@@ -37,6 +41,47 @@ export const useProyectoStore = defineStore('proyecto', () => {
     } finally {
       cargando.value = false
     }
+  }
+
+  //Obtener proyectos filtrados por usuario
+  const obtenerProyectosFiltradosPorUsuario = async () => {
+    cargando.value = true
+    error.value = null
+    try {
+      const response = await proyectoServicios.obtenerTodos()
+      const todosLosProyectos = Array.isArray(response) ? response : []
+      //Filtrar proyectos por rol de usuario
+      proyectos.value = filtrarProyectosPorUsuario(todosLosProyectos)
+    } catch (err) {
+      error.value = err
+    } finally {
+      cargando.value = false
+    }
+  }
+
+  //Funcion para filtrar proyectos segun el rol de usuario
+  const filtrarProyectosPorUsuario = (listaProyectos) => {
+    if (!listaProyectos || !Array.isArray(listaProyectos)) {
+      return []
+    }
+
+    //Usuario actual
+    const usuarioActual = userStore.usuario
+    const rolActual = userStore.rol
+
+    //Si el usuario es admin, mostrar todos los proyectos
+    if (rolActual === 'admin') {
+      return listaProyectos
+    }
+
+    //Si el usuario es tecnico, mostrar solo sus proyectos
+    if (rolActual === 'tecnico') {
+      return listaProyectos.filter((proyecto) => proyecto.creado_por === usuarioActual)
+    }
+
+    //Para otros usuarios, se agrega mas logica aqui
+    //Por defecto, mostrar solo los proyectos de usuario
+    return listaProyectos.filter((proyecto) => proyecto.creado_por === usuarioActual)
   }
 
   //Obtener un proyecto por ID
@@ -90,6 +135,22 @@ export const useProyectoStore = defineStore('proyecto', () => {
     //Peticion http y almacenamiento de datos
     try {
       proyectosPlanificacion.value = await proyectoServicios.obtenerTodosPlanificacion(idpei)
+    } catch (err) {
+      error.value = err
+    } finally {
+      cargando.value = false
+    }
+  }
+
+  //Obtener proyectos en planificacion filtrados por usuario
+  const obtenerProyectosPlanificacionFiltrados = async (idpei) => {
+    cargando.value = true
+    error.value = null
+    try {
+      //Obtener todos los proyectos en planificacion
+      const todosProyectosPlanificacion = await proyectoServicios.obtenerTodosPlanificacion(idpei)
+      //Filtrar segun el rol de usuario
+      proyectosPlanificacion.value = filtrarProyectosPorUsuario(todosProyectosPlanificacion)
     } catch (err) {
       error.value = err
     } finally {
@@ -302,6 +363,8 @@ export const useProyectoStore = defineStore('proyecto', () => {
     buscarNodoPorTipoId, //Busqueda de un nodo por type e Identificado4
     buscarNodosPorId, //Busqueda de todos los nodos que tengan el mismo id
     almacenarNodosProcedenciaActividad,
+    obtenerProyectosFiltradosPorUsuario, //Obtener proyectos por usuario
+    obtenerProyectosPlanificacionFiltrados, //Obtener proyectos planificacion por usuario
   }
 })
 
