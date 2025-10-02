@@ -70,9 +70,18 @@
             class="mb-4"
             multiple
             chips
+            :menu-props="{ maxHeight: 400 }"
           >
             <template v-slot:item="{ props, item }">
               <v-list-item v-bind="props" :subtitle="item.raw.descripcion"></v-list-item>
+            </template>
+            <template v-slot:selection="{ item, index }">
+              <v-chip v-if="index < 2" size="small" class="mr-1">
+                <span>{{ item.title }}</span>
+              </v-chip>
+              <span v-if="index === 2" class="text-grey text-caption mr-2">
+                +{{ selectedIndicadorOG.length - 2 }} más
+              </span>
             </template>
           </v-select>
 
@@ -113,9 +122,20 @@
                     return-object
                     clearable
                     class="mb-4"
+                    multiple
+                    chips
+                    :menu-props="{ maxHeight: 400 }"
                   >
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props" :subtitle="item.raw.descripcion"></v-list-item>
+                    </template>
+                    <template v-slot:selection="{ item, index }">
+                      <v-chip v-if="index < 2" size="small" class="mr-1">
+                        <span>{{ item.title }}</span>
+                      </v-chip>
+                      <span v-if="index === 2" class="text-grey text-caption mr-2">
+                        +{{ selectedIndicadorResultadoOG.length - 2 }} más
+                      </span>
                     </template>
                   </v-select>
 
@@ -174,10 +194,21 @@
                     prepend-icon="mdi-chart-line"
                     return-object
                     clearable
+                    multiple
+                    chips
                     class="mb-4"
+                    :menu-props="{ maxHeight: 400 }"
                   >
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props" :subtitle="item.raw.descripcion"></v-list-item>
+                    </template>
+                    <template v-slot:selection="{ item, index }">
+                      <v-chip v-if="index < 2" size="small" class="mr-1">
+                        <span>{{ item.title }}</span>
+                      </v-chip>
+                      <span v-if="index === 2" class="text-grey text-caption mr-2">
+                        +{{ selectedIndicadorOE.length - 2 }} más
+                      </span>
                     </template>
                   </v-select>
 
@@ -210,10 +241,21 @@
                     prepend-icon="mdi-chart-line"
                     return-object
                     clearable
+                    multiple
+                    chips
                     class="mb-4"
+                    :menu-props="{ maxHeight: 400 }"
                   >
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props" :subtitle="item.raw.descripcion"></v-list-item>
+                    </template>
+                    <template v-slot:selection="{ item, index }">
+                      <v-chip v-if="index < 2" size="small" class="mr-1">
+                        <span>{{ item.title }}</span>
+                      </v-chip>
+                      <span v-if="index === 2" class="text-grey text-caption mr-2">
+                        +{{ selectedIndicadorResultadoOE.length - 2 }} más
+                      </span>
                     </template>
                   </v-select>
 
@@ -373,15 +415,18 @@
                 <v-list-item-title>
                   <strong>Indicador OG:</strong>
                 </v-list-item-title>
-                <v-chip-group>
-                  <v-chip
-                    v-for="item in collectedData.indicadorog"
-                    :key="item.data.id"
-                    size="small"
-                  >
-                    {{ item.data.codigo }}
-                  </v-chip>
-                </v-chip-group>
+                <v-list-item-subtitle>
+                  <v-chip-group>
+                    <v-chip
+                      v-for="item in collectedData.indicadorog"
+                      :key="item.data.id"
+                      size="small"
+                      class="mr-1 mb-1"
+                    >
+                      {{ item.data.codigo }}
+                    </v-chip>
+                  </v-chip-group>
+                </v-list-item-subtitle>
               </v-list-item>
 
               <v-list-item v-if="collectedData.resultadoog">
@@ -393,14 +438,22 @@
                 }}</v-list-item-subtitle>
               </v-list-item>
 
-              <v-list-item v-if="collectedData.indicadorresultadoog">
+              <v-list-item v-if="collectedData.indicadorrog?.length">
                 <v-list-item-title>
                   <strong>Indicador Res. OG:</strong>
-                  {{ collectedData.indicadorresultadoog.data.codigo }}
                 </v-list-item-title>
-                <v-list-item-subtitle>{{
-                  collectedData.indicadorresultadoog.data.descripcion
-                }}</v-list-item-subtitle>
+                <v-list-item-subtitle>
+                  <v-chip-group>
+                    <v-chip
+                      v-for="item in collectedData.indicadorrog"
+                      :key="item.data.id"
+                      size="small"
+                      class="mr-1 mb-1"
+                    >
+                      {{ item.data.codigo }}
+                    </v-chip>
+                  </v-chip-group>
+                </v-list-item-subtitle>
               </v-list-item>
 
               <v-list-item v-if="collectedData.procesoog">
@@ -412,7 +465,6 @@
                 }}</v-list-item-subtitle>
               </v-list-item>
 
-              <!-- OBJETIVO ESPECÍFICO - CORREGIDO: usar objetivoespecificoog -->
               <v-list-item v-if="collectedData.objetivoespecificoog">
                 <v-list-item-title>
                   <strong>Objetivo Específico:</strong>
@@ -423,13 +475,22 @@
                 }}</v-list-item-subtitle>
               </v-list-item>
 
-              <v-list-item v-if="collectedData.indicadoroe">
+              <v-list-item v-if="collectedData.indicadoroe?.length">
                 <v-list-item-title>
-                  <strong>Indicador OE:</strong> {{ collectedData.indicadoroe.data.codigo }}
+                  <strong>Indicador OE:</strong>
                 </v-list-item-title>
-                <v-list-item-subtitle>{{
-                  collectedData.indicadoroe.data.descripcion
-                }}</v-list-item-subtitle>
+                <v-list-item-subtitle>
+                  <v-chip-group>
+                    <v-chip
+                      v-for="item in collectedData.indicadoroe"
+                      :key="item.data.id"
+                      size="small"
+                      class="mr-1 mb-1"
+                    >
+                      {{ item.data.codigo }}
+                    </v-chip>
+                  </v-chip-group>
+                </v-list-item-subtitle>
               </v-list-item>
 
               <v-list-item v-if="collectedData.resultadooe">
@@ -441,14 +502,22 @@
                 }}</v-list-item-subtitle>
               </v-list-item>
 
-              <v-list-item v-if="collectedData.indicadorresultadooe">
+              <v-list-item v-if="collectedData.indicadorroe?.length">
                 <v-list-item-title>
                   <strong>Indicador Res. OE:</strong>
-                  {{ collectedData.indicadorresultadooe.data.codigo }}
                 </v-list-item-title>
-                <v-list-item-subtitle>{{
-                  collectedData.indicadorresultadooe.data.descripcion
-                }}</v-list-item-subtitle>
+                <v-list-item-subtitle>
+                  <v-chip-group>
+                    <v-chip
+                      v-for="item in collectedData.indicadorroe"
+                      :key="item.data.id"
+                      size="small"
+                      class="mr-1 mb-1"
+                    >
+                      {{ item.data.codigo }}
+                    </v-chip>
+                  </v-chip-group>
+                </v-list-item-subtitle>
               </v-list-item>
 
               <v-list-item v-if="collectedData.procesooe">
@@ -510,7 +579,7 @@ const props = defineProps({
   },
 })
 
-//INicializar el composable
+//Inicializar el composable
 const { usuario: usuarioInfo, informacionUsuarioPorNick } = useUsuario()
 
 // Variables reactivas para el estado del componente
@@ -554,16 +623,16 @@ const usuario = computed(() => {
   }
 })
 
-// Variables reactivas para la selección
+// Variables reactivas para la selección - CORREGIDAS para arrays
 const selectedObjetivoGeneral = ref(null)
-const selectedIndicadorOG = ref(null)
+const selectedIndicadorOG = ref([]) // Cambiado a array
 const selectedResultadoOG = ref(null)
-const selectedIndicadorResultadoOG = ref(null)
+const selectedIndicadorResultadoOG = ref([]) // Cambiado a array
 const selectedProcesoOG = ref(null)
 const selectedObjetivoEspecifico = ref(null)
-const selectedIndicadorOE = ref(null)
+const selectedIndicadorOE = ref([]) // Cambiado a array
 const selectedResultadoOE = ref(null)
-const selectedIndicadorResultadoOE = ref(null)
+const selectedIndicadorResultadoOE = ref([]) // Cambiado a array
 const selectedProcesoOE = ref(null)
 const selectedProductoOE = ref(null)
 const selectedProcesoProductoOE = ref(null)
@@ -717,20 +786,20 @@ const preprocesarDatos = () => {
 
 // Métodos para manejar selecciones
 const onObjetivoGeneralSelected = () => {
-  selectedIndicadorOG.value = null
+  selectedIndicadorOG.value = [] // Reset a array vacío
   selectedResultadoOG.value = null
-  selectedIndicadorResultadoOG.value = null
+  selectedIndicadorResultadoOG.value = [] // Reset a array vacío
   selectedProcesoOG.value = null
   selectedObjetivoEspecifico.value = null
-  selectedIndicadorOE.value = null
+  selectedIndicadorOE.value = [] // Reset a array vacío
   selectedResultadoOE.value = null
-  selectedIndicadorResultadoOE.value = null
+  selectedIndicadorResultadoOE.value = [] // Reset a array vacío
   selectedProcesoOE.value = null
   selectedProductoOE.value = null
   selectedProcesoProductoOE.value = null
 }
 
-// 💡 FUNCIÓN MANTENIENDO objetivoespecificoog
+// FUNCIÓN CORREGIDA para manejar arrays de indicadores
 const obtenerEstructuraProcedencia = () => {
   const estructura = {}
 
@@ -738,12 +807,12 @@ const obtenerEstructuraProcedencia = () => {
     objetivogeneral: selectedObjetivoGeneral,
     indicadorog: selectedIndicadorOG,
     resultadoog: selectedResultadoOG,
-    indicadorrog: selectedIndicadorResultadoOG,
+    indicadorrog: selectedIndicadorResultadoOG, // Nombre corregido
     procesoog: selectedProcesoOG,
-    objetivoespecificoog: selectedObjetivoEspecifico, // Manteniendo objetivoespecificoog
+    objetivoespecificoog: selectedObjetivoEspecifico,
     indicadoroe: selectedIndicadorOE,
     resultadooe: selectedResultadoOE,
-    indicadorroe: selectedIndicadorResultadoOE,
+    indicadorroe: selectedIndicadorResultadoOE, // Nombre corregido
     procesooe: selectedProcesoOE,
     productooe: selectedProductoOE,
     procesoproductooe: selectedProcesoProductoOE,
@@ -753,12 +822,14 @@ const obtenerEstructuraProcedencia = () => {
     const valorSeleccionado = selecciones[tipo].value
 
     if (valorSeleccionado) {
-      if (Array.isArray(valorSeleccionado)) {
+      if (Array.isArray(valorSeleccionado) && valorSeleccionado.length > 0) {
+        // Para arrays (indicadores múltiples)
         estructura[tipo] = valorSeleccionado.map((data) => ({
           tipo: tipo,
           data: data,
         }))
-      } else {
+      } else if (!Array.isArray(valorSeleccionado) && Object.keys(valorSeleccionado).length > 0) {
+        // Para objetos individuales
         estructura[tipo] = {
           tipo: tipo,
           data: valorSeleccionado,
@@ -770,21 +841,23 @@ const obtenerEstructuraProcedencia = () => {
   return estructura
 }
 
-// Función para obtener selecciones simples
+// Función para obtener selecciones simples - CORREGIDA para arrays
 const obtenerSeleccionesSimples = () => {
   const seleccionesSimples = {}
 
   if (selectedObjetivoGeneral.value) {
     seleccionesSimples.objetivoGeneralId = selectedObjetivoGeneral.value.id
   }
-  if (selectedIndicadorOG.value) {
+  if (selectedIndicadorOG.value && selectedIndicadorOG.value.length > 0) {
     seleccionesSimples.indicadorOGIds = selectedIndicadorOG.value.map((item) => item.id)
   }
   if (selectedResultadoOG.value) {
     seleccionesSimples.resultadoOGId = selectedResultadoOG.value.id
   }
-  if (selectedIndicadorResultadoOG.value) {
-    seleccionesSimples.indicadorResultadoOGId = selectedIndicadorResultadoOG.value.id
+  if (selectedIndicadorResultadoOG.value && selectedIndicadorResultadoOG.value.length > 0) {
+    seleccionesSimples.indicadorResultadoOGIds = selectedIndicadorResultadoOG.value.map(
+      (item) => item.id,
+    )
   }
   if (selectedProcesoOG.value) {
     seleccionesSimples.procesoOGId = selectedProcesoOG.value.id
@@ -792,14 +865,16 @@ const obtenerSeleccionesSimples = () => {
   if (selectedObjetivoEspecifico.value) {
     seleccionesSimples.objetivoEspecificoId = selectedObjetivoEspecifico.value.id
   }
-  if (selectedIndicadorOE.value) {
-    seleccionesSimples.indicadorOEId = selectedIndicadorOE.value.id
+  if (selectedIndicadorOE.value && selectedIndicadorOE.value.length > 0) {
+    seleccionesSimples.indicadorOEIds = selectedIndicadorOE.value.map((item) => item.id)
   }
   if (selectedResultadoOE.value) {
     seleccionesSimples.resultadoOEId = selectedResultadoOE.value.id
   }
-  if (selectedIndicadorResultadoOE.value) {
-    seleccionesSimples.indicadorResultadoOEId = selectedIndicadorResultadoOE.value.id
+  if (selectedIndicadorResultadoOE.value && selectedIndicadorResultadoOE.value.length > 0) {
+    seleccionesSimples.indicadorResultadoOEIds = selectedIndicadorResultadoOE.value.map(
+      (item) => item.id,
+    )
   }
   if (selectedProcesoOE.value) {
     seleccionesSimples.procesoOEId = selectedProcesoOE.value.id
@@ -900,17 +975,17 @@ const confirmarCreacion = async () => {
   }
 }
 
-// Resetear toda la selección
+// Resetear toda la selección - CORREGIDA para arrays
 const resetSeleccion = () => {
   selectedObjetivoGeneral.value = null
-  selectedIndicadorOG.value = null
+  selectedIndicadorOG.value = [] // Reset a array vacío
   selectedResultadoOG.value = null
-  selectedIndicadorResultadoOG.value = null
+  selectedIndicadorResultadoOG.value = [] // Reset a array vacío
   selectedProcesoOG.value = null
   selectedObjetivoEspecifico.value = null
-  selectedIndicadorOE.value = null
+  selectedIndicadorOE.value = [] // Reset a array vacío
   selectedResultadoOE.value = null
-  selectedIndicadorResultadoOE.value = null
+  selectedIndicadorResultadoOE.value = [] // Reset a array vacío
   selectedProcesoOE.value = null
   selectedProductoOE.value = null
   selectedProcesoProductoOE.value = null
@@ -983,5 +1058,10 @@ const emit = defineEmits(['crear-actividad'])
   padding: 20px;
   background-color: #e3f2fd;
   position: relative;
+}
+
+/* Mejoras para chips de selección múltiple */
+.v-chip-group {
+  flex-wrap: wrap;
 }
 </style>

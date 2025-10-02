@@ -1246,7 +1246,7 @@ const contextMenuOptions = ref({
 <style scoped>
 .flow-container {
   width: 100%;
-  height: 600px;
+  height: 1000px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
 }
@@ -1264,7 +1264,7 @@ const contextMenuOptions = ref({
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   height: calc(100vh - 150px);
-  min-height: 600px;
+  min-height: 1000px;
 }
 
 .content-wrapper {
