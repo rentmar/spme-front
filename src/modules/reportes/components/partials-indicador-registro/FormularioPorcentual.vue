@@ -22,6 +22,7 @@
       :rules="[reglaRequerido, reglaRangoPorcentual]"
       class="mb-3"
       suffix="%"
+      clearable
     ></v-text-field>
 
     <v-textarea
@@ -31,34 +32,16 @@
       rows="3"
       :rules="[reglaRequerido]"
       class="mb-3"
+      clearable
     ></v-textarea>
 
-    <v-menu
+    <v-text-field
       v-model="menuFecha"
-      :close-on-content-click="false"
-      transition="scale-transition"
-      offset-y
-      max-width="290px"
-      min-width="auto"
-    >
-      <template v-slot:activator="{ props }">
-        <v-text-field
-          v-model="fecha"
-          label="Fecha de registro"
-          prepend-inner-icon="mdi-calendar"
-          readonly
-          variant="outlined"
-          v-bind="props"
-          :rules="[reglaRequerido]"
-        ></v-text-field>
-      </template>
-      <v-date-picker
-        v-model="fecha"
-        no-title
-        scrollable
-        @update:model-value="menuFecha = false"
-      ></v-date-picker>
-    </v-menu>
+      label="Fecha de registro"
+      type="date"
+      variant="outlined"
+      clearable
+    />
   </v-form>
 </template>
 
@@ -66,18 +49,20 @@
 import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
+  indicador: { type: Object, required: true },
   modelValue: {
     type: Object,
     default: () => ({}),
   },
 })
 
+console.log('Props Indicador: ', props.indicador)
+
 const emit = defineEmits(['update:modelValue', 'validacion'])
 
 // Referencias del formulario
 const formRef = ref(null)
 const valido = ref(false)
-const menuFecha = ref(false)
 
 // Datos del formulario
 const valorInterno = ref(props.modelValue.valorPorcentual || 0)

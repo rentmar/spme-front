@@ -738,12 +738,12 @@ const obtenerEstructuraProcedencia = () => {
     objetivogeneral: selectedObjetivoGeneral,
     indicadorog: selectedIndicadorOG,
     resultadoog: selectedResultadoOG,
-    indicadorresultadoog: selectedIndicadorResultadoOG,
+    indicadorrog: selectedIndicadorResultadoOG,
     procesoog: selectedProcesoOG,
     objetivoespecificoog: selectedObjetivoEspecifico, // Manteniendo objetivoespecificoog
     indicadoroe: selectedIndicadorOE,
     resultadooe: selectedResultadoOE,
-    indicadorresultadooe: selectedIndicadorResultadoOE,
+    indicadorroe: selectedIndicadorResultadoOE,
     procesooe: selectedProcesoOE,
     productooe: selectedProductoOE,
     procesoproductooe: selectedProcesoProductoOE,
@@ -845,7 +845,7 @@ const confirmarCreacion = async () => {
   const actividadDatos = {
     codigo: nuevaActividad.value.codigo,
     nombreCorto: nuevaActividad.value.titulo,
-    descripcion: '',
+    descripcion: 'Descripcion Actividad',
     supuestos: '',
     riesgos: '',
     objetivo_de_actividad: '',

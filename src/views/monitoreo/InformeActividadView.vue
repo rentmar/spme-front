@@ -82,6 +82,10 @@
           >
           </Indicador-registro-bitacora>
           <br />
+          <v-divider></v-divider>
+          <RegistroInformeIndicadoresBitacora
+            :idactividad="idActividad"
+          ></RegistroInformeIndicadoresBitacora>
 
           <v-divider class="my-4"></v-divider>
 
@@ -243,6 +247,11 @@ import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoC
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import RegistroInformeIndicadoresBitacora from '@/modules/reportes/components/RegistroInformeIndicadoresBitacora.vue'
+
+//Base URL
+const baseurl = import.meta.env.VITE_API_BASE
+console.log('Base-url: ', baseurl)
 
 const modalAbierto = ref(false)
 
@@ -302,7 +311,7 @@ const actualizarIndicadores = (payload) => {
 // Métodos
 async function obtenerDatosProyecto(id) {
   try {
-    const url = `http://127.0.0.1:8000/api/actividad-indicadores-proyecto/${id}/`
+    const url = baseurl + `/api/actividad-indicadores-proyecto/${id}/`
     const response = await fetch(url)
 
     if (!response.ok) {
@@ -341,10 +350,6 @@ async function prefillFormData() {
     console.error('Error al pre-llenar los datos del usuario:', err)
   }
 }
-
-// function openIndicatorDialog() {
-//   indicatorDialog.value = true;
-// }
 
 function seleccionarIndicador(indicador) {
   formData.indicador_seleccionado = indicador.nombre
@@ -385,7 +390,7 @@ async function submitForm() {
       // medios_archivos: [],
     }
 
-    const response = await axios.post('http://127.0.0.1:8000/api/informe-actividad/', payload)
+    const response = await axios.post(baseurl + '/api/informe-actividad/', payload)
 
     alert('Informe de Actividades y archivos enviados con éxito')
     resetForm()

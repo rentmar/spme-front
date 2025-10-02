@@ -114,3 +114,35 @@ export const getInstanciaIcon = (codigo) => {
   }
   return iconMap[codigo] || 'mdi-domain'
 }
+
+/* Colores para los indicadores */
+export const getColorTipoIndicador = (tipo) => {
+  const colores = {
+    indicadorog: 'primary',
+    indicadoroe: 'secondary',
+    indicadorrog: 'success',
+    indicadorroe: 'warning',
+  }
+  return colores[tipo] || 'grey'
+}
+
+/* Icono para los indicadores */
+export const getIconoTipoIndicador = (tipo) => {
+  const iconos = {
+    indicadorog: 'mdi-chart-bar',
+    indicadoroe: 'mdi-chart-line',
+    indicadorrog: 'mdi-chart-areaspline',
+    indicadorroe: 'mdi-chart-pie',
+  }
+  return iconos[tipo] || 'mdi-chart-line'
+}
+
+/* Texto para los indicadores */
+export const getTipoTextoIndicador = (tipo) => {
+  const tipos = {
+    'A-Z': 'Literal',
+    '1-9': 'Numérico',
+    '%': 'Porcentual',
+  }
+  return tipos[tipo] || tipo
+}

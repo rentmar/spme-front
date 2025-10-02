@@ -1,14 +1,5 @@
 <template>
   <v-form ref="formRef" v-model="valido">
-    <v-select
-      v-model="valorInterno"
-      :items="opciones"
-      label="Seleccione el avance"
-      variant="outlined"
-      :rules="[reglaRequerido]"
-      class="mb-3"
-    ></v-select>
-
     <v-textarea
       v-model="observaciones"
       label="Observaciones"
@@ -68,16 +59,6 @@ const menuFecha = ref(false)
 const valorInterno = ref(props.modelValue.valorLiteral || '')
 const observaciones = ref(props.modelValue.observaciones || '')
 const fecha = ref(props.modelValue.fecha || new Date().toISOString().substr(0, 10))
-
-// Opciones para el select
-const opciones = ref([
-  'A - Muy bajo',
-  'B - Bajo',
-  'C - Regular',
-  'D - Bueno',
-  'E - Muy bueno',
-  'F - Excelente',
-])
 
 // Reglas de validación
 const reglaRequerido = (value) => !!value || 'Campo requerido'

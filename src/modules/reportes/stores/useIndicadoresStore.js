@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useReportes } from '../composables/useReportes'
 
-export const useIndicadoresStore = defineStore('reportes', () => {
+export const useIndicadoresStore = defineStore('indicadores-reportes', () => {
   // Estados
   const loading = ref(false)
   const error = ref(null)
@@ -46,7 +46,7 @@ export const useIndicadoresStore = defineStore('reportes', () => {
       actividadInfo.value = actividadIndicadores.value
     } catch (e) {
       console.error('Error al cargar la actividad:', e)
-      error.value = 'No se pudo cargar la actividad. Inténtelo de nuevo.'
+      error.value = e
     } finally {
       loading.value = false
     }

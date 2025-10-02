@@ -62,19 +62,6 @@
                     </v-list-item-title>
                     <v-list-item-subtitle>TIPO</v-list-item-subtitle>
                   </v-list-item>
-                </v-list>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-list lines="two">
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon color="primary">mdi-target</v-icon>
-                    </template>
-                    <v-list-item-title>{{
-                      indicadorSeleccionado.meta || 'No definida'
-                    }}</v-list-item-title>
-                    <v-list-item-subtitle>Meta</v-list-item-subtitle>
-                  </v-list-item>
                   <v-list-item>
                     <template v-slot:prepend>
                       <v-icon color="primary">mdi-calendar</v-icon>
@@ -84,14 +71,27 @@
                     }}</v-list-item-title>
                     <v-list-item-subtitle>Frecuencia</v-list-item-subtitle>
                   </v-list-item>
+                </v-list>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-list lines="two">
                   <v-list-item>
                     <template v-slot:prepend>
-                      <v-icon color="primary">mdi-source-repository</v-icon>
+                      <v-icon color="primary">mdi-target</v-icon>
                     </template>
                     <v-list-item-title>{{
-                      indicadorSeleccionado.fuente_verificacion || 'No definida'
+                      indicadorSeleccionado.target_poblacion || 'No definida'
                     }}</v-list-item-title>
-                    <v-list-item-subtitle>Fuente de Verificacion</v-list-item-subtitle>
+                    <v-list-item-subtitle>Target Poblacion</v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="primary">mdi-calendar</v-icon>
+                    </template>
+                    <v-list-item-title>{{
+                      indicadorSeleccionado.fechaTargetPoblacion || 'No definida'
+                    }}</v-list-item-title>
+                    <v-list-item-subtitle>Fecha Target Poblacion</v-list-item-subtitle>
                   </v-list-item>
                   <!-- Baseline -->
                   <v-list-item
@@ -106,10 +106,101 @@
                     <v-list-item-title>{{ indicadorSeleccionado.baseline }}</v-list-item-title>
                     <v-list-item-subtitle>Valor inicial (Baseline)</v-list-item-subtitle>
                   </v-list-item>
+                  <!-- target q1 -->
+                  <v-list-item
+                    v-if="
+                      indicadorSeleccionado.target_q1 !== undefined &&
+                      indicadorSeleccionado.target_q1 !== null
+                    "
+                  >
+                    <template v-slot:prepend>
+                      <v-icon color="primary">mdi-target</v-icon>
+                    </template>
+                    <v-list-item-title>{{
+                      indicadorSeleccionado.target_q1 || 'No definido'
+                    }}</v-list-item-title>
+                    <v-list-item-subtitle>Target Q1</v-list-item-subtitle>
+                  </v-list-item>
+                  <!-- Fecha target q1 -->
+                  <v-list-item
+                    v-if="
+                      indicadorSeleccionado.fechaTargetQ1 !== undefined &&
+                      indicadorSeleccionado.fechaTargetQ1 !== null
+                    "
+                  >
+                    <template v-slot:prepend>
+                      <v-icon color="primary">mdi-calendar</v-icon>
+                    </template>
+                    <v-list-item-title>{{
+                      indicadorSeleccionado.fechaTargetQ1 || 'Fecha no definida'
+                    }}</v-list-item-title>
+                    <v-list-item-subtitle>Fecha Target Q1</v-list-item-subtitle>
+                  </v-list-item>
+                  <!-- target q2 -->
+                  <v-list-item
+                    v-if="
+                      indicadorSeleccionado.target_q2 !== undefined &&
+                      indicadorSeleccionado.target_q2 !== null
+                    "
+                  >
+                    <template v-slot:prepend>
+                      <v-icon color="primary">mdi-target</v-icon>
+                    </template>
+                    <v-list-item-title>{{
+                      indicadorSeleccionado.target_q2 || 'No definido'
+                    }}</v-list-item-title>
+                    <v-list-item-subtitle>Target Q2</v-list-item-subtitle>
+                  </v-list-item>
+                  <!-- Fecha target q1 -->
+                  <v-list-item
+                    v-if="
+                      indicadorSeleccionado.fechaTargetQ2 !== undefined &&
+                      indicadorSeleccionado.fechaTargetQ2 !== null
+                    "
+                  >
+                    <template v-slot:prepend>
+                      <v-icon color="primary">mdi-calendar</v-icon>
+                    </template>
+                    <v-list-item-title>{{
+                      indicadorSeleccionado.fechaTargetQ2 || 'Fecha no definida'
+                    }}</v-list-item-title>
+                    <v-list-item-subtitle>Fecha Target Q2</v-list-item-subtitle>
+                  </v-list-item>
+                  <!-- target q3 -->
+                  <v-list-item
+                    v-if="
+                      indicadorSeleccionado.target_q3 !== undefined &&
+                      indicadorSeleccionado.target_q3 !== null
+                    "
+                  >
+                    <template v-slot:prepend>
+                      <v-icon color="primary">mdi-target</v-icon>
+                    </template>
+                    <v-list-item-title>{{
+                      indicadorSeleccionado.target_q3 || 'No definido'
+                    }}</v-list-item-title>
+                    <v-list-item-subtitle>Target Q3</v-list-item-subtitle>
+                  </v-list-item>
+                  <!-- Fecha target q1 -->
+                  <v-list-item
+                    v-if="
+                      indicadorSeleccionado.fechaTargetQ3 !== undefined &&
+                      indicadorSeleccionado.fechaTargetQ3 !== null
+                    "
+                  >
+                    <template v-slot:prepend>
+                      <v-icon color="primary">mdi-calendar</v-icon>
+                    </template>
+                    <v-list-item-title>{{
+                      indicadorSeleccionado.fechaTargetQ3 || 'Fecha no definida'
+                    }}</v-list-item-title>
+                    <v-list-item-subtitle>Fecha Target Q3</v-list-item-subtitle>
+                  </v-list-item>
                 </v-list>
               </v-col>
             </v-row>
           </v-card-text>
+          {{ indicadorSeleccionado }}
         </v-card>
 
         <!-- Formulario y bitácora -->
@@ -121,26 +212,27 @@
               <v-col cols="12" md="6">
                 <v-card v-if="!indicadorYaRegistrado" variant="outlined">
                   <v-card-title class="bg-blue-lighten-5">
-                    Nuevo Registro - {{ tipoIndicadorTexto }}
+                    Nuevo Registro: {{ tipoIndicadorTexto }}
                   </v-card-title>
                   <v-card-text class="pa-4">
                     <!-- Formulario para indicador Porcentual -->
                     <FormularioPorcentual
-                      v-if="indicadorSeleccionado.tipo === 'Porcentual'"
+                      v-if="indicadorSeleccionado.tipo === '%'"
                       v-model="nuevoAvance"
+                      :indicador="indicadorSeleccionado"
                       @validacion="formPorcentualValido = $event"
                     />
 
                     <!-- Formulario para indicador Numérico -->
                     <FormularioNumerico
-                      v-else-if="indicadorSeleccionado.tipo === 'Numérico'"
+                      v-else-if="indicadorSeleccionado.tipo === '1-9'"
                       v-model="nuevoAvance"
                       @validacion="formNumericoValido = $event"
                     />
 
                     <!-- Formulario para indicador Literal -->
                     <FormularioLiteral
-                      v-else-if="indicadorSeleccionado.tipo === 'Literal'"
+                      v-else-if="indicadorSeleccionado.tipo === 'A-Z'"
                       v-model="nuevoAvance"
                       @validacion="formLiteralValido = $event"
                     />
@@ -371,10 +463,10 @@ const formLiteralValido = ref(false)
 // Datos del nuevo avance
 const nuevoAvance = ref({
   valorPorcentual: 0,
-  valorNumerico: '',
-  valorLiteral: '',
+  valorNumerico: 0,
+  valorLiteral: 0,
   observaciones: '',
-  fecha: new Date().toISOString().substr(0, 10),
+  fecha: '',
 })
 
 // Avances registrados durante la sesión
