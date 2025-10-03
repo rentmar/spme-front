@@ -1,5 +1,22 @@
 <template>
   <div class="v-container v-locale--is-ltr">
+        <!-- Overlay de carga -->
+    <v-overlay
+      :model-value="cargandoGeneral"
+      class="align-center justify-center"
+      persistent
+      opacity="0.8"
+    >
+      <div class="text-center">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="64"
+          width="6"
+        ></v-progress-circular>
+        <p class="mt-4 text-h6">Cargando formulario de rendicion...</p>
+      </div>
+    </v-overlay>
 
   <div v-if="!cargandoGeneral">
     <PaginaTituloIcono
@@ -8,7 +25,7 @@
     ></PaginaTituloIcono>
     <ProyectoIdHeader
       v-if="datosFormulario"
-      :proyecto-id="datosFormulario.actividad.proyecto"
+      :proyecto-id="datosFormulario.actividad?.proyecto ?? '999999'"
     ></ProyectoIdHeader>
     <br />
     <ActividadInformacion
@@ -26,7 +43,7 @@
 
     <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
       <div class="v-card-title text-h5 font-weight-bold">
-        Formulario F-02:<br> Rendición de Cuentas
+        Formulario F-02:
       </div>
 
       <div class="v-card-text">
@@ -38,16 +55,26 @@
             <br>
             <v-row>
               <v-col cols="12" md="4">
-                <v-text-field v-model="formData.nombre" label="Nombre" required readonly></v-text-field>
+                <v-text-field
+                v-model="formData.nombre"
+                label="Nombre"
+                required readonly></v-text-field>
               </v-col>
               <v-col cols="12" md="4">
-                <v-text-field v-model="formData.paterno" label="Apellido paterno" required readonly></v-text-field>
+                <v-text-field
+                v-model="formData.paterno"
+                label="Apellido paterno"
+                required
+                readonly
+                ></v-text-field>
               </v-col>
               <v-col cols="12" md="4">
-                <v-text-field v-model="formData.materno" label="Apellido materno" required readonly></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field v-model="formData.cargo" label="Cargo" required readonly></v-text-field>
+                <v-text-field
+                v-model="formData.materno"
+                label="Apellido materno"
+                required
+                readonly
+                ></v-text-field>
               </v-col>
               <v-col cols="12" md="4">
                 <v-text-field
@@ -57,6 +84,15 @@
                   readonly
                 ></v-text-field>
               </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                v-model="formData.cargo"
+                label="Cargo"
+                required
+                readonly
+                ></v-text-field>
+              </v-col>
+
             </v-row>
 
             <v-divider class="my-4"></v-divider>
@@ -65,7 +101,12 @@
 
             <v-row>
               <v-col cols="12" sm="6" md="4">
-                <v-text-field v-model="formData.formulario_numero" label="Formulario Número" readonly></v-text-field>
+                <v-text-field
+                  v-if="datosFormulario1"
+                  v-model="datosFormulario1.numeroFormulario"
+                  label="Formulario Número"
+                  readonly
+                ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field v-model="formData.cpte_diario" label="Cpte. Diario" bg-color="blue-lighten-5" required></v-text-field>
@@ -79,6 +120,43 @@
                   required
                 ></v-text-field>
               </v-col>
+
+              <v-col cols="12">
+                <v-textarea
+                  v-model="formData.descripcion_actividad"
+                  label="Descripción de la Actividad"
+                  bg-color="blue-lighten-5"
+                  rows="3"
+                  required
+                ></v-textarea>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="formData.fuente_financiamiento"
+                  label="Fuente de Financiamiento"
+                  required
+                  readonly
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="4">
+                <v-text-field
+                  v-model="formData.lugar_actividad"
+                  label="Lugar de Actividad"
+                  bg-color="blue-lighten-5"
+                  required
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="4">
+                <v-text-field
+                  v-model="formData.fecha_actividad"
+                  label="Fecha de Actividad"
+                  bg-color="blue-lighten-5"
+                  type="date"
+                  required
+                ></v-text-field>
+              </v-col>
+              </v-row>
+            <v-row>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field
                   v-model="formData.monto_solicitado"
@@ -100,41 +178,8 @@
                   readonly
                 ></v-text-field>
               </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="formData.fuente_financiamiento"
-                  label="Fuente de Financiamiento"
-                  required
-                  readonly
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="formData.descripcion_actividad"
-                  label="Descripción de la Actividad"
-                  bg-color="blue-lighten-5"
-                  rows="3"
-                  required
-                ></v-textarea>
-              </v-col>
-              <v-col cols="12" sm="6" md="4">
-                <v-text-field
-                  v-model="formData.lugar_actividad"
-                  label="Lugar de Actividad"
-                  bg-color="blue-lighten-5"
-                  required
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" sm="6" md="4">
-                <v-text-field
-                  v-model="formData.fecha_actividad"
-                  label="Fecha de Actividad"
-                  bg-color="blue-lighten-5"
-                  type="date"
-                  required
-                ></v-text-field>
-              </v-col>
             </v-row>
+
           </div>
 
           <v-divider class="my-4"></v-divider>
@@ -169,6 +214,7 @@
                       bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
+                      required
                     ></v-text-field>
                   </td>
                   <td>
@@ -177,6 +223,7 @@
                       bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
+                      required
                     ></v-text-field>
                   </td>
                   <td>
@@ -185,6 +232,7 @@
                       bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
+                      required
                     ></v-text-field>
                   </td>
                   <td>
@@ -193,6 +241,7 @@
                       bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
+                      required
                     ></v-text-field>
                   </td>
                   <td>
@@ -202,6 +251,7 @@
                       type="number"
                       hide-details
                       density="compact"
+                      required
                     ></v-text-field>
                   </td>
                   <td>
@@ -216,8 +266,36 @@
 
           <v-divider class="my-4"></v-divider>
 
+                <!-- Sección 4: Información Adicional -->
+                <div class="form-section mb-6">
+                  <v-card-subtitle class="text-h6">Información Adicional</v-card-subtitle>
+                  <br>
+
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="formData.lugar_solicitud"
+                        label="Lugar de la Solicitud"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="formData.fecha_solicitud"
+                        label="Fecha de Rendición de Cuentas"
+                        type="date"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </div>
+
+          <v-divider class="my-4"></v-divider>
+
           <div class="form-section">
-            <div class="v-card-subtitle text-subtitle-1">Firmas</div>
+            <v-card-subtitle class="text-h6">Firmas</v-card-subtitle>
             <br>
             <v-row>
               <v-col cols="12" md="6">
@@ -305,7 +383,16 @@
           </div>
 
           <div class="d-flex justify-end mt-4">
-            <v-btn color="error" prepend-icon="mdi-backspace-outline" @click="resetForm">
+                  <v-btn
+                    color="error"
+                    variant="outlined"
+                    prepend-icon="mdi-cancel"
+                    :to="`/pei/listaactividades?showButton=2`"
+                    class="mx-2"
+                  >
+                    Cancelar
+                  </v-btn>
+            <v-btn color="error" prepend-icon="mdi-backspace-outline" @click="resetForm" class="mx-2">
               Limpiar
             </v-btn>
             <v-btn color="primary" prepend-icon="mdi-file-document-arrow-right" @click="submitForm" :loading="loading">
@@ -318,8 +405,8 @@
   </div>
     <!-- <pre>{{ fuente_financiamiento0 }}</pre>
   <br>
-  <br>
-    <pre>{{ datosFormulario }}</pre> -->
+  <br>-->
+    <pre>{{ datosFormulario1 }}</pre>
 </template>
 
 <script setup>
@@ -367,6 +454,7 @@ const lista_administradores = ref([]);
 
 //variables para carga de datos
 const datosFormulario = ref(null)
+const datosFormulario1 = ref(null)
 const error = ref(null)
 const isLoading = ref(false)
 
@@ -411,6 +499,31 @@ const formData = ref({
   validacion_administrador: false,
   idcontador: null,
   idadministrador: null
+})
+
+const formDatSF = ref({
+  // Propiedades existentes...
+  actividad: null,
+  usuario: null,
+  validadores: [],
+  formaPago: [],
+
+  // Nuevas propiedades para la solicitud de fondos
+  idsf: 0,
+  numeroFormulariosf: '',
+  detalleDestinoFondossf: '{"items":[]}',
+  formaPago_idsf: null,
+  lugarSolicitudsf: '',
+  fechaSolicitudsf: '',
+  montoSolicitadosf: 0,
+  validacionResponsablesf: false,
+  responsable_idsf: null,
+  validacionCoordinadorsf: false,
+  coordinador_idsf: null,
+  usuario_idsf: null,
+  actividad_idsf: null,
+  fechaRealizacionActividadsf: '',
+  bloquearIconosSolFondossf: true
 })
 
  const userStore = useUserStore();
@@ -487,11 +600,21 @@ watch(
         formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
         formData.value.id_actividad = newVal.actividad.id || 0
         // formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.nombre || ''
-        if (newVal.actividad.procedencia_fondos) {
-  formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(item => item.nombre);
-} else {
-  formData.value.fuente_financiamiento = [];
-}
+        // if (newVal.actividad.procedencia_fondos) {
+        //   formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(item => item.nombre);
+        // } else {
+        //   formData.value.fuente_financiamiento = [];
+        // }
+
+        if (Array.isArray(newVal.actividad.procedencia_fondos)) {
+          formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(item => item.nombre);
+        } else {
+          // Si no es un array (es null, undefined, o un objeto), lo inicializa como array vacío.
+          // También puedes intentar asignar el valor directamente si es una cadena o un objeto simple:
+          // formData.value.fuente_financiamiento = [newVal.actividad.procedencia_fondos];
+          // PERO la opción de array vacío es la más segura si esperas una lista de fuentes.
+          formData.value.fuente_financiamiento = [];
+        }
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
           //console.log('Formas de pago disponibles:', newVal.formaPago)
@@ -518,11 +641,25 @@ watch(
   { deep: true },
 )
 
+// const filtrarProcedenciaFondos = () => {
+//   if (datosFormulario.value.actividad && datosFormulario.value.actividad.procedencia_fondos) {
+//     fuente_financiamiento0.value = datosFormulario.value.actividad.procedencia_fondos.map(
+//       (item) => item.nombre
+//     );
+//   }
+// };
+
 const filtrarProcedenciaFondos = () => {
-  if (datosFormulario.value.actividad && datosFormulario.value.actividad.procedencia_fondos) {
+  if (
+    datosFormulario.value.actividad &&
+    Array.isArray(datosFormulario.value.actividad.procedencia_fondos) // <= CAMBIO AQUÍ
+  ) {
     fuente_financiamiento0.value = datosFormulario.value.actividad.procedencia_fondos.map(
       (item) => item.nombre
     );
+  } else {
+    // Es bueno asegurarse de que siempre sea un array en caso de no encontrar datos
+    fuente_financiamiento0.value = [];
   }
 };
 
@@ -616,6 +753,264 @@ const cargarSolicitudesFondos = async () => {
   }
 }
 
+async function cargarSolicitudFondos() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudFondos/', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error en la solicitud: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    // Debug: ver todos los datos recibidos
+    console.log('Datos completos de la API:', data)
+    console.log('Parámetros de búsqueda:', {
+      idActividad,
+      idTarea,
+      idSolicitud,
+      tipoIdActividad: typeof idActividad,
+      tipoIdTarea: typeof idTarea,
+      tipoIdSolicitud: typeof idSolicitud
+    })
+
+    // Filtrar las solicitudes por actividad_id y tarea_id
+    const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
+      // Debug de cada solicitud
+      console.log('Revisando solicitud:', {
+        id: solicitud.id,
+        actividad_id: solicitud.actividad_id,
+        tarea_id: solicitud.tarea_id,
+        tipoSolicitud: typeof solicitud.id,//
+        tipoActividad: typeof solicitud.actividad_id,
+        tipoTarea: typeof solicitud.tarea_id
+      })
+
+      // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
+      const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
+      const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
+      const coincideSolicitud = solicitud.id?.toString() === idSolicitud?.toString()
+
+      console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
+
+      return coincideActividad && coincideTarea && coincideSolicitud
+    })
+
+    console.log('Solicitudes filtradas encontradas:', solicitudesFiltradas)
+    console.log('Total de solicitudes en API:', data.solicitudes?.length || 0)
+
+    datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
+    actualizarDatosFormulario(solicitudesFiltradas[0])
+
+  } catch (err) {
+    error.value = err.message
+    console.error('Error al cargar solicitudes:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
+  }
+}
+
+function sanitizeData(data) {
+  if (data === null || data === undefined) {
+    return '';
+  }
+
+  if (typeof data === 'string') {
+    // Limpiar strings: trim y convertir empty strings a ''
+    const trimmed = data.trim();
+    return trimmed === '' ? '' : trimmed;
+  }
+
+  if (typeof data === 'number') {
+    // Validar que sea un número finito
+    return isFinite(data) ? data : 0;
+  }
+
+  if (typeof data === 'boolean') {
+    return data;
+  }
+
+  if (Array.isArray(data)) {
+    // Sanitizar cada elemento del array
+    return data.map(item => sanitizeData(item)).filter(item =>
+      item !== null && item !== undefined && item !== ''
+    );
+  }
+
+  if (typeof data === 'object') {
+    const sanitized = {};
+    for (const key in data) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        const value = data[key];
+        // Solo incluir propiedades con valores válidos
+        if (value !== null && value !== undefined && value !== '') {
+          sanitized[key] = sanitizeData(value);
+        }
+      }
+    }
+    return sanitized;
+  }
+
+  // Para cualquier otro tipo de dato, retornar string vacío
+  return '';
+}
+
+function strictSanitizeData(data) {
+  const sanitized = sanitizeData(data);
+
+  // Si el resultado es un objeto vacío, retornar string vacío
+  if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
+    if (Object.keys(sanitized).length === 0) {
+      return '';
+    }
+  }
+
+  return sanitized;
+}
+
+// Agrega este watch para actualizar automáticamente cuando cambien los datosFormulario1
+watch(
+  datosFormulario1,
+  (newVal) => {
+    if (newVal && newVal.detalleDestinoFondos) {
+      actualizarDetalleDestinoFondos(newVal.detalleDestinoFondos)
+    }
+  },
+  { deep: true }
+)
+
+// Función para actualizar datosFormulario con los valores de la solicitud
+function actualizarDatosFormulario(solicitud) {
+  if (!solicitud) return
+
+  // Actualizar las propiedades de datosFormulario con los valores de la solicitud
+  formDatSF.value.idsf = solicitud.id || 0
+  formDatSF.value.numeroFormulariosf = solicitud.numeroFormulario || ''
+  formDatSF.value.detalleDestinoFondossf = solicitud.detalleDestinoFondos || '{"items":[]}'
+  formDatSF.value.formaPago_idsf = solicitud.formaPago_id || null
+  formDatSF.value.lugarSolicitudsf = solicitud.lugarSolicitud || ''
+  formDatSF.value.fechaSolicitudsf = solicitud.fechaSolicitud || ''
+  formDatSF.value.montoSolicitadosf = solicitud.montoSolicitado || 0
+  formDatSF.value.validacionResponsablesf = solicitud.validacionResponsable || false
+  formDatSF.value.responsable_idsf = solicitud.responsable_id || null
+  formDatSF.value.validacionCoordinadorsf = solicitud.validacionCoordinador || false
+  formDatSF.value.coordinador_idsf = solicitud.coordinador_id || null
+  formDatSF.value.usuario_idsf = solicitud.usuario_id || null
+  formDatSF.value.actividad_idsf = solicitud.actividad_id || null
+  formDatSF.value.fechaRealizacionActividadsf = solicitud.fechaRealizacionActividad || ''
+  formDatSF.value.bloquearIconosSolFondossf = solicitud.bloquearIconosSolFondos || true
+
+  console.log('datosFormulario actualizado con los valores de la solicitud:', datosFormulario.value)
+
+  actualizarDetalleDestinoFondos(solicitud.detalleDestinoFondos)
+
+  // Actualizar los campos de Información Adicional
+  actualizarInformacionAdicional()
+  actualizarValidadores()
+}
+
+// Función para parsear y actualizar el detalle de destino de fondos
+function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
+  try {
+    if (!detalleDestinoFondos) {
+      formData.value.detalle_destino_fondos = []
+      return
+    }
+
+    // Parsear el JSON string
+    const detalleParseado = JSON.parse(detalleDestinoFondos)
+
+    // Mapear al formato que espera la tabla
+    formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
+      partida: `${index + 1}.${index + 1}.${index + 1}`, // Generar partida automáticamente o usar una lógica específica
+      descripcion_gasto: item.concepto || '',
+      monto: item.monto || 0
+    }))
+
+    console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
+  } catch (error) {
+    console.error('Error al parsear detalleDestinoFondos:', error)
+    formData.value.detalle_destino_fondos = []
+  }
+}
+
+// Función para actualizar los campos de Información Adicional
+function actualizarInformacionAdicional() {
+  // Actualizar forma_pago
+  formData.value.forma_pago = formDatSF.value.formaPago_idsf
+
+  // Actualizar lugar_solicitud
+  formData.value.lugar_solicitud = formDatSF.value.lugarSolicitudsf
+
+  // Actualizar fecha_solicitud
+  formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
+
+  console.log('Información adicional actualizada:', {
+    forma_pago: formData.value.forma_pago,
+    lugar_solicitud: formData.value.lugar_solicitud,
+    fecha_solicitud: formData.value.fecha_solicitud
+  })
+}
+
+// Función para extraer y formatear los validadores por ID
+function actualizarValidadores() {
+  if (!datosFormulario.value || !datosFormulario.value.validadores) return
+
+  // Buscar responsable por ID
+  const responsable = datosFormulario.value.validadores.find(
+    validador => validador.id === formDatSF.value.responsable_idsf
+  )
+
+  // Buscar coordinador por ID
+  const coordinador = datosFormulario.value.validadores.find(
+    validador => validador.id === formDatSF.value.coordinador_idsf
+  )
+
+  // Actualizar formData con los IDs encontrados
+  if (responsable) {
+    formData.value.idresponsable = responsable.id
+    console.log('Responsable encontrado:', getNombreCompleto(responsable))
+  } else {
+    console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
+  }
+
+  if (coordinador) {
+    formData.value.idcoordinador = coordinador.id
+    console.log('Coordinador encontrado:', getNombreCompleto(coordinador))
+  } else {
+    console.warn('No se encontró coordinador con ID:', formDatSF.value.coordinador_idsf)
+  }
+
+  // También actualizar las listas de responsables y coordinadores si es necesario
+  actualizarListasValidadores()
+}
+
+// Función para actualizar las listas de responsables y coordinadores
+function actualizarListasValidadores() {
+  if (!datosFormulario.value || !datosFormulario.value.validadores) return
+
+  // Filtrar responsables (puedes ajustar la lógica según el cargo)
+  responsablesList.value = datosFormulario.value.validadores.filter(
+    validador => validador.cargo && validador.cargo.toLowerCase().includes('responsable')
+  )
+
+  // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
+  coordinadoresList.value = datosFormulario.value.validadores.filter(
+    validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
+  )
+
+  console.log('Responsables list:', responsablesList.value)
+  console.log('Coordinadores list:', coordinadoresList.value)
+}
+
 // Obtener información de solicitud de fondos para una actividad (y opcionalmente una tarea)
 const getSolicitudFondosInfo = (actividadId, tareaId = null) => {
   if (!solicitudesFondos.value.length) return null
@@ -681,6 +1076,7 @@ const safeParseInt = (value) => {
 // Y actualiza el onMounted para usar esta función
 onMounted(() => {
   cargarDatos()
+  cargarSolicitudFondos()
   cargarSolicitudesFondos()
 
   // Convertir IDs a números para búsqueda consistente
@@ -751,6 +1147,18 @@ async function submitForm() {
       throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.');
     }
 
+    const hasInvalidGasto = formData.value.detalle_destino_fondos.some(gasto =>
+      !gasto.fecha || // <--- AÑADIR: Verifica que la fecha exista
+      !gasto.partida ||
+      !gasto.factura_recibo || // <--- AÑADIR: Verifica que el número de factura/recibo exista
+      !gasto.descripcion_gasto ||
+      Number(gasto.monto) <= 0 // <--- Asegúrate de convertir a número para la comparación
+    );
+
+    if (hasInvalidGasto) {
+      throw new Error('Todos los gastos deben tener fecha, partida, factura/recibo, descripción y un monto mayor a cero.');
+    }
+
     // Obtener información de la solicitud de fondos
     const solicitudInfo = getSolicitudFondosInfo(idActividad, idTarea);
 
@@ -814,7 +1222,7 @@ async function submitForm() {
     resetForm();
 
     setTimeout(() => {
-      router.push('/pei/listaactividades')
+      router.push('/pei/listaactividades?showButton=2')
     }, 1000)
 
   } catch (error) {

@@ -27,7 +27,7 @@
       <!--Encabezado del Proyecto-->
       <ProyectoIdHeader
         v-if="datosFormulario"
-        :proyecto-id="datosFormulario.actividad?.proyecto ?? ''"
+        :proyecto-id="datosFormulario.actividad?.proyecto ?? '999999'"
       ></ProyectoIdHeader>
       <br />
       <!--Encabezado de la Actividad-->
@@ -168,17 +168,17 @@
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-calendar-text</v-icon>
-                    Información de la Actividad
+                    Información de la Actividad Realizada
                   </h3>
                   <v-textarea
                     v-model="formData.descripcion_actividad"
-                    label="Descripción de la Actividad"
+                    label="Descripción de Actividad Realizada"
                     variant="outlined"
                     rows="3"
                     bg-color="blue-lighten-5"
                     required
                   ></v-textarea>
-                  <v-row>
+                <!--  <v-row>
                     <v-col cols="12" md="4">
                       <v-text-field
                         v-model="formData.fecha_irealizacion"
@@ -201,27 +201,19 @@
                         readonly
                       ></v-text-field>
                     </v-col>
-                  </v-row>
+                  </v-row> -->
                   <v-textarea
                     v-model="formData.objetivo_actividad"
-                    label="Objetivo de la Actividad"
+                    label="Objetivo de Actividad Realizado"
                     variant="outlined"
                     rows="3"
                     bg-color="blue-lighten-5"
                     required
                   ></v-textarea>
-                  <v-text-field
-                    v-model="formData.fuente_financiamiento"
-                    label="Fuente de Financiamiento"
-                    variant="outlined"
-                    density="compact"
-                    bg-color="grey-lighten-4"
-                    readonly
-                  ></v-text-field>
 
-                                      <v-col cols="12" md="4">
+                    <v-col cols="12" md="4">
                       <v-text-field
-                        v-model="formData.fecha_frealizacion1"
+                        v-model="actividadData.fecha_programada"
                         label="Fecha de ejecucion de actividad"
                         type="date"
                         variant="outlined"
@@ -230,6 +222,15 @@
                         readonly
                       ></v-text-field>
                     </v-col>
+
+                  <v-text-field
+                    v-model="formData.fuente_financiamiento"
+                    label="Fuente de Financiamiento"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -422,7 +423,7 @@
 
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
-                  <v-btn color="error" variant="outlined" size="large" prepend-icon="mdi-cancel" :to="`/pei/listaactividades`">
+                  <v-btn color="error" variant="outlined" size="large" prepend-icon="mdi-cancel" :to="`/pei/listaactividades?showButton=1`">
                     Cancelar
                   </v-btn>
                   <v-btn
@@ -906,6 +907,7 @@ async function submitForm() {
     const payload = {
       detalle_destino_fondos: JSON.stringify({
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida: gasto.partida,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
@@ -919,11 +921,13 @@ async function submitForm() {
       validacion_coordinador: formData.value.validacion_coordinador,
       id_coordinador: formData.value.idcoordinador,
       id_usuario: formData.value.id_usuario,
-      actividad: {
-        id_actividad: formData.value.id_actividad,
-        descripcion_actividad: formData.value.descripcion_actividad,
-        objetivo_actividad: formData.value.objetivo_actividad,
-      },
+      //actividad: {
+      //  id_actividad: formData.value.id_actividad,
+      //  descripcion_actividad: formData.value.descripcion_actividad,
+      //  objetivo_actividad: formData.value.objetivo_actividad,
+      //},
+      id_actividad: formData.value.id_actividad,
+      descripcion: formData.value.descripcion,
       id_tarea: idTarea || null,
     }
 
@@ -948,7 +952,7 @@ async function submitForm() {
     console.log('Respuesta del servidor:', data)
 
     setTimeout(() => {
-      router.push('/pei/listaactividades')
+      router.push('/pei/listaactividades?showButton=1')
     }, 1000)
 
     return data

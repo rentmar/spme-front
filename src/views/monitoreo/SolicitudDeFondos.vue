@@ -27,7 +27,7 @@
       <!--Encabezado del Proyecto-->
        <ProyectoIdHeader
         v-if="datosFormulario"
-        :proyecto-id="datosFormulario.actividad?.proyecto ?? ''"
+        :proyecto-id="datosFormulario.actividad?.proyecto ?? '99999999'"
       ></ProyectoIdHeader>
       <br />
       <!--Encabezado de la Actividad-->
@@ -426,7 +426,7 @@
                     variant="outlined"
                     size="large"
                     prepend-icon="mdi-cancel"
-                    :to="`/pei/listaactividades`"
+                    :to="`/pei/listaactividades?showButton=1`"
                   >
                     Cancelar
                   </v-btn>
@@ -457,10 +457,11 @@
       </v-row>
     </div>
   </v-container>
+  <pre>{{ formData.detalle_destino_fondos }}</pre>
    <!-- <pre>{{ textoProcedencia }}</pre> -->
-    <pre>{{ datosFormulario }}</pre>
+     <!-- <pre>{{ datosFormulario }}</pre> -->
     <!-- <p>{{ userStore }}</p> -->
-     <p>{{ usuario }}</p>
+     <!-- <p>{{ usuario }}</p> -->
 </template>
 
 <script setup>
@@ -767,7 +768,7 @@ function strictSanitizeData(data) {
   return sanitized;
 }
 
-function addGasto() {
+function addGasto() {   //esta funcion adiciona una fila de detalle de gasto al vista
   formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 })
 }
 
@@ -794,12 +795,15 @@ async function submitForm() {
     }
     // Transformar los datos al formato esperado por el endpoint
     const payload = {
+      //numero_formulario: "Form-6666", // se crea automaticamente
       detalle_destino_fondos: JSON.stringify({
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida: gasto.partida,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
       }),
+      //bloquear_icono_sf: true,  // se crea automaticamente
       forma_pago: formData.value.forma_pago,
       lugar_solicitud: formData.value.lugar_solicitud,
       fecha_solicitud: formData.value.fecha_solicitud,
@@ -839,7 +843,7 @@ async function submitForm() {
     console.log('Respuesta del servidor:', data)
 
     setTimeout(() => {
-      router.push('/pei/listaactividades')
+      router.push('/pei/listaactividades?showButton=1')
     }, 1000)
 
     return data

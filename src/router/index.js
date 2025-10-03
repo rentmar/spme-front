@@ -254,6 +254,10 @@ const router = createRouter({
       component: () => import('@/views/monitoreo/RendicionDeCuentas.vue'),
     },
     {
+      path: '/monitoreo/formulario033/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeReposicionValidar.vue'),
+    },
+    {
       path: '/monitoreo/formulario03/:id',
       component: () => import('@/views/monitoreo/SolicitudDeReposicion.vue'),
     },
