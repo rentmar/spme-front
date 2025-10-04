@@ -91,6 +91,15 @@ export const actividadServicios = {
       console.log('Axios: fetch de actividades y tareas', err)
     }
   },
+  actividadInforPorId: async (idactividad) => {
+    try {
+      const respuesta = await api.get('/actividad-indicadores-proyecto/' + idactividad + '/')
+      return respuesta.data
+    } catch (error) {
+      console.log('Axios: fecth actividad por id: ' + error, error)
+      throw error
+    }
+  },
   /*********************************************************/
   /******************* TAREAS ******************************/
   /*********************************************************/
