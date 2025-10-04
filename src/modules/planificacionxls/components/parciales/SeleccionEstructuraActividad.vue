@@ -592,15 +592,15 @@ const obtenerEstructuraProcedencia = () => {
     objetivogeneral: selectedObjetivoGeneral,
     indicadorog: selectedIndicadorOG,
     resultadoog: selectedResultadoOG,
-    indicadorresultadoog: selectedIndicadorResultadoOG,
-    procesoog: selectedProcesoOG,
-    objetivoespecifico: selectedObjetivoEspecifico,
+    indicadorrog: selectedIndicadorResultadoOG,
+    procesorog: selectedProcesoOG,
+    objetivoespecificoog: selectedObjetivoEspecifico,
     indicadoroe: selectedIndicadorOE,
     resultadooe: selectedResultadoOE,
-    indicadorresultadooe: selectedIndicadorResultadoOE,
-    procesooe: selectedProcesoOE,
-    productoe: selectedProductoOE,
-    procesoproductoe: selectedProcesoProductoOE,
+    indicadorroe: selectedIndicadorResultadoOE,
+    procesoroe: selectedProcesoOE,
+    productooe: selectedProductoOE,
+    procesopoe: selectedProcesoProductoOE,
   }
 
   for (const tipo in selecciones) {
@@ -684,7 +684,7 @@ const confirmarCreacion = async () => {
   const actividadCompleta = {
     codigo: nuevaActividad.value.codigo,
     nombreCorto: nuevaActividad.value.titulo,
-    estado: 'CRD',
+    estado: 'PLAN',
     estructuraProcedencia: {
       datosProcedencia: collectedData.value,
       nodosRelacionados: proyectoStore.nodosVinculadosActividad,

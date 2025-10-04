@@ -10,31 +10,22 @@
         ></v-icon>
         <div class="activity-title-container">
           <div class="d-flex align-center">
-            <h3 class="text-h6 font-weight-bold activity-title mr-2">ACT-2023-005</h3>
-            <v-chip
-              prepend-icon="mdi-progress-check"
-              color="green"
-              size="x-small"
-              class="status-chip"
-            >
-              En Ejecución
+            <h3 class="text-h6 font-weight-bold activity-title mr-2">
+              {{ actividad.codigo }}
+            </h3>
+            <v-chip :color="estadoColor(actividad.estado)" size="x-small" class="status-chip">
+              {{ actividad.estado }}
             </v-chip>
           </div>
           <div class="text-caption text-medium-emphasis activity-subtitle">
-            Capacitación en gestión de proyectos para equipos técnicos
+            {{ actividad.descripcion }}
           </div>
         </div>
         <v-spacer></v-spacer>
-
-        <!-- Chips compactos de tipos -->
         <div class="d-flex">
           <v-chip class="ml-1" color="indigo-lighten-4" density="compact" size="x-small">
             <v-icon start icon="mdi-school" size="x-small"></v-icon>
-            Capacitación
-          </v-chip>
-          <v-chip class="ml-1" color="indigo-lighten-4" density="compact" size="x-small">
-            <v-icon start icon="mdi-link" size="x-small"></v-icon>
-            Articulación
+            {{ actividad.tipo }}
           </v-chip>
         </div>
       </div>
@@ -45,21 +36,27 @@
         <v-col cols="12" sm="6">
           <div class="d-flex align-center mb-1">
             <v-icon icon="mdi-calendar" class="mr-1" size="x-small"></v-icon>
-            <span class="text-caption"><strong>Programada:</strong> 15/05/2023</span>
+            <span class="text-caption"
+              ><strong>Programada:</strong> {{ actividad.fecha_programada }}</span
+            >
           </div>
           <div class="d-flex align-center mb-1">
             <v-icon icon="mdi-account" class="mr-1" size="x-small"></v-icon>
-            <span class="text-caption"><strong>Responsable:</strong> María González</span>
+            <span class="text-caption"
+              ><strong>Responsable:</strong> {{ actividad.responsable }}</span
+            >
           </div>
         </v-col>
         <v-col cols="12" sm="6">
           <div class="d-flex align-center mb-1">
             <v-icon icon="mdi-finance" class="mr-1" size="x-small"></v-icon>
-            <span class="text-caption"><strong>Presupuesto:</strong> $2,500.00</span>
+            <span class="text-caption"
+              ><strong>Presupuesto:</strong> ${{ actividad.presupuesto }}</span
+            >
           </div>
           <div class="d-flex align-center mb-1">
             <v-icon icon="mdi-calendar-end" class="mr-1" size="x-small"></v-icon>
-            <span class="text-caption"><strong>Cierre:</strong> 30/06/2023</span>
+            <span class="text-caption"><strong>Cierre:</strong> {{ actividad.fecha_cierre }}</span>
           </div>
         </v-col>
       </v-row>
@@ -68,17 +65,57 @@
 </template>
 
 <script setup>
-// Datos dummy
-const dummyData = {
-  codigo: 'ACT-2023-005',
-  descripcion: 'Capacitación en gestión de proyectos para equipos técnicos de las áreas regionales',
-  estado: 'EJEC',
-  tipo: [{ nombre: 'Actividad de Capacitación' }, { nombre: 'Actividad de Articulación' }],
-  fecha_programada: '2023-05-15',
-  fecha_cierre: '2023-06-30',
-  responsable: { nombre: 'María González' },
-  presupuesto: 2500,
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+
+const props = defineProps({
+  actividadId: {
+    type: [Number, String],
+    required: true,
+  },
+})
+
+console.log('Actividad ID desde props:', props.actividadId)
+
+// 1. Define una variable reactiva para guardar los datos de la actividad
+const actividad = ref({})
+
+// 2. Función para determinar el color del chip según el estado
+function estadoColor(estado) {
+  switch (estado) {
+    case 'Planificada':
+      return 'blue-lighten-1'
+    case 'En Ejecución':
+      return 'green-darken-1'
+    case 'Cerrada':
+      return 'grey'
+    default:
+      return 'orange'
+  }
 }
+
+// 3. Función asíncrona para hacer la llamada a la API
+async function obtenerDatosActividad() {
+  const url = 'http://127.0.0.1:8000/actividades_api/obtenerEncabezadoActividadId/'
+  const data = {
+    actividad_id: props.actividadId,
+  }
+  try {
+    const response = await axios.post(url, data)
+    console.log('response', response.data)
+    // 4. Actualiza la variable reactiva con los datos de la respuesta
+    actividad.value = response.data
+  } catch (error) {
+    console.error('Error al obtener los datos de la actividad:', error)
+  }
+}
+
+// 5. Usa onMounted para llamar a la función cuando el componente se renderiza
+onMounted(() => {
+  if (props.actividadId) {
+    obtenerDatosActividad()
+  }
+})
 </script>
 
 <style scoped>

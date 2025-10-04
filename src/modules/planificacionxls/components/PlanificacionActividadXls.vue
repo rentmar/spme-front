@@ -1,10 +1,10 @@
 <template>
   <div v-if="selectedRowData">
-    <TrazadorActividad
+    <!-- <TrazadorActividad
       :tabla-data-disponible="tablaDataDisponible"
       :actividad-id="selectedRowData.id"
-    ></TrazadorActividad>
-    <ActividadRelacionEstructura></ActividadRelacionEstructura>
+    ></TrazadorActividad> -->
+    <!-- <ActividadRelacionEstructura></ActividadRelacionEstructura> -->
   </div>
   <div class="hot-wrapper" v-if="!isLoading">
     <div class="content-wrapper">
@@ -82,7 +82,7 @@
               </v-card-text>
             </v-card>
           </v-dialog>
-          <v-tooltip text="Agregar nueva actividad Variante" location="bottom">
+          <!-- <v-tooltip text="Agregar nueva actividad Variante" location="bottom">
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
@@ -94,7 +94,7 @@
                 <v-icon size="18">mdi-clipboard-text-outline</v-icon>
               </v-btn>
             </template>
-          </v-tooltip>
+          </v-tooltip> -->
 
           <v-dialog v-model="mostrarModalActividadVariante" fullscreen>
             <v-card>
@@ -219,7 +219,7 @@
               </template>
             </v-tooltip>
 
-            <v-tooltip text="Seleccion de indicadores" location="bottom">
+            <!-- <v-tooltip text="Seleccion de indicadores" location="bottom">
               <template v-slot:activator="{ props }">
                 <v-btn
                   v-bind="props"
@@ -235,7 +235,7 @@
                   Estructura
                 </v-btn>
               </template>
-            </v-tooltip>
+            </v-tooltip> -->
 
             <!----Componente Presupuesto-->
             <ComponentPresupuesto
@@ -400,6 +400,8 @@ import { usePlanificacionStore } from '../store/usePlanificacionStore'
 import { storeToRefs } from 'pinia'
 import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
 import ActividadRelacionEstructura from './parciales/ActividadRelacionEstructura.vue'
+// Importaciones para Excel
+import * as XLSX from 'xlsx'
 
 // Props del componente
 const props = defineProps({
@@ -743,9 +745,92 @@ const eliminarFila = async () => {
 }
 
 const exportarExcel = async () => {
-  mostrarMensaje('Funcionalidad de exportación en desarrollo', 'info')
+  try {
+    mostrarMensaje('Preparando exportación a Excel...', 'info')
+
+    // Crear un libro de trabajo
+    const wb = XLSX.utils.book_new()
+
+    // Preparar los datos para exportar
+    const datosExportar = prepararDatosParaExportar()
+
+    // Crear hoja de trabajo
+    const ws = XLSX.utils.json_to_sheet(datosExportar)
+    // Añadir la hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Planificación')
+
+    // Generar el archivo Excel
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+
+    // Crear blob y descargar
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    })
+    // Nombre del archivo con fecha
+    const fecha = new Date().toISOString().split('T')[0]
+    const nombreArchivo = `Planificación_${props.proyecto.codigo}_${fecha}.xlsx`
+
+    // Generar archivo Excel
+    XLSX.writeFile(wb, `planificacion-proyecto'}-${new Date().toISOString().slice(0, 10)}.xlsx`)
+  } catch (error) {
+    console.error('Error al exportar a Excel:', error)
+  }
 }
 
+// Función para preparar los datos para exportar
+const prepararDatosParaExportar = () => {
+  // Mapear los datos de la tabla a un formato más amigable para Excel
+  return tableData.value.map((fila, index) => {
+    return {
+      Nº: index + 1,
+      ID: fila.id || '',
+      Código: fila.codigo || '',
+      Nombre: fila.nombreCorto || '',
+      'Tipo de Actividad': obtenerNombreTipoActividad(fila.tipo),
+      Responsable: fila.responsable || '',
+      'Fecha Inicio': formatearFechaExcel(fila.fecha_inicio),
+      'Fecha Cierre': formatearFechaExcel(fila.fecha_cierre),
+      Supuestos: fila.supuestos || '',
+      Riesgos: fila.riesgos || '',
+      Presupuesto: fila.presupuesto || 0,
+      'Presupuesto Global': fila.presupuestoGlobal || 0,
+      'Total Reportado': fila.totalReportado || 0,
+      'Total Ejecutado': fila.totalEjecutado || 0,
+      Saldo: fila.saldo || 0,
+      'Grado Ejecución': fila.gradoEjecucion || '',
+      'Objetivo PEI': fila.objetivo_pei || '',
+      'Indicador PEI': fila.indicador_pei || '',
+      Estado: obtenerEstadoTexto(fila.estado),
+    }
+  })
+}
+const formatearFechaExcel = (fecha) => {
+  if (!fecha) return ''
+  return new Date(fecha).toLocaleDateString('es-ES')
+}
+
+// Función para obtener texto del estado
+const obtenerEstadoTexto = (estado) => {
+  const estados = {
+    CRD: 'Creado',
+    PLN: 'Planificado',
+    EJE: 'En Ejecución',
+    FIN: 'Finalizado',
+    CAN: 'Cancelado',
+  }
+  return estados[estado] || estado
+}
+// Función auxiliar para obtener el nombre completo del tipo de actividad
+const obtenerNombreTipoActividad = (tipo) => {
+  if (!tipo) return ''
+
+  // Buscar en los tipos de actividad del store
+  const tipoEncontrado = storePlanificacion.listaTiposAct.find(
+    (t) => t.sigla === tipo || t.codigo === tipo,
+  )
+
+  return tipoEncontrado ? `${tipoEncontrado.sigla} - ${tipoEncontrado.tipo_actividad}` : tipo
+}
 const getActivityIcon = (tipos) => {
   const iconMap = {
     ACAP: 'mdi-school-outline',
@@ -793,7 +878,7 @@ const columns = ref([
     width: 250,
     source: function (query, process) {
       const tipos = storePlanificacion.listaTiposAct
-      const siglas = tipos ? tipos.map((t) => t.sigla + '-' + t.tipo_actividad) : []
+      const siglas = tipos ? tipos.map((t) => t.sigla + ' - ' + t.tipo_actividad) : []
       process(siglas)
     },
   },

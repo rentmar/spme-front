@@ -451,7 +451,8 @@
       </v-row>
     </div>
   </v-container>
-  <!-- {{ formData.fuente_financiamiento }}
+  <!-- {{ usuario }} -->
+   <!-- {{ formData.fuente_financiamiento }}
   {{ '*******************' }} -->
    <!-- {{ numeroFormularioSF }} -->
   <!-- <pre>{{ datosFormulario }}</pre> -->
@@ -462,6 +463,7 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import {useUserStore} from '@/stores/user';
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -515,6 +517,14 @@ const formData = ref({
 const idSolicitudFondos = ref(null)
 const numeroFormularioSF = ref(null)
 // Nuevo estado para controlar el bloqueo
+
+ const userStore = useUserStore();
+ const usuario = computed(() => {
+ return {
+ 	nombre: userStore.usuario,
+ 	role: userStore.rol,
+   };
+ });
 
 const actividadData = ref({
   codigo: 'ACT-2023-005',
@@ -583,7 +593,12 @@ watch(
         formData.value.fecha_irealizacion = newVal.actividad.fecha_inicio || ''
         formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
         formData.value.id_actividad = newVal.actividad.id || 0
-        formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
+        //formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
+        if (newVal.actividad.procedencia_fondos) {
+  formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(item => item.nombre);
+} else {
+  formData.value.fuente_financiamiento = [];
+}
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
           console.log('Formas de pago disponibles:', newVal.formaPago)
@@ -625,6 +640,23 @@ const formasPagoTexto = computed(() => {
   return ''
 })
 
+const fuente_financiamiento0 = ref();
+const filtrarProcedenciaFondos = () => {
+  if (datosFormulario.value.actividad && datosFormulario.value.actividad.procedencia_fondos) {
+    fuente_financiamiento0.value = datosFormulario.value.actividad.procedencia_fondos.map(
+      (item) => item.nombre
+    );
+  }
+};
+
+watch(datosFormulario, (newVal) => {
+  if (newVal) {
+    filtrarProcedenciaFondos();
+  }
+}, { immediate: true });
+
+
+
 // Métodos
 function getNombreCompleto(user) {
   return `${user.nombre} ${user.paterno} ${user.materno}`.trim()
@@ -649,7 +681,7 @@ async function cargarDatos() {
       },
       body: JSON.stringify({
         id_actividad: idActividad,
-        usuario: 'chave',
+        usuario: usuario.value.nombre,
       }),
     })
 

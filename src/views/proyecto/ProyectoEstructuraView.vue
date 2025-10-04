@@ -21,7 +21,7 @@
           </v-toolbar>
 
           <!-- Contenedor del diagrama -->
-          <v-card-text style="height: 900px; position: relative">
+          <v-card-text style="height: 1000px; position: relative">
             <template v-if="!cargandoGeneral && proyecto">
               <EditorEstructuraMain></EditorEstructuraMain>
             </template>

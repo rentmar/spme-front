@@ -144,11 +144,11 @@
                       </template>
                     </v-tooltip>
 
-                    <!-- Solicitud de Viaje -->
+                    <!-- Solicitud de Viaje cambiado de 1 a 5-->
                     <v-tooltip text="Solicitud de Viaje" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
-                          v-if="parseInt($route.query.showButton) === 1"
+                          v-if="parseInt($route.query.showButton) === 5"
                           v-bind="props"
                           icon="mdi-bag-suitcase"
                           variant="text"
@@ -160,11 +160,11 @@
                       </template>
                     </v-tooltip>
 
-                    <!-- Solicitud de Pago Directo -->
+                    <!-- Solicitud de Pago Directo cambiado de 1 a 5-->
                     <v-tooltip text="Solicitud de Pago Directo" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
-                          v-if="parseInt($route.query.showButton) === 1"
+                          v-if="parseInt($route.query.showButton) === 5"
                           v-bind="props"
                           icon="mdi-credit-card-check"
                           variant="text"
@@ -288,11 +288,11 @@
                                   </template>
                                 </v-tooltip>
 
-                                <!-- Solicitud de Viaje para TAREA -->
+                                <!-- Solicitud de Viaje para TAREA se cambio de 1 a 5-->
                                 <v-tooltip text="Solicitud de Viaje" location="top">
                                   <template v-slot:activator="{ props }">
                                     <v-btn
-                                      v-if="parseInt($route.query.showButton) === 1"
+                                      v-if="parseInt($route.query.showButton) === 5"
                                       v-bind="props"
                                       icon="mdi-bag-suitcase"
                                       variant="text"
@@ -304,11 +304,11 @@
                                   </template>
                                 </v-tooltip>
 
-                                <!-- Solicitud de Pago Directo para TAREA -->
+                                <!-- Solicitud de Pago Directo para TAREA se cambio de 1 a 5-->
                                 <v-tooltip text="Solicitud de Pago Directo" location="top">
                                   <template v-slot:activator="{ props }">
                                     <v-btn
-                                      v-if="parseInt($route.query.showButton) === 1"
+                                      v-if="parseInt($route.query.showButton) === 5"
                                       v-bind="props"
                                       icon="mdi-credit-card-check"
                                       variant="text"
@@ -572,14 +572,12 @@
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue'
 import { useActividad } from '@/modules/proyecto/composables/useActividad'
-
+import { tareasServicios } from '@/modules/proyecto/services/tareasService'
 const {
   actividadesTareas,
   actividadTarea: actividadesFromApi,
   actividades,
-  crearTareaEnActividad,
-  actualizarTareaEnActividad,
-  eliminarTareaDeActividad,
+
 } = useActividad()
 
 // const formData = ref({
@@ -869,73 +867,81 @@ const openTareaDialog = (actividadId, tarea = null) => {
   }
   tareaDialog.value = true
 }
+const pruebaBloqueo = ref(false)
 
 const saveTarea = async () => {
+
+
   const { valid } = await tareaFormRef.value.validate()
   if (!valid) return
 
   loading.value = true
   try {
-    const tareaData = {
-      titulo: tareaForm.value.titulo,
-      descripcion: tareaForm.value.descripcion,
-      estado: tareaForm.value.estado,
-    }
+     const tareaData = {
+       titulo: tareaForm.value.titulo,
+       descripcion: tareaForm.value.descripcion,
+       estado: tareaForm.value.estado,
+       actividad: actividadIdParaTarea.value
+     }
+     console.log('Datos de tarea a guardar:', tareaData)
 
-    let resultado
+     let resultado
 
-    if (isEditandoTarea.value) {
-      resultado = await actualizarTareaEnActividad(
-        actividadIdParaTarea.value,
-        tareaForm.value.id,
-        tareaData,
-      )
+     if (isEditandoTarea.value) {
+       /*resultado = await actualizarTareaEnActividad(
+         actividadIdParaTarea.value,
+         tareaForm.value.id,
+         tareaData,
+       )*/
+      resultado = await tareasServicios.update(tareaForm.value.id, tareaData)
 
-      const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
-      if (actividad && actividad.tareas) {
-        const tareaIndex = actividad.tareas.findIndex((t) => t.id === tareaForm.value.id)
-        if (tareaIndex !== -1) {
-          const tareaActualizada = {
-            ...resultado,
-            estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
-          }
-          actividad.tareas[tareaIndex] = tareaActualizada
-        }
-      }
 
-      mostrarSnackbar('Tarea actualizada con éxito', 'success')
-    } else {
-      resultado = await crearTareaEnActividad(actividadIdParaTarea.value, tareaData)
+       const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
+       if (actividad && actividad.tareas) {
+         const tareaIndex = actividad.tareas.findIndex((t) => t.id === tareaForm.value.id)
+         if (tareaIndex !== -1) {
+           const tareaActualizada = {
+             ...resultado,
+             estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
+           }
+           actividad.tareas[tareaIndex] = tareaActualizada
+         }
+       }
 
-      const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
-      if (actividad) {
-        if (!actividad.tareas) {
-          actividad.tareas = []
-        }
-        const nuevaTarea = {
-          ...resultado,
-          estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
-        }
-        actividad.tareas.push(nuevaTarea)
-      }
+       mostrarSnackbar('Tarea actualizada con éxito', 'success')
+     } else {
+       console.log('Tarea creada:', actividadIdParaTarea)
+       //resultado = await crearTareaEnActividad(tareaData)
+        resultado = await tareasServicios.crear(tareaData)
+       const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
+       if (actividad) {
+         if (!actividad.tareas) {
+           actividad.tareas = []
+         }
+         const nuevaTarea = {
+           ...resultado,
+           estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
+         }
+         actividad.tareas.push(nuevaTarea)
+       }
 
-      mostrarSnackbar('Tarea creada con éxito', 'success')
-    }
-  } catch (error) {
-    console.error('Error al guardar tarea:', error)
-    mostrarSnackbar(
-      'Error al guardar tarea: ' +
-        (error.response?.data?.message || error.message || 'Error desconocido'),
-      'error',
-    )
-  } finally {
-    loading.value = false
-    tareaDialog.value = false
-    await nextTick()
-    if (tareaFormRef.value) {
-      tareaFormRef.value.reset()
-    }
-  }
+       mostrarSnackbar('Tarea creada con éxito', 'success')
+     }
+   } catch (error) {
+     console.error('Error al guardar tarea:', error)
+     mostrarSnackbar(
+       'Error al guardar tarea: ' +
+         (error.response?.data?.message || error.message || 'Error desconocido'),
+       'error',
+     )
+   } finally {
+     loading.value = false
+     tareaDialog.value = false
+     await nextTick()
+     if (tareaFormRef.value) {
+       tareaFormRef.value.reset()
+     }
+   }
 }
 
 const confirmDeleteTarea = (actividadId, tarea) => {
@@ -947,8 +953,9 @@ const confirmDeleteTarea = (actividadId, tarea) => {
 const deleteTarea = async () => {
   loading.value = true
   try {
-    await eliminarTareaDeActividad(actividadIdParaEliminarTarea.value, tareaToDelete.value.id)
+    //await eliminarTareaDeActividad(actividadIdParaEliminarTarea.value, tareaToDelete.value.id)
 
+    await tareasServicios.del( tareaToDelete.value.id)
     const actividad = actividades.value.find((a) => a.id === actividadIdParaEliminarTarea.value)
     if (actividad && actividad.tareas) {
       actividad.tareas = actividad.tareas.filter((t) => t.id !== tareaToDelete.value.id)

@@ -57,7 +57,7 @@ export const tareasServicios = {
   },
 
   /* Eliminar tarea */
-  delete: async (id) => {
+  del: async (id) => {
     try {
       const respuesta = await api.delete('/tareas-actividad/' + id + '/')
       return respuesta.data

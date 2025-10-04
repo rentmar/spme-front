@@ -1,9 +1,27 @@
 <template>
   <v-container class="v-container v-locale--is-ltr">
     <v-card id="formulario-pdf" class="pa-6">
-      <v-card-title class="text-h5 font-weight-bold">
+      <!-- <v-card-title class="text-h5 font-weight-bold">
         Formulario F-05:<br> Solicitud de Viaje (Participación en Eventos)
-      </v-card-title>
+      </v-card-title> -->
+
+      <PaginaTituloIcono
+        :titulo="'Solicitud de Viaje'"
+        :icon="'mdi-file-document-multiple'"
+      ></PaginaTituloIcono>
+      <br />
+      <ProyectoIdHeader
+        v-if="datosFormulario"
+        :proyecto-id="datosFormulario.actividad.proyecto"
+      ></ProyectoIdHeader>
+
+       <br />
+      <ActividadInformacion
+        v-if="idActividad"
+        :actividad-id="idActividad"
+      ></ActividadInformacion>
+      <br />
+
       <v-card-text>
         <v-form @submit.prevent="submitForm">
           <div class="form-section">
@@ -252,15 +270,29 @@
       </v-card-text>
     </v-card>
   </v-container>
+  <pre>{{ datosFormulario }}</pre>
 </template>
 
 <script setup>
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
+
+import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
+import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
+import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const idActividad = route.params.id || null
+const idTarea = route.query.tarea_id || null
+console.log('ID de Actividad:', idActividad)
+console.log('ID de Tarea:', idTarea)
+
 
 // ===================================
 //  COMPOSABLES
@@ -274,7 +306,18 @@ const loading = ref(false);
 const paymentMethods = ['Cuenta de Banco', 'Cheque'];
 const responsablesList = ref([]);
 const coordinadoresList = ref([]);
+
+const cargandoGeneral = ref(true)
+
+//variables para carga de datos
+const datosFormulario = ref(null)
+const error = ref(null)
+const isLoading = ref(false)
+
 const formData = ref({
+  nombre: '',
+  paterno: '',
+  materno: '',
   evento: '',
   fecha_inicio: '',
   fecha_fin: '',
@@ -282,7 +325,6 @@ const formData = ref({
   instituciones_participantes: '',
   institucion_queinvita: '',//organizador
   quien_cubregastos: '',
-  //fondos_unitas:''
   justificacion_asistencia: '',
   tareas_previas: '',
   detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],//
@@ -322,9 +364,9 @@ const totalMontoSolicitado = computed(() => {
 });
 
 const nombreCompletoSolicitante = computed(() => {
-  const nombre = usuario.value?.nombre || '';
-  const paterno = usuario.value?.paterno || '';
-  const materno = usuario.value?.materno || '';
+  const nombre = datosFormulario.usuario.nombre || '';
+  const paterno = datosFormulario.value?.paterno || '';
+  const materno = datosFormulario.value?.materno || '';
   return `${nombre} ${paterno} ${materno}`.trim();
 });
 
@@ -334,6 +376,58 @@ const isFrozen = computed(() => {
   }
   return true;
 });
+
+watch(
+  datosFormulario,
+  (newVal) => {
+    if (newVal && newVal.usuario) {
+      console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
+
+      const usuario = newVal.usuario
+
+      // Llenar campos del usuario
+      formData.value.nombre = usuario.nombre || ''
+      formData.value.paterno = usuario.paterno || ''
+      formData.value.materno = usuario.materno || ''
+      // formData.value.cargo = usuario.cargo || ''
+      // formData.value.documento_identidad = usuario.ci || ''
+      // formData.value.id_usuario = usuario.id || 0
+
+      // Llenar campos de la actividad si existen
+      // if (newVal.actividad) {
+      //   console.log('Auto-llenando datos de actividad:', newVal.actividad)
+
+      //   formData.value.descripcion_actividad = newVal.actividad.descripcion || ''
+      //   formData.value.objetivo_actividad = newVal.actividad.objetivo_de_actividad || ''
+      //   formData.value.fecha_irealizacion = newVal.actividad.fecha_inicio || ''
+      //   formData.value.fecha_frealizacion = newVal.actividad.fecha_cierre || ''
+      //   formData.value.id_actividad = newVal.actividad.id || 0
+      //   formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos || ''
+
+
+      //   if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
+      //     console.log('Formas de pago disponibles:', newVal.formaPago)
+      //   }
+
+      //   // También actualizar actividadData para el componente ActividadInformacion
+      //   actividadData.value = {
+      //     ...actividadData.value,
+      //     descripcion: newVal.actividad.descripcion || actividadData.value.descripcion,
+      //     fecha_programada: newVal.actividad.fecha_inicio || actividadData.value.fecha_programada,
+      //     fecha_cierre: newVal.actividad.fecha_cierre || actividadData.value.fecha_cierre,
+      //   }
+      // }
+
+      // Llenar lista de validadores si existen
+      // if (newVal.validadores && Array.isArray(newVal.validadores)) {
+      //   console.log('Cargando validadores:', newVal.validadores)
+      //   responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
+      //   coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
+      // }
+    }
+  },
+  { deep: true },
+)
 
 // ===================================
 //  MÉTODOS
@@ -361,6 +455,40 @@ async function prefillFormData(nick) {
     }
   } catch (err) {
     console.error('Error al pre-llenar los datos del usuario:', err);
+  }
+}
+
+async function cargarDatos() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/obtener-datos-formulario/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_actividad: 1,//idActividad,
+        usuario: 'chave',//usuario.value.nombre,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+      )
+    }
+
+    const data = await response.json()
+    datosFormulario.value = data
+    console.log('Datos cargados exitosamente:', datosFormulario.value)
+  } catch (err) {
+    error.value = err.message
+    console.error('Ha ocurrido un error:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
   }
 }
 
@@ -557,8 +685,9 @@ async function generatePDFFromHTML() {
 // ===================================
 onMounted(async () => {
   await fetchUsers();
-  await fetchActivityData();
+  //await fetchActivityData();
   await prefillFormData('ACarvajal');
+  cargarDatos()
 });
 </script>
 
