@@ -5,7 +5,7 @@
     <v-textarea
       v-if="objetivogeneral"
       v-model="caberaContribucion.objetivogeneral.data.contribucion"
-      hint="Contribución del objetivo general"
+      hint="Contribución al objetivo general"
       clearable
       variant="outlined"
       class="custom-textarea"
@@ -18,7 +18,7 @@
     <v-textarea
       v-if="objetivoespecifico"
       v-model="caberaContribucion.objetivoespecifico.data.contribucion"
-      hint="Contribución del objetivo específico proyecto"
+      hint="Contribución al objetivo específico proyecto"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -30,7 +30,7 @@
     <v-textarea
       v-if="objetivoespecificoog"
       v-model="caberaContribucion.objetivoespecificoog.data.contribucion"
-      hint="Contribución del objetivo específico OG"
+      hint="Contribución al objetivo específico OG"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -43,7 +43,7 @@
       v-if="resultadoog"
       v-model="caberaContribucion.resultadoog.data.contribucion"
       :label="getLabel('resultadoog')"
-      hint="Contribución del resultado OG"
+      hint="Contribución al resultado OG"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -55,7 +55,7 @@
     <v-textarea
       v-if="resultadooe"
       v-model="caberaContribucion.resultadooe.data.contribucion"
-      hint="Contribución del resultado OE"
+      hint="Contribución al resultado OE"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -67,7 +67,7 @@
     <v-textarea
       v-if="productooe"
       v-model="caberaContribucion.productooe.data.contribucion"
-      hint="Contribución del producto OE"
+      hint="Contribución al producto OE"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -79,7 +79,7 @@
     <v-textarea
       v-if="productoroe"
       v-model="caberaContribucion.productoroe.data.contribucion"
-      hint="Contribución del producto ROE"
+      hint="Contribución al producto ROE"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -91,7 +91,7 @@
     <v-textarea
       v-if="producto"
       v-model="caberaContribucion.producto.data.contribucion"
-      hint="Contribución del producto"
+      hint="Contribución al producto"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -438,6 +438,4 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* Estilos para solucionar el problema de etiquetas recortadas */
-</style>
+<style scoped></style>

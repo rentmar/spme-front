@@ -157,7 +157,7 @@
                       <v-card-text class="pt-4">
                         <div class="d-flex justify-space-between align-center mb-4">
                           <span class="text-subtitle-1"
-                            >Subactividad de {{ actividad.codigo }}</span
+                            >Subactividades de {{ actividad.codigo }}</span
                           >
                           <div class="d-flex align-center">
                             <v-btn
@@ -170,74 +170,171 @@
                             </v-btn>
                           </div>
                         </div>
+
+                        <!-- Lista de subactividades mejorada -->
                         <v-list density="compact" class="py-0">
                           <v-list-item
-                            v-for="tarea in actividad.tareas"
+                            v-for="tarea in actividad.tareasOrdenadas"
                             :key="`tarea-${actividad.id}-${tarea.id}`"
-                            class="mb-1"
+                            class="mb-2 pa-3"
                           >
-                            <v-list-item-title>
-                              {{ tarea.titulo || tarea.descripcion || 'Subactividad sin título' }}
-                            </v-list-item-title>
                             <template v-slot:prepend>
-                              <v-icon :color="getStatusColorTarea(tarea.estado)">
-                                mdi-checkbox-blank-circle
-                              </v-icon>
+                              <v-badge
+                                :color="getStatusColorTarea(tarea.estado)"
+                                dot
+                                location="bottom end"
+                                offset-x="-5"
+                                offset-y="-5"
+                              >
+                                <v-avatar
+                                  size="40"
+                                  :color="getStatusColorTarea(tarea.estado) + ' lighten-4'"
+                                >
+                                  <v-icon :color="getStatusColorTarea(tarea.estado)">
+                                    {{ getTareaIcon(tarea.estado) }}
+                                  </v-icon>
+                                </v-avatar>
+                              </v-badge>
                             </template>
+
+                            <v-list-item-title class="font-weight-medium mb-1">
+                              {{ tarea.titulo || tarea.descripcion || 'Subactividad sin título' }}
+                              <v-chip
+                                v-if="tarea.codigo"
+                                small
+                                color="primary"
+                                variant="outlined"
+                                class="ml-2"
+                              >
+                                {{ tarea.codigo }}
+                              </v-chip>
+                            </v-list-item-title>
+
+                            <v-list-item-subtitle>
+                              <div class="d-flex flex-wrap align-center gap-2 mt-1">
+                                <!-- Estado -->
+                                <v-chip
+                                  small
+                                  :color="getStatusColorTarea(tarea.estado)"
+                                  text-color="white"
+                                  class="text-caption"
+                                >
+                                  {{ getEstadoTareaDisplay(tarea.estado) }}
+                                </v-chip>
+
+                                <!-- Presupuesto -->
+                                <span class="text-caption">
+                                  <v-icon small class="mr-1">mdi-cash</v-icon>
+                                  {{ formatCurrency(tarea.presupuesto) }}
+                                </span>
+
+                                <!-- Fechas -->
+                                <span v-if="tarea.fecha_creacion" class="text-caption">
+                                  <v-icon small class="mr-1">mdi-calendar-start</v-icon>
+                                  {{ formatDate(tarea.fecha_creacion) }}
+                                </span>
+
+                                <span v-if="tarea.fecha_limite" class="text-caption">
+                                  <v-icon small class="mr-1">mdi-calendar-end</v-icon>
+                                  {{ formatDate(tarea.fecha_limite) }}
+                                </span>
+
+                                <!-- Días restantes -->
+                                <span
+                                  v-if="tarea.fecha_limite"
+                                  class="text-caption"
+                                  :class="getDiasRestantesColor(tarea.fecha_limite)"
+                                >
+                                  <v-icon small class="mr-1">mdi-clock</v-icon>
+                                  {{ calcularDiasRestantes(tarea.fecha_limite) }}
+                                </span>
+                              </div>
+
+                              <!-- Descripción -->
+                              <div v-if="tarea.descripcion" class="text-caption mt-1 text-grey">
+                                {{ tarea.descripcion }}
+                              </div>
+                            </v-list-item-subtitle>
+
                             <template v-slot:append>
-                              <div class="d-flex">
-                                <!-- Separador visual -->
-                                <v-divider vertical inset class="mx-1 my-1"></v-divider>
+                              <div class="d-flex flex-column align-end gap-1">
+                                <!-- Acciones principales -->
+                                <div class="d-flex">
+                                  <!-- Informe de Subactividad -->
+                                  <v-tooltip text="Informe de Subactividad" location="top">
+                                    <template v-slot:activator="{ props }">
+                                      <v-btn
+                                        v-bind="props"
+                                        icon="mdi-file-document-outline"
+                                        variant="text"
+                                        color="info"
+                                        size="small"
+                                        :to="`/monitoreo/informe-subactividad/${tarea.id}`"
+                                        @click.stop
+                                      ></v-btn>
+                                    </template>
+                                  </v-tooltip>
 
-                                <!-- Informe de Actividad para TAREA -->
-                                <v-tooltip text="Informe de Subactividad" location="top">
-                                  <template v-slot:activator="{ props }">
-                                    <v-btn
-                                      v-bind="props"
-                                      icon="mdi-file-document-outline"
-                                      variant="text"
-                                      color="info"
-                                      size="small"
-                                      :to="`/monitoreo/informe-subactividad/${tarea.id}`"
-                                      @click.stop
-                                    ></v-btn>
-                                  </template>
-                                </v-tooltip>
+                                  <!-- Editar -->
+                                  <v-tooltip text="Editar subactividad" location="top">
+                                    <template v-slot:activator="{ props }">
+                                      <v-btn
+                                        v-bind="props"
+                                        icon="mdi-pencil"
+                                        variant="text"
+                                        color="warning"
+                                        size="small"
+                                        @click.stop="openTareaDialog(actividad.id, tarea)"
+                                      ></v-btn>
+                                    </template>
+                                  </v-tooltip>
 
-                                <!-- Separador visual -->
-                                <v-divider vertical inset class="mx-1 my-1"></v-divider>
+                                  <!-- Eliminar -->
+                                  <v-tooltip text="Eliminar Subactividad" location="top">
+                                    <template v-slot:activator="{ props }">
+                                      <v-btn
+                                        v-bind="props"
+                                        icon="mdi-delete"
+                                        variant="text"
+                                        color="error"
+                                        size="small"
+                                        @click.stop="confirmDeleteTarea(actividad.id, tarea)"
+                                      ></v-btn>
+                                    </template>
+                                  </v-tooltip>
+                                </div>
 
-                                <!-- Acciones de tarea -->
-                                <v-tooltip text="Editar subactividad" location="top">
-                                  <template v-slot:activator="{ props }">
-                                    <v-btn
-                                      v-bind="props"
-                                      icon="mdi-pencil"
-                                      variant="text"
-                                      color="warning"
-                                      size="small"
-                                      @click.stop="openTareaDialog(actividad.id, tarea)"
-                                    ></v-btn>
-                                  </template>
-                                </v-tooltip>
-                                <v-tooltip text="Eliminar Subactividad" location="top">
-                                  <template v-slot:activator="{ props }">
-                                    <v-btn
-                                      v-bind="props"
-                                      icon="mdi-delete"
-                                      variant="text"
-                                      color="error"
-                                      size="small"
-                                      @click.stop="confirmDeleteTarea(actividad.id, tarea)"
-                                    ></v-btn>
-                                  </template>
-                                </v-tooltip>
+                                <!-- Información adicional -->
+                                <div class="text-right">
+                                  <div class="text-caption text-grey">ID: {{ tarea.id }}</div>
+                                  <div
+                                    v-if="tarea.presupuestoDesglose"
+                                    class="text-caption text-info"
+                                  >
+                                    <v-icon x-small>mdi-format-list-bulleted</v-icon>
+                                    Con desglose
+                                  </div>
+                                </div>
                               </div>
                             </template>
                           </v-list-item>
+
                           <v-list-item v-if="!actividad.tareas || actividad.tareas.length === 0">
-                            <v-list-item-title class="text-grey text-caption">
-                              No hay Subactividades para esta actividad
+                            <v-list-item-title class="text-grey text-caption text-center py-4">
+                              <v-icon size="48" color="grey lighten-1" class="mb-2"
+                                >mdi-playlist-remove</v-icon
+                              >
+                              <div>No hay Subactividades para esta actividad</div>
+                              <v-btn
+                                color="primary"
+                                variant="text"
+                                size="small"
+                                @click="openTareaDialog(actividad.id)"
+                                class="mt-2"
+                              >
+                                <v-icon left>mdi-plus</v-icon>
+                                Crear la primera subactividad
+                              </v-btn>
                             </v-list-item-title>
                           </v-list-item>
                         </v-list>
@@ -303,6 +400,16 @@
 
             <v-list-item>
               <template v-slot:prepend>
+                <v-icon color="primary">mdi-playlist-check</v-icon>
+              </template>
+              <v-list-item-title>Total subactividades</v-list-item-title>
+              <v-list-item-subtitle class="text-right">
+                {{ totalSubactividades }}
+              </v-list-item-subtitle>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
                 <v-icon color="yellow">mdi-calendar-question</v-icon>
               </template>
               <v-list-item-title>Reprogramación</v-list-item-title>
@@ -345,52 +452,26 @@
       </v-col>
     </v-row>
 
-    <v-dialog v-model="tareaDialog" max-width="500">
-      <v-card>
-        <v-toolbar
-          color="secondary"
-          :title="isEditandoTarea ? 'Editar Tarea' : 'Nueva Subactividad'"
-        ></v-toolbar>
-        <v-card-text>
-          <v-form ref="tareaFormRef" @submit.prevent="saveTarea">
-            <v-text-field
-              v-model="tareaForm.titulo"
-              label="Título de la subactividad"
-              :rules="[(v) => !!v || 'El título es requerido']"
-              variant="outlined"
-              class="mt-4"
-            ></v-text-field>
-            <v-textarea
-              v-model="tareaForm.descripcion"
-              label="Descripción"
-              variant="outlined"
-              rows="2"
-            ></v-textarea>
-            <v-select
-              v-model="tareaForm.estado"
-              :items="availableStatusesTarea"
-              item-title="text"
-              item-value="value"
-              label="Estado"
-              variant="outlined"
-            ></v-select>
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="error" @click="tareaDialog = false">Cancelar</v-btn>
-          <v-btn color="success" @click="saveTarea">Guardar</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <!-- Diálogo de Tarea/Subactividad (Componente Reutilizable) -->
+    <DialogTarea
+      v-model="tareaDialog"
+      :actividad="actividadSeleccionada"
+      :tarea="tareaSeleccionada"
+      :cargando="cargandoTarea"
+      @guardar="guardarTarea"
+      @cancelar="cancelarTarea"
+    />
 
     <v-dialog v-model="deleteTareaDialog" max-width="400">
       <v-card>
-        <v-card-title class="text-h5">Confirmar eliminación de tarea</v-card-title>
+        <v-card-title class="text-h5">Confirmar eliminación</v-card-title>
         <v-card-text>
-          ¿Estás seguro de que deseas eliminar la tarea "{{
+          ¿Estás seguro de que deseas eliminar la subactividad "{{
             tareaToDelete?.titulo || tareaToDelete?.descripcion || 'Sin título'
           }}"?
+          <v-alert v-if="tareaToDelete?.codigo" type="warning" density="compact" class="mt-2">
+            Código: {{ tareaToDelete.codigo }}
+          </v-alert>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -410,11 +491,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useActividadStore } from '@/modules/proyecto/store/useActividadStore'
+import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
+import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 
-//Iniciar el store de actividades
+// Iniciar el store de actividades
 const storeActividad = useActividadStore()
+
+//Iniciar el composable de Subactividades
+const {
+  //loading: loadingTareas,
+  //error: errorTareas,
+  crearUnaTarea,
+  actualizarUnaTarea,
+  eliminarUnaTarea,
+} = useTareaSubactividad()
 
 // --- ESTADOS REACTIVOS ---
 const loading = ref(true)
@@ -430,10 +522,9 @@ const itemsPerPage = ref(10)
 
 // Diálogos y formularios de tareas
 const tareaDialog = ref(false)
-const tareaForm = ref({ id: null, titulo: '', descripcion: '', estado: 'PEN' })
-const actividadIdParaTarea = ref(null)
-const isEditandoTarea = ref(false)
-const tareaFormRef = ref(null)
+const actividadSeleccionada = ref(null)
+const tareaSeleccionada = ref(null)
+const cargandoTarea = ref(false)
 
 // Diálogos de eliminación
 const deleteTareaDialog = ref(false)
@@ -454,12 +545,6 @@ const availableStatuses = [
   { value: 'FIN', text: 'Finalizado' },
 ]
 
-const availableStatusesTarea = [
-  { text: 'Pendiente', value: 'PEN' },
-  { text: 'En Progreso', value: 'EPROG' },
-  { text: 'Completada', value: 'COMPL' },
-]
-
 // --- MÉTODOS Y COMPUTADAS ---
 
 // Carga inicial de datos
@@ -470,12 +555,7 @@ onMounted(async () => {
 const cargar = async () => {
   loading.value = true
   try {
-    // Simular carga de datos
-    await new Promise((resolve) => setTimeout(resolve, 1000))
     await storeActividad.cargarActividadesTareas()
-
-    // Usar datos dummy
-    //actividades.value = dummyData.actividades
     actividades.value = storeActividad.actividadesFiltradas
     emptyResponse.value = actividades.value.length === 0
   } catch (error) {
@@ -488,20 +568,18 @@ const cargar = async () => {
   }
 }
 
-// Función helper para mostrar notificaciones
-const mostrarSnackbar = (texto, color = 'success') => {
-  snackbar.value = {
-    show: true,
-    text: texto,
-    color: color,
-  }
-}
-
-// Lógica de filtros y paginación
+// Computed mejoradas para las actividades
 const filteredActividades = computed(() => {
   if (!Array.isArray(actividades.value)) return []
 
-  let filtered = [...actividades.value]
+  let filtered = actividades.value.map((actividad) => ({
+    ...actividad,
+    // Agregar computed property para tareas ordenadas
+    tareasOrdenadas: [...(actividad.tareas || [])].sort((a, b) => {
+      // Ordenar por ID descendente (más recientes primero)
+      return b.id - a.id
+    }),
+  }))
 
   // Filtrar por búsqueda
   if (searchQuery.value) {
@@ -510,9 +588,17 @@ const filteredActividades = computed(() => {
       (actividad) =>
         (actividad.codigo && actividad.codigo.toLowerCase().includes(query)) ||
         (actividad.nombreCorto && actividad.nombreCorto.toLowerCase().includes(query)) ||
-        (actividad.descripcion && actividad.descripcion.toLowerCase().includes(query)),
+        (actividad.descripcion && actividad.descripcion.toLowerCase().includes(query)) ||
+        (actividad.tareas &&
+          actividad.tareas.some(
+            (tarea) =>
+              (tarea.titulo && tarea.titulo.toLowerCase().includes(query)) ||
+              (tarea.descripcion && tarea.descripcion.toLowerCase().includes(query)) ||
+              (tarea.codigo && tarea.codigo.toLowerCase().includes(query)),
+          )),
     )
   }
+
   // Filtrar por estado
   if (statusFilters.value.length > 0) {
     filtered = filtered.filter((actividad) => statusFilters.value.includes(actividad.estado))
@@ -528,9 +614,20 @@ const actividadesPaginadas = computed(() => {
   return filteredActividades.value.slice(start, end)
 })
 
+const actividadesPaginadasOrdenadas = computed(() => {
+  if (!Array.isArray(actividadesPaginadas.value)) return []
+  return [...actividadesPaginadas.value].sort((a, b) => b.id - a.id)
+})
+
 const totalPages = computed(() => {
   if (!Array.isArray(filteredActividades.value)) return 0
   return Math.ceil(filteredActividades.value.length / itemsPerPage.value)
+})
+
+const totalSubactividades = computed(() => {
+  return filteredActividades.value.reduce((total, actividad) => {
+    return total + (actividad.tareas ? actividad.tareas.length : 0)
+  }, 0)
 })
 
 const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
@@ -549,74 +646,64 @@ const toggleExpanded = (id) => {
   expandedActividadId.value = expandedActividadId.value === id ? null : id
 }
 
-// --- CRUD TAREAS (simulado) ---
+// --- CRUD TAREAS ---
 const openTareaDialog = (actividadId, tarea = null) => {
-  isEditandoTarea.value = !!tarea
-  actividadIdParaTarea.value = actividadId
-  if (isEditandoTarea.value) {
-    Object.assign(tareaForm.value, {
-      id: tarea.id,
-      titulo: tarea.titulo,
-      descripcion: tarea.descripcion,
-      estado: tarea.estado,
-    })
-  } else {
-    Object.assign(tareaForm.value, { id: null, titulo: '', descripcion: '', estado: 'PEN' })
-  }
+  actividadSeleccionada.value = actividades.value.find((a) => a.id === actividadId)
+  tareaSeleccionada.value = tarea
   tareaDialog.value = true
 }
 
-const saveTarea = async () => {
-  const { valid } = await tareaFormRef.value.validate()
-  if (!valid) return
-
-  loading.value = true
+const guardarTarea = async (datosTarea) => {
+  cargandoTarea.value = true
   try {
-    // Simular guardado
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    if (tareaSeleccionada.value) {
+      //Actualizar la tarea en la rest api
+      const response = await actualizarUnaTarea(datosTarea.id, datosTarea)
 
-    if (isEditandoTarea.value) {
-      // Actualizar tarea existente
-      const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
+      //Actualizar en el estado local
+      const actividad = actividades.value.find((a) => a.id === actividadSeleccionada.value.id)
       if (actividad && actividad.tareas) {
-        const tareaIndex = actividad.tareas.findIndex((t) => t.id === tareaForm.value.id)
+        const tareaIndex = actividad.tareas.findIndex((t) => t.id === datosTarea.id)
         if (tareaIndex !== -1) {
           actividad.tareas[tareaIndex] = {
             ...actividad.tareas[tareaIndex],
-            ...tareaForm.value,
+            ...response, // Usar los datos actualizados del servidor
           }
         }
       }
-      mostrarSnackbar('Tarea actualizada con éxito', 'success')
+
+      mostrarSnackbar('Subactividad actualizada con éxito', 'success')
     } else {
-      // Crear nueva tarea
-      const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
+      //Crear nueva tarea
+      const response = await crearUnaTarea(datosTarea)
+
+      //Agregar al estado local
+      const actividad = actividades.value.find((a) => a.id === actividadSeleccionada.value.id)
       if (actividad) {
         if (!actividad.tareas) {
           actividad.tareas = []
         }
-        const nuevaTarea = {
-          id: Date.now(), // ID temporal
-          ...tareaForm.value,
-          fecha_creacion: new Date().toISOString(),
-          fecha_limite: new Date().toISOString().split('T')[0],
-          presupuesto: '0.00',
-        }
-        actividad.tareas.push(nuevaTarea)
+        //Insertar la respuesta
+        actividad.tareas.push(response)
       }
-      mostrarSnackbar('Tarea creada con éxito', 'success')
+      mostrarSnackbar('Subactividad creada con éxito', 'success')
     }
-  } catch (error) {
-    console.error('Error al guardar tarea:', error)
-    mostrarSnackbar('Error al guardar tarea', 'error')
+  } catch (err) {
+    console.error('Error al guardar subactividad', err)
+    mostrarSnackbar('Error al guardarSUbactividad', 'error')
   } finally {
-    loading.value = false
+    cargandoTarea.value = false
     tareaDialog.value = false
-    await nextTick()
-    if (tareaFormRef.value) {
-      tareaFormRef.value.reset()
-    }
+    //Limpiar las selecciones
+    actividadSeleccionada.value = null
+    tareaSeleccionada.value = null
   }
+}
+
+const cancelarTarea = () => {
+  tareaDialog.value = false
+  actividadSeleccionada.value = null
+  tareaSeleccionada.value = null
 }
 
 const confirmDeleteTarea = (actividadId, tarea) => {
@@ -628,65 +715,102 @@ const confirmDeleteTarea = (actividadId, tarea) => {
 const deleteTarea = async () => {
   loading.value = true
   try {
-    // Simular eliminación
     await new Promise((resolve) => setTimeout(resolve, 500))
+    await eliminarUnaTarea(tareaToDelete.value.id)
 
     const actividad = actividades.value.find((a) => a.id === actividadIdParaEliminarTarea.value)
     if (actividad && actividad.tareas) {
       actividad.tareas = actividad.tareas.filter((t) => t.id !== tareaToDelete.value.id)
     }
 
-    mostrarSnackbar('Tarea eliminada con éxito', 'success')
+    mostrarSnackbar('Subactividad eliminada con éxito', 'success')
   } catch (error) {
-    console.error('Error al eliminar tarea:', error)
-    mostrarSnackbar('Error al eliminar tarea', 'error')
+    console.error('Error al eliminar Subactividad:', error)
+    mostrarSnackbar('Error al eliminar Subactividad', 'error')
   } finally {
     loading.value = false
     deleteTareaDialog.value = false
   }
 }
 
-// Funciones auxiliares
+// Funciones auxiliares mejoradas
 const getStatusColor = (status) => {
-  switch (status) {
-    case 'CRD':
-      return 'grey'
-    case 'PLAN':
-      return 'light-blue'
-    case 'RETR':
-      return 'red'
-    case 'REPROG':
-      return 'yellow'
-    case 'EJEC':
-      return 'orange'
-    case 'REP':
-      return 'light-green'
-    case 'FIN':
-      return 'green'
-    default:
-      return 'grey'
+  const colors = {
+    CRD: 'grey',
+    PLAN: 'light-blue',
+    RETR: 'red',
+    REPROG: 'yellow',
+    EJEC: 'orange',
+    REP: 'light-green',
+    FIN: 'green',
   }
+  return colors[status] || 'grey'
 }
 
 const getTipoIcon = (status) => {
-  switch (status) {
-    case 'CRD':
-      return 'mdi-plus-circle'
-    case 'PLAN':
-      return 'mdi-calendar-check-outline'
-    case 'RETR':
-      return 'mdi-calendar-alert'
-    case 'REPROG':
-      return 'mdi-calendar-refresh'
-    case 'EJEC':
-      return 'mdi-calendar-arrow-right'
-    case 'REP':
-      return 'mdi-calendar-edit'
-    case 'FIN':
-      return 'mdi-calendar-done'
-    default:
-      return 'mdi-help-circle'
+  const icons = {
+    CRD: 'mdi-plus-circle',
+    PLAN: 'mdi-calendar-check-outline',
+    RETR: 'mdi-calendar-alert',
+    REPROG: 'mdi-calendar-refresh',
+    EJEC: 'mdi-calendar-arrow-right',
+    REP: 'mdi-calendar-edit',
+    FIN: 'mdi-calendar-done',
   }
+  return icons[status] || 'mdi-help-circle'
+}
+
+const getStatusColorTarea = (status) => {
+  const colors = {
+    PEN: 'grey',
+    EPROG: 'orange',
+    COMPL: 'green',
+  }
+  return colors[status] || 'grey'
+}
+
+const getTareaIcon = (status) => {
+  const icons = {
+    PEN: 'mdi-clock-outline',
+    EPROG: 'mdi-progress-clock',
+    COMPL: 'mdi-check-circle',
+  }
+  return icons[status] || 'mdi-help-circle'
+}
+
+const getEstadoTareaDisplay = (status) => {
+  const estados = {
+    PEN: 'Pendiente',
+    EPROG: 'En Progreso',
+    COMPL: 'Completada',
+  }
+  return estados[status] || status
+}
+
+const calcularDiasRestantes = (fechaLimite) => {
+  if (!fechaLimite) return 'Sin fecha'
+  const hoy = new Date()
+  const limite = new Date(fechaLimite)
+  const diffTime = limite - hoy
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  if (diffDays === 0) return 'Hoy'
+  if (diffDays === 1) return '1 día'
+  if (diffDays > 0) return `${diffDays} días`
+  return `Hace ${Math.abs(diffDays)} días`
+}
+
+const getDiasRestantesColor = (fechaLimite) => {
+  if (!fechaLimite) return 'text-grey'
+  const hoy = new Date()
+  const limite = new Date(fechaLimite)
+  const diffTime = limite - hoy
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 0) return 'text-error'
+  if (diffDays <= 3) return 'text-warning'
+  if (diffDays <= 7) return 'text-info'
+  return 'text-success'
 }
 
 const formatCurrency = (value) => {
@@ -695,34 +819,44 @@ const formatCurrency = (value) => {
   return !isNaN(numValue) ? `Bs. ${numValue.toFixed(2)}` : 'Bs. 0.00'
 }
 
-const getStatusColorTarea = (status) => {
-  switch (status) {
-    case 'PEN':
-      return 'grey'
-    case 'EPROG':
-      return 'warning'
-    case 'COMPL':
-      return 'success'
-    default:
-      return 'grey'
-  }
-}
-
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
   const date = new Date(dateString)
   return date.toLocaleDateString('es-ES')
 }
 
-const actividadesPaginadasOrdenadas = computed(() => {
-  if (!Array.isArray(actividadesPaginadas.value)) return []
-  return [...actividadesPaginadas.value].sort((a, b) => b.id - a.id)
-})
+const mostrarSnackbar = (texto, color = 'success') => {
+  snackbar.value = {
+    show: true,
+    text: texto,
+    color: color,
+  }
+}
 </script>
 
 <style scoped>
 .rotate-180 {
   transform: rotate(180deg);
   transition: transform 0.3s ease;
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+.text-error {
+  color: #f44336;
+}
+
+.text-warning {
+  color: #ff9800;
+}
+
+.text-info {
+  color: #2196f3;
+}
+
+.text-success {
+  color: #4caf50;
 }
 </style>

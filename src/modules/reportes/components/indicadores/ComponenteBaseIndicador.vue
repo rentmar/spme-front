@@ -37,26 +37,20 @@
 
               <v-list-item>
                 <template v-slot:prepend>
-                  <v-icon color="primary" size="small">mdi-target</v-icon>
-                </template>
-                <v-list-item-title class="text-body-2">{{
-                  datos.target_poblacion || 'No definido'
-                }}</v-list-item-title>
-                <v-list-item-subtitle class="text-caption">Target Población</v-list-item-subtitle>
-              </v-list-item>
-            </v-list>
-          </v-col>
-
-          <v-col cols="12" md="6">
-            <v-list lines="two" density="compact">
-              <v-list-item>
-                <template v-slot:prepend>
                   <v-icon color="primary" size="small">mdi-calendar</v-icon>
                 </template>
                 <v-list-item-title class="text-body-2">{{
                   datos.frecuencia || 'No definida'
                 }}</v-list-item-title>
                 <v-list-item-subtitle class="text-caption">Frecuencia</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item>
+                <template v-slot:prepend>
+                  <v-icon color="primary" size="small">mdi-form-select</v-icon>
+                </template>
+                <v-list-item-title class="text-body-2">{{ tipoDatosTexto }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Tipo de Datos</v-list-item-subtitle>
               </v-list-item>
 
               <v-list-item>
@@ -70,7 +64,33 @@
                   >Fuente de Verificación</v-list-item-subtitle
                 >
               </v-list-item>
+              <v-divider></v-divider>
+              <v-list-item>
+                <template v-slot:prepend>
+                  <v-icon color="primary" size="small">mdi-target</v-icon>
+                </template>
+                <v-list-item-title class="text-body-2">{{
+                  datos.target_poblacion || 'No definido'
+                }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Target Población</v-list-item-subtitle>
+              </v-list-item>
 
+              <v-list-item>
+                <template v-slot:prepend>
+                  <v-icon color="primary" size="small">mdi-calendar</v-icon>
+                </template>
+                <v-list-item-title class="text-body-2">{{
+                  datos.fechaTargetPoblacion || 'No definido'
+                }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption"
+                  >Fecha Target Población</v-list-item-subtitle
+                >
+              </v-list-item>
+            </v-list>
+          </v-col>
+
+          <v-col cols="12" md="6">
+            <v-list lines="two" density="compact">
               <v-list-item v-if="datos.baseline">
                 <template v-slot:prepend>
                   <v-icon color="primary" size="small">mdi-chart-line</v-icon>
@@ -79,24 +99,79 @@
                 <v-list-item-subtitle class="text-caption">Línea Base</v-list-item-subtitle>
               </v-list-item>
 
+              <v-list-item v-if="datos.baseline">
+                <template v-slot:prepend>
+                  <v-icon color="primary" size="small">mdi-calendar</v-icon>
+                </template>
+                <v-list-item-title class="text-body-2">{{
+                  datos.fechaLineaBase
+                }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Fecha Línea Base</v-list-item-subtitle>
+              </v-list-item>
+              <v-divider></v-divider>
+
               <v-list-item>
                 <template v-slot:prepend>
-                  <v-icon color="primary" size="small">mdi-form-select</v-icon>
+                  <v-icon color="primary" size="small">mdi-target</v-icon>
                 </template>
-                <v-list-item-title class="text-body-2">{{ tipoDatosTexto }}</v-list-item-title>
-                <v-list-item-subtitle class="text-caption">Tipo de Datos</v-list-item-subtitle>
+                <v-list-item-title class="text-body-2">{{
+                  datos.target_q1 || 'No definido'
+                }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Target Q1</v-list-item-subtitle>
               </v-list-item>
 
-              <!-- Estadísticas rápidas -->
-              <v-list-item v-if="mostrarEstadisticas">
+              <v-list-item>
                 <template v-slot:prepend>
-                  <v-icon color="primary" size="small">mdi-chart-box</v-icon>
+                  <v-icon color="primary" size="small">mdi-calendar</v-icon>
                 </template>
-                <v-list-item-title class="text-body-2">
-                  <span class="text-primary">{{ ultimoValor }}</span> -
-                  <span class="text-green">{{ progreso }}</span>
-                </v-list-item-title>
-                <v-list-item-subtitle class="text-caption">Último / Progreso</v-list-item-subtitle>
+                <v-list-item-title class="text-body-2">{{
+                  datos.target_q1 || 'No definido'
+                }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Fecha Target Q1</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-divider></v-divider>
+
+              <v-list-item>
+                <template v-slot:prepend>
+                  <v-icon color="primary" size="small">mdi-target</v-icon>
+                </template>
+                <v-list-item-title class="text-body-2">{{
+                  datos.target_q2 || 'No definido'
+                }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Target Q2</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item>
+                <template v-slot:prepend>
+                  <v-icon color="primary" size="small">mdi-calendar</v-icon>
+                </template>
+                <v-list-item-title class="text-body-2">{{
+                  datos.target_q2 || 'No definido'
+                }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Fecha Target Q2</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-divider></v-divider>
+
+              <v-list-item>
+                <template v-slot:prepend>
+                  <v-icon color="primary" size="small">mdi-target</v-icon>
+                </template>
+                <v-list-item-title class="text-body-2">{{
+                  datos.target_q3 || 'No definido'
+                }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Target Q3</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item>
+                <template v-slot:prepend>
+                  <v-icon color="primary" size="small">mdi-calendar</v-icon>
+                </template>
+                <v-list-item-title class="text-body-2">{{
+                  datos.target_q3 || 'No definido'
+                }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Fecha Target Q3</v-list-item-subtitle>
               </v-list-item>
             </v-list>
           </v-col>
@@ -168,6 +243,7 @@
       </v-card-text>
     </v-card>
   </div>
+  {{ props.datos }}
 </template>
 
 <script setup>

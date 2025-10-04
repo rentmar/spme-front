@@ -70,7 +70,7 @@ import axios from 'axios'
 
 //BaseURL
 const baseurl = import.meta.env.VITE_API_BASE
-console.log('baseurl:', baseurl)
+//console.log('baseurl:', baseurl)
 
 const props = defineProps({
   actividadId: {
@@ -79,7 +79,7 @@ const props = defineProps({
   },
 })
 
-console.log('Actividad ID desde props:', props.actividadId)
+//console.log('Actividad ID desde props:', props.actividadId)
 
 // 1. Define una variable reactiva para guardar los datos de la actividad
 const actividad = ref({})
@@ -106,7 +106,7 @@ async function obtenerDatosActividad() {
   }
   try {
     const response = await axios.post(url, data)
-    console.log('response', response.data)
+    //console.log('response', response.data)
     // 4. Actualiza la variable reactiva con los datos de la respuesta
     actividad.value = response.data
   } catch (error) {
