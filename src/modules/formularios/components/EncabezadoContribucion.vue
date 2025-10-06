@@ -42,7 +42,6 @@
     <v-textarea
       v-if="resultadoog"
       v-model="caberaContribucion.resultadoog.data.contribucion"
-      :label="getLabel('resultadoog')"
       hint="Contribución al resultado OG"
       clearable
       variant="outlined"
@@ -268,23 +267,67 @@ const getLabel = (tipo) => {
   return tipoNames[tipo] || tipo
 }
 
+// Función para limpiar el payload - SOLO ESTA FUNCIÓN FUE MODIFICADA
+const limpiarPayload = (payloadCompleto) => {
+  const payloadLimpio = {
+    timestamp: payloadCompleto.timestamp,
+    evento: payloadCompleto.evento,
+    caberaContribucion: {},
+  }
+
+  // Solo incluir campos que tengan datos válidos
+  Object.keys(payloadCompleto.caberaContribucion).forEach((key) => {
+    const campo = payloadCompleto.caberaContribucion[key]
+    const data = campo.data
+
+    // Verificar si el campo tiene datos mínimos válidos
+    const tieneDatosValidos =
+      data &&
+      ((data.id && data.id !== '') ||
+        (data.codigo && data.codigo !== '') ||
+        (data.descripcion && data.descripcion !== '') ||
+        (data.contribucion && data.contribucion.trim() !== ''))
+
+    if (tieneDatosValidos) {
+      payloadLimpio.caberaContribucion[key] = {
+        tipo: campo.tipo,
+        data: { ...data },
+      }
+
+      // Limpiar campos vacíos en data
+      Object.keys(payloadLimpio.caberaContribucion[key].data).forEach((dataKey) => {
+        if (
+          payloadLimpio.caberaContribucion[key].data[dataKey] === '' ||
+          payloadLimpio.caberaContribucion[key].data[dataKey] === null
+        ) {
+          delete payloadLimpio.caberaContribucion[key].data[dataKey]
+        }
+      })
+    }
+  })
+
+  return payloadLimpio
+}
+
 // Función para emitir el payload completo
 const emitirPayloadCompleto = (evento = 'input') => {
-  const payload = {
+  const payloadCompleto = {
     timestamp: new Date().toISOString(),
     evento: evento,
     caberaContribucion: { ...caberaContribucion },
   }
+  // Limpiar el payload antes de emitirlo
+  const payloadLimpio = limpiarPayload(payloadCompleto)
 
   // Emitir el payload completo
-  emit('payload-actualizado', payload)
+  emit('payload-actualizado', payloadLimpio)
 
   // Guardar último payload para debug
   if (props.debugMode) {
-    lastPayload.value = payload
+    lastPayload.value = payloadLimpio
   }
 
-  console.log('Payload emitido:', payload)
+  console.log('Payload emitido:', payloadLimpio)
 }
 
 // Función para inicializar los datos desde la estructura de procedencia

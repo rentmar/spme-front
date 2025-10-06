@@ -45,7 +45,6 @@
                 </div>
                 <v-divider class="my-4"></v-divider>
                 <!--Informacion de la actividad-->
-                <!-- Información de la Actividad -->
                 <div v-if="storeInfActividad.actividad?.id" class="mb-4">
                   <ActividadInformacion :actividad-id="storeInfActividad.actividad?.id" />
                 </div>
@@ -167,30 +166,11 @@
                 Registro de Indicadores
               </h3>
               <v-row>
-                <v-btn
-                  color="primary"
-                  variant="outlined"
-                  prepend-icon="mdi-chart-bar"
-                  @click="modalAbierto = true"
-                  block
-                  size="large"
-                  class="mb-4"
-                >
-                  Seleccionar Indicador de Proyecto
-                </v-btn>
                 <v-col cols="12">
-                  <IndicadorRegistroBitacora
-                    v-model="modalAbierto"
+                  <RegistroAvanceIndicadores
                     :idactividad="storeInfActividad.actividad.id"
-                    @guardar-avances="actualizarIndicadores"
-                  />
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="12">
-                  <RegistroInformeIndicadoresBitacora
-                    :idactividad="storeInfActividad.actividad.id"
-                  />
+                    @todos-los-registros-enviados="manejarRegistrosIndicadores"
+                  ></RegistroAvanceIndicadores>
                 </v-col>
               </v-row>
             </div>
@@ -318,7 +298,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(fondo, index) in procedenciaFondos" :key="fondo.id">
+                    <tr v-for="(fondo, index) in procedenciaFondos" :key="fondo.id || index">
                       <td class="font-weight-medium">{{ fondo.nombre }}</td>
                       <td>
                         <v-chip :color="fondo.esExistente ? 'blue' : 'orange'" size="small">
@@ -413,7 +393,7 @@
                     ></v-text-field>
 
                     <!-- Información de procedencia de fondos planificados -->
-                    <div class="mb-3">
+                    <div class="mb-3" v-if="procedenciaFondos.length > 0">
                       <div class="text-subtitle-2 font-weight-medium mb-1">
                         Desglose Planificado:
                       </div>
@@ -443,8 +423,9 @@
                       Presupuesto Total Ejecutado
                     </v-card-title>
 
-                    <!-- Monto total ejecutado -->
+                    <!-- Monto total ejecutado - AHORA EDITABLE CUANDO NO HAY PROCEDENCIA -->
                     <v-text-field
+                      v-if="procedenciaFondos.length > 0"
                       :model-value="formatearMoneda(totalEjecutadoProcedencia)"
                       label="Monto Total Ejecutado"
                       variant="outlined"
@@ -453,8 +434,21 @@
                       class="mb-2"
                     ></v-text-field>
 
+                    <v-text-field
+                      v-else
+                      v-model.number="presupuestoEjecutadoManual"
+                      label="Monto Total Ejecutado"
+                      variant="outlined"
+                      type="number"
+                      :min="0"
+                      step="0.01"
+                      bg-color="green-lighten-5"
+                      class="mb-2"
+                      placeholder="Ingrese el monto ejecutado"
+                    ></v-text-field>
+
                     <!-- Información de procedencia de fondos ejecutados -->
-                    <div class="mb-3">
+                    <div class="mb-3" v-if="procedenciaFondos.length > 0">
                       <div class="text-subtitle-2 font-weight-medium mb-1">Desglose Ejecutado:</div>
                       <div
                         v-for="fondo in procedenciaFondos"
@@ -468,25 +462,25 @@
 
                     <!-- Diferencia Total -->
                     <v-text-field
-                      :model-value="formatearMoneda(diferenciaTotalProcedencia)"
+                      :model-value="formatearMoneda(diferenciaTotal)"
                       label="Diferencia Total"
                       variant="outlined"
                       readonly
                       :bg-color="
-                        getColorDiferencia(diferenciaTotalProcedencia) === 'text-red'
+                        getColorDiferencia(diferenciaTotal) === 'text-red'
                           ? 'red-lighten-5'
                           : 'green-lighten-5'
                       "
-                      :class="getColorDiferencia(diferenciaTotalProcedencia)"
+                      :class="getColorDiferencia(diferenciaTotal)"
                     ></v-text-field>
 
                     <!-- Porcentaje de ejecución -->
                     <v-text-field
-                      :model-value="porcentajeEjecucion + '%'"
+                      :model-value="porcentajeEjecucionTotal + '%'"
                       label="Porcentaje de Ejecución"
                       variant="outlined"
                       readonly
-                      :bg-color="getColorPorcentaje(porcentajeEjecucion)"
+                      :bg-color="getColorPorcentaje(porcentajeEjecucionTotal)"
                       class="mt-2"
                     ></v-text-field>
                   </v-card>
@@ -520,13 +514,13 @@
               <v-row>
                 <v-col cols="12" class="d-flex justify-end gap-3">
                   <v-btn
-                    color="secondary"
+                    color="error"
                     variant="outlined"
                     size="large"
-                    @click="limpiarFormulario"
-                    prepend-icon="mdi-delete"
+                    prepend-icon="mdi-cancel"
+                    :to="`/actividades/informe/`"
                   >
-                    Limpiar
+                    Cancelar
                   </v-btn>
                   <v-btn
                     color="primary"
@@ -561,8 +555,7 @@ import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vu
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
-import IndicadorRegistroBitacora from '@/modules/reportes/components/IndicadorRegistroBitacora.vue'
-import RegistroInformeIndicadoresBitacora from '@/modules/reportes/components/RegistroInformeIndicadoresBitacora.vue'
+import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAvanceIndicadores.vue'
 
 const route = useRoute()
 const storeInfActividad = useInformeActividadStore()
@@ -593,10 +586,16 @@ const formData = reactive({
 // Datos de contribución recibidos
 const datosContribucion = ref({})
 
+// Variable para presupuesto ejecutado manual
+const presupuestoEjecutadoManual = ref(0)
+
 const recibirDatosContribucion = (payload) => {
   datosContribucion.value = payload
-  formData.contribucion_actividad = JSON.stringify(payload)
+  formData.contribucion_actividad = payload
 }
+
+// Datos de procedencia de fondos (reactivo)
+const procedenciaFondos = ref([])
 
 // Computed para facilitar el acceso a los datos
 const actividad = computed(() => storeInfActividad.actividad)
@@ -616,6 +615,9 @@ const cargarDatos = async () => {
     if (storeInfActividad.actividad) {
       formData.objetivo_de_actividad = storeInfActividad.actividad.objetivo_de_actividad || ''
       formData.tipo_de_actividad = storeInfActividad.actividad.tipo_info?.tipo_actividad || ''
+
+      // Inicializar procedencia de fondos
+      inicializarProcedenciaFondos()
     }
   } catch (error) {
     console.error('Error cargando actividad:', error)
@@ -624,10 +626,21 @@ const cargarDatos = async () => {
   }
 }
 
+// Inicializar datos de procedencia de fondos
+const inicializarProcedenciaFondos = () => {
+  const fondos = storeInfActividad.actividad?.procedencia_fondos || []
+  procedenciaFondos.value = fondos.map((fondo) => ({
+    ...fondo,
+    montoEjecutado: fondo.montoEjecutado || 0,
+    verificado: fondo.verificado || false,
+  }))
+}
+
 const modalAbierto = ref(false)
 
-const actualizarIndicadores = (avances) => {
-  formData.avance_en_indicador = JSON.stringify(avances)
+const manejarRegistrosIndicadores = (payload) => {
+  console.log('Registros: ', payload)
+  formData.avance_en_indicador = payload
 }
 
 // Validators mejorados
@@ -665,25 +678,19 @@ const getColorPorcentaje = (porcentaje) => {
 }
 
 // Computed properties para procedencia de fondos
-const procedenciaFondos = computed(() => {
-  const fondos = storeInfActividad.actividad?.procedencia_fondos || []
-  return fondos.map((fondo) => ({
-    ...fondo,
-    montoEjecutado: fondo.montoEjecutado || 0,
-    verificado: fondo.verificado || false,
-  }))
-})
-
 const presupuestoTotalPlanificado = computed(() => {
   return parseFloat(storeInfActividad.actividad?.presupuesto) || 0
 })
 
 const totalPlanificadoProcedencia = computed(() => {
-  return procedenciaFondos.value.reduce((total, fondo) => total + fondo.monto, 0)
+  return procedenciaFondos.value.reduce((total, fondo) => total + (parseFloat(fondo.monto) || 0), 0)
 })
 
 const totalEjecutadoProcedencia = computed(() => {
-  return procedenciaFondos.value.reduce((total, fondo) => total + (fondo.montoEjecutado || 0), 0)
+  return procedenciaFondos.value.reduce(
+    (total, fondo) => total + (parseFloat(fondo.montoEjecutado) || 0),
+    0,
+  )
 })
 
 const diferenciaTotalProcedencia = computed(() => {
@@ -701,14 +708,28 @@ const todosVerificados = computed(() => {
   )
 })
 
-// Métodos
-const calcularTotalesProcedencia = () => {
-  // Cálculos automáticos gracias a las computed properties
-}
+// Nuevas computed properties para manejar ambos casos
+const totalEjecutado = computed(() => {
+  if (procedenciaFondos.value.length > 0) {
+    return totalEjecutadoProcedencia.value
+  } else {
+    return presupuestoEjecutadoManual.value || 0
+  }
+})
 
-const actualizarVerificacion = () => {
-  // Lógica adicional si es necesaria
-}
+const diferenciaTotal = computed(() => {
+  return presupuestoTotalPlanificado.value - totalEjecutado.value
+})
+
+const porcentajeEjecucionTotal = computed(() => {
+  if (presupuestoTotalPlanificado.value === 0) return 0
+  return ((totalEjecutado.value / presupuestoTotalPlanificado.value) * 100).toFixed(2)
+})
+
+// Métodos
+const calcularTotalesProcedencia = () => {}
+
+const actualizarVerificacion = () => {}
 
 // Métodos del formulario
 const enviarFormulario = async () => {
@@ -727,25 +748,16 @@ const enviarFormulario = async () => {
       actividad_id: storeInfActividad.actividad.id,
       procedencia_fondos: procedenciaFondos.value,
       total_planificado: totalPlanificadoProcedencia.value,
-      total_ejecutado: totalEjecutadoProcedencia.value,
-      diferencia_total: diferenciaTotalProcedencia.value,
-      porcentaje_ejecucion: porcentajeEjecucion.value,
+      total_ejecutado: totalEjecutado.value,
+      diferencia_total: diferenciaTotal.value,
+      porcentaje_ejecucion: porcentajeEjecucionTotal.value,
       timestamp: new Date().toISOString(),
     }
-
-    console.log('Datos a enviar:', datosEnvio)
-
-    // Aquí iría la llamada a la API
-    // await api.enviarInformeActividad(datosEnvio)
-
-    // Simulación de envío exitoso
-    await new Promise((resolve) => setTimeout(resolve, 2000))
 
     console.log('Informe enviado exitosamente')
     // Mostrar mensaje de éxito, redirigir, etc.
   } catch (error) {
     console.error('Error al enviar el informe:', error)
-    // Manejar error
   } finally {
     enviando.value = false
   }
@@ -765,6 +777,9 @@ const limpiarFormulario = () => {
     fondo.montoEjecutado = 0
     fondo.verificado = false
   })
+
+  // Resetear presupuesto manual
+  presupuestoEjecutadoManual.value = 0
 
   if (form.value) {
     form.value.reset()

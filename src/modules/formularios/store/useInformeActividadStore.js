@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useActividad } from '@/modules/proyecto/composables/useActividad'
+import { useInformeActividad } from '../composables/useInformeActividad'
 
 export const useInformeActividadStore = defineStore('informe-actividad', () => {
   //Estados
@@ -12,8 +13,9 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
   const actividad = ref() //Contiene la informacion de la actividad
   const tareas = ref([]) //Contiene la informacion de las tareas
 
-  //Iniciar el composable
-  const { actividadInfo, obtenerActidadPorId } = useActividad()
+  //Iniciar composables
+  const { actividadInfo, obtenerActidadPorId } = useActividad() //manejo de actividades
+  const { informeActividadMinRespuesta, crearInformeActividadMin } = useInformeActividad()
 
   //Cargar la actividad y desestructurar en los estados
   async function cargarActividadPorId(idactividad) {

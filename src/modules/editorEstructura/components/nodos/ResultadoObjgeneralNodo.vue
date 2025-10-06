@@ -148,7 +148,7 @@ const agregarIndicadorResultadoOg = async () => {
       sourceId: currentNode.id.toString(),
       meta: {
         label: 'Indicador Res. OG',
-        type: 'indicadorog',
+        type: 'indicadorrog',
         estado: 'ES',
         mapaNodoId: mapaNodoId.toString(),
         nodoProyecto: {

@@ -143,21 +143,22 @@
                   <div class="decoration-circle decoration-circle-3"></div>
                 </div>
 
-                <v-form ref="form">
+                <v-form ref="form" @submit.prevent="submitForm">
                   <!-- Seccion: Fecha de ejecucion -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
                       <v-icon color="primary" class="mr-2">mdi-calendar</v-icon>
-                      Fecha de ejecucion
+                      Fecha de ejecución
                     </h3>
                     <v-row>
                       <v-col cols="12">
                         <v-text-field
                           v-model="formData.fecha_ejecucion"
-                          label="Fecha de ejecucion"
+                          label="Fecha de ejecución"
                           type="date"
                           variant="outlined"
                           clearable
+                          :rules="[validators.required]"
                         />
                       </v-col>
                     </v-row>
@@ -174,7 +175,7 @@
                         <EncabezadoContribucion
                           v-if="storeInfTarea.actividad?.estructuraProcedencia"
                           :datos-estructura="storeInfTarea.actividad.estructuraProcedencia"
-                          @payload-actualizado="recibirDatos"
+                          @payload-actualizado="recibirDatosContribucion"
                         />
                         <v-alert v-else type="warning" variant="tonal">
                           No hay estructura de procedencia disponible para esta actividad.
@@ -193,11 +194,12 @@
                       <v-col cols="12">
                         <v-textarea
                           v-model="formData.contribucion_actividad"
-                          label="Contribucion a la Actividad"
+                          label="Contribución a la Actividad"
                           variant="outlined"
                           required
                           :rules="[validators.required]"
                           placeholder="Describa el cumplimiento del objetivo de esta tarea..."
+                          rows="3"
                         ></v-textarea>
                       </v-col>
                     </v-row>
@@ -224,7 +226,7 @@
                       <v-col cols="12">
                         <v-textarea
                           v-model="formData.informe_de_objetivo_de_actividad"
-                          label="Informe del objetivo de la tarea"
+                          label="Informe del objetivo de la Subactividad"
                           variant="outlined"
                           required
                           rows="3"
@@ -238,7 +240,7 @@
                   <!-- Sección de Reporte -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
-                      <v-icon color="primary" class="mr-2">mdi-target</v-icon>
+                      <v-icon color="primary" class="mr-2">mdi-file-document</v-icon>
                       Reporte de la Subactividad
                     </h3>
                     <v-row>
@@ -250,6 +252,7 @@
                           required
                           :rules="[validators.required]"
                           placeholder="Escriba el reporte de la SubActividad..."
+                          rows="4"
                         ></v-textarea>
                       </v-col>
                     </v-row>
@@ -261,31 +264,12 @@
                       <v-icon color="primary" class="mr-2">mdi-chart-box</v-icon>
                       Registro de Indicadores
                     </h3>
-                    <v-row>
-                      <v-btn
-                        color="primary"
-                        variant="outlined"
-                        prepend-icon="mdi-chart-bar"
-                        @click="modalAbierto = true"
-                        block
-                        size="large"
-                        class="mb-4"
-                      >
-                        Seleccionar Indicador de Proyecto
-                      </v-btn>
-                      <v-col cols="12">
-                        <Indicador-registro-bitacora
-                          v-model="modalAbierto"
-                          :idactividad="storeInfTarea.actividad.id"
-                          @guardar-avances="actualizarIndicadores"
-                        />
-                      </v-col>
-                    </v-row>
+
                     <v-row>
                       <v-col cols="12">
-                        <RegistroInformeIndicadoresBitacora
+                        <RegistroAvanceIndicadores
                           :idactividad="storeInfTarea.actividad.id"
-                        />
+                        ></RegistroAvanceIndicadores>
                       </v-col>
                     </v-row>
                   </div>
@@ -293,7 +277,7 @@
                   <!-- Sección de Información Cuantitativa -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
-                      <v-icon color="primary" class="mr-2">mdi-chart-box</v-icon>
+                      <v-icon color="primary" class="mr-2">mdi-account-group</v-icon>
                       Información Cuantitativa
                     </h3>
                     <v-row>
@@ -305,6 +289,7 @@
                           required
                           :rules="[validators.required]"
                           placeholder="Describa la informacion cuantitativa..."
+                          rows="3"
                         ></v-textarea>
                       </v-col>
                       <v-col cols="12">
@@ -316,6 +301,7 @@
                           chips
                           show-size
                           prepend-icon="mdi-paperclip"
+                          :rules="[validators.archivosTamanio]"
                         ></v-file-input>
                       </v-col>
                     </v-row>
@@ -324,7 +310,7 @@
                   <!-- Sección de Herramientas Aplicadas -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
-                      <v-icon color="primary" class="mr-2">mdi-chart-box</v-icon>
+                      <v-icon color="primary" class="mr-2">mdi-tools</v-icon>
                       Herramientas Aplicadas y Resultados
                     </h3>
                     <v-row>
@@ -336,6 +322,7 @@
                           required
                           :rules="[validators.required]"
                           placeholder="Describa las herramientas aplicadas y sus resultados..."
+                          rows="3"
                         ></v-textarea>
                       </v-col>
                       <v-col cols="12">
@@ -347,6 +334,7 @@
                           chips
                           show-size
                           prepend-icon="mdi-paperclip"
+                          :rules="[validators.archivosTamanio]"
                         ></v-file-input>
                       </v-col>
                     </v-row>
@@ -498,6 +486,7 @@
                           show-size
                           :accept="acceptedFormats.herramientas"
                           prepend-icon="mdi-receipt"
+                          :rules="[validators.archivosTamanio]"
                         ></v-file-input>
                       </v-col>
                     </v-row>
@@ -518,6 +507,7 @@
                           required
                           :rules="[validators.required]"
                           placeholder="Describa los medios de verificación utilizados..."
+                          rows="3"
                         ></v-textarea>
                       </v-col>
                       <v-col cols="12">
@@ -529,6 +519,7 @@
                           chips
                           show-size
                           prepend-icon="mdi-paperclip"
+                          :rules="[validators.archivosTamanio]"
                         ></v-file-input>
                       </v-col>
                     </v-row>
@@ -549,6 +540,7 @@
                           required
                           :rules="[validators.required]"
                           placeholder="Escriba sus comentarios y recomendaciones..."
+                          rows="3"
                         ></v-textarea>
                       </v-col>
                     </v-row>
@@ -561,7 +553,7 @@
                       variant="outlined"
                       size="large"
                       prepend-icon="mdi-cancel"
-                      :to="`/pei/listaactividades`"
+                      :to="`/actividades/informe/`"
                     >
                       Cancelar
                     </v-btn>
@@ -579,8 +571,8 @@
                       variant="flat"
                       size="large"
                       prepend-icon="mdi-send"
-                      @click="submitForm"
-                      :loading="loading"
+                      type="submit"
+                      :loading="enviando"
                       :disabled="!isFormValid"
                     >
                       Enviar Informe
@@ -605,7 +597,7 @@
 
 <script setup>
 import { onMounted, ref, reactive, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useInformeTareaStore } from '@/modules/formularios/store/useInformeTareaStore'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
@@ -613,20 +605,20 @@ import ActividadInformacion from '@/modules/proyecto/components/partials/Activid
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
 import IndicadorRegistroBitacora from '@/modules/reportes/components/IndicadorRegistroBitacora.vue'
 import RegistroInformeIndicadoresBitacora from '@/modules/reportes/components/RegistroInformeIndicadoresBitacora.vue'
+import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAvanceIndicadores.vue'
 
-// Obtener la id de la tarea/subactividad
+// Router y route
 const route = useRoute()
+const router = useRouter()
 const idtarea = ref(route.params.id)
 
 // Estados
 const cargandoGeneral = ref(true)
-const loading = ref(false)
+const enviando = ref(false)
 const form = ref(null)
-
-//Indicadores
 const modalAbierto = ref(false)
 
-// Iniciar el store
+// Store
 const storeInfTarea = useInformeTareaStore()
 
 // Form data para el formulario
@@ -650,16 +642,13 @@ const formData = reactive({
 })
 
 // Datos de presupuesto
-const desglosePresupuesto = ref([
-  { descripcion: 'Cuadernos', monto: 100, montoEjecutado: 0 },
-  { descripcion: 'Bolígrafos', monto: 100, montoEjecutado: 0 },
-  { descripcion: 'Hojas bond', monto: 100, montoEjecutado: 0 },
-  { descripcion: 'Otros', monto: 45, montoEjecutado: 0 },
-])
-
-const presupuestoPlanificado = ref(345.0)
+const desglosePresupuesto = ref([])
+const presupuestoPlanificado = ref(0)
 const presupuestoEjecutado = ref(0)
 const diferenciaTotal = ref(0)
+
+// Datos de contribución
+const datosContribucion = ref({})
 
 // Formatos de archivo aceptados
 const acceptedFormats = {
@@ -675,15 +664,10 @@ const totalEjecutado = computed(() => {
   return desglosePresupuesto.value.reduce((total, item) => total + (item.montoEjecutado || 0), 0)
 })
 
-// Validators
-const validators = {
-  required: (value) => !!value || 'Este campo es requerido',
-  minLength: (min) => (value) => !value || value.length >= min || `Mínimo ${min} caracteres`,
-}
-
-// Computed properties para validación del formulario
+// Validación del formulario
 const isFormValid = computed(() => {
   const requiredFields = [
+    'fecha_ejecucion',
     'contribucion_actividad',
     'objetivo_de_actividad',
     'informe_de_objetivo_de_actividad',
@@ -696,20 +680,31 @@ const isFormValid = computed(() => {
   return requiredFields.every((field) => formData[field] && formData[field].trim().length > 0)
 })
 
-// Métodos
-const recibirDatos = (payload) => {
-  console.log('Datos recibidos del componente hijo:', payload)
+// Validators
+const validators = {
+  required: (value) => !!value || 'Este campo es requerido',
+  minLength: (min) => (value) => !value || value.length >= min || `Mínimo ${min} caracteres`,
+  archivosTamanio: (files) => {
+    if (!files || files.length === 0) return true
+    const maxSize = 10 * 1024 * 1024 // 10MB
+    const archivoMuyGrande = files.find((file) => file.size > maxSize)
+    return !archivoMuyGrande || 'El archivo no debe superar los 10MB'
+  },
+}
+
+// Métodos para recibir datos de componentes hijos
+const recibirDatosContribucion = (payload) => {
+  datosContribucion.value = payload
   formData.contribucion_proyecto = payload
+  //formData.contribucion_proyecto = JSON.stringify(payload)
 }
 
 const actualizarIndicadores = (payload) => {
-  formData.avance_en_indicador = payload
-  console.log('Indicadores actualizados:', payload)
+  formData.avance_en_indicador = JSON.stringify(payload)
 }
 
 // Cálculos de presupuesto
 const calcularTotales = () => {
-  // Actualizar el presupuesto ejecutado total basado en el desglose
   presupuestoEjecutado.value = totalEjecutado.value
   calcularDiferenciaTotal()
 }
@@ -738,33 +733,35 @@ const formatearMoneda = (monto) => {
   })}`
 }
 
-// Carga de datos
+// Carga de datos inicial
 const cargarInformacion = async () => {
   cargandoGeneral.value = true
   try {
     if (idtarea.value) {
       await storeInfTarea.obtenerTareasPorIdMasDetalles(idtarea.value)
-      console.log('Datos cargados:', {
-        tarea: storeInfTarea.tarea,
-        actividad: storeInfTarea.actividad,
-        proyecto: storeInfTarea.proyecto,
-      })
 
-      // Inicializar datos de presupuesto desde la tarea si están disponibles
+      // Inicializar datos de presupuesto desde la tarea
       if (storeInfTarea.tarea?.presupuestoDesglose) {
         desglosePresupuesto.value = storeInfTarea.tarea.presupuestoDesglose.map((item) => ({
           ...item,
           montoEjecutado: 0,
         }))
+      } else {
+        // Datos de ejemplo si no hay desglose
+        desglosePresupuesto.value = [
+          { descripcion: 'Materiales', monto: 100, montoEjecutado: 0 },
+          { descripcion: 'Logística', monto: 100, montoEjecutado: 0 },
+          { descripcion: 'Otros', monto: 45, montoEjecutado: 0 },
+        ]
       }
 
       if (storeInfTarea.tarea?.presupuesto) {
         presupuestoPlanificado.value = parseFloat(storeInfTarea.tarea.presupuesto)
+      } else {
+        presupuestoPlanificado.value = totalPlanificado.value
       }
 
       calcularDiferenciaTotal()
-    } else {
-      console.error('No se proporcionó ID de tarea')
     }
   } catch (err) {
     console.error('Error al cargar la información de la tarea:', err)
@@ -773,6 +770,7 @@ const cargarInformacion = async () => {
   }
 }
 
+// Reset del formulario
 const resetForm = () => {
   Object.keys(formData).forEach((key) => {
     if (Array.isArray(formData[key])) {
@@ -788,39 +786,86 @@ const resetForm = () => {
   })
   presupuestoEjecutado.value = 0
   diferenciaTotal.value = presupuestoPlanificado.value
+
+  datosContribucion.value = {}
 }
 
+// Envío del formulario a la API
 const submitForm = async () => {
-  if (!isFormValid.value) {
-    alert('Por favor complete todos los campos requeridos')
+  const { valid } = await form.value.validate()
+
+  if (!valid) {
+    alert('Por favor complete todos los campos requeridos correctamente')
     return
   }
 
-  loading.value = true
+  enviando.value = true
   try {
+    // Preparar datos para envío
     const payload = {
-      tarea_id: idtarea.value,
-      ...formData,
+      tarea_id: parseInt(idtarea.value),
+      actividad_id: storeInfTarea.actividad?.id,
+      proyecto_id: storeInfTarea.proyecto?.id,
+      fecha_ejecucion: formData.fecha_ejecucion,
+      contribucion_proyecto: formData.contribucion_proyecto,
+      contribucion_actividad: formData.contribucion_actividad,
+      objetivo_de_actividad: formData.objetivo_de_actividad,
+      informe_de_objetivo_de_actividad: formData.informe_de_objetivo_de_actividad,
+      reporte_subactividad: formData.reporte_subactividad,
+      avance_en_indicador: formData.avance_en_indicador,
+      informacion_cuantitativa: formData.informacion_cuantitativa,
+      descripcion_herramientas: formData.descripcion_herramientas,
+      medios_verificacion: formData.medios_verificacion,
+      comentarios_recomendaciones: formData.comentarios_recomendaciones,
+      observaciones_presupuesto: formData.observaciones_presupuesto,
       // Datos de presupuesto estructurados
       desglose_presupuesto: desglosePresupuesto.value,
       presupuesto_planificado: presupuestoPlanificado.value,
       presupuesto_ejecutado: presupuestoEjecutado.value,
       diferencia_total: diferenciaTotal.value,
-      actividad_id: storeInfTarea.actividad?.id,
-      proyecto_id: storeInfTarea.proyecto?.id,
+      // Archivos (necesitarás un manejo especial para subir archivos)
+      //archivos_cuantitativos: formData.archivos_cuantitativos,
+      //herramientas_archivos: formData.herramientas_archivos,
+      //medios_archivos: formData.medios_archivos,
+      //archivos_presupuesto: formData.archivos_presupuesto,
+      //estado: 'PENDIENTE',
+      //fecha_creacion: new Date().toISOString(),
     }
 
-    console.log('Enviando informe:', payload)
-    // Simular envío
+    console.log('Enviando informe a la API:', payload)
+
+    // Aquí iría la llamada real a tu API
+    // const response = await fetch('/api/informes-tarea/', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Authorization': `Bearer ${tuToken}`
+    //   },
+    //   body: JSON.stringify(payload)
+    // })
+
+    // if (!response.ok) {
+    //   throw new Error('Error en la respuesta del servidor')
+    // }
+
+    // const data = await response.json()
+
+    // Simulación de envío exitoso
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
-    alert('Informe de tarea enviado con éxito')
+    // Mostrar mensaje de éxito
+    alert('Informe de subactividad enviado con éxito')
+
+    // Redirigir o resetear el formulario
     resetForm()
+
+    // Opcional: redirigir a la lista de actividades
+    // router.push('/pei/listaactividades')
   } catch (error) {
     console.error('Error al enviar el informe:', error)
-    alert('Error al enviar el informe')
+    alert('Error al enviar el informe. Por favor, intente nuevamente.')
   } finally {
-    loading.value = false
+    enviando.value = false
   }
 }
 
@@ -847,7 +892,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Los estilos se mantienen igual */
 .informe-actividad-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -864,15 +908,6 @@ onMounted(() => {
 .v-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-}
-
-.header-gradient {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 2rem;
-  position: relative;
-  overflow: hidden;
-  border-radius: 8px;
 }
 
 .header-decoration {
@@ -929,10 +964,6 @@ onMounted(() => {
   align-items: center;
 }
 
-.info-item {
-  padding: 8px 0;
-}
-
 .gap-3 {
   gap: 12px;
 }
@@ -946,10 +977,6 @@ onMounted(() => {
   .form-section {
     padding: 20px;
     margin-bottom: 20px;
-  }
-
-  .header-gradient {
-    padding: 1.5rem;
   }
 
   .d-flex.justify-end {
@@ -970,5 +997,17 @@ onMounted(() => {
   .form-section {
     padding: 16px;
   }
+}
+
+.text-green {
+  color: #4caf50;
+}
+
+.text-red {
+  color: #f44336;
+}
+
+.text-grey {
+  color: #9e9e9e;
 }
 </style>

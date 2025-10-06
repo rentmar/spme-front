@@ -82,6 +82,7 @@
               </v-card-text>
             </v-card>
           </v-dialog>
+
           <!-- <v-tooltip text="Agregar nueva actividad Variante" location="bottom">
             <template #activator="{ props }">
               <v-btn
@@ -183,6 +184,31 @@
 
           <!-- Botonera compacta estilo Excel -->
           <div class="estructura-buttons excel-button-group horizontal-buttons">
+            <v-tooltip text="Agregar subactividad" location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  color="#0078D4"
+                  variant="flat"
+                  size="small"
+                  class="excel-button budget-button"
+                  @click="mostrarModalAgregarTarea"
+                >
+                  <template v-slot:prepend>
+                    <v-icon size="16">mdi-plus-outline </v-icon>
+                  </template>
+                  Subactividad
+                </v-btn>
+              </template>
+            </v-tooltip>
+            <DialogTarea
+              v-model="mostrarDialogo"
+              :actividad="selectedRowData"
+              :tarea="tareaSeleccionada"
+              @guardar="crearNuevaTarea"
+              @cancelar="cerrarDialogo"
+            ></DialogTarea>
+
             <v-tooltip text="Ajustar Presupuesto de la Actividad" location="bottom">
               <template v-slot:activator="{ props }">
                 <v-btn
@@ -419,6 +445,8 @@ import { usePlanificacionStore } from '../store/usePlanificacionStore'
 import { storeToRefs } from 'pinia'
 import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
 import ActividadRelacionEstructura from './parciales/ActividadRelacionEstructura.vue'
+import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
+
 //Libreria de fechas
 import { parse, format, isValid, isBefore } from 'date-fns'
 // Importaciones para Excel
@@ -427,6 +455,7 @@ import * as XLSX from 'xlsx'
 import { useUserStore } from '@/stores/user'
 //importacion de selecciones
 import { SELECT_OPTIONS } from '@/utility/selectOptions'
+import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
 //Historial
 
 // Props del componente
@@ -470,6 +499,7 @@ const { usuarios, obtenerUsuarios, loading: loadingUsuarios } = useUsuario()
 const { contadorPlan, contarPlanPorIdProyecto } = usePlanificacion()
 const { successMsg, infoMsg, errorMsg } = useSnackbar()
 
+const { crearUnaTarea } = useTareaSubactividad()
 // Snackbar para mensajes
 const snackbar = ref({
   show: false,
@@ -571,6 +601,28 @@ const actualizarRutaTrazado = (rutaTrazado) => {
     }
   }
 }
+/******************** Nueva activiad ****************************/
+const mostrarModalAgregarTarea = () => {
+  mostrarDialogo.value = true
+}
+
+const cerrarDialogo = () => {
+  mostrarDialogo.value = false
+}
+
+const crearNuevaTarea = async (payload) => {
+  try {
+    await crearUnaTarea(payload)
+    mostrarDialogo.value = false
+    infoMsg('Subactividad creada')
+  } catch (error) {
+    console.error(error)
+    errorMsg('No se creo la subactividad')
+  }
+}
+
+const mostrarDialogo = ref(false)
+const tareaSeleccionada = ref(null)
 
 /******************** Presupuesto *******************************/
 const mostrarPresupuesto = ref(false)
