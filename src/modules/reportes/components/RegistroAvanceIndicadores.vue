@@ -671,7 +671,7 @@ const enviarTodosLosRegistros = () => {
     })
 
     // Mostrar mensaje de éxito
-    infoMsg('Se han enviado ${totalRegistrados.value} registros exitosamente ')
+    infoMsg('Se han enviado' + totalRegistrados.value + ' registros exitosamente ')
     //alert(`✅ Se han enviado ${totalRegistrados.value} registros exitosamente`)
   } catch (error) {
     emit('error-registro', {

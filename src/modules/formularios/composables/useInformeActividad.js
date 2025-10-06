@@ -19,7 +19,7 @@ export function useInformeActividad() {
     loading.value = true
     try {
       const respuesta = await formulariosServico.crearInformeActividadMinimo(informeActividadData)
-      informeActividadData.value = respuesta
+      informeActividadMinRespuesta.value = respuesta
       return respuesta
     } catch (err) {
       error.value = err

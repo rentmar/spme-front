@@ -59,7 +59,7 @@
           </div>
           <v-divider></v-divider>
 
-          <v-form ref="form" @submit.prevent="enviarFormulario">
+          <v-form ref="form" @submit.prevent="abrirResumen">
             <!-- Seccion: Fecha de ejecucion -->
             <div class="form-section mb-6">
               <h3 class="text-h6 mb-4 primary--text">
@@ -527,9 +527,9 @@
                     size="large"
                     type="submit"
                     :loading="enviando"
-                    prepend-icon="mdi-send"
+                    prepend-icon="mdi-eye"
                   >
-                    Enviar Informe
+                    Ver Resumen
                   </v-btn>
                 </v-col>
               </v-row>
@@ -544,25 +544,337 @@
       <v-icon size="64" color="grey-lighten-1">mdi-file-remove</v-icon>
       <p class="text-h6 mt-4">No se pudo cargar la información de la actividad</p>
     </div>
+
+    <!-- Diálogo de Resumen -->
+    <v-dialog v-model="mostrarResumen" max-width="1200" persistent scrollable>
+      <v-card>
+        <v-toolbar color="primary" density="compact">
+          <v-toolbar-title class="text-white">
+            <v-icon class="mr-2">mdi-file-document-check</v-icon>
+            Resumen del Informe - {{ storeInfActividad.actividad?.codigo }}
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="mostrarResumen = false" variant="text">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+
+        <v-card-text class="pa-6">
+          <!-- Resumen del Informe -->
+          <div class="resumen-container">
+            <!-- Información General -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="bg-primary-lighten-5">
+                <v-icon class="mr-2">mdi-information</v-icon>
+                Información General
+              </v-card-title>
+              <v-card-text>
+                <v-row>
+                  <v-col cols="12" md="6">
+                    <v-list density="compact">
+                      <v-list-item>
+                        <template v-slot:prepend>
+                          <v-icon color="primary">mdi-calendar</v-icon>
+                        </template>
+                        <v-list-item-title>Fecha de Ejecución</v-list-item-title>
+                        <v-list-item-subtitle>{{
+                          formData.fecha_ejecucion || 'No especificada'
+                        }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template v-slot:prepend>
+                          <v-icon color="primary">mdi-target</v-icon>
+                        </template>
+                        <v-list-item-title>Tipo de Actividad</v-list-item-title>
+                        <v-list-item-subtitle>{{
+                          storeInfActividad.actividad?.tipo_info?.tipo_actividad || 'N/A'
+                        }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </v-list>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-list density="compact">
+                      <v-list-item>
+                        <template v-slot:prepend>
+                          <v-icon color="primary">mdi-cash</v-icon>
+                        </template>
+                        <v-list-item-title>Presupuesto Ejecutado</v-list-item-title>
+                        <v-list-item-subtitle
+                          >{{ formatearMoneda(totalEjecutado) }} ({{
+                            porcentajeEjecucionTotal
+                          }}%)</v-list-item-subtitle
+                        >
+                      </v-list-item>
+                      <v-list-item>
+                        <template v-slot:prepend>
+                          <v-icon color="primary">mdi-file-document</v-icon>
+                        </template>
+                        <v-list-item-title>Archivos Adjuntos</v-list-item-title>
+                        <v-list-item-subtitle>
+                          {{ totalArchivosAdjuntos }} archivo(s)
+                        </v-list-item-subtitle>
+                      </v-list-item>
+                    </v-list>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+
+            <!-- Objetivos y Reporte -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="bg-primary-lighten-5">
+                <v-icon class="mr-2">mdi-target</v-icon>
+                Objetivos y Reporte
+              </v-card-title>
+              <v-card-text>
+                <v-row>
+                  <v-col cols="12" md="6">
+                    <h4 class="text-subtitle-1 font-weight-bold mb-2">Objetivo de la Actividad</h4>
+                    <p class="text-body-2 resumen-texto">
+                      {{ formData.objetivo_de_actividad || 'No especificado' }}
+                    </p>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <h4 class="text-subtitle-1 font-weight-bold mb-2">Cumplimiento del Objetivo</h4>
+                    <p class="text-body-2 resumen-texto">
+                      {{ formData.informe_de_objetivo_de_actividad || 'No especificado' }}
+                    </p>
+                  </v-col>
+                </v-row>
+                <v-row class="mt-4">
+                  <v-col cols="12">
+                    <h4 class="text-subtitle-1 font-weight-bold mb-2">Reporte de la Actividad</h4>
+                    <p class="text-body-2 resumen-texto">
+                      {{ formData.reporte_tipo || 'No especificado' }}
+                    </p>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+
+            <!-- Información Cuantitativa -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="bg-primary-lighten-5">
+                <v-icon class="mr-2">mdi-chart-bar</v-icon>
+                Información Cuantitativa
+              </v-card-title>
+              <v-card-text>
+                <p class="text-body-2 resumen-texto">
+                  {{ formData.informacion_cuantitativa || 'No especificada' }}
+                </p>
+                <div v-if="formData.archivos_cuantitativos?.length > 0" class="mt-2">
+                  <v-chip size="small" color="primary" variant="outlined" class="mr-2">
+                    {{ formData.archivos_cuantitativos.length }} archivo(s) adjunto(s)
+                  </v-chip>
+                </div>
+              </v-card-text>
+            </v-card>
+
+            <!-- Herramientas y Medios de Verificación -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="bg-primary-lighten-5">
+                <v-icon class="mr-2">mdi-tools</v-icon>
+                Herramientas y Medios de Verificación
+              </v-card-title>
+              <v-card-text>
+                <v-row>
+                  <v-col cols="12" md="6">
+                    <h4 class="text-subtitle-1 font-weight-bold mb-2">Herramientas Aplicadas</h4>
+                    <p class="text-body-2 resumen-texto">
+                      {{ formData.descripcion_herramientas || 'No especificadas' }}
+                    </p>
+                    <div v-if="formData.herramientas_archivos?.length > 0" class="mt-2">
+                      <v-chip size="small" color="primary" variant="outlined">
+                        {{ formData.herramientas_archivos.length }} archivo(s)
+                      </v-chip>
+                    </div>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <h4 class="text-subtitle-1 font-weight-bold mb-2">Medios de Verificación</h4>
+                    <p class="text-body-2 resumen-texto">
+                      {{ formData.medios_verificacion || 'No especificados' }}
+                    </p>
+                    <div v-if="formData.medios_archivos?.length > 0" class="mt-2">
+                      <v-chip size="small" color="primary" variant="outlined">
+                        {{ formData.medios_archivos.length }} archivo(s)
+                      </v-chip>
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+
+            <!-- Presupuesto -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="bg-primary-lighten-5">
+                <v-icon class="mr-2">mdi-cash-multiple</v-icon>
+                Resumen Presupuestario
+              </v-card-title>
+              <v-card-text>
+                <v-row>
+                  <v-col cols="12" md="4">
+                    <v-card variant="flat" color="grey-lighten-4" class="pa-3 text-center">
+                      <div class="text-h6 font-weight-bold">
+                        {{ formatearMoneda(presupuestoTotalPlanificado) }}
+                      </div>
+                      <div class="text-caption">Planificado</div>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="12" md="4">
+                    <v-card variant="flat" color="green-lighten-5" class="pa-3 text-center">
+                      <div class="text-h6 font-weight-bold">
+                        {{ formatearMoneda(totalEjecutado) }}
+                      </div>
+                      <div class="text-caption">Ejecutado</div>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="12" md="4">
+                    <v-card
+                      variant="flat"
+                      :color="diferenciaTotal >= 0 ? 'green-lighten-5' : 'red-lighten-5'"
+                      class="pa-3 text-center"
+                    >
+                      <div
+                        class="text-h6 font-weight-bold"
+                        :class="getColorDiferencia(diferenciaTotal)"
+                      >
+                        {{ formatearMoneda(diferenciaTotal) }}
+                      </div>
+                      <div class="text-caption">Diferencia</div>
+                    </v-card>
+                  </v-col>
+                </v-row>
+                <v-row class="mt-4">
+                  <v-col cols="12">
+                    <v-progress-linear
+                      :model-value="parseFloat(porcentajeEjecucionTotal)"
+                      height="20"
+                      :color="getColorPorcentajeBar(porcentajeEjecucionTotal)"
+                      rounded
+                    >
+                      <template v-slot:default="{ value }">
+                        <strong>{{ Math.round(value) }}% Ejecutado</strong>
+                      </template>
+                    </v-progress-linear>
+                  </v-col>
+                </v-row>
+                <v-row v-if="procedenciaFondos.length > 0" class="mt-4">
+                  <v-col cols="12">
+                    <h4 class="text-subtitle-1 font-weight-bold mb-2">Desglose por Fuente</h4>
+                    <v-table density="compact">
+                      <thead>
+                        <tr>
+                          <th>Fuente</th>
+                          <th class="text-right">Planificado</th>
+                          <th class="text-right">Ejecutado</th>
+                          <th class="text-right">Diferencia</th>
+                          <th class="text-center">Verificado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="fondo in procedenciaFondos" :key="fondo.id">
+                          <td>{{ fondo.nombre }}</td>
+                          <td class="text-right">{{ formatearMoneda(fondo.monto) }}</td>
+                          <td class="text-right">
+                            {{ formatearMoneda(fondo.montoEjecutado || 0) }}
+                          </td>
+                          <td
+                            class="text-right"
+                            :class="getColorDiferencia(fondo.monto - (fondo.montoEjecutado || 0))"
+                          >
+                            {{ formatearMoneda(fondo.monto - (fondo.montoEjecutado || 0)) }}
+                          </td>
+                          <td class="text-center">
+                            <v-icon :color="fondo.verificado ? 'success' : 'error'">
+                              {{ fondo.verificado ? 'mdi-check-circle' : 'mdi-close-circle' }}
+                            </v-icon>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </v-table>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+
+            <!-- Comentarios y Recomendaciones -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="bg-primary-lighten-5">
+                <v-icon class="mr-2">mdi-comment-text</v-icon>
+                Comentarios y Recomendaciones
+              </v-card-title>
+              <v-card-text>
+                <p class="text-body-2 resumen-texto">
+                  {{ formData.comentarios_recomendaciones || 'No especificados' }}
+                </p>
+              </v-card-text>
+            </v-card>
+
+            <!-- Validación del Formulario -->
+            <v-alert v-if="!formularioCompleto" type="warning" variant="tonal" class="mb-4">
+              <template v-slot:title>
+                <strong>Formulario Incompleto</strong>
+              </template>
+              Por favor, complete todos los campos requeridos antes de enviar el informe.
+            </v-alert>
+
+            <v-alert v-else type="success" variant="tonal" class="mb-4">
+              <template v-slot:title>
+                <strong>Formulario Completo</strong>
+              </template>
+              Todos los campos requeridos han sido completados. Puede proceder con el envío del
+              informe.
+            </v-alert>
+          </div>
+        </v-card-text>
+
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn
+            color="grey"
+            variant="outlined"
+            @click="mostrarResumen = false"
+            prepend-icon="mdi-arrow-left"
+          >
+            Volver al Formulario
+          </v-btn>
+          <v-btn
+            color="primary"
+            @click="enviarFormulario"
+            :loading="enviando"
+            :disabled="!formularioCompleto"
+            prepend-icon="mdi-send"
+          >
+            Confirmar y Enviar Informe
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup>
 import { onMounted, ref, computed, reactive, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useInformeActividadStore } from '@/modules/formularios/store/useInformeActividadStore'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
 import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAvanceIndicadores.vue'
+import { useInformeActividad } from '@/modules/formularios/composables/useInformeActividad'
 
 const route = useRoute()
+const router = useRouter()
 const storeInfActividad = useInformeActividadStore()
 const form = ref(null)
 const enviando = ref(false)
+const mostrarResumen = ref(false)
 
 const idactividad = route.params.id
+
+//Iniciar el composable
+const { crearInformeActividadMin, informeActividadMinRespuesta } = useInformeActividad()
 
 // Form data reactivo
 const formData = reactive({
@@ -588,6 +900,34 @@ const datosContribucion = ref({})
 
 // Variable para presupuesto ejecutado manual
 const presupuestoEjecutadoManual = ref(0)
+
+// Computed para verificar si el formulario está completo
+const formularioCompleto = computed(() => {
+  const camposRequeridos = [
+    'fecha_ejecucion',
+    'objetivo_de_actividad',
+    'informe_de_objetivo_de_actividad',
+    'reporte_tipo',
+    'informacion_cuantitativa',
+    'descripcion_herramientas',
+    'medios_verificacion',
+    'comentarios_recomendaciones',
+  ]
+
+  return camposRequeridos.every((campo) => {
+    const valor = formData[campo]
+    return valor && valor.toString().trim().length > 0
+  })
+})
+
+// Total de archivos adjuntos
+const totalArchivosAdjuntos = computed(() => {
+  return (
+    (formData.archivos_cuantitativos?.length || 0) +
+    (formData.herramientas_archivos?.length || 0) +
+    (formData.medios_archivos?.length || 0)
+  )
+})
 
 const recibirDatosContribucion = (payload) => {
   datosContribucion.value = payload
@@ -677,6 +1017,13 @@ const getColorPorcentaje = (porcentaje) => {
   return 'red-lighten-5'
 }
 
+const getColorPorcentajeBar = (porcentaje) => {
+  if (porcentaje >= 100) return 'success'
+  if (porcentaje >= 80) return 'primary'
+  if (porcentaje >= 50) return 'warning'
+  return 'error'
+}
+
 // Computed properties para procedencia de fondos
 const presupuestoTotalPlanificado = computed(() => {
   return parseFloat(storeInfActividad.actividad?.presupuesto) || 0
@@ -731,8 +1078,8 @@ const calcularTotalesProcedencia = () => {}
 
 const actualizarVerificacion = () => {}
 
-// Métodos del formulario
-const enviarFormulario = async () => {
+// Método para abrir el resumen
+const abrirResumen = async () => {
   const { valid } = await form.value.validate()
 
   if (!valid) {
@@ -740,6 +1087,11 @@ const enviarFormulario = async () => {
     return
   }
 
+  mostrarResumen.value = true
+}
+
+// Método para enviar el formulario
+const enviarFormulario = async () => {
   enviando.value = true
   try {
     // Preparar datos para envío
@@ -754,8 +1106,22 @@ const enviarFormulario = async () => {
       timestamp: new Date().toISOString(),
     }
 
+    console.log('Datos a enviar:', datosEnvio)
+
+    //Guardar la informacion
+    await crearInformeActividadMin(datosEnvio)
+
+    // Aquí iría la llamada a la API para guardar el informe
+    // await apiGuardarInforme(datosEnvio)
+
     console.log('Informe enviado exitosamente')
-    // Mostrar mensaje de éxito, redirigir, etc.
+
+    // Cerrar el diálogo de resumen
+    mostrarResumen.value = false
+    router.push('/actividades/informe/')
+
+    // Mostrar mensaje de éxito
+    // Puedes agregar un snackbar o alerta aquí
   } catch (error) {
     console.error('Error al enviar el informe:', error)
   } finally {
@@ -862,6 +1228,21 @@ const limpiarFormulario = () => {
 
 .gap-3 {
   gap: 12px;
+}
+
+/* Estilos para el resumen */
+.resumen-container {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.resumen-texto {
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.bg-primary-lighten-5 {
+  background-color: rgba(25, 118, 210, 0.05);
 }
 
 /* Ajustes responsivos */

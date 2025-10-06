@@ -912,7 +912,7 @@ const inicializado = ref(true)
 //Esconder columnas
 const hiddenColumnsConfig = computed(() => {
   return {
-    columns: [10], // Columnas 1, 3 y 7
+    columns: [10, 21, 20, 16], // Columnas 1, 3 y 7
   }
 })
 
@@ -993,6 +993,7 @@ const columns = ref([
     data: 'totalReportado',
     title: 'Total Reportado',
     type: 'numeric',
+    readOnly: true,
     width: 100,
   },
   {
@@ -1011,7 +1012,7 @@ const columns = ref([
     data: 'gradoEjecucion',
     type: 'dropdown',
     title: 'Grado Ejecucion',
-    readOnly: true,
+    //readOnly: true,
     width: 120,
     source: [
       'PLANIFICADA',
