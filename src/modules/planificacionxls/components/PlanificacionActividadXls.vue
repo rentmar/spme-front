@@ -1128,6 +1128,11 @@ const cargar = async () => {
     if (actividadesDisponibles.value && actividadesDisponibles.value.length > 0) {
       tableData.value = [...actividadesDisponibles.value]
       actividadesDisponibles.value = []
+
+      //Calcular saldos iniciales para todas las filas
+      tableData.value.forEach((fila, index) => {
+        calcularSaldo(index)
+      })
       onTablaCargada()
     }
   } catch (e) {
@@ -1150,24 +1155,58 @@ onMounted(() => {
 })
 
 /*************** Manejo de cambios en la Tabla *************************/
+/*************** Manejo de cambios en la Tabla *************************/
 const handleChange = (changes, source) => {
   if (source === 'loadData') {
-    //Ignora los cambios iniciales al cargar los datos
+    // Ignora los cambios iniciales al cargar los datos
     infoMsg('Actividades Cargadas')
     return
   }
 
-  //Procesar los cambios en las fechas para actualizar el gradoEjecucion
+  // Procesar los cambios en las fechas para actualizar el gradoEjecucion
   if (changes) {
     changes.forEach(([row, prop, oldValue, newValue]) => {
-      //Verificar si se modifico fecha de inicio y cierre
+      // Verificar si se modificó fecha de inicio y cierre
       if (prop === 'fecha_inicio' || prop === 'fecha_cierre') {
         setTimeout(() => {
           verificarFechas(row)
         }, 50)
       }
+
+      // ✅ NUEVO: Calcular saldo automáticamente cuando cambia presupuesto o totalReportado
+      if (prop === 'presupuesto' || prop === 'totalReportado') {
+        setTimeout(() => {
+          calcularSaldo(row)
+        }, 50)
+      }
     })
   }
+}
+
+// Método para calcular el saldo automáticamente
+const calcularSaldo = (rowIndex) => {
+  const fila = tableData.value[rowIndex]
+  if (!fila) return
+
+  // Obtener valores numéricos (convertir a número y manejar valores nulos/undefined)
+  const presupuesto = parseFloat(fila.presupuesto) || 0
+  const totalReportado = parseFloat(fila.totalReportado) || 0
+
+  // Calcular saldo
+  const saldo = presupuesto - totalReportado
+
+  // Actualizar el valor en los datos
+  fila.saldo = saldo
+
+  // Actualizar visualmente en la tabla
+  if (hotTable.value?.hotInstance) {
+    setTimeout(() => {
+      hotTable.value.hotInstance.setDataAtRowProp(rowIndex, 'saldo', saldo)
+      hotTable.value.hotInstance.render()
+    }, 50)
+  }
+
+  console.log(`✅ Saldo calculado: ${presupuesto} - ${totalReportado} = ${saldo}`)
 }
 
 // Función simple para verificar fechas
