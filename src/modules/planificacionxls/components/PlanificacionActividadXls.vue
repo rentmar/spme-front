@@ -912,7 +912,7 @@ const inicializado = ref(true)
 //Esconder columnas
 const hiddenColumnsConfig = computed(() => {
   return {
-    columns: [10, 21, 20, 16], // Columnas 1, 3 y 7
+    columns: [10, 21, 20, 16, 11, 13], // Columnas 1, 3 y 7
   }
 })
 
