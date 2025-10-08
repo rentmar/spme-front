@@ -1155,7 +1155,6 @@ onMounted(() => {
 })
 
 /*************** Manejo de cambios en la Tabla *************************/
-/*************** Manejo de cambios en la Tabla *************************/
 const handleChange = (changes, source) => {
   if (source === 'loadData') {
     // Ignora los cambios iniciales al cargar los datos
@@ -1173,7 +1172,7 @@ const handleChange = (changes, source) => {
         }, 50)
       }
 
-      // ✅ NUEVO: Calcular saldo automáticamente cuando cambia presupuesto o totalReportado
+      // Saldo automáticamente cuando cambia presupuesto o totalReportado
       if (prop === 'presupuesto' || prop === 'totalReportado') {
         setTimeout(() => {
           calcularSaldo(row)
