@@ -27,7 +27,7 @@ export const useInformeTareaStore = defineStore('informe-tarea', () => {
     error.value = null // Limpiar errores previos
 
     try {
-      // 1. Cargar la información detallada usando el composable
+      //Cargar la información detallada usando el composable
       await cargarTareaPorIdDetallesInformacion(idtarea)
 
       // La respuesta completa (incluyendo nodos, selecciones, etc.)

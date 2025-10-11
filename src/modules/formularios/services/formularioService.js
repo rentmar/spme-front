@@ -2,6 +2,7 @@
 import api from '@/services/axios'
 
 export const formulariosServico = {
+  /************************ INFORME DE ACTIVIDAD MINIMO *******************************************/
   /* Crear formulario minimo  de Informe de Actividad */
   crearInformeActividadMinimo: async (informeActividadMinData) => {
     try {
@@ -10,6 +11,36 @@ export const formulariosServico = {
     } catch (error) {
       console.error('Axios: Error al crear el Informe de Actividad Minimo', error)
       throw error
+    }
+  },
+  /************************ INFORME DE SUBACTIVIDAD MINIMO *******************************************/
+  /* Crear formulario minimo de Informe de Subactividad */
+  informeSubactividadMinimoCrear: async (informeActividadMinData) => {
+    try {
+      const respuesta = await api.post('crear-informes-tarea-minimo/', informeActividadMinData)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al crear el Informe de Subactividad Minimo', error)
+      throw error
+    }
+  },
+  /* Listar informe de subactividad minimo */
+  informeSubactividadMinimoListar: async () => {
+    try {
+      const respuesta = await api.post('/informe-de-tarea-min/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: Error al listar el informe de Subactividad Minimo', err)
+      throw err
+    }
+  },
+  /* Infor de subactividad minimo por su id */
+  informeSubactividadMinimoPorId: async (idinfsubac) => {
+    try {
+      const respuesta = await api.post('/informe-de-tarea-min/' + idinfsubac + '/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: Error al obtener el informe de subactividad con id: ' + idinfsubac, err)
     }
   },
 }
