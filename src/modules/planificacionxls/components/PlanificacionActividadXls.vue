@@ -410,6 +410,13 @@
     </v-card>
   </v-dialog>
 
+  <TareasPopUp
+    v-model:visible="mostrarTareasPopup"
+    :actividad-data="selectedRowData"
+    @cerrar="manejarCerrarPopup"
+    @agregarTarea="manejarAgregarTarea"
+  />
+
   <!-- Snackbar para mostrar mensajes -->
   <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
     {{ snackbar.message }}
@@ -446,6 +453,7 @@ import { storeToRefs } from 'pinia'
 import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
 import ActividadRelacionEstructura from './parciales/ActividadRelacionEstructura.vue'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
+import TareasPopUp from './parciales/TareasPopUp.vue'
 
 //Libreria de fechas
 import { parse, format, isValid, isBefore } from 'date-fns'
@@ -516,6 +524,20 @@ const usuario = computed(() => {
     permisos: userStore.permisos,
   }
 })
+/******************** Popup Tareas Subactividad *****************************************/
+const mostrarTareasPopup = ref(false)
+const actividadSeleccionada = ref(null)
+
+const manejarCerrarPopup = () => {
+  mostrarTareasPopup.value = false
+  actividadSeleccionada.value = null
+}
+
+const manejarAgregarTarea = (actividad) => {
+  console.log('Agregar tarea para:', actividad)
+  // Aquí puedes abrir tu diálogo existente de agregar tarea
+  // mostrarDialogo.value = true
+}
 /******************** Trazador ****************************************/
 const trazadorRef = ref(null)
 const tablaDataDisponible = ref(false)
@@ -1316,6 +1338,7 @@ const handleSelection = (startRow, startCol, endRow, endCol, selectionLayer) => 
       }
     })
     selectedRowData.value = rowObject
+    mostrarTareasPopup.value = true
   } else {
     selectedRowData.value = null
   }
