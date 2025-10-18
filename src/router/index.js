@@ -122,7 +122,7 @@ const router = createRouter({
     {
       path: '/planificacion/cronogramas',
       name: 'cronogramas',
-      component: () => import('@/views/planeamiento/GanttChart.vue'),
+      component: () => import('@/views/planeamiento/ActividadesGantView.vue'),
       //meta: { requiresAuth: true, requiredRole: 'A' },
     },
     {

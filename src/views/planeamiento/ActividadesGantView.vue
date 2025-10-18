@@ -22,7 +22,18 @@ export default {
       currentPage: 1,
       mostrarHoy: true,
       fechaHoy: new Date().toISOString().split('T')[0],
-      meses: [
+      // Nueva variable para controlar el mes inicial
+      mesInicial: new Date().getMonth(), // Mes actual como punto de partida
+      anioInicial: new Date().getFullYear(), // Año actual como punto de partida
+      meses: [], // Ahora se calculará dinámicamente
+      estados: [],
+      actividades: [],
+    }
+  },
+  computed: {
+    // Calcular los meses a mostrar basados en mesInicial y anioInicial
+    mesesParaMostrar() {
+      const nombresMeses = [
         'Enero',
         'Febrero',
         'Marzo',
@@ -35,12 +46,24 @@ export default {
         'Octubre',
         'Noviembre',
         'Diciembre',
-      ],
-      estados: [],
-      actividades: [],
-    }
-  },
-  computed: {
+      ]
+
+      const mesesAMostrar = []
+
+      for (let i = 0; i < this.cantidad; i++) {
+        const mesCalculado = (this.mesInicial + i) % 12
+        const anioCalculado = this.anioInicial + Math.floor((this.mesInicial + i) / 12)
+
+        mesesAMostrar.push({
+          nombre: `${nombresMeses[mesCalculado]} ${anioCalculado}`,
+          mes: mesCalculado,
+          anio: anioCalculado
+        })
+      }
+
+      return mesesAMostrar
+    },
+
     viewBox() {
       const width =
         this.xInicial + this.anchoColumnaActividad + (this.ancho + this.espacio) * this.cantidad
@@ -98,6 +121,33 @@ export default {
     window.removeEventListener('resize', this.ajustarAlturaSVG)
   },
   methods: {
+    // Métodos para navegar entre meses (uno por uno)
+    navegarMeses(direccion) {
+      if (direccion === 'adelante') {
+        // Avanzar un mes
+        if (this.mesInicial === 11) {
+          this.mesInicial = 0
+          this.anioInicial += 1
+        } else {
+          this.mesInicial += 1
+        }
+      } else {
+        // Retroceder un mes
+        if (this.mesInicial === 0) {
+          this.mesInicial = 11
+          this.anioInicial -= 1
+        } else {
+          this.mesInicial -= 1
+        }
+      }
+    },
+
+    irAlPresente() {
+      const ahora = new Date()
+      this.mesInicial = ahora.getMonth()
+      this.anioInicial = ahora.getFullYear()
+    },
+
     async obtenerActividades() {
       this.loading = true
       this.error = null
@@ -139,12 +189,21 @@ export default {
       const month = date.getMonth()
       const day = date.getDate()
 
+      // Encontrar la posición del mes en nuestra escala actual
+      const mesEnEscala = this.mesesParaMostrar.findIndex(
+        m => m.mes === month && m.anio === year
+      )
+
+      if (mesEnEscala === -1) {
+        return -1 // Fuera del rango visible
+      }
+
       const monthWidth = this.ancho + this.espacio
       const daysInMonth = new Date(year, month + 1, 0).getDate()
 
       const dayPosition = (day / daysInMonth) * monthWidth
 
-      return this.xInicial + this.anchoColumnaActividad + month * monthWidth + dayPosition - 5
+      return this.xInicial + this.anchoColumnaActividad + mesEnEscala * monthWidth + dayPosition - 5
     },
 
     calcularAnchoBarra(fecha_iniciocio, fecha_cierre) {
@@ -228,7 +287,6 @@ export default {
   },
 }
 </script>
-<!---->
 <template>
   <v-container>
     <v-toolbar color="primary" dark>
@@ -253,6 +311,30 @@ export default {
           :item-value="(item) => item.value"
           clearable
         ></v-select>
+      </v-col>
+    </v-row>
+
+    <!-- Controles de navegación de meses en una sola línea -->
+    <v-row class="mt-4 justify-center align-center">
+      <v-col cols="12" class="d-flex justify-center align-center flex-wrap gap-2">
+        <v-btn @click="navegarMeses('atras')" color="primary" size="small">
+          <v-icon>mdi-chevron-left</v-icon>
+          Mes Anterior
+        </v-btn>
+
+        <v-btn @click="irAlPresente" color="secondary" size="small">
+          <v-icon>mdi-calendar-today</v-icon>
+          Mes Actual
+        </v-btn>
+
+        <v-btn @click="navegarMeses('adelante')" color="primary" size="small">
+          Mes Siguiente
+          <v-icon>mdi-chevron-right</v-icon>
+        </v-btn>
+
+        <v-chip color="info" variant="outlined" class="ml-2">
+          Mostrando: {{ mesesParaMostrar[0]?.nombre }} - {{ mesesParaMostrar[mesesParaMostrar.length - 1]?.nombre }}
+        </v-chip>
       </v-col>
     </v-row>
 
@@ -284,7 +366,7 @@ export default {
       <v-col cols="12" md="9">
         <svg id="fondo" :viewBox="viewBox">
           <!-- Cabecera con meses -->
-          <g v-for="(mes, i) in meses" :key="i">
+          <g v-for="(mes, i) in mesesParaMostrar" :key="i">
             <rect
               :x="xInicial + anchoColumnaActividad + i * (ancho + espacio)"
               :y="y"
@@ -302,7 +384,7 @@ export default {
               font-family="Arial"
               alignment-baseline="middle"
             >
-              {{ mes }}
+              {{ mes.nombre }}
             </text>
           </g>
 
