@@ -356,7 +356,12 @@
       </div>
 
       <!-- Panel Derecho - Contenido Adicional -->
-      <div class="side-panel" v-if="sidePanelVisible"></div>
+      <div class="side-panel" v-if="sidePanelVisible">
+        <ListaTareasActividad
+          v-if="selectedRowData"
+          :actividad="selectedRowData"
+        ></ListaTareasActividad>
+      </div>
     </div>
   </div>
   <!-- Modal de Confirmación Sencillo -->
@@ -410,12 +415,12 @@
     </v-card>
   </v-dialog>
 
-  <TareasPopUp
+  <!-- <TareasPopUp
     v-model:visible="mostrarTareasPopup"
     :actividad-data="selectedRowData"
     @cerrar="manejarCerrarPopup"
     @agregarTarea="manejarAgregarTarea"
-  />
+  /> -->
 
   <!-- Snackbar para mostrar mensajes -->
   <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
@@ -454,6 +459,7 @@ import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto
 import ActividadRelacionEstructura from './parciales/ActividadRelacionEstructura.vue'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 import TareasPopUp from './parciales/TareasPopUp.vue'
+import ListaTareasActividad from './parciales/ListaTareasActividad.vue'
 
 //Libreria de fechas
 import { parse, format, isValid, isBefore } from 'date-fns'
