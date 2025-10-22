@@ -43,4 +43,18 @@ export const formulariosServico = {
       console.error('Axios: Error al obtener el informe de subactividad con id: ' + idinfsubac, err)
     }
   },
+  /* Listar Actividad - Informes + Tareas/Subactividad - Informes */
+  listaActividadPorIdInformesActSubac: async (idactividad) => {
+    try {
+      const respuesta = await api.get('/actividades/' + idactividad + '/informes-completos/')
+      return respuesta.data
+    } catch (err) {
+      console.error(
+        'Axios: Error al obtener la lista de informes actividad/subactividad, actividad id: ' +
+          idactividad,
+        err,
+      )
+      throw err
+    }
+  },
 }

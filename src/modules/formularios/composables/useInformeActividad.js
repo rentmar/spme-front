@@ -11,6 +11,7 @@ export function useInformeActividad() {
   const informeActividadMin = ref() //Un informe de actividad
   const informeActividadMinLista = ref([]) //Lista de informes de actividad
   const informeActividadMinRespuesta = ref() //Respuesta de la creacion del informe de actividad
+  const listaInformeActividadSubactividadMin = ref([]) //Lista de informes de actividad y subactividad de una actividad por id
 
   //Obtener todos los informes minimos de actividad por id de Actividad
 
@@ -29,6 +30,21 @@ export function useInformeActividad() {
     }
   }
 
+  //LIsta de Informes de Actividad y Subactividad
+  async function listarInformeActividadSubactividadMinPorId(idactividad) {
+    loading.value = true
+    try {
+      const respuesta = await formulariosServico.listaActividadPorIdInformesActSubac(idactividad)
+      listaInformeActividadSubactividadMin.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+      console.eroor('No se pudo obtener la lista', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados
     loading,
@@ -36,8 +52,10 @@ export function useInformeActividad() {
     informeActividadMin,
     informeActividadMinLista,
     informeActividadMinRespuesta,
+    listaInformeActividadSubactividadMin,
     //fun
     crearInformeActividadMin, //crea el informe de actividad y devuelve los datos del informe
+    listarInformeActividadSubactividadMinPorId, //lista de los informes de actividad y subactividad
     //obtenerInformesActividad, //Lista los informes de una actividad
   }
 }

@@ -12,10 +12,19 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
   const actividadDetalles = ref() //La totalidad de informacion de la rest api
   const actividad = ref() //Contiene la informacion de la actividad
   const tareas = ref([]) //Contiene la informacion de las tareas
+  const listaAcvidadSubActividadInformes = ref([]) //Contiene la lista de informes de actividad y subactividades
+  const listaInformeActividad = ref([]) //Lista de informes de una actividad
+  const listaInformeTareas = ref([]) //Lista de informes de una tarea
+  const listaInformes = ref([]) //Lista conjunta de los informes
 
   //Iniciar composables
   const { actividadInfo, obtenerActidadPorId } = useActividad() //manejo de actividades
-  const { informeActividadMinRespuesta, crearInformeActividadMin } = useInformeActividad()
+  const {
+    informeActividadMinRespuesta,
+    listaInformeActividadSubactividadMin,
+    crearInformeActividadMin,
+    listarInformeActividadSubactividadMinPorId,
+  } = useInformeActividad()
 
   //Cargar la actividad y desestructurar en los estados
   async function cargarActividadPorId(idactividad) {
@@ -41,6 +50,41 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
     }
   }
 
+  //Cargar los informes de actividad y desestructurar los datos
+  async function cargarInformesActividadPorId(idactividad) {
+    loading.value = true
+    try {
+      //Cargar los informes usando el composable
+      await listarInformeActividadSubactividadMinPorId(idactividad)
+
+      // Desestructurar la respuesta y almacenar en las variables correspondientes
+      if (listaInformeActividadSubactividadMin.value) {
+        listaAcvidadSubActividadInformes.value = listaInformeActividadSubactividadMin.value
+        const respuesta = listaInformeActividadSubactividadMin.value
+        // Almacenar informes de actividad
+        listaInformeActividad.value = respuesta.informes_actividad || []
+        // Almacenar informes de tareas (extraer todos los informes_tarea de todas las tareas)
+        const todosInformesTareas = []
+        if (respuesta.tareas_con_todos_informes) {
+          respuesta.tareas_con_todos_informes.forEach((tarea) => {
+            if (tarea.informes_tarea && tarea.informes_tarea.length > 0) {
+              todosInformesTareas.push(...tarea.informes_tarea)
+            }
+          })
+        }
+        listaInformeTareas.value = todosInformesTareas
+
+        // Combinar ambos tipos de informes en listaInformes
+        listaInformes.value = [...listaInformeActividad.value, ...listaInformeTareas.value]
+      }
+    } catch (err) {
+      console.error('Error al cargar los informes de la actividad con id: ' + idactividad, err)
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados
     loading,
@@ -48,7 +92,12 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
     actividadDetalles,
     actividad,
     tareas,
+    listaAcvidadSubActividadInformes,
+    listaInformeActividad,
+    listaInformeTareas,
+    listaInformes,
     //Funciones
     cargarActividadPorId,
+    cargarInformesActividadPorId,
   }
 })
