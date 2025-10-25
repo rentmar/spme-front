@@ -14,6 +14,7 @@ const alertMessage = ref('')
 const alertType = ref('danger')
 const router = useRouter()
 const userStore = useUserStore()
+const baseUrl = import.meta.env.VITE_API_BASE
 
 const displayAlert = (message, type) => {
   alertMessage.value = message
@@ -50,7 +51,7 @@ const btnlogin = async () => {
   }
   try {
     const response = await axios.post(
-      'http://127.0.0.1:8000/autenticacion_api/autenticarUsuario/',
+      baseUrl+'/autenticacion_api/autenticarUsuario/',
       {
         usuario: usuario.value,
         password: password.value,

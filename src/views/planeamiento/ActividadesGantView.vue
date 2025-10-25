@@ -1,6 +1,6 @@
 <script>
 import axios from 'axios'
-
+const baseUrl = import.meta.env.VITE_API_BASE
 export default {
   data() {
     return {
@@ -155,7 +155,7 @@ export default {
       try {
         // const token = this.userStore.token;
         const response = await axios.get(
-          'http://127.0.0.1:8000/actividades_api/obtenerActividadesGantt/',
+          baseUrl+'/actividades_api/obtenerActividadesGantt/',
           {
             headers: {
               'Content-Type': 'application/json',

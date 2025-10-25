@@ -121,7 +121,7 @@
 
 <script>
 import axios from 'axios';
-
+const baseUrl = import.meta.env.VITE_API_BASE
 export default {
   data() {
     return {
@@ -142,7 +142,7 @@ export default {
 
   methods: {
     async fetchDashboardData() {
-      const API_URL = 'http://127.0.0.1:8000/actividades_api/obtenerDashboardActividad/';
+      const API_URL = baseUrl+'/actividades_api/obtenerDashboardActividad/';
 
       this.loading = true;
 

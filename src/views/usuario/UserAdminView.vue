@@ -18,7 +18,88 @@
       <v-row>
         <v-col cols="12">
           <PaginaTituloIcono :titulo="'ADMINISTRACIÓN DE USUARIOS'" :icon="'mdi-account-cog'" />
+           <!-- EXCEL-->
+      <div>
+    <!-- En la sección de botones, agrega esto: -->
+    <v-btn
+      color="primary"
+      @click="openImportDialog"
+      class="mr-2"
+    >
+      <v-icon left>mdi-upload</v-icon>
+      Importar Excel
+    </v-btn>
 
+    <!-- Agrega este dialog para la importación -->
+    <v-dialog v-model="importDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span>Importar Usuarios desde Excel</span>
+          <v-btn icon @click="importDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-card-text>
+          <v-alert type="info" class="mb-4">
+            <div class="text-body-2">
+              <strong>Formato requerido:</strong> El archivo Excel debe contener las siguientes columnas:
+              <ul class="mt-2">
+                <li><strong>usuario</strong> (requerido)</li>
+                <li><strong>nombre</strong> (requerido)</li>
+                <li><strong>paterno</strong> (requerido)</li>
+                <li><strong>materno</strong> (opcional)</li>
+                <li><strong>ci</strong> (requerido)</li>
+                <li><strong>cargo</strong> (requerido)</li>
+                <li><strong>banco</strong> (opcional)</li>
+                <li><strong>numero_cuenta</strong> (opcional)</li>
+                <li><strong>tipo_cuenta</strong> (opcional)</li>
+                <li><strong>is_active</strong> (true/false)</li>
+                <li><strong>password</strong> (si está vacío, se usará "password123")</li>
+                <li><strong>permisos</strong> (opcional)</li>
+              </ul>
+            </div>
+          </v-alert>
+
+          <v-file-input
+            ref="fileInput"
+            v-model="file"
+            accept=".xlsx,.xls,.ods"
+            label="Seleccionar archivo Excel"
+            prepend-icon="mdi-file-excel"
+            @change="handleFileSelect"
+            :loading="importingUsers"
+          ></v-file-input>
+
+          <div class="text-center mt-4">
+            <v-btn
+              color="primary"
+              text
+              @click="downloadTemplate"
+              class="mr-2"
+            >
+              <v-icon left>mdi-download</v-icon>
+              Descargar Plantilla
+            </v-btn>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="grey"
+            text
+            @click="importDialog = false"
+            :disabled="importingUsers"
+          >
+            Cancelar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
+
+    <!--FIN EXCEL-->
           <!-- Barra de acciones -->
           <div class="users-admin-actions mb-4">
             <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreateDialog">
@@ -156,6 +237,7 @@
         </v-col>
       </v-row>
     </template>
+
 
     <!-- Crear/Editar Usuario -->
     <v-dialog v-model="userDialog" max-width="800" persistent>
@@ -387,7 +469,7 @@ import { ref, computed, onMounted } from 'vue'
 //import { useAuthStore } from '@/stores/auth'
 import { useSnackbar } from '@/composables/useSnackbar'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
-//import * as XLSX from 'xlsx'
+import * as XLSX from 'xlsx'
 
 const { successMsg, errorMsg } = useSnackbar()
 
@@ -396,6 +478,7 @@ const availablePermissions = ['A', 'B', 'C', 'D'] // Ajustar según tus permisos
 const accountTypeOptions = ['Ahorros', 'Corriente']
 
 const userForm = ref(null)
+const baseUrl = import.meta.env.VITE_API_BASE
 
 // Datos y estado
 const loading = ref(true)
@@ -404,6 +487,7 @@ const savingUser = ref(false)
 const loadingEdit = ref(false)
 //const loadingDelete = ref(false)
 const resettingPassword = ref(false)
+const importingUsers = ref(false)
 
 const users = ref([])
 const search = ref('')
@@ -411,7 +495,11 @@ const userDialog = ref(false)
 const resetPasswordDialog = ref(false)
 //const confirmDeleteDialog = ref(false)
 const filterDialog = ref(false)
+const importDialog = ref(false)
 const isEditing = ref(false)
+
+const fileInput = ref(null)
+const file = ref(null)
 
 const currentUser = ref({
   id:null,
@@ -503,7 +591,7 @@ const fetchUsers = async () => {
   try {
     tableLoading.value = true
     loading.value = true
-    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/listaUsuarios/');
+    const response = await axios.get(baseUrl+'/autenticacion_api/listaUsuarios/');
     const data = response.data;
     users.value = data.usuarios.map(user => ({
     id: user.id,
@@ -589,7 +677,7 @@ const saveUser = async () => {
         id_usuario: currentUser.value.id,
       };
        await axios.put(
-        'http://127.0.0.1:8000/autenticacion_api/actualizarUsuario/',
+        baseUrl+'/autenticacion_api/actualizarUsuario/',
         updatePayload
       );
       successMsg('Usuario actualizado correctamente');
@@ -601,7 +689,7 @@ const saveUser = async () => {
       };
 
       await axios.post(
-        'http://127.0.0.1:8000/autenticacion_api/crearUsuario/',
+        baseUrl+'/autenticacion_api/crearUsuario/',
         createPayload
       )
       successMsg('Usuario creado correctamente')
@@ -640,7 +728,7 @@ const resetPassword = async () => {
     };
 
     await axios.put(
-      'http://127.0.0.1:8000/autenticacion_api/cambiarPwdUsuario/',
+      baseUrl+'/autenticacion_api/cambiarPwdUsuario/',
       payload
     );
 
@@ -666,7 +754,7 @@ const toggleUserStatus = async (user) => {
     };
 
     await axios.put(
-      'http://127.0.0.1:8000/autenticacion_api/cambiarEstadoUsuario/',
+      baseUrl+'/autenticacion_api/cambiarEstadoUsuario/',
       payload
     );
 
@@ -753,6 +841,179 @@ onMounted(() => {
   fetchUsers()
 })
 
+// NUEVOS MÉTODOS PARA IMPORTAR DESDE EXCEL
+const openImportDialog = () => {
+  importDialog.value = true
+}
+
+const handleFileSelect = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // Validar que sea un archivo Excel
+  const validTypes = [
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.oasis.opendocument.spreadsheet'
+  ]
+
+  if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|ods)$/)) {
+    errorMsg('Por favor, selecciona un archivo Excel válido (.xlsx, .xls, .ods)')
+    return
+  }
+
+  readExcelFile(file)
+}
+
+const readExcelFile = (file) => {
+  const reader = new FileReader()
+
+  reader.onload = (e) => {
+    try {
+      const data = new Uint8Array(e.target.result)
+      const workbook = XLSX.read(data, { type: 'array' })
+
+      // Tomar la primera hoja
+      const firstSheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[firstSheetName]
+
+      // Convertir a JSON
+      const jsonData = XLSX.utils.sheet_to_json(worksheet)
+
+      if (jsonData.length === 0) {
+        errorMsg('El archivo está vacío')
+        return
+      }
+
+      processImportedData(jsonData)
+
+    } catch (error) {
+      console.error('Error reading Excel file:', error)
+      errorMsg('Error al leer el archivo Excel')
+    }
+  }
+
+  reader.onerror = () => {
+    errorMsg('Error al leer el archivo')
+  }
+
+  reader.readAsArrayBuffer(file)
+}
+
+const processImportedData = (data) => {
+  // Validar estructura del archivo
+  const requiredFields = ['usuario', 'nombre', 'paterno', 'ci', 'cargo']
+  const firstRow = data[0]
+
+  const missingFields = requiredFields.filter(field => !(field in firstRow))
+  if (missingFields.length > 0) {
+    errorMsg(`Faltan campos requeridos en el archivo: ${missingFields.join(', ')}`)
+    return
+  }
+
+  // Preparar datos para importar
+  const usersToImport = data.map((row, index) => ({
+    usuario: row.usuario || '',
+    nombre: row.nombre || '',
+    paterno: row.paterno || '',
+    materno: row.materno || '',
+    ci: row.ci ? String(row.ci) : '',
+    cargo: row.cargo || '',
+    banco: row.banco || '',
+    numero_cuenta: row.numero_cuenta ? String(row.numero_cuenta) : '',
+    tipo_cuenta: row.tipo_cuenta || '',
+    is_active: row.is_active !== undefined ? Boolean(row.is_active) : true,
+    password: row.password || 'password123', // Contraseña por defecto
+    permisos: row.permisos || '',
+  })).filter(user => user.usuario && user.nombre && user.ci) // Filtrar filas vacías
+
+  if (usersToImport.length === 0) {
+    errorMsg('No hay datos válidos para importar')
+    return
+  }
+
+  // Mostrar resumen antes de importar
+  if (confirm(`¿Deseas importar ${usersToImport.length} usuarios?`)) {
+    importUsers(usersToImport)
+  }
+}
+
+const importUsers = async (usersToImport) => {
+  try {
+    importingUsers.value = true
+
+    for (const user of usersToImport) {
+      try {
+        const payload = {
+          usuario: user.usuario,
+          nombre: user.nombre,
+          paterno: user.paterno,
+          materno: user.materno,
+          ci: user.ci,
+          cargo: user.cargo,
+          banco: user.banco,
+          numero_cuenta: user.numero_cuenta,
+          tipo_cuenta: user.tipo_cuenta,
+          is_active: user.is_active,
+          password: user.password,
+          permisos: user.permisos,
+        }
+
+        await axios.post(
+          baseUrl+'/autenticacion_api/crearUsuario/',
+          payload
+        )
+      } catch (error) {
+        console.error(`Error importing user ${user.usuario}:`, error)
+        // Continuar con el siguiente usuario aunque falle uno
+      }
+    }
+
+    successMsg(`Importación completada. Se procesaron ${usersToImport.length} usuarios.`)
+    importDialog.value = false
+
+    // Limpiar input file
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
+
+    // Recargar lista de usuarios
+    await fetchUsers()
+
+  } catch (error) {
+    console.error('Error in import process:', error)
+    errorMsg('Error durante la importación')
+  } finally {
+    importingUsers.value = false
+  }
+}
+const downloadTemplate = () => {
+  // Crear datos de ejemplo para la plantilla
+  const templateData = [
+    {
+      usuario: 'ejemplo_usuario',
+      nombre: 'Juan',
+      paterno: 'Pérez',
+      materno: 'Gómez',
+      ci: '1234567',
+      cargo: 'admin',
+      banco: 'Banco Nacional',
+      numero_cuenta: '1234567890',
+      tipo_cuenta: 'Ahorros',
+      is_active: true,
+      password: 'password123',
+      permisos: 'A,B,C'
+    }
+  ]
+
+  const worksheet = XLSX.utils.json_to_sheet(templateData)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuarios')
+
+  // Descargar archivo
+  XLSX.writeFile(workbook, 'plantilla_importacion_usuarios.xlsx')
+  successMsg('Plantilla descargada correctamente')
+}
 </script>
 
 <style scoped>
