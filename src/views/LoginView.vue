@@ -15,6 +15,8 @@ const alertType = ref('danger')
 const router = useRouter()
 const userStore = useUserStore()
 
+const baseUrl = import.meta.env.VITE_API_BASE
+
 const displayAlert = (message, type) => {
   alertMessage.value = message
   alertType.value = type
@@ -45,22 +47,21 @@ const validateLoginForm = () => {
 }
 
 const btnlogin = async () => {
+  //{{ response.data }}
   if (!validateLoginForm()) {
     return
   }
   try {
-    const response = await axios.post(
-      'http://127.0.0.1:8000/autenticacion_api/autenticarUsuario/',
-      {
-        usuario: usuario.value,
-        password: password.value,
-      },
-    )
+    const response = await axios.post(baseUrl + '/autenticacion_api/autenticarUsuario/', {
+      usuario: usuario.value,
+      password: password.value,
+    })
     if (response.data.validacion === true) {
       userStore.setUserData({
         usuario: response.data.usuario,
         rol: response.data.rol,
         permisos: response.data.permisos,
+        id: response.data.id,
       })
       router.push('/home')
     } else {
@@ -75,7 +76,7 @@ const btnlogin = async () => {
 <template>
   <div class="container d-flex justify-content-center align-items-center min-vh-100">
     <div class="row w-100 justify-content-center">
-      <div class="col-sm-10 col-md-8 col-lg-6">
+      <div class="covaluel-sm-10 col-md-8 col-lg-6">
         <div v-if="showAlert" :class="`alert alert-${alertType} mb-3`" role="alert">
           {{ alertMessage }}
         </div>

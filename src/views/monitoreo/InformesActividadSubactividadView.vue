@@ -445,6 +445,16 @@
       </v-row>
     </div>
   </v-container>
+  <informe-actividad-detalles-min
+    v-model:visible="modalVisibleInformeActividad"
+    :informe-id="informeActividadSeleccionadoId"
+    @cerrar="informeActividadSeleccionadoId = null"
+  ></informe-actividad-detalles-min>
+  <informe-sub-actividad-detalles-min
+    v-model:visible="modalVisibleInformeSubActividad"
+    :informe-id="informeSubActividadSeleccionadoId"
+    @cerrar="informeSubActividadSeleccionadoId = null"
+  ></informe-sub-actividad-detalles-min>
 </template>
 
 <script setup>
@@ -452,6 +462,9 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useInformeActividadStore } from '@/modules/formularios/store/useInformeActividadStore'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
+//Detalles e impresion de los Informes
+import InformeActividadDetallesMin from '@/modules/formularios/components/partials/InformeActividadDetallesMin.vue'
+import InformeSubActividadDetallesMin from '@/modules/formularios/components/partials/InformeSubActividadDetallesMin.vue'
 
 // Route y Store
 const route = useRoute()
@@ -638,12 +651,47 @@ const obtenerColorEstadoTarea = (estado) => {
   }
   return colores[estado] || 'grey'
 }
+/*********************** DETALLES DE INFORMES *******************************************/
+//Estado del detalle de informe de actividad
+const modalVisibleInformeActividad = ref(false)
+const modalVisibleInformeSubActividad = ref(false)
+const informeActividadSeleccionadoId = ref(null)
+const informeSubActividadSeleccionadoId = ref(null)
+
+const abrirDetallesInformeActividad = (informe) => {
+  alert('Informe de actividad')
+  console.log('Inf Actividad', informe)
+  informeActividadSeleccionadoId.value = informe.id
+  modalVisibleInformeActividad.value = true
+}
+
+const abrirDetallesInformeSubactividad = (informe) => {
+  alert('Informe de subactividad', informe)
+  console.log('Inf SubActividad', informe)
+  informeSubActividadSeleccionadoId.value = informe.id
+  modalVisibleInformeSubActividad.value = true
+}
+
+//Mapeo de las opciones
+const accionesDetalle = {
+  actividad: abrirDetallesInformeActividad,
+  tarea: abrirDetallesInformeSubactividad,
+}
 
 // Funciones de acción
 const verDetalle = (informe, tipo) => {
   console.log(`Ver detalle del informe de ${tipo}:`, informe)
   alert(`Detalle del informe: ${informe.numeroInforme || 'Sin número'} (${tipo})`)
+  //Mapea la accion segun el tipo
+  const accion = accionesDetalle[tipo]
+  if (accion) {
+    accion(informe)
+  } else {
+    console.error('Tipo de informe no reconodido', tipo)
+  }
 }
+
+/******************** CARGA DE DATOS ********************************/
 
 // Obtener ID de la actividad y cargar datos
 const obtenerActividadId = () => {

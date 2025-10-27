@@ -130,13 +130,13 @@
         value="reporte-actividades"
         to="/reporte/actividades"
       ></v-list-item>
-
+      <!--
       <v-list-item
         prepend-icon="mdi-chart-line"
         title="Reporte Estructura Pruebas"
         value="actividades-reports"
         to="/reportes/estructura"
-      ></v-list-item>
+      ></v-list-item> -->
     </v-list-group>
 
     <!-- Administración de Usuarios -->

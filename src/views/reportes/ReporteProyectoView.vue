@@ -26,7 +26,7 @@
                   v-bind="props"
                   color="primary"
                   size="small"
-                  @click="generarReporte('proyecto', proyecto.id)"
+                  @click="generarReporte('proyecto', proyecto.id, 5)"
                   icon="mdi-file-download"
                   class="ml-2"
                 />
@@ -58,7 +58,7 @@
                     v-bind="props"
                     color="green"
                     size="small"
-                    @click="generarReporte('objetivo_general', proyecto.objetivo_general.id)"
+                    @click="generarReporte('objetivogeneral', proyecto.objetivo_general.id, 5)"
                     icon="mdi-file-download"
                     class="ml-2"
                   />
@@ -96,7 +96,7 @@
                         v-bind="props"
                         color="blue"
                         size="small"
-                        @click="generarReporte('resultado_og', resultado.id)"
+                        @click="generarReporte('resultadoog', resultado.id, 5)"
                         icon="mdi-file-download"
                         class="ml-2"
                       />
@@ -136,7 +136,7 @@
                         v-bind="props"
                         color="orange"
                         size="small"
-                        @click="generarReporte('objetivo_especifico', objetivo.id)"
+                        @click="generarReporte('objetivoespecificoog', objetivo.id, 3)"
                         icon="mdi-file-download"
                         class="ml-2"
                       />
@@ -167,7 +167,7 @@
                             v-bind="props"
                             color="purple"
                             size="small"
-                            @click="generarReporte('resultado_oe', resultado.id)"
+                            @click="generarReporte('resultadooe', resultado.id, 3)"
                             icon="mdi-file-download"
                             class="ml-2"
                           />
@@ -202,7 +202,7 @@
                                 v-bind="props"
                                 color="teal"
                                 size="small"
-                                @click="generarReporte('producto_resultado_oe', producto.id)"
+                                @click="generarReporte('productoroe', producto.id, 3)"
                                 icon="mdi-file-download"
                                 class="ml-2"
                               />
@@ -234,7 +234,7 @@
                             v-bind="props"
                             color="indigo"
                             size="small"
-                            @click="generarReporte('producto_oe', producto.id)"
+                            @click="generarReporte('productooe', producto.id, 3)"
                             icon="mdi-file-download"
                             class="ml-2"
                           />
@@ -328,18 +328,17 @@ const snackbar = ref({
 const proyecto = computed(() => estructuraProyectoReportesUIX.value)
 
 // Función para generar reportes
-const generarReporte = async (tipo, id) => {
+const generarReporte = async (tipo, id, profundidad) => {
   console.log(`Generando reporte de ${tipo} con ID: ${id}`)
   try {
-    await reportesServicios.reporteProyecto(id)
+    await reportesServicios.reporteModelo(tipo, id, profundidad)
+    snackbar.value = {
+      show: true,
+      message: `Reporte de ${tipo} generado exitosamente`,
+      color: 'success',
+    }
   } catch (error) {
     console.error(error)
-  }
-
-  snackbar.value = {
-    show: true,
-    message: `Reporte de ${tipo} generado exitosamente`,
-    color: 'success',
   }
 }
 
