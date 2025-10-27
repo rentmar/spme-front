@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 // Asegúrate de que esta ruta sea correcta en tu proyecto
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
+import { useInformeSubActividad } from '../composables/useInformeSubActividad'
 
 export const useInformeTareaStore = defineStore('informe-tarea', () => {
   // === ESTADOS ===
@@ -16,9 +17,13 @@ export const useInformeTareaStore = defineStore('informe-tarea', () => {
 
   // Variable para almacenar la respuesta completa (incluyendo metadatos y nodos)
   const tareaDetallesInfo = ref(null)
+  //Variable informe de Tarea por idtarea
+  const tareaListaInfo = ref(null)
 
   // === COMPOSABLE ===
   const { tareaDetalles, cargarTareaPorIdDetallesInformacion } = useTareaSubactividad()
+  const { informeSubactividadMinPorTarea, listaInformesSubactividadMinPorTarea } =
+    useInformeSubActividad()
 
   // === ACCIONES ===
   // Cargar la tarea y desestructurar sus datos en los estados
@@ -55,6 +60,23 @@ export const useInformeTareaStore = defineStore('informe-tarea', () => {
     }
   }
 
+  //Cargar informes de una tarea/subactividad
+  async function obtenerInformesSubactividadPorSubactividad(idtarea) {
+    loading.value = true
+    try {
+      await listaInformesSubactividadMinPorTarea(idtarea)
+      tareaListaInfo.value = informeSubactividadMinPorTarea.value
+    } catch (err) {
+      error.value = err
+      console.error(
+        'Error al cargar informes de subactividad de la subactividad con id: ' + idtarea,
+        err,
+      )
+    } finally {
+      loading.value = false
+    }
+  }
+
   // === RETORNO PÚBLICO ===
   return {
     // Estados
@@ -65,8 +87,10 @@ export const useInformeTareaStore = defineStore('informe-tarea', () => {
     proyecto,
     usuario,
     tareaDetallesInfo,
+    tareaListaInfo,
 
     // Función para cargar los datos
     obtenerTareasPorIdMasDetalles,
+    obtenerInformesSubactividadPorSubactividad,
   }
 })

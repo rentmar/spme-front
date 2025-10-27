@@ -11,6 +11,7 @@ export function useInformeSubActividad() {
   const informeSubActividadMin = ref()
   const informeSubActividadMinLista = ref([])
   const informeSubActividadMinRespuesta = ref()
+  const informeSubactividadMinPorTarea = ref()
 
   //Crear un informe de Subactividad Minimo
   async function crearInformeSubactividadMinimo(informeSubActividadData) {
@@ -40,6 +41,20 @@ export function useInformeSubActividad() {
     }
   }
 
+  //Listar los informes de subactividad por id de tarea
+  async function listaInformesSubactividadMinPorTarea(idtarea) {
+    loading.value = true
+    try {
+      const respuesta = await formulariosServico.informeSubactividadMinPorIdTarea(idtarea)
+      informeSubactividadMinPorTarea.value = respuesta
+    } catch (err) {
+      error.value = err
+      console.error('No es posible obtener la lista de informes de subactividad', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   //Obtener un informe por si id
   async function obtenerInformeSubactividadPorId(idinfsubac) {
     loading.value = true
@@ -60,9 +75,11 @@ export function useInformeSubActividad() {
     informeSubActividadMin,
     informeSubActividadMinLista,
     informeSubActividadMinRespuesta,
+    informeSubactividadMinPorTarea,
     //Func
     crearInformeSubactividadMinimo, //Crea un informe de subactividad minimo
     listaInformeSubactividadMinimo, //Lista todos los informes de subactividad minimos
     obtenerInformeSubactividadPorId,
+    listaInformesSubactividadMinPorTarea, //Lista los informes de subactividad minimo de una tarea
   }
 }

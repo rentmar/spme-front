@@ -1066,7 +1066,7 @@ const registroIndicadoresRef = ref(null)
 
 //Iniciar el Composable
 const { crearInformeSubactividadMinimo } = useInformeSubActividad()
-const { successMsg, errorMsg } = useSnackbar()
+const { successMsg, errorMsg, infoMsg } = useSnackbar()
 // Store
 const storeInfTarea = useInformeTareaStore()
 
@@ -1459,8 +1459,18 @@ watch(
 )
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   if (idtarea.value) {
+    try {
+      await storeInfTarea.obtenerInformesSubactividadPorSubactividad(idtarea.value)
+      if (storeInfTarea.tareaListaInfo?.total_informes > 0) {
+        infoMsg('Ya existe un informe para esta Subactividad')
+        router.push('/actividades/informe/')
+        return // Esto evita que se ejecute el resto del código
+      }
+    } catch (error) {
+      console.error('Error verificando informes:', error)
+    }
     cargarInformacion()
   } else {
     cargandoGeneral.value = false

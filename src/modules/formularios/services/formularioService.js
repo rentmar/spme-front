@@ -43,6 +43,18 @@ export const formulariosServico = {
       console.error('Axios: Error al obtener el informe de subactividad con id: ' + idinfsubac, err)
     }
   },
+  /* Informe de subactividad minimo por su idtarea */
+  informeSubactividadMinPorIdTarea: async (idtarea) => {
+    try {
+      const respuesta = await api.get('/informe-subactividad-min/por-tarea/' + idtarea + '/')
+      return respuesta.data
+    } catch (err) {
+      console.error(
+        'Axios: Error al obtener lista de informe de subactividad por idtarea: ' + idtarea,
+        err,
+      )
+    }
+  },
   /* Listar Actividad - Informes + Tareas/Subactividad - Informes */
   listaActividadPorIdInformesActSubac: async (idactividad) => {
     try {
