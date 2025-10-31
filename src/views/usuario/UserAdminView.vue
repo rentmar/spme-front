@@ -25,31 +25,6 @@
               Nuevo Usuario
             </v-btn>
 
-            <!-- <v-btn
-              color="success"
-              prepend-icon="mdi-upload"
-              @click="openImportDialog"
-              :loading="importingUsers"
-            >
-              Importar Excel
-              <input
-                ref="fileInput"
-                type="file"
-                accept=".xlsx, .xls, .csv"
-                style="display: none"
-                @change="handleFileImport"
-              />
-            </v-btn>
-
-            <v-btn
-              color="info"
-              prepend-icon="mdi-download"
-              @click="exportToExcel"
-              :loading="exportingUsers"
-            >
-              Exportar Excel
-            </v-btn> -->
-
             <v-text-field
               v-model="search"
               label="Buscar usuarios"
@@ -90,7 +65,9 @@
                     <span v-else class="text-caption">{{ getInitials(item.nombre) }}</span>
                   </v-avatar>
                   <div>
-                    <div class="font-weight-medium">{{ item.nombre }} {{ item.paterno }}  {{ item.marterno }}</div>
+                    <div class="font-weight-medium">
+                      {{ item.nombre }} {{ item.paterno }} {{ item.marterno }}
+                    </div>
                     <div class="text-caption text-medium-emphasis">{{ item.usuario }}</div>
                   </div>
                 </div>
@@ -123,19 +100,8 @@
               </template>
 
               <!-- Acciones -->
-              <!-- <template v-slot:item.actions="{ item }">
+              <template v-slot:item.actions="{ item }">
                 <div class="d-flex">
-                  <v-btn
-                    icon
-                    size="small"
-                    color="primary"
-                    variant="text"
-                    @click="openEditDialog(item)"
-                    :loading="loadingEdit"
-                  >
-                    <v-icon>mdi-pencil</v-icon>
-                  </v-btn>
-
                   <v-menu>
                     <template v-slot:activator="{ props }">
                       <v-btn
@@ -146,16 +112,24 @@
                         v-bind="props"
                         class="ml-1"
                       >
-                      <v-icon>mdi-dots-vertical</v-icon>
+                        <v-icon>mdi-dots-vertical</v-icon>
                       </v-btn>
                     </template>
                     <v-list density="compact">
+                      <v-list-item @click="openEditDialog(item)" :loading="loadingEdit">
+                        <template v-slot:prepend>
+                          <v-icon icon="mdi-pencil"></v-icon>
+                        </template>
+                        <v-list-item-title>Editar</v-list-item-title>
+                      </v-list-item>
+
                       <v-list-item @click="openResetPasswordDialog(item)">
                         <template v-slot:prepend>
                           <v-icon icon="mdi-key"></v-icon>
                         </template>
                         <v-list-item-title>Resetear contraseña</v-list-item-title>
                       </v-list-item>
+
                       <v-list-item @click="toggleUserStatus(item)">
                         <template v-slot:prepend>
                           <v-icon
@@ -168,6 +142,7 @@
                           {{ item.status === 'active' ? 'Desactivar' : 'Activar' }}
                         </v-list-item-title>
                       </v-list-item>
+
                       <v-list-item @click="viewUserDetails(item)">
                         <template v-slot:prepend>
                           <v-icon icon="mdi-eye"></v-icon>
@@ -177,59 +152,6 @@
                     </v-list>
                   </v-menu>
                 </div>
-              </template> -->
-              <template v-slot:item.actions="{ item }">
-              <div class="d-flex">
-                <v-menu>
-                  <template v-slot:activator="{ props }">
-                    <v-btn
-                      icon
-                      size="small"
-                      color="secondary"
-                      variant="text"
-                      v-bind="props"
-                      class="ml-1"
-                    >
-                      <v-icon>mdi-dots-vertical</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-list density="compact">
-                    <v-list-item @click="openEditDialog(item)" :loading="loadingEdit">
-                      <template v-slot:prepend>
-                        <v-icon icon="mdi-pencil"></v-icon>
-                      </template>
-                      <v-list-item-title>Editar</v-list-item-title>
-                    </v-list-item>
-
-                    <v-list-item @click="openResetPasswordDialog(item)">
-                      <template v-slot:prepend>
-                        <v-icon icon="mdi-key"></v-icon>
-                      </template>
-                      <v-list-item-title>Resetear contraseña</v-list-item-title>
-                    </v-list-item>
-
-                    <v-list-item @click="toggleUserStatus(item)">
-                      <template v-slot:prepend>
-                        <v-icon
-                          :icon="
-                            item.status === 'active' ? 'mdi-account-off' : 'mdi-account-check'
-                          "
-                        ></v-icon>
-                      </template>
-                      <v-list-item-title>
-                        {{ item.status === 'active' ? 'Desactivar' : 'Activar' }}
-                      </v-list-item-title>
-                    </v-list-item>
-
-                    <v-list-item @click="viewUserDetails(item)">
-                      <template v-slot:prepend>
-                        <v-icon icon="mdi-eye"></v-icon>
-                      </template>
-                      <v-list-item-title>Ver detalles</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </div>
               </template>
             </v-data-table>
           </v-card>
@@ -237,167 +159,119 @@
       </v-row>
     </template>
 
-    <!-- Diálogos -->
-    <!-- Diálogo de importación -->
-    <!-- <v-dialog v-model="importDialog" max-width="600" persistent>
-      <v-card>
-        <v-card-title>Importar Usuarios desde Excel</v-card-title>
-        <v-card-text>
-          <v-alert v-if="importError" type="error" class="mb-4">
-            {{ importError }}
-          </v-alert>
-
-          <v-alert type="info" class="mb-4">
-            El archivo Excel debe contener las siguientes columnas:
-            <ul class="mt-2">
-              <li><strong>Nombre</strong> (Requerido)</li>
-              <li><strong>Email</strong> (Requerido)</li>
-              <li><strong>Roles</strong> (Separados por comas: admin,user)</li>
-              <li><strong>Estado</strong> (active, inactive, pending, blocked)</li>
-              <li><strong>Teléfono</strong> (Opcional)</li>
-            </ul>
-          </v-alert>
-
-          <v-file-input
-            v-model="importFile"
-            accept=".xlsx, .xls, .csv"
-            label="Seleccionar archivo Excel"
-            prepend-icon="mdi-file-excel"
-            variant="outlined"
-            @update:modelValue="previewImport"
-          ></v-file-input>
-
-          <v-data-table
-            v-if="previewData.length > 0"
-            :headers="previewHeaders"
-            :items="previewData"
-            class="mt-4"
-            height="300"
-          ></v-data-table>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn color="grey" @click="cancelImport">Cancelar</v-btn>
-          <v-btn
-            color="primary"
-            @click="confirmImport"
-            :disabled="previewData.length === 0"
-            :loading="importingUsers"
-          >
-            Importar Usuarios
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog> -->
     <!-- Crear/Editar Usuario -->
     <v-dialog v-model="userDialog" max-width="800" persistent>
       <v-card>
         <v-card-title>{{ isEditing ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</v-card-title>
         <v-card-text>
           <v-form ref="userForm" @submit.prevent="saveUser">
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.nombre"
-                label="Nombre"
-                :rules="[required]"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.paterno"
-                label="Apellido Paterno"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.materno"
-                label="Apellido Materno"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.ci"
-                label="C.I."
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.usuario"
-                label="Nombre de Usuario"
-                :rules="[required]"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.cargo"
-                label="Cargo"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.banco"
-                label="Banco"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.numero_cuenta"
-                label="Número de Cuenta"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.tipo_cuenta"
-                label="Tipo de Cuenta"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6" v-if="!isEditing">
-              <v-text-field
-                v-model="currentUser.password"
-                label="Contraseña"
-                :rules="[required, minLength(8)]"
-                type="password"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6" v-if="!isEditing">
-              <v-text-field
-                v-model="currentUser.passwordConfirm"
-                label="Confirmar contraseña"
-                :rules="[required, passwordMatch]"
-                type="password"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="currentUser.permisos"
-                :items="availablePermissions"
-                label="Permisos"
-                :rules="[required]"
-                variant="outlined"
-              ></v-select>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="currentUser.is_active"
-                :items="statusOptions"
-                label="Estado"
-                :rules="[required]"
-                variant="outlined"
-              ></v-select>
-            </v-col>
-          </v-row>
-        </v-form>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.nombre"
+                  label="Nombre"
+                  :rules="[required]"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.paterno"
+                  label="Apellido Paterno"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.materno"
+                  label="Apellido Materno"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.ci"
+                  label="C.I."
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.usuario"
+                  label="Nombre de Usuario"
+                  :rules="[required]"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.cargo"
+                  label="Cargo"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.banco"
+                  label="Banco"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.numero_cuenta"
+                  label="Número de Cuenta"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="currentUser.tipo_cuenta"
+                  :items="accountTypeOptions"
+                  label="Tipo de Cuenta"
+                  :rules="[required]"
+                  required
+                  variant="outlined"
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="6" v-if="!isEditing">
+                <v-text-field
+                  v-model="currentUser.password"
+                  label="Contraseña"
+                  :rules="[required, minLength(8)]"
+                  type="password"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6" v-if="!isEditing">
+                <v-text-field
+                  v-model="currentUser.passwordConfirm"
+                  label="Confirmar contraseña"
+                  :rules="[required, passwordMatch]"
+                  type="password"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="currentUser.permisos"
+                  :items="availablePermissions"
+                  label="Permisos"
+                  :rules="[required]"
+                  variant="outlined"
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="currentUser.is_active"
+                  :items="statusOptions"
+                  label="Estado"
+                  :rules="[required]"
+                  variant="outlined"
+                ></v-select>
+              </v-col>
+            </v-row>
+          </v-form>
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn color="grey" @click="userDialog = false">Cancelar</v-btn>
@@ -436,27 +310,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- Confirmar eliminación -->
-    <!-- <v-dialog v-model="confirmDeleteDialog" max-width="500" persistent>
-      <v-card>
-        <v-card-title class="bg-error text-white">
-          <v-icon icon="mdi-alert-circle" class="mr-2"></v-icon>
-          Confirmar eliminación
-        </v-card-title>
-        <v-card-text class="pt-4">
-          <p class="text-body-1">
-            ¿Está seguro que desea eliminar al usuario <strong>{{ userToDelete?.name }}</strong
-            >?
-          </p>
-          <p class="text-caption text-medium-emphasis mt-2">Esta acción no se puede deshacer.</p>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn color="grey" @click="confirmDeleteDialog = false">Cancelar</v-btn>
-          <v-btn color="error" @click="deleteUser" :loading="loadingDelete">Eliminar</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog> -->
 
     <!-- Filtros -->
     <v-dialog v-model="filterDialog" max-width="600" persistent>
@@ -540,27 +393,12 @@ import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vu
 //import * as XLSX from 'xlsx'
 
 const { successMsg, errorMsg } = useSnackbar()
-//const authStore = useAuthStore()
 
-// Nuevas propiedades para importación/exportación
-//const loadingMessage = ref('Cargando usuarios...')
-// const importingUsers = ref(false)
-// const exportingUsers = ref(false)
-// const importDialog = ref(false)
-// const importFile = ref(null)
-// const previewData = ref([])
-// const importError = ref('')
-// const fileInput = ref(null)
 const availablePermissions = ['A', 'B', 'C', 'D'] // Ajustar según tus permisos
-const userForm = ref(null)
 
-// const previewHeaders = [
-//   { title: 'Nombre', key: 'name' },
-//   { title: 'Email', key: 'email' },
-//   { title: 'Roles', key: 'roles' },
-//   { title: 'Estado', key: 'status' },
-//   { title: 'Teléfono', key: 'phone' },
-// ]
+const accountTypeOptions = ['Ahorros', 'Corriente']
+
+const userForm = ref(null)
 
 // Datos y estado
 const loading = ref(true)
@@ -579,7 +417,7 @@ const filterDialog = ref(false)
 const isEditing = ref(false)
 
 const currentUser = ref({
-  id:null,
+  id: null,
   usuario: '',
   nombre: '',
   paterno: '',
@@ -596,7 +434,7 @@ const currentUser = ref({
 })
 
 //const userToDelete = ref(null)
-const userIdToReset = ref(null);
+const userIdToReset = ref(null)
 const newPassword = ref('')
 const newPasswordConfirm = ref('')
 
@@ -668,26 +506,26 @@ const fetchUsers = async () => {
   try {
     tableLoading.value = true
     loading.value = true
-    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/listaUsuarios/');
-    const data = response.data;
-    users.value = data.usuarios.map(user => ({
-    id: user.id,
-    nombre: user.nombre,
-    paterno: user.paterno,
-    materno: user.materno,
-    ci: user.ci,
-    usuario: user.usuario,
-    cargo: user.cargo,
-    banco: user.banco,
-    numero_cuenta: user.numero_cuenta,
-    tipo_cuenta: user.tipo_cuenta,
-    permisos: user.permisos,
-    is_active: user.es_activo,
-    roles: [user.cargo],
-    status: user.es_activo ? 'active' : 'inactive',
-    avatar: null,
-    lastLogin: null,
-    }));
+    const response = await axios.get('http://127.0.0.1:8000/autenticacion_api/listaUsuarios/')
+    const data = response.data
+    users.value = data.usuarios.map((user) => ({
+      id: user.id,
+      nombre: user.nombre,
+      paterno: user.paterno,
+      materno: user.materno,
+      ci: user.ci,
+      usuario: user.usuario,
+      cargo: user.cargo,
+      banco: user.banco,
+      numero_cuenta: user.numero_cuenta,
+      tipo_cuenta: user.tipo_cuenta,
+      permisos: user.permisos,
+      is_active: user.es_activo,
+      roles: [user.cargo],
+      status: user.es_activo ? 'active' : 'inactive',
+      avatar: null,
+      lastLogin: null,
+    }))
   } catch (error) {
     errorMsg('Error al cargar usuarios')
     console.error('Error fetching users:', error)
@@ -746,66 +584,35 @@ const saveUser = async () => {
       tipo_cuenta: currentUser.value.tipo_cuenta,
       is_active: currentUser.value.is_active,
       permisos: currentUser.value.permisos,
-    };
+    }
 
     if (isEditing.value) {
       const updatePayload = {
         ...payload,
         id_usuario: currentUser.value.id,
-      };
-       await axios.put(
-        'http://127.0.0.1:8000/autenticacion_api/actualizarUsuario/',
-        updatePayload
-      );
-      successMsg('Usuario actualizado correctamente');
+      }
+      await axios.put('http://127.0.0.1:8000/autenticacion_api/actualizarUsuario/', updatePayload)
+      successMsg('Usuario actualizado correctamente')
     } else {
-
       const createPayload = {
         ...payload,
         password: currentUser.value.password,
-      };
+      }
 
-      await axios.post(
-        'http://127.0.0.1:8000/autenticacion_api/crearUsuario/',
-        createPayload
-      )
+      await axios.post('http://127.0.0.1:8000/autenticacion_api/crearUsuario/', createPayload)
       successMsg('Usuario creado correctamente')
     }
+    await fetchUsers()
     userDialog.value = false
   } catch (error) {
-    errorMsg('Error al guardar usuario')
-    console.error('Error saving user:', error)
-    if (error.response) {
-      console.error('Datos de error:', error.response.data)
-    }
+    errorMsg('Error al guardar usuario', error)
   } finally {
     savingUser.value = false
   }
 }
 
-// const confirmDeleteUser = (user) => {
-//   userToDelete.value = user
-//   confirmDeleteDialog.value = true
-// }
-
-// const deleteUser = async () => {
-//   try {
-//     loadingDelete.value = true
-
-//     // Simulación de API - en un proyecto real harías una llamada API aquí
-//     users.value = users.value.filter((u) => u.id !== userToDelete.value.id)
-//     successMsg('Usuario eliminado correctamente')
-//     confirmDeleteDialog.value = false
-//   } catch (error) {
-//     errorMsg('Error al eliminar usuario')
-//     console.error('Error deleting user:', error)
-//   } finally {
-//     loadingDelete.value = false
-//   }
-// }
-
 const openResetPasswordDialog = (user) => {
-  userIdToReset.value = user.id;
+  userIdToReset.value = user.id
   newPassword.value = ''
   newPasswordConfirm.value = ''
   resetPasswordDialog.value = true
@@ -815,23 +622,20 @@ const resetPassword = async () => {
   try {
     resettingPassword.value = true
 
-    const userId = userIdToReset.value;
-    const newPwd = newPassword.value;
+    const userId = userIdToReset.value
+    const newPwd = newPassword.value
 
     if (!userId || !newPwd) {
-      errorMsg('ID de usuario y nueva contraseña son requeridos.');
-      return;
+      errorMsg('ID de usuario y nueva contraseña son requeridos.')
+      return
     }
 
     const payload = {
       id_usuario: userId,
       password: newPwd,
-    };
+    }
 
-    await axios.put(
-      'http://127.0.0.1:8000/autenticacion_api/cambiarPwdUsuario/',
-      payload
-    );
+    await axios.put('http://127.0.0.1:8000/autenticacion_api/cambiarPwdUsuario/', payload)
 
     successMsg('Contraseña actualizada correctamente')
     resetPasswordDialog.value = false
@@ -847,21 +651,18 @@ const toggleUserStatus = async (user) => {
   try {
     loadingEdit.value = true
 
-    const nuevoEstado = !user.is_active;
+    const nuevoEstado = !user.is_active
 
     const payload = {
       id_usuario: user.id,
       activo: nuevoEstado,
-    };
+    }
 
-    await axios.put(
-      'http://127.0.0.1:8000/autenticacion_api/cambiarEstadoUsuario/',
-      payload
-    );
+    await axios.put('http://127.0.0.1:8000/autenticacion_api/cambiarEstadoUsuario/', payload)
 
-    const userToUpdate = users.value.find((u) => u.id === user.id);
+    const userToUpdate = users.value.find((u) => u.id === user.id)
     if (userToUpdate) {
-      userToUpdate.is_active = nuevoEstado;
+      userToUpdate.is_active = nuevoEstado
     }
 
     const index = users.value.findIndex((u) => u.id === user.id)
@@ -895,12 +696,6 @@ const clearFilters = () => {
   }
   filterDialog.value = false
 }
-
-// const formatDate = (dateString) => {
-//   if (!dateString) return ''
-//   const options = { year: 'numeric', month: 'short', day: 'numeric' }
-//   return new Date(dateString).toLocaleDateString(undefined, options)
-// }
 
 const getInitials = (name) => {
   if (!name) return ''
@@ -947,164 +742,6 @@ const getRoleColor = (role) => {
 onMounted(() => {
   fetchUsers()
 })
-
-//*************** Exportar a Excel ********************/
-// const openImportDialog = () => {
-//   importDialog.value = true
-//   importFile.value = null
-//   previewData.value = []
-//   importError.value = ''
-// }
-
-// const cancelImport = () => {
-//   importDialog.value = false
-//   importFile.value = null
-//   previewData.value = []
-// }
-
-// const handleFileImport = (event) => {
-//   const file = event.target.files[0]
-//   if (file) {
-//     importFile.value = file
-//     previewImport()
-//   }
-// }
-
-// const previewImport = async () => {
-//   if (!importFile.value) return
-
-//   try {
-//     loadingMessage.value = 'Procesando archivo Excel...'
-//     importingUsers.value = true
-
-//     const data = await readExcelFile(importFile.value)
-//     previewData.value = data.map((item) => ({
-//       name: item.Nombre || item.name || '',
-//       email: item.Email || item.email || '',
-//       roles: item.Roles || item.roles || 'user',
-//       status: item.Estado || item.status || 'active',
-//       phone: item.Teléfono || item.phone || '',
-//     }))
-
-//     importError.value = ''
-//   } catch (error) {
-//     console.error('Error al procesar archivo:', error)
-//     importError.value = 'Error al procesar el archivo. Verifique el formato.'
-//     previewData.value = []
-//   } finally {
-//     importingUsers.value = false
-//     loadingMessage.value = 'Cargando usuarios...'
-//   }
-// }
-
-// const readExcelFile = (file) => {
-//   return new Promise((resolve, reject) => {
-//     const reader = new FileReader()
-
-//     reader.onload = (e) => {
-//       try {
-//         const data = new Uint8Array(e.target.result)
-//         const workbook = XLSX.read(data, { type: 'array' })
-//         const firstSheetName = workbook.SheetNames[0]
-//         const worksheet = workbook.Sheets[firstSheetName]
-//         const jsonData = XLSX.utils.sheet_to_json(worksheet)
-//         resolve(jsonData)
-//       } catch (error) {
-//         reject(error)
-//       }
-//     }
-
-//     reader.onerror = () => {
-//       reject(new Error('Error al leer el archivo'))
-//     }
-
-//     reader.readAsArrayBuffer(file)
-//   })
-// }
-
-// const confirmImport = async () => {
-//   if (previewData.value.length === 0) return
-
-//   try {
-//     loadingMessage.value = 'Importando usuarios...'
-//     importingUsers.value = true
-
-//     // Validar datos antes de importar
-//     const invalidUsers = previewData.value.filter(
-//       (user) => !user.name || !user.email || !validateEmail(user.email),
-//     )
-
-//     if (invalidUsers.length > 0) {
-//       throw new Error(`${invalidUsers.length} usuarios tienen datos inválidos (nombre o email)`)
-//     }
-
-//     // Simular llamada API para importar
-//     // En un proyecto real, aquí enviarías los datos al backend
-//     await new Promise((resolve) => setTimeout(resolve, 1500))
-
-//     // Agregar usuarios importados a la lista
-//     const newUsers = previewData.value.map((user, index) => ({
-//       id: `import-${Date.now()}-${index}`,
-//       name: user.name,
-//       email: user.email,
-//       roles: user.roles.split(',').map((r) => r.trim()),
-//       status: user.status || 'active',
-//       phone: user.phone || '',
-//       createdAt: new Date().toISOString().split('T')[0],
-//       lastLogin: null,
-//       notes: 'Importado desde Excel',
-//     }))
-
-//     users.value = [...newUsers, ...users.value]
-//     successMsg(`${previewData.value.length} usuarios importados correctamente`)
-//     importDialog.value = false
-//   } catch (error) {
-//     console.error('Error al importar usuarios:', error)
-//     importError.value = error.message
-//   } finally {
-//     importingUsers.value = false
-//     loadingMessage.value = 'Cargando usuarios...'
-//   }
-// }
-
-// const exportToExcel = async () => {
-//   try {
-//     exportingUsers.value = true
-
-//     // Preparar datos para exportación
-//     const dataToExport = filteredUsers.value.map((user) => ({
-//       Nombre: user.name,
-//       Email: user.email,
-//       Roles: user.roles.join(', '),
-//       Estado: getStatusText(user.status),
-//       Teléfono: user.phone,
-//       'Último acceso': user.lastLogin ? formatDate(user.lastLogin) : 'Nunca',
-//       'Fecha creación': user.createdAt,
-//     }))
-
-//     // Crear libro de Excel
-//     const workbook = XLSX.utils.book_new()
-//     const worksheet = XLSX.utils.json_to_sheet(dataToExport)
-//     XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuarios')
-
-//     // Generar archivo y descargar
-//     const dateStr = new Date().toISOString().slice(0, 10)
-//     XLSX.writeFile(workbook, `usuarios_${dateStr}.xlsx`)
-
-//     successMsg('Exportación completada correctamente')
-//   } catch (error) {
-//     console.error('Error al exportar a Excel:', error)
-//     errorMsg('Error al exportar los datos')
-//   } finally {
-//     exportingUsers.value = false
-//   }
-// }
-
-// const validateEmail = (email) => {
-//   return /.+@.+\..+/.test(email)
-// }
-
-//*************** Fin Exportar a Excel ********************/
 </script>
 
 <style scoped>
