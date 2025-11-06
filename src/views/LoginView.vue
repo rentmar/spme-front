@@ -14,6 +14,7 @@ const alertMessage = ref('')
 const alertType = ref('danger')
 const router = useRouter()
 const userStore = useUserStore()
+const loading = ref(false)
 
 const displayAlert = (message, type) => {
   alertMessage.value = message
@@ -61,7 +62,9 @@ const btnlogin = async () => {
         usuario: response.data.usuario,
         rol: response.data.rol,
         permisos: response.data.permisos,
+        id: response.data.id
       })
+      console.log('🟢 [Login] Usuario guardado en store:', userStore.userData)
       router.push('/home')
     } else {
       displayAlert(response.data.mensaje, 'danger')

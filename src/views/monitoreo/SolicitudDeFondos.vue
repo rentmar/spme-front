@@ -27,7 +27,7 @@
       <!--Encabezado del Proyecto-->
        <ProyectoIdHeader
         v-if="datosFormulario"
-        :proyecto-id="datosFormulario.actividad?.proyecto ?? '99999999'"
+        :proyecto-id="datosFormulario.actividad?.proyecto  "
       ></ProyectoIdHeader>
       <br />
       <!--Encabezado de la Actividad-->
@@ -457,11 +457,12 @@
       </v-row>
     </div>
   </v-container>
-  <pre>{{ formData.detalle_destino_fondos }}</pre>
+  <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
    <!-- <pre>{{ textoProcedencia }}</pre> -->
      <!-- <pre>{{ datosFormulario }}</pre> -->
-    <!-- <p>{{ userStore }}</p> -->
-     <!-- <p>{{ usuario }}</p> -->
+    <!-- <p>{{ formData.forma_pago }}</p>
+    {{ '*******************' }}
+      <p>{{ formasPagoOptions }}</p> -->
 </template>
 
 <script setup>
@@ -479,6 +480,8 @@ const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 console.log('ID de Actividad:', idActividad)
 console.log('ID de Tarea:', idTarea)
+
+const baseurl = import.meta.env.VITE_API_BASE
 
 //variables para carga de datos
 const datosFormulario = ref(null)
@@ -530,8 +533,10 @@ const usuario = computed(() => {
   return {
     nombre: userStore.usuario,
     role: userStore.rol,
+    id: userStore.userId,
   }
 })
+console.log('ID Usuario:', usuario.value.id)
 
 const textoProcedencia = computed(() => {
   const fuentes = Array.isArray(formData.value?.fuente_financiamiento)
@@ -680,7 +685,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl+'/api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -700,7 +705,7 @@ async function cargarDatos() {
 
     const rawData = await response.json()
     datosFormulario.value = strictSanitizeData(rawData)
-    console.log('Datos cargados exitosamente:', datosFormulario.value)
+    //console.log('Datos cargados exitosamente:', datosFormulario.value)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -740,7 +745,7 @@ function sanitizeData(data) {
   if (typeof data === 'object') {
     const sanitized = {};
     for (const key in data) {
-      if (data.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
         const value = data[key];
         // Solo incluir propiedades con valores válidos
         if (value !== null && value !== undefined && value !== '') {
@@ -822,7 +827,7 @@ async function submitForm() {
       id_tarea: idTarea || null,
     }
 
-    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/crear-solicitud-fondos/', {
+    const response = await fetch(baseurl+'/api/monitoreo/crear-solicitud-fondos/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1099,6 +1104,7 @@ function getCurrentDate1() {
 onMounted(async () => {
   await cargarDatos()
   await textoProcedencia.value
+  resetForm()
 })
 </script>
 

@@ -254,6 +254,10 @@ const router = createRouter({
       component: () => import('@/views/monitoreo/RendicionDeCuentas.vue'),
     },
     {
+      path: '/monitoreo/formulario022/:id',
+      component: () => import('@/views/monitoreo/RendicionDeCuentasValidar.vue'),
+    },
+    {
       path: '/monitoreo/formulario033/:id',
       component: () => import('@/views/monitoreo/SolicitudDeReposicionValidar.vue'),
     },
@@ -266,8 +270,16 @@ const router = createRouter({
       component: () => import('@/views/monitoreo/SolicitudDeViaje.vue'),
     },
     {
+      path: '/monitoreo/formulario055/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeViajeValidar.vue'),
+    },
+    {
       path: '/monitoreo/formulario08/:id',
       component: () => import('@/views/monitoreo/SolicitudDePagoDirecto.vue'),
+    },
+        {
+      path: '/monitoreo/formulario088/:id',
+      component: () => import('@/views/monitoreo/SolicitudDePagoDirectoValidar.vue'),
     },
     {
       path: '/monitoreo/formularioInf/:id',

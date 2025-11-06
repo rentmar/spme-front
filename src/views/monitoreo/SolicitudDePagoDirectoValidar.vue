@@ -1,12 +1,9 @@
 <template>
   <v-container class="v-container v-locale--is-ltr">
     <v-card class="pa-6">
-      <!-- <v-card-title class="text-h5 font-weight-bold">
-        Formulario F-08:<br> Solicitud de Pago Directo
-      </v-card-title> -->
 
       <PaginaTituloIcono
-        :titulo="'Solicitud de Pago Directo'"
+        :titulo="'Validar Solicitud de Pago Directo'"
         :icon="'mdi-file-document-multiple'"
       ></PaginaTituloIcono>
       <br />
@@ -27,10 +24,6 @@
           <div class="form-section">
 
                 <div class="form-section mb-6">
-                  <!-- <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-account</v-icon>
-                    Información del Solicitante
-                  </h3> -->
                   <v-row>
                     <v-col cols="12" md="4">
                       <v-text-field
@@ -91,6 +84,7 @@
               bg-color="blue-lighten-5"
               rows="3"
               required
+              readonly
             ></v-textarea>
             <v-text-field
               v-model="formData.fecha_realizacion"
@@ -98,6 +92,7 @@
               bg-color="blue-lighten-5"
               type="date"
               required
+              readonly
             ></v-text-field>
             <v-textarea
               v-model="formData.objetivo_actividad"
@@ -105,12 +100,14 @@
               bg-color="blue-lighten-5"
               rows="3"
               required
+              readonly
             ></v-textarea>
             <v-text-field
               v-model="formData.fuente_financiamiento"
               label="Fuente de Financiamiento"
               bg-color="blue-lighten-5"
               required
+              readonly
             ></v-text-field>
           </div>
 
@@ -149,6 +146,7 @@
                       bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
+                      readonly
                     ></v-text-field>
                   </td>
                   <td>
@@ -157,6 +155,7 @@
                       bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
+                      readonly
                     ></v-text-field>
                   </td>
                   <td>
@@ -167,6 +166,7 @@
                       hide-details
                       density="compact"
                       min="0"
+                      readonly
                     ></v-text-field>
                   </td>
                   <td>
@@ -194,6 +194,7 @@
             variant="outlined"
             bg-color="blue-lighten-5"
             required
+            readonly
           ></v-select>
           <div class="form-section">
             <v-text-field
@@ -201,6 +202,7 @@
               bg-color="blue-lighten-5"
               label="Lugar de la Solicitud"
               required
+              readonly
             ></v-text-field>
             <v-text-field
               v-model="formData.fecha_solicitud"
@@ -225,14 +227,24 @@
                   item-value="id"
                   label="Responsable del Cargo de Cuenta"
                   required
+                  readonly
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
-                <v-checkbox
-                  v-model="formData.validacion_responsable"
-                  label="Aprobado por Responsable del Cargo de Cuenta"
-                  :disabled="isFrozen"
-                ></v-checkbox>
+                      <v-checkbox
+                        v-model="solicitudDePagoDirecto.validacionResponsable"
+                        :label="`Aprobado por Responsable ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                        :disabled="!puedeValidarResponsable || solicitudDePagoDirecto.validacionResponsable"
+                        :readonly="!puedeValidarResponsable || solicitudDePagoDirecto.validacionResponsable"
+                        :color="puedeValidarResponsable ? 'primary' : 'grey'"
+                        @update:modelValue="(newValue) => {
+                          if (newValue) {
+                            nextTick(() => {
+                              validarPagoDirecto('responsable');
+                            });
+                          }
+                        }"
+                      ></v-checkbox>
               </v-col>
             </v-row>
             <v-row>
@@ -245,13 +257,23 @@
                   item-value="id"
                   label="Coordinador"
                   required
+                  readonly
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
-                  v-model="formData.validacion_coordinador"
-                  label="Aprobado por Coordinador"
-                  :disabled="isFrozen"
+                  v-model="solicitudDePagoDirecto.validacionCoordinador"
+                  :label="`Aprobado por Coordinador ${puedeValidarCoordinador ? '(Usted)' : ''}`"
+                  :disabled="!puedeValidarCoordinador || solicitudDePagoDirecto.validacionCoordinador"
+                  :readonly="!puedeValidarCoordinador || solicitudDePagoDirecto.validacionCoordinador"
+                  :color="puedeValidarCoordinador ? 'primary' : 'grey'"
+                  @update:modelValue="(newValue) => {
+                    if (newValue) {
+                      nextTick(() => {
+                        validarPagoDirecto('coordinador');
+                      });
+                    }
+                  }"
                 ></v-checkbox>
               </v-col>
             </v-row>
@@ -279,14 +301,13 @@
       </v-card-text>
     </v-card>
   </v-container>
-  <!-- <pre>{{ formasPagoList }}</pre> -->
   <!-- {{ '**************' }}
   <pre>{{ formaPago }}</pre> -->
 </template>
 
 <script setup>
 //import * as XLSX from 'xlsx';
-import { ref, onMounted, computed, watch} from 'vue';
+import { ref, onMounted, computed, nextTick } from 'vue';
 import axios from 'axios';
 import { useUserStore } from '@/stores/user'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
@@ -316,6 +337,7 @@ const baseurl = import.meta.env.VITE_API_BASE
 
 const datosSolicitante = ref([])
 const solicitante = ref(null)
+const solicitudDePagoDirecto = ref({})
 const solicitudDeViaje = ref({})  //viene de la funccion cargarSolicitudesDeViaje
 
 const cargandoGeneral = ref(true)
@@ -342,7 +364,7 @@ const formData = ref({
   detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
   forma_pago: '',
   lugar_solicitud: '',
-  fecha_solicitud: getCurrentDate(),
+  fecha_solicitud: '',
   monto_solicitado: 0,
 
   id_responsable: null,
@@ -354,27 +376,12 @@ const formData = ref({
   id_tarea: null,
 });
 
-watch(() => formData.value.responsable_elegido, (newId) => {
-  formData.value.idresponsable_aprobacion = newId;
-});
-watch(() => formData.value.coordinador_elegido, (newId) => {
-  formData.value.idcoordinador_aprobacion = newId;
-});
-
 // Propiedades computadas
 const totalMontoSolicitado = computed(() => {
   return formData.value.detalle_destino_fondos.reduce(
     (total, gasto) => total + Number(gasto.monto || 0),
     0
   );
-});
-
-const isFrozen = computed(() => {
-  if (!usuario.value || !formData.value.coordinador_elegido) {
-    return true;
-  }
-  //return usuario.value.id !== formData.value.coordinador_elegido;
-  return true;
 });
 
 // Métodos
@@ -455,6 +462,151 @@ async function cargarUsuarios() {
   } catch (error) {
     console.error('Error al cargar la lista de usuarios:', error);
     alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
+  }
+}
+
+async function cargarSolicitudesDePagoDirecto() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudesPagoDirecto/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        // id_actividad: actividadIdParaValidar.value,
+        // id_tarea: tareaIdParaValidar.value,
+        //usuario: usuario.value.nombre,
+        id_solicitudPagoDirecto: idSolicitud
+      }),
+    })
+    //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+      )
+    }
+
+    const rawData = await response.json()
+    //console.log('SoicitudDePagoDirecto Recibido:', JSON.stringify(rawData,null,2))
+
+    solicitudDePagoDirecto.value = rawData.solicitudes[0]   //se selecciona solicitudes y se elimina corchetes
+
+    formData.value.descripcion_actividad = solicitudDePagoDirecto.value.descripcion_actividad
+    formData.value.fecha_realizacion = solicitudDePagoDirecto.value.fecha_realizacion
+    formData.value.objetivo_actividad = solicitudDePagoDirecto.value.objetivo_actividad
+    formData.value.fuente_financiamiento = solicitudDePagoDirecto.value.fuente_financiamiento
+    formData.value.detalle_destino_fondos = solicitudDePagoDirecto.value.detalleDestinoFondos.items.map(item =>({
+      partida: item.partida || '',
+      descripcion_gasto: item.concepto || '',
+      monto: item.monto || 0
+    }))
+    formData.value.forma_pago = solicitudDePagoDirecto.value.formaPago_id
+    formData.value.lugar_solicitud = solicitudDePagoDirecto.value.lugarSolicitud
+    formData.value.fecha_solicitud = solicitudDePagoDirecto.value.fechaSolicitud
+    formData.value.id_responsable = solicitudDePagoDirecto.value.responsable_id
+    formData.value.id_coordinador = solicitudDePagoDirecto.value.coordinador_id
+
+    //listaSolicitudesDePagoDirecto.value = strictSanitizeData(rawData.solicitudes)
+    //console.log('Datos cargados exitosamente:', JSON.stringify(listaSolicitudesDePagoDirecto.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
+  } catch (err) {
+    error.value = err.message
+    console.error('Ha ocurrido un error:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
+  }
+}
+
+const puedeValidarResponsable = computed(() => {
+  const idUsuarioLogueado = usuario.value?.id
+  const idResponsableAsignado = solicitudDePagoDirecto.value?.responsable_id
+  return idUsuarioLogueado === idResponsableAsignado
+})
+
+const puedeValidarCoordinador = computed(() => {
+  const idUsuarioLogueado = usuario.value?.id
+  const idCoordinadorAsignado = solicitudDePagoDirecto.value?.coordinador_id
+  return idUsuarioLogueado === idCoordinadorAsignado
+})
+
+async function validarPagoDirecto(tipoValidador) {
+  // Verificar permisos según el tipo de validador
+  let tienePermiso = false;
+  let claveValidacion = '';
+
+  switch (tipoValidador) {
+    case 'responsable':
+      tienePermiso = puedeValidarResponsable.value;
+      claveValidacion = 'validacion_responsable';
+      break;
+    case 'coordinador':
+      tienePermiso = puedeValidarCoordinador.value;
+      claveValidacion = 'validacion_coordinador';
+      break;
+    default:
+      alert('Tipo de validador no reconocido.');
+      return;
+  }
+
+  if (!tienePermiso) {
+    alert('Usted no está autorizado para validar esta rendición como ' + tipoValidador + '.');
+    solicitudDePagoDirecto.value[claveValidacion] = false;
+    return;
+  }
+
+   // Crear el payload específico para la validación
+  const payload = {
+    id_solicitud: solicitudDePagoDirecto.value?.id || idSolicitud,
+    [claveValidacion]: true     //validacion_responsable: true o validacion_coordinador: true
+  };
+  console.log('888888888888888888888', JSON.stringify(payload,null,2))
+
+  if (!payload.id_solicitud) {
+    alert('Error: No se encontró el ID de la reposicion para validar.');
+    formData.value[claveValidacion] = false; // Revertir
+    return;
+  }
+
+  // Ejecutar la llamada PATCH
+  loading.value = true;
+  try {
+    const response = await fetch(
+      baseurl+'/monitoreo_api/actualizar-validacion-solicitud-pago-directo/',
+      //baseurl+'/monitoreo_api/actualizar-validacion-solicitud-reembolso/',
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        `Error al actualizar: ${response.status} - ${errorData.detail || errorData.mensaje || 'Error desconocido'}`
+      );
+    }
+
+    //const result = await response.json();
+    alert('Pago Directo validado exitosamente.');
+
+    // Recargar los datos para reflejar los cambios
+    await cargarSolicitudesDePagoDirecto();
+
+  } catch (err) {
+    console.error('Error al validar la solicitud:', err);
+    alert(`Error al validar la solicitud: ${err.message}`);
+
+    // Revertir el cambio en caso de error
+    formData.value[claveValidacion] = false;
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -545,6 +697,7 @@ function resetForm() {
 onMounted(async () => {
   await cargarUsuarios();
   cargarDatos()
+  cargarSolicitudesDePagoDirecto()
   cargarFormasDePago()
 });
 </script>

@@ -382,6 +382,13 @@
                         :disabled="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :readonly="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :color="puedeValidarResponsable ? 'primary' : 'grey'"
+                        @update:modelValue="(newValue) => {
+                          if (newValue) {
+                            nextTick(() => {
+                              validarSolicitud();
+                            });
+                          }
+                        }"
                       ></v-checkbox>
                     </v-col>
                   </v-row>
@@ -404,6 +411,13 @@
                         :disabled="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :readonly="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :color="puedeValidarCoordinador ? 'primary' : 'grey'"
+                        @update:modelValue="(newValue) => {
+                          if (newValue) {
+                            nextTick(() => {
+                              validarSolicitud();
+                            });
+                          }
+                        }"
                       ></v-checkbox>
                     </v-col>
                   </v-row>
@@ -411,7 +425,7 @@
 
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
-                  <v-btn
+                  <!-- <v-btn
                     color="success"
                     variant="flat"
                     size="large"
@@ -420,7 +434,7 @@
                     :disabled="loading || (!puedeValidarResponsable && !puedeValidarCoordinador)"
                   >
                     Validar
-                  </v-btn>
+                  </v-btn> -->
                   <v-btn
                     color="error"
                     variant="outlined"
@@ -459,17 +473,12 @@
       </v-row>
     </div>
   </v-container>
-        <!-- <pre>{{ formData.validacion_responsable }}</pre>
-  {{ '***************************************A' }}
-      <pre>{{ formDatSF }}</pre>
-  {{ '***************************************A' }}
-     <pre>{{ datosFormulario1 }}</pre>
-      {{ '***************************************B' }}
+      <!-- {{ '***************************************B' }}
      <pre>{{ datosFormulario }}</pre> -->
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
@@ -482,13 +491,15 @@ const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 const idSolicitud = route.query.solicitud_id || null
-console.log('ID de Actividad:', idActividad)
-console.log('ID de Tarea:', idTarea)
-console.log('ID de Solicitud:', idSolicitud)
+console.log('ID Actividad:', idActividad)
+console.log('ID Tarea:', idTarea)
+console.log('ID Solicitud:', idSolicitud)
+
+const baseurl = import.meta.env.VITE_API_BASE
 
 //variables para carga de datos
-const datosFormulario = ref(null)
-const datosFormulario1 = ref(null)
+const datosFormulario = ref(null)     //viene de funcion cargarDatos y actualiza formData
+const datosFormulario1 = ref(null)    //viene de funcion cargarSolicitudFondos y actualiza detalle_destino_fondos
 const error = ref(null)
 const isLoading = ref(false)
 
@@ -617,7 +628,7 @@ watch(
   datosFormulario,
   (newVal) => {
     if (newVal && newVal.usuario) {
-      console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
+      //console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
 
       const usuario = newVal.usuario
 
@@ -716,7 +727,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl+'/api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -736,7 +747,7 @@ async function cargarDatos() {
 
     const rawData = await response.json()
     datosFormulario.value = strictSanitizeData(rawData)
-    console.log('Datos cargados exitosamente:', datosFormulario.value)
+    //console.log('Datos cargados exitosamente:', datosFormulario.value)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -808,7 +819,7 @@ async function cargarSolicitudFondos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudFondos/', {
+    const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudFondos/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -821,41 +832,18 @@ async function cargarSolicitudFondos() {
 
     const data = await response.json()
 
-    // Debug: ver todos los datos recibidos
-    console.log('Datos completos de la API:', data)
-    console.log('Parámetros de búsqueda:', {
-      idActividad,
-      idTarea,
-      idSolicitud,
-      tipoIdActividad: typeof idActividad,
-      tipoIdTarea: typeof idTarea,
-      tipoIdSolicitud: typeof idSolicitud
-    })
-
     // Filtrar las solicitudes por actividad_id y tarea_id
     const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
-      // Debug de cada solicitud
-      console.log('Revisando solicitud:', {
-        id: solicitud.id,
-        actividad_id: solicitud.actividad_id,
-        tarea_id: solicitud.tarea_id,
-        tipoSolicitud: typeof solicitud.id,//
-        tipoActividad: typeof solicitud.actividad_id,
-        tipoTarea: typeof solicitud.tarea_id
-      })
 
       // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
       const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
       const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
       const coincideSolicitud = solicitud.id?.toString() === idSolicitud?.toString()
 
-      console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
+      //console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
 
       return coincideActividad && coincideTarea && coincideSolicitud
     })
-
-    console.log('Solicitudes filtradas encontradas:', solicitudesFiltradas)
-    console.log('Total de solicitudes en API:', data.solicitudes?.length || 0)
 
     datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
     actualizarDatosFormulario(solicitudesFiltradas[0])
@@ -920,7 +908,7 @@ async function submitForm() {
       id_tarea: idTarea || null,
     }
 
-    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/crear-solicitud-fondos/', {
+    const response = await fetch(baseurl+'/api/monitoreo/crear-solicitud-fondos/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1002,7 +990,7 @@ async function validarSolicitud() {
   loading.value = true
   try {
     const response = await fetch(
-      'http://127.0.0.1:8000/monitoreo_api/actualizar-validacion-solicitud-fondos/',
+      baseurl+'/monitoreo_api/actualizar-validacion-solicitud-fondos/',
       {
         method: 'PATCH',
         headers: {
@@ -1022,7 +1010,7 @@ async function validarSolicitud() {
     alert('Solicitud validada exitosamente.')
 
     // Redireccionar
-    router.push('/pei/listaactividades')
+    router.push('/pei/listaactividades?showButton=1')
 
   } catch (err) {
     console.error('Error al validar la solicitud:', err)
@@ -1291,7 +1279,7 @@ function actualizarDatosFormulario(solicitud) {
   formDatSF.value.fechaRealizacionActividadsf = solicitud.fechaRealizacionActividad || ''
   formDatSF.value.bloquearIconosSolFondossf = solicitud.bloquearIconosSolFondos || true
 
-  console.log('datosFormulario actualizado con los valores de la solicitud:', datosFormulario.value)
+  //console.log('datosFormulario actualizado con los valores de la solicitud:', datosFormulario.value)
 
   actualizarDetalleDestinoFondos(solicitud.detalleDestinoFondos)
 
@@ -1318,7 +1306,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
       monto: item.monto || 0
     }))
 
-    console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
+    //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
   } catch (error) {
     console.error('Error al parsear detalleDestinoFondos:', error)
     formData.value.detalle_destino_fondos = []
@@ -1335,12 +1323,6 @@ function actualizarInformacionAdicional() {
 
   // Actualizar fecha_solicitud
   formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
-
-  console.log('Información adicional actualizada:', {
-    forma_pago: formData.value.forma_pago,
-    lugar_solicitud: formData.value.lugar_solicitud,
-    fecha_solicitud: formData.value.fecha_solicitud
-  })
 }
 
 // Función para extraer y formatear los validadores por ID
@@ -1360,14 +1342,14 @@ function actualizarValidadores() {
   // Actualizar formData con los IDs encontrados
   if (responsable) {
     formData.value.idresponsable = responsable.id
-    console.log('Responsable encontrado:', getNombreCompleto(responsable))
+    //console.log('Responsable encontrado:', getNombreCompleto(responsable))
   } else {
     console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
   }
 
   if (coordinador) {
     formData.value.idcoordinador = coordinador.id
-    console.log('Coordinador encontrado:', getNombreCompleto(coordinador))
+    //console.log('Coordinador encontrado:', getNombreCompleto(coordinador))
   } else {
     console.warn('No se encontró coordinador con ID:', formDatSF.value.coordinador_idsf)
   }
@@ -1390,8 +1372,6 @@ function actualizarListasValidadores() {
     validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
   )
 
-  console.log('Responsables list:', responsablesList.value)
-  console.log('Coordinadores list:', coordinadoresList.value)
 }
 
 // Verificación mejorada con roles
@@ -1400,7 +1380,9 @@ const puedeValidarResponsable = computed(() => {
   const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
   const responsableAsignadoId = formData.value.idresponsable
 
-  // El usuario puede validar si es el responsable asignado Y tiene el cargo correspondiente
+  // El usuario puede validar si:
+  // 1. Es el responsable asignado
+  // 2. Tiene el cargo correspondiente
   return usuarioActualId === responsableAsignadoId &&
          usuarioActualCargo?.includes('responsable')
 })
@@ -1410,7 +1392,9 @@ const puedeValidarCoordinador = computed(() => {
   const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
   const coordinadorAsignadoId = formData.value.idcoordinador
 
-  // El usuario puede validar si es el coordinador asignado Y tiene el cargo correspondiente
+  // El usuario puede validar si:
+  // 1. Es el coordinador asignado
+  // 2. Tiene el cargo correspondiente
   return usuarioActualId === coordinadorAsignadoId &&
          usuarioActualCargo?.includes('coordinador')
 })
