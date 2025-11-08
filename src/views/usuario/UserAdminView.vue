@@ -240,125 +240,136 @@
 
 
     <!-- Crear/Editar Usuario -->
-    <v-dialog v-model="userDialog" max-width="800" persistent>
-      <v-card>
-        <v-card-title>{{ isEditing ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</v-card-title>
-        <v-card-text>
-          <v-form ref="userForm" @submit.prevent="saveUser">
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.nombre"
-                label="Nombre"
-                :rules="[required]"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.paterno"
-                label="Apellido Paterno"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.materno"
-                label="Apellido Materno"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.ci"
-                label="C.I."
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.usuario"
-                label="Nombre de Usuario"
-                :rules="[required]"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.cargo"
-                label="Cargo"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.banco"
-                label="Banco"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="currentUser.numero_cuenta"
-                label="Número de Cuenta"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="currentUser.tipo_cuenta"
-                :items="accountTypeOptions"
-                label="Tipo de Cuenta"
-                :rules="[required]"
-                required
-              ></v-select>
-            </v-col>
-            <v-col cols="12" md="6" v-if="!isEditing">
-              <v-text-field
-                v-model="currentUser.password"
-                label="Contraseña"
-                :rules="[required, minLength(8)]"
-                type="password"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6" v-if="!isEditing">
-              <v-text-field
-                v-model="currentUser.passwordConfirm"
-                label="Confirmar contraseña"
-                :rules="[required, passwordMatch]"
-                type="password"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="currentUser.permisos"
-                :items="availablePermissions"
-                label="Permisos"
-                :rules="[required]"
-                variant="outlined"
-              ></v-select>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="currentUser.is_active"
-                :items="statusOptions"
-                label="Estado"
-                :rules="[required]"
-                variant="outlined"
-              ></v-select>
-            </v-col>
-          </v-row>
-        </v-form>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn color="grey" @click="userDialog = false">Cancelar</v-btn>
-          <v-btn color="primary" @click="saveUser" :loading="savingUser">Guardar</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+<v-dialog v-model="userDialog" max-width="800" persistent>
+  <v-card>
+    <v-card-title>{{ isEditing ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</v-card-title>
+    <v-card-text>
+      <v-form ref="userForm" @submit.prevent="saveUser">
+        <v-row>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="currentUser.nombre"
+              label="Nombre"
+              :rules="[required]"
+              variant="outlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="currentUser.paterno"
+              label="Apellido Paterno"
+              variant="outlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="currentUser.materno"
+              label="Apellido Materno"
+              variant="outlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="currentUser.ci"
+              label="C.I."
+              variant="outlined"
+            ></v-text-field>
+          </v-col>
 
+          <!-- NUEVO CAMPO CORREO -->
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="currentUser.correo"
+              label="Correo Electrónico"
+              :rules="[required, emailRule]"
+              type="email"
+              variant="outlined"
+            ></v-text-field>
+          </v-col>
+
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="currentUser.usuario"
+              label="Nombre de Usuario"
+              :rules="[required]"
+              variant="outlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="currentUser.cargo"
+              label="Cargo"
+              variant="outlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="currentUser.banco"
+              label="Banco"
+              variant="outlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="currentUser.numero_cuenta"
+              label="Número de Cuenta"
+              variant="outlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-select
+              v-model="currentUser.tipo_cuenta"
+              :items="accountTypeOptions"
+              label="Tipo de Cuenta"
+              :rules="[required]"
+              required
+            ></v-select>
+          </v-col>
+          <v-col cols="12" md="6" v-if="!isEditing">
+            <v-text-field
+              v-model="currentUser.password"
+              label="Contraseña"
+              :rules="[required, minLength(8)]"
+              type="password"
+              variant="outlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="6" v-if="!isEditing">
+            <v-text-field
+              v-model="currentUser.passwordConfirm"
+              label="Confirmar contraseña"
+              :rules="[required, passwordMatch]"
+              type="password"
+              variant="outlined"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-select
+              v-model="currentUser.permisos"
+              :items="availablePermissions"
+              label="Permisos"
+              :rules="[required]"
+              variant="outlined"
+            ></v-select>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-select
+              v-model="currentUser.is_active"
+              :items="statusOptions"
+              label="Estado"
+              :rules="[required]"
+              variant="outlined"
+            ></v-select>
+          </v-col>
+        </v-row>
+      </v-form>
+    </v-card-text>
+    <v-card-actions class="justify-end">
+      <v-btn color="grey" @click="userDialog = false">Cancelar</v-btn>
+      <v-btn color="primary" @click="saveUser" :loading="savingUser">Guardar</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
     <!-- Resetear contraseña -->
     <v-dialog v-model="resetPasswordDialog" max-width="500" persistent>
       <v-card>
@@ -508,6 +519,7 @@ const currentUser = ref({
   paterno: '',
   materno: '',
   ci: '',
+  correo: '',
   cargo: '',
   banco: '',
   numero_cuenta: '',
@@ -548,6 +560,7 @@ const availableRoles = ['admin', 'editor', 'user', 'guest', 'manager', 'auditor'
 // Headers de la tabla
 const headers = [
   { title: 'Usuario', key: 'user', sortable: false },
+  { title: 'Correo', key: 'correo' },
   { title: 'Estado', key: 'status', width: '120px' },
   { title: 'Roles', key: 'roles', sortable: false },
   { title: 'Permisos', key: 'permisos', width: '150px' },
@@ -559,6 +572,13 @@ const required = (v) => !!v || 'Campo requerido'
 const minLength = (length) => (v) => (v && v.length >= length) || `Mínimo ${length} caracteres`
 const passwordMatch = () =>
   newPassword.value === newPasswordConfirm.value || 'Las contraseñas no coinciden'
+
+// NUEVA REGLA PARA EMAIL
+const emailRule = (v) => {
+  if (!v) return true // Si está vacío, dejar que required lo maneje
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return pattern.test(v) || 'Correo electrónico inválido'
+}
 
 // Computed
 const filteredUsers = computed(() => {
@@ -599,6 +619,7 @@ const fetchUsers = async () => {
     paterno: user.paterno,
     materno: user.materno,
     ci: user.ci,
+    correo: user.correo,
     usuario: user.usuario,
     cargo: user.cargo,
     banco: user.banco,
@@ -627,6 +648,7 @@ const openCreateDialog = () => {
     paterno: '',
     materno: '',
     ci: '',
+    correo:'',
     cargo: '',
     banco: '',
     numero_cuenta: '',
@@ -663,6 +685,7 @@ const saveUser = async () => {
       paterno: currentUser.value.paterno,
       materno: currentUser.value.materno,
       ci: currentUser.value.ci,
+      correo: currentUser.value.correo,
       cargo: currentUser.value.cargo,
       banco: currentUser.value.banco,
       numero_cuenta: currentUser.value.numero_cuenta,
@@ -902,7 +925,7 @@ const readExcelFile = (file) => {
 
 const processImportedData = (data) => {
   // Validar estructura del archivo
-  const requiredFields = ['usuario', 'nombre', 'paterno', 'ci', 'cargo']
+  const requiredFields = ['usuario', 'nombre', 'paterno', 'ci', 'cargo','correo']
   const firstRow = data[0]
 
   const missingFields = requiredFields.filter(field => !(field in firstRow))
@@ -918,6 +941,7 @@ const processImportedData = (data) => {
     paterno: row.paterno || '',
     materno: row.materno || '',
     ci: row.ci ? String(row.ci) : '',
+    correo: row.correo || '',
     cargo: row.cargo || '',
     banco: row.banco || '',
     numero_cuenta: row.numero_cuenta ? String(row.numero_cuenta) : '',
@@ -996,6 +1020,7 @@ const downloadTemplate = () => {
       paterno: 'Pérez',
       materno: 'Gómez',
       ci: '1234567',
+      correo: 'juan.perez@ejemplo.com',
       cargo: 'admin',
       banco: 'Banco Nacional',
       numero_cuenta: '1234567890',
