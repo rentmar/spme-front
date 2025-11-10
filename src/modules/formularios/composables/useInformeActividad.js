@@ -39,7 +39,7 @@ export function useInformeActividad() {
       return respuesta
     } catch (err) {
       error.value = err
-      console.eroor('No se pudo obtener la lista', err)
+      console.error('No se pudo obtener la lista', err)
     } finally {
       loading.value = false
     }
