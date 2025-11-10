@@ -108,7 +108,7 @@
         @click="goToPageWithButton(3)"
         prepend-icon="mdi-file-document-outline"
         title="Informe de Actividad"
-        value="monitoring-activity"
+        value="informe-actividad"
         to="/pei/listaactividades?showButton=3"
       ></v-list-item>
     </v-list-group>

@@ -266,9 +266,18 @@ const router = createRouter({
       path: '/monitoreo/formulario08/:id',
       component: () => import('@/views/monitoreo/SolicitudDePagoDirecto.vue'),
     },
+    //Link al formulario de actividad - antiguo
     {
       path: '/monitoreo/formularioInf/:id',
       component: () => import('@/views/monitoreo/InformeActividad.vue'),
+    },
+    //Link al nuevo formulario de actividad
+
+    //Lista de actividades para informes
+    {
+      path: '/actividades/informe/',
+      name: 'actividades',
+      component: () => import('@/views/monitoreo/InformeListaActividadView.vue'),
     },
 
     /*************************  Reportes  **************************************************** */
