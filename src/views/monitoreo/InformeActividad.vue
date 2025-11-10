@@ -146,7 +146,8 @@
             @guardarAvances="actualizarIndicadores"
           >
           </Indicador-registro-bitacora>
-          <br />
+
+          <RegistroAvanceIndicadores></RegistroAvanceIndicadores>
 
           <!-- <v-col cols="12" class="mt-4">
             <v-text-field
@@ -305,6 +306,7 @@ import ActividadInformacion from '@/modules/proyecto/components/partials/Activid
 
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
 import InformacionCuantitativa from '@/modules/formularios/components/InformacionCuantitativa.vue'
+import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAvanceIndicadores.vue'
 
 const modalAbierto = ref(false)
 
