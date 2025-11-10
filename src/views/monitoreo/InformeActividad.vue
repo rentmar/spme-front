@@ -147,7 +147,10 @@
           >
           </Indicador-registro-bitacora>
 
-          <RegistroAvanceIndicadores></RegistroAvanceIndicadores>
+          <RegistroAvanceIndicadores
+            :idactividad="idActividad"
+            @todos-los-registros-enviados="manejarRegistrosIndicadores"
+          ></RegistroAvanceIndicadores>
 
           <!-- <v-col cols="12" class="mt-4">
             <v-text-field
@@ -349,6 +352,10 @@ const indicadores = [
   { id: 3, nombre: 'Nivel de satisfacción de beneficiarios' },
   { id: 4, nombre: 'Cumplimiento de cronograma' },
 ]
+
+const manejarRegistrosIndicadores = async () => {
+  console.log('Registro de indicadores')
+}
 
 const formData = reactive({
   //contribucion_proyecto: '',
