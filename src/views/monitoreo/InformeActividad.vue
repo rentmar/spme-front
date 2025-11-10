@@ -173,24 +173,7 @@
             <br />
             <v-row>
               <v-col cols="12">
-                <v-textarea
-                  v-model="formData.informacion_cuantitativa"
-                  label="Número de participantes, organizaciones, segmentación y grupos edad/sexo, autoridades"
-                  bg-color="blue-lighten-5"
-                  rows="3"
-                ></v-textarea>
-              </v-col>
-
-              <v-col cols="12">
-                <v-file-input
-                  v-model="formData.archivos_cuantitativos"
-                  label="Adjuntar archivos"
-                  multiple
-                  chips
-                  show-size
-                  :accept="acceptedFormats.herramientas"
-                  prepend-icon="mdi-paperclip"
-                ></v-file-input>
+                <InformacionCuantitativa></InformacionCuantitativa>
               </v-col>
             </v-row>
           </div>
@@ -203,15 +186,7 @@
             <br />
             <v-row>
               <v-col cols="12">
-                <v-textarea
-                  v-model="formData.descripcion_herramientas"
-                  label="Herramientas de Evaluacion y resultados"
-                  bg-color="blue-lighten-5"
-                  rows="3"
-                ></v-textarea>
-              </v-col>
-              <v-col cols="12">
-                <v-file-input
+                <!-- <v-file-input
                   v-model="formData.herramientas_archivos"
                   label="Adjuntar archivos"
                   multiple
@@ -219,7 +194,8 @@
                   show-size
                   :accept="acceptedFormats.herramientas"
                   prepend-icon="mdi-paperclip"
-                ></v-file-input>
+                ></v-file-input> -->
+                <HerramientasAplicadasResultados></HerramientasAplicadasResultados>
               </v-col>
             </v-row>
           </div>
@@ -326,6 +302,9 @@ import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoC
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+
+import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
+import InformacionCuantitativa from '@/modules/formularios/components/InformacionCuantitativa.vue'
 
 const modalAbierto = ref(false)
 

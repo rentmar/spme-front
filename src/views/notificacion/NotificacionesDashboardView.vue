@@ -17,15 +17,18 @@
       v-model="modalAbierto"
       :idactividad="idactividad"
     ></indicador-registro-bitacora> -->
-
+    <!--
     <encabezado-contribucion
       :datos-estructura="estructuraProcedencia"
       @payload-actualizado="recibirContribuciones"
-    ></encabezado-contribucion>
-    <gestion-copias-planificacion></gestion-copias-planificacion>
+    ></encabezado-contribucion> -->
+    <!-- <gestion-copias-planificacion></gestion-copias-planificacion> -->
   </div>
   <h1>Contribuciones</h1>
   {{ proyectoContribuciones }}
+  <div>
+    <herramientas-aplicadas-resultados></herramientas-aplicadas-resultados>
+  </div>
 </template>
 
 <script setup>
@@ -34,7 +37,7 @@ import IndicadorLineChart from '@/modules/reportes/components/partials-indicador
 import IndicadorRegistroBitacora from '@/modules/reportes/components/IndicadorRegistroBitacora.vue'
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
 import GestionCopiasPlanificacion from '@/modules/planificacionxls/components/gestion-seguimiento/GestionCopiasPlanificacion.vue'
-
+import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
 const idactividad = ref(1)
 
 const modalAbierto = ref(false)
