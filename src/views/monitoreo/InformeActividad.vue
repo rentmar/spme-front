@@ -130,7 +130,7 @@
             ></v-textarea>
           </v-col>
 
-          <v-btn
+          <!-- <v-btn
             color="primary"
             variant="outlined"
             prepend-icon="mdi-chart-bar"
@@ -145,7 +145,7 @@
             :idactividad="idActividad"
             @guardarAvances="actualizarIndicadores"
           >
-          </Indicador-registro-bitacora>
+          </Indicador-registro-bitacora> -->
 
           <RegistroAvanceIndicadores
             :idactividad="idActividad"

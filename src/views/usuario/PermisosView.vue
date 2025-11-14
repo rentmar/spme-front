@@ -358,24 +358,7 @@
             </v-window-item>
             <!--Instancias gestoras-->
             <v-window-item value="instancias">
-              <v-card variant="outlined" class="mt-4">
-                <v-toolbar color="primary" density="compact">
-                  <v-toolbar-title>ASIGNACIÓN DE INSTANCIAS GESTORAS</v-toolbar-title>
-                  <v-spacer></v-spacer>
-                  <v-tooltip text="Ayuda" location="bottom">
-                    <template v-slot:activator="{ props }">
-                      <v-btn v-bind="props" icon color="black" size="large" class="mx-1">
-                        <v-icon>mdi-help-circle</v-icon>
-                      </v-btn>
-                    </template>
-                  </v-tooltip>
-                </v-toolbar>
-
-                <v-card-text>
-                  <!-- Componente de asignación de instancias gestoras -->
-                  <!-- <AsignarInstanciasGestoras /> -->
-                </v-card-text>
-              </v-card>
+              <AsignarInstanciasGestoras></AsignarInstanciasGestoras>
             </v-window-item>
           </v-window>
         </v-col>
@@ -567,6 +550,7 @@ import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vu
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
+import AsignarInstanciasGestoras from '@/modules/instanciaGestora/components/AsignarInstanciasGestoras.vue'
 
 const { successMsg, errorMsg } = useSnackbar()
 

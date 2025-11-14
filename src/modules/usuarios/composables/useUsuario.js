@@ -6,6 +6,8 @@ const loading = ref(false)
 const error = ref(null)
 const usuarios = ref([])
 const usuario = ref(null)
+const tokens = ref(null)
+const permisosUsuario = ref(null)
 
 export function useUsuario() {
   //Datos de usuario por nick
@@ -48,6 +50,31 @@ export function useUsuario() {
     }
   }
 
+  //Obtener los tokens, mediante credenciales
+  async function obtenerTokens(credenciales) {
+    loading.value = true
+    try {
+      const respuesta = await usuarioServicios.obtenerTokens(credenciales)
+      tokens.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Obtener los permisos de usuario
+  async function obtenerPermisos(tokenAcceso) {
+    loading.value = true
+    try {
+      const respuesta = await usuarioServicios.obtenerPermisosUsuario(tokenAcceso)
+      permisosUsuario.value = respuesta
+      return respuesta
+    } catch (err) {
+      console.error('Error cargando la informacion del usuario', err)
+    }
+  }
+
   //Obtener el id de un usuario
 
   //Fecth usuarios
@@ -59,8 +86,12 @@ export function useUsuario() {
     error, //ref
     usuarios, //ref lista de kpis
     usuario, //ref un kpi por id
+    tokens,
+    permisosUsuario,
     informacionUsuarioPorNick, //func
     obtenerUsuarios, //fund
     obtenerUsuariosNicks, //func
+    obtenerTokens,
+    obtenerPermisos,
   }
 }

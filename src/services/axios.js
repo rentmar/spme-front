@@ -65,6 +65,16 @@ const apiRep = axios.create({
   },
 })
 
+//Instancia para control de acceso
+const apiAxs = axios.create({
+  //baseURL: import.meta.env.VITE_API_URL_PLAN,
+  baseURL: import.meta.env.VITE_API_BASE_AXS,
+  withCredentials: false,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
 //Interceptor comun para ambas instancias
 const errorInterceptor = (error) => {
   console.error('Error en petición:', error.response?.data || error.message)
@@ -77,6 +87,7 @@ apiUsuarios.interceptors.response.use((response) => response, errorInterceptor)
 apiProg.interceptors.response.use((response) => response, errorInterceptor)
 apiProy.interceptors.response.use((response) => response, errorInterceptor)
 apiRep.interceptors.response.use((response) => response, errorInterceptor)
+apiAxs.interceptors.response.use((response) => response, errorInterceptor)
 // Interceptor para manejar errores globales
 // api.interceptors.response.use(
 //   (response) => response,
@@ -86,4 +97,4 @@ apiRep.interceptors.response.use((response) => response, errorInterceptor)
 //   },
 // )
 export default api
-export { api, apiPlan, apiUsuarios, apiProg, apiProy, apiRep }
+export { api, apiPlan, apiUsuarios, apiProg, apiProy, apiRep, apiAxs }
