@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
+import { useUserPermissions } from './useUserPermissions'
 
 export const useUserStore = defineStore('user', () => {
   //Variables de estado
@@ -32,6 +33,7 @@ export const useUserStore = defineStore('user', () => {
   //const permisos = computed(() => userData.value?.permisos || '')
 
   /***** ACCIONES ******/
+
   //Guarda datos del usuario en el estado  y sessionStorage
   //username, rol, permisoso
   const setUserData = async (data) => {
@@ -122,6 +124,10 @@ export const useUserStore = defineStore('user', () => {
       //Obtener datos del usuario desde el enpoint de permisos
       await obtenerPermisos(accessToken.value)
       setUserData(permisosUsuario)
+
+      //Integrando los permisos
+      const userPermissions = useUserPermissions()
+      userPermissions.setPermisosGlobales(permisosUsuario.value)
     } catch (error) {
       console.error('Error cargando informacion del usuario: ', error)
       throw error
@@ -144,6 +150,18 @@ export const useUserStore = defineStore('user', () => {
       } catch (error) {
         console.error('Error inicializando auth:', error)
         clearUserData()
+      }
+    }
+
+    //Si hay datos en el sessionStorage, cargar en useUserPermissions
+    const storedUserData = sessionStorage.getItem('userData')
+    if (storedUserData) {
+      try {
+        const userData = JSON.parse(storedUserData)
+        const userPermissions = useUserPermissions()
+        userPermissions.setPermisosGlobales(userData)
+      } catch (error) {
+        console.error('Error cargando permisos desde sessionStorage:', error)
       }
     }
 
