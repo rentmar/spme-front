@@ -20,7 +20,7 @@
           <PaginaTituloIcono :titulo="'ADMINISTRACIÓN DE USUARIOS'" :icon="'mdi-account-cog'" />
            <!-- EXCEL-->
       <div>
-    <!-- En la sección de botones, agrega esto: -->
+
     <v-btn
       color="primary"
       @click="openImportDialog"
@@ -29,8 +29,6 @@
       <v-icon left>mdi-upload</v-icon>
       Importar Excel
     </v-btn>
-
-    <!-- Agrega este dialog para la importación -->
     <v-dialog v-model="importDialog" max-width="500px">
       <v-card>
         <v-card-title class="d-flex justify-space-between align-center">
@@ -295,13 +293,18 @@
               variant="outlined"
             ></v-text-field>
           </v-col>
+
+          <!-- CAMBIO: SELECT PARA CARGO -->
           <v-col cols="12" md="6">
-            <v-text-field
+            <v-select
               v-model="currentUser.cargo"
+              :items="cargoOptions"
               label="Cargo"
+              :rules="[required]"
               variant="outlined"
-            ></v-text-field>
+            ></v-select>
           </v-col>
+
           <v-col cols="12" md="6">
             <v-text-field
               v-model="currentUser.banco"
@@ -370,7 +373,7 @@
     </v-card-actions>
   </v-card>
 </v-dialog>
-    <!-- Resetear contraseña -->
+<!-- Resetear contraseña -->
     <v-dialog v-model="resetPasswordDialog" max-width="500" persistent>
       <v-card>
         <v-card-title>Resetear contraseña</v-card-title>
@@ -488,6 +491,13 @@ const availablePermissions = ['A', 'B', 'C', 'D'] // Ajustar según tus permisos
 
 const accountTypeOptions = ['Ahorros', 'Corriente']
 
+const cargoOptions = [
+  'admin',
+  'coordinador',
+  'tecnico',
+  'contable'
+]
+
 const userForm = ref(null)
 const baseUrl = import.meta.env.VITE_API_BASE
 
@@ -575,7 +585,7 @@ const passwordMatch = () =>
 
 // NUEVA REGLA PARA EMAIL
 const emailRule = (v) => {
-  if (!v) return true // Si está vacío, dejar que required lo maneje
+  if (!v) return true // Si está vacío
   const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return pattern.test(v) || 'Correo electrónico inválido'
 }
