@@ -227,8 +227,6 @@ export default {
 },
 
   calcularBarra(actividad) {
-  const fechaInicio = new Date(actividad.fecha_inicio + 'T00:00:00')
-  const fechaFin = new Date(actividad.fecha_cierre + 'T00:00:00')
 
   const posicionMinima = this.xInicial + this.anchoColumnaActividad
   const areaMaxima = posicionMinima + (this.ancho + this.espacio) * this.cantidad
