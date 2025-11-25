@@ -269,8 +269,9 @@
       </v-card-text>
     </v-card>
   </v-container>
-  <!-- {{ '*********************A' }}
-   <pre>{{ datosFormasDePago.formasPago }}</pre> -->
+  <!-- {{ datosFormulario }}
+    {{ '*********************A' }}
+   <pre>{{ datosFormulario }}</pre> -->
 </template>
 
 <script setup>
@@ -312,7 +313,7 @@ const numeroFormulario = ref('')
 const cargandoGeneral = ref(true)
 
 //variables para carga de datos
-const datosFormulario = ref(null)
+const datosFormulario = ref(null)   //necesario para tarjetas de encabezado
 const error = ref(null)
 const isLoading = ref(false)
 const formasPago = ref([])

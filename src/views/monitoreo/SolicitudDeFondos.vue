@@ -334,7 +334,14 @@
 
                   <v-row>
                     <v-col cols="12" md="6">
-                      <v-select
+                      <v-text-field
+                        v-model="formData.lugar_solicitud"
+                        label="Lugar de la Solicitud"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-text-field>
+                      <!-- <v-select
                         v-model="formData.forma_pago"
                         :items="formasPagoOptions"
                         item-title="formaPago"
@@ -343,14 +350,7 @@
                         variant="outlined"
                         bg-color="blue-lighten-5"
                         required
-                      ></v-select>
-                      <v-text-field
-                        v-model="formData.lugar_solicitud"
-                        label="Lugar de la Solicitud"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-text-field>
+                      ></v-select> -->
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-text-field
@@ -364,6 +364,116 @@
                       ></v-text-field>
                     </v-col>
                   </v-row>
+
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="formData.forma_pago"
+                        :items="formasPagoOptions"
+                        item-title="formaPago"
+                        item-value="id"
+                        label="Forma de Pago"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-select>
+                    </v-col>
+                  </v-row>
+
+                  <div v-if="MostrarCamposOtros">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.otros.nombre_otros"
+                          label="Nombre a quien se realiza el pago"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposOtros"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.otros.ci_otros"
+                          label="Documento de Identidad C.I."
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposOtros"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </div>
+                  <!-- <div v-if="MostrarCamposCheque">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.cheque.nombre_cheque"
+                          label="Nombre a quien se realiza el cheque"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposCheque"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.cheque.ci_cheque"
+                          label="Documento de Identidad C.I."
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposCheque"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </div> -->
+                  <div v-if="MostrarCamposTransferencia">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.nombre_transferencia"
+                          label="Nombre completo a quien se realiza la transferencia"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposTransferencia"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.ci_transferencia"
+                          label="Documento de Identidad C.I."
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposTransferencia"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.entidad_bancaria"
+                          label="Nombre de Entidad Bancaria"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposTransferencia"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-select
+                          v-model="formData.datos_forma_pago.transferencia.tipo_cuenta"
+                          :items="['Ahorro', 'Corriente']"
+                          label="Tipo de Cuenta (Ahorro/ Corriente)"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposTransferencia"
+                        ></v-select>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.numero_cuenta"
+                          label="Número de Cuenta Bancaria"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposTransferencia"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </div>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -375,7 +485,7 @@
                     Firmas y Validaciones
                   </h3>
 
-                  <v-row>
+                  <!-- <v-row>
                     <v-col cols="12" md="6">
                       <v-select
                         v-model="formData.idresponsable"
@@ -395,7 +505,7 @@
                         :disabled="isFrozen"
                       ></v-checkbox>
                     </v-col>
-                  </v-row>
+                  </v-row> -->
                   <v-row>
                     <v-col cols="12" md="6">
                       <v-select
@@ -412,7 +522,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formData.validacion_coordinador"
-                        label="Aprobado por Coordinador"
+                        label="Aprobado por Coordinador o Dirección"
                         :disabled="isFrozen"
                       ></v-checkbox>
                     </v-col>
@@ -457,12 +567,22 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
+  <!-- <pre>{{ formData.detalle_destino_fondos }}</pre>
+  {{ '*******************' }} -->
+  <!--<pre>{{ datosFormulario}}</pre>-->
    <!-- <pre>{{ textoProcedencia }}</pre> -->
      <!-- <pre>{{ datosFormulario }}</pre> -->
     <!-- <p>{{ formData.forma_pago }}</p>
+    {{ '*******************' }}-->
+    <!-- <pre>{{ formasPagoOptions }}</pre>
+    {{ '*******************' }} -->
+    <!-- <pre>{{ formaPagoElegido }}</pre>
+    {{ '*******************' }} -->
+    <!-- <pre>{{ formData.forma_pago }}</pre>
+    {{ '*******************' }} -->
+    <!-- <pre>{{ formData.datos_forma_pago }}</pre>
     {{ '*******************' }}
-      <p>{{ formasPagoOptions }}</p> -->
+    <pre>{{ formData.datos_forma_pago }}</pre> -->
 </template>
 
 <script setup>
@@ -478,8 +598,8 @@ const router = useRouter()
 const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
-console.log('ID de Actividad:', idActividad)
-console.log('ID de Tarea:', idTarea)
+console.log('ID Actividad:', idActividad)
+console.log('ID Tarea:', idTarea)
 
 const baseurl = import.meta.env.VITE_API_BASE
 
@@ -513,10 +633,22 @@ const formData = ref({
   id_usuario: 0,
   // Resto de campos del formulario
   detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
-  forma_pago: null,
+  monto_solicitado: 0,
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
-  monto_solicitado: 0,
+  // Campos de forma de pago
+  forma_pago: null,
+  datos_forma_pago: { otros: {nombre_otros: '', ci_otros: ''}, transferencia: { nombre_transferencia: '', ci_transferencia: '', entidad_bancaria: '', tipo_cuenta: '', numero_cuenta: ''}},
+  // nombre_otros: '',
+  // ci_otros: '',
+  // nombre_cheque: '',
+  // ci_cheque: '',
+  // nombre_transferencia: '',
+  // ci_transferencia: '',
+  // entidad_bancaria: '',
+  // tipo_cuenta: '',
+  // numero_cuenta: '',
+  // Campos de validación
   validacion_responsable: false,
   idresponsable: null,
   validacion_coordinador: false,
@@ -558,6 +690,33 @@ const actividadData = ref({
   responsable: { nombre: 'María González' },
   presupuesto: 2500,
 })
+
+// // Logica para formas de pago (solo debe haber tres formas de Pago: otros, Cheque, Transferencia)
+const formasPagoOptions = computed(() => {
+  if (datosFormulario.value && datosFormulario.value.formaPago) {
+    return datosFormulario.value.formaPago
+  }
+  return []
+})
+const formaPagoElegido = computed(() => {
+  if (formData.value.forma_pago && formasPagoOptions.value.length > 0) {
+    const formaPago = formasPagoOptions.value.find((fp) => fp.id === formData.value.forma_pago)
+    // return formaPago ? formaPago.formaPago.toLowerCase() : ''
+    return formaPago ? formaPago.formaPago : ''
+  }
+  return ''
+})
+const MostrarCamposOtros = computed(() => {
+  //return !formaPagoElegido.value.includes('Transferencia Bancaria')
+  return formaPagoElegido.value !== 'Transferencia Bancaria'
+})
+const MostrarCamposTransferencia = computed(() => {
+  //return formaPagoElegido.value.includes('Transferencia Bancaria')
+  return formaPagoElegido.value === 'Transferencia Bancaria'
+})
+// const MostrarCamposCheque = computed(() => {
+//   return formaPagoElegido.value.includes('cheque')
+// })
 
 // Propiedades computadas
 const nombreCoordinadorElegido = computed(() => {
@@ -650,22 +809,6 @@ watch(
   { deep: true },
 )
 
-const formasPagoOptions = computed(() => {
-  if (datosFormulario.value && datosFormulario.value.formaPago) {
-    return datosFormulario.value.formaPago
-  }
-  return []
-})
-
-// 6. Para la función exportToExcel, necesitas obtener el texto de la forma de pago:
-const formasPagoTexto = computed(() => {
-  if (formData.value.forma_pago && formasPagoOptions.value.length > 0) {
-    const formaPago = formasPagoOptions.value.find((fp) => fp.id === formData.value.forma_pago)
-    return formaPago ? formaPago.formaPago : ''
-  }
-  return ''
-})
-
 // Métodos
 function getNombreCompleto(user) {
   return `${user.nombre} ${user.paterno} ${user.materno}`.trim()
@@ -695,6 +838,7 @@ async function cargarDatos() {
         usuario: usuario.value.nombre,
       }),
     })
+    console.log('Respuesta de la API recibida:', idActividad, usuario.value.nombre)
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -786,11 +930,10 @@ function removeGasto(index) {
 async function submitForm() {
   loading.value = true
   try {
-    // Validar si el formulario está completo
+    //Validar si el formulario está completo
     if (
       !formData.value.lugar_solicitud ||
       !formData.value.forma_pago ||
-      !formData.value.idresponsable ||
       !formData.value.idcoordinador
     ) {
       throw new Error('Por favor, completa todos los campos obligatorios del formulario.')
@@ -798,35 +941,35 @@ async function submitForm() {
     if (totalMontoSolicitado.value <= 0) {
       throw new Error('El monto total solicitado debe ser mayor a cero.')
     }
-    // Transformar los datos al formato esperado por el endpoint
-    const payload = {
-      //numero_formulario: "Form-6666", // se crea automaticamente
-      detalle_destino_fondos: JSON.stringify({
-        items: formData.value.detalle_destino_fondos.map((gasto) => ({
-          partida: gasto.partida,
-          concepto: gasto.descripcion_gasto,
-          monto: Number(gasto.monto),
-        })),
-      }),
-      //bloquear_icono_sf: true,  // se crea automaticamente
-      forma_pago: formData.value.forma_pago,
-      lugar_solicitud: formData.value.lugar_solicitud,
-      fecha_solicitud: formData.value.fecha_solicitud,
-      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
-      monto_solicitado: totalMontoSolicitado.value,
-      validacion_responsable: formData.value.validacion_responsable,
-      id_responsable: formData.value.idresponsable,
-      validacion_coordinador: formData.value.validacion_coordinador,
-      id_coordinador: formData.value.idcoordinador,
-      id_usuario: formData.value.id_usuario,
-      actividad: {
-        id_actividad: formData.value.id_actividad,
-        descripcion_actividad: formData.value.descripcion_actividad,
-        objetivo_actividad: formData.value.objetivo_actividad,
-      },
-      id_tarea: idTarea || null,
-    }
 
+    const payload = {
+    // detalle_destino_fondos should be an object, not a stringified JSON
+    detalle_destino_fondos: {
+      items: formData.value.detalle_destino_fondos.map((gasto) => ({
+        partida_sf: gasto.partida,  // Changed from 'partida' to 'partida_sf'
+        concepto: gasto.descripcion_gasto,
+        monto: Number(gasto.monto),
+      })),
+    },
+    forma_pago: formData.value.forma_pago,
+    lugar_solicitud: formData.value.lugar_solicitud,
+    fecha_solicitud: formData.value.fecha_solicitud,
+    fecha_realizacion_actividad: formData.value.fecha_ejecucion,
+    monto_solicitado: totalMontoSolicitado.value,
+    validacion_responsable: formData.value.validacion_responsable,
+    id_responsable: formData.value.idresponsable,
+    validacion_coordinador: formData.value.validacion_coordinador,
+    id_coordinador: formData.value.idcoordinador,
+    id_usuario: formData.value.id_usuario,
+    id_actividad: formData.value.id_actividad,
+    descripcion_actividad: formData.value.descripcion_actividad,
+    objetivo_actividad: formData.value.objetivo_actividad,
+    id_tarea: idTarea || null,
+    datos_forma_pago: formData.value.datos_forma_pago,
+    bloquear_icono_sf: true,
+  }
+
+    console.log('Payload enviado al servidor:', payload)
     const response = await fetch(baseurl+'/api/monitoreo/crear-solicitud-fondos/', {
       method: 'POST',
       headers: {
@@ -901,7 +1044,7 @@ function exportToExcel() {
     ['Fuente de Financiamiento:', formData.value.fuente_financiamiento, '', ''],
     [''],
     ['INFORMACIÓN DE LA SOLICITUD', '', '', ''],
-    ['Forma de Pago:', formasPagoTexto.value, '', ''],
+    ['Forma de Pago:', formaPagoElegido.value, '', ''],
     ['Lugar de Solicitud:', formData.value.lugar_solicitud, '', ''],
     ['Fecha de Solicitud:', getCurrentDate1(), '', ''],
     [''],
