@@ -59,6 +59,11 @@ const router = createRouter({
       component: () => import('../views/pei/PeiIndicadoresView.vue'),
     },
     {
+      path: '/pei/:id/planificar',
+      name: 'planificarPei',
+      component: () => import('@/views/peiplanificacion/PeiPlanificarView.vue'),
+    },
+    {
       path: '/proyecto',
       name: 'proyecto',
       component: () => import('../views/proyecto/ProyectoListView.vue'),

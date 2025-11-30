@@ -44,8 +44,48 @@
           <!-- Lista de proyectos y actividades -->
           <v-list class="py-0">
             <template v-for="item in filteredItems" :key="item.id">
+              <!-- Item de PEI -->
+              <v-list-item v-if="item.tipo === 'pei'" :value="item" class="mb-2">
+                <template v-slot:prepend>
+                  <v-avatar color="deep-purple" class="mr-4">
+                    <v-icon dark>mdi-chart-timeline-variant</v-icon>
+                  </v-avatar>
+                </template>
+
+                <v-list-item-title class="font-weight-bold">
+                  {{ item.titulo }}
+                  <v-chip small color="deep-purple" text-color="white" class="ml-2"> PEI </v-chip>
+                </v-list-item-title>
+                <v-list-item-subtitle class="mt-1">
+                  <div class="d-flex align-center">
+                    <v-chip small color="success" text-color="white" class="mr-2"> Vigente </v-chip>
+                    <span>Período: {{ item.periodo }}</span>
+                  </div>
+                  <div class="text-caption mt-1">{{ item.descripcion }}</div>
+                  <div class="d-flex justify-space-between mt-1">
+                    <span class="text-caption">Actividades: {{ item.totalActividades }}</span>
+                  </div>
+                </v-list-item-subtitle>
+
+                <template v-slot:append>
+                  <div class="d-flex">
+                    <v-tooltip text="Proceso de Planificación" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          icon="mdi-calendar-text"
+                          variant="text"
+                          color="info"
+                          :to="`/pei/${item.id}/planificar`"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+                  </div>
+                </template>
+              </v-list-item>
+
               <!-- Item de Proyecto -->
-              <v-list-item v-if="item.tipo === 'proyecto'" :value="item" class="mb-2">
+              <v-list-item v-else-if="item.tipo === 'proyecto'" :value="item" class="mb-2">
                 <template v-slot:prepend>
                   <v-avatar color="primary" class="mr-4">
                     <v-icon dark>mdi-folder-text-outline</v-icon>
@@ -65,17 +105,6 @@
 
                 <template v-slot:append>
                   <div class="d-flex">
-                    <!-- <v-tooltip text="Ver detalles" location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-btn
-                          v-bind="props"
-                          icon="mdi-eye-outline"
-                          variant="text"
-                          color="primary"
-                        ></v-btn>
-                      </template>
-                    </v-tooltip> -->
-
                     <v-tooltip text="Proceso de planificación" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
@@ -87,48 +116,12 @@
                         ></v-btn>
                       </template>
                     </v-tooltip>
-
-                    <div class="d-flex">
-                      <!-- <v-tooltip text="Solicitud" location="top">
-                        <template v-slot:activator="{ props }">
-                          <v-btn
-                            v-bind="props"
-                            icon="mdi-file-document-edit"
-                            variant="text"
-                            color="info"
-                            :to="`/proyecto/${item.id}/planificar`"
-                          ></v-btn>
-                        </template>
-                      </v-tooltip> -->
-                      <!-- <v-tooltip text="Rendición de cuentas" location="top">
-                        <template v-slot:activator="{ props }">
-                          <v-btn
-                            v-bind="props"
-                            icon="mdi-clipboard-check-outline"
-                            variant="text"
-                            color="success"
-                            :to="`/proyecto/${item.id}/planificar`"
-                          ></v-btn>
-                        </template>
-                      </v-tooltip> -->
-                      <!-- <v-tooltip text="Informe de actividad" location="top">
-                        <template v-slot:activator="{ props }">
-                          <v-btn
-                            v-bind="props"
-                            icon="mdi-file-chart"
-                            variant="text"
-                            color="warning"
-                            :to="`/proyecto/${item.id}/planificar`"
-                          ></v-btn>
-                        </template>
-                      </v-tooltip> -->
-                    </div>
                   </div>
                 </template>
               </v-list-item>
 
               <!-- Item de Actividad -->
-              <v-list-item v-else :value="item" class="mb-2">
+              <v-list-item v-else-if="item.tipo === 'actividad'" :value="item" class="mb-2">
                 <template v-slot:prepend>
                   <v-avatar color="orange" class="mr-4">
                     <v-icon dark>mdi-checkbox-marked-circle-outline</v-icon>
@@ -158,29 +151,7 @@
 
                 <template v-slot:append>
                   <div class="d-flex">
-                    <!-- <v-tooltip text="Ver detalle" location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-btn
-                          v-bind="props"
-                          icon="mdi-eye"
-                          variant="text"
-                          color="primary"
-                          @click="verDetalleActividad(item)"
-                        ></v-btn>
-                      </template>
-                    </v-tooltip> -->
-
-                    <!-- <v-tooltip text="Generar solicitud" location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-btn
-                          v-bind="props"
-                          icon="mdi-file-document-edit"
-                          variant="text"
-                          color="secondary"
-                          @click="generarSolicitud(item)"
-                        ></v-btn>
-                      </template>
-                    </v-tooltip> -->
+                    <!-- Botones de actividades -->
                   </div>
                 </template>
               </v-list-item>
@@ -204,6 +175,16 @@
           </v-card-title>
 
           <v-list density="comfortable">
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon color="deep-purple">mdi-chart-timeline-variant</v-icon>
+              </template>
+              <v-list-item-title>PEI Vigente</v-list-item-title>
+              <v-list-item-subtitle class="text-right">
+                {{ peiVigente ? 'Activo' : 'No disponible' }}
+              </v-list-item-subtitle>
+            </v-list-item>
+
             <v-list-item>
               <template v-slot:prepend>
                 <v-icon color="primary">mdi-folder</v-icon>
@@ -257,15 +238,15 @@ import { inject } from 'vue'
 // Estados
 const cargandoGeneral = computed(() => cargandoProyecto.value)
 const searchQuery = ref('')
-const tipoFiltro = ref('ambos')
+const tipoFiltro = ref('todos')
 const tiposFiltro = ref([
+  { value: 'todos', title: 'Todos' },
+  { value: 'pei', title: 'PEI Vigente' },
   { value: 'proyectos', title: 'Solo Proyectos' },
   { value: 'actividades', title: 'Solo Actividades' },
-  { value: 'ambos', title: 'Proyectos y Actividades' },
-  { value: 'pei', title: 'PEI 2022 - 2027' },
 ])
 
-//El pei vigente
+// El pei vigente
 const peiVigente = inject('peiVigente')
 
 // Inicializar el store
@@ -273,8 +254,12 @@ const proyectosStore = useProyectoStore()
 
 /* DESESTRUCTURACION  */
 // Referencias
-const { proyectosPlanificacion: proyectosRaw, cargando: cargandoProyecto } =
-  storeToRefs(proyectosStore)
+const {
+  proyectosPlanificacion: proyectosRaw,
+  cargando: cargandoProyecto,
+  peiVigente: peiActual,
+} = storeToRefs(proyectosStore)
+
 // Funciones
 const { obtenerProyectosPlanificacion } = proyectosStore
 
@@ -286,6 +271,21 @@ const proyectos = computed(() => {
       tipo: 'proyecto',
     })) || []
   )
+})
+
+// Procesar PEI vigente como item de la lista
+const peiItem = computed(() => {
+  if (!peiVigente.value) return null
+
+  return {
+    id: peiVigente.value.id,
+    tipo: 'pei',
+    titulo: peiVigente.value.nombre,
+    codigo: `PEI-${peiVigente.value.id}`,
+    descripcion: peiVigente.value.descripcion || 'Plan Estratégico Institucional vigente',
+    periodo: `${formatFecha(peiVigente.value.fecha_inicio)} - ${formatFecha(peiVigente.value.fecha_fin)}`,
+    estado: 'Vigente',
+  }
 })
 
 // Hook
@@ -304,64 +304,25 @@ const cargarDatos = async () => {
 
 // Datos dummy para actividades PEI
 const actividades = ref([])
-// const actividades = ref([
-//   {
-//     id: 1,
-//     codigo: 'PEI-ACT-001',
-//     titulo: 'Elaboración del plan estratégico institucional',
-//     descripcion: 'Actualización del plan estratégico para el próximo periodo',
-//     avance: 75,
-//     fecha: '15/06/2024',
-//     responsable: 'Unidad de Planeamiento',
-//     estado: 'En progreso',
-//     tipo: 'actividad',
-//   },
-//   {
-//     id: 2,
-//     codigo: 'PEI-ACT-002',
-//     titulo: 'Capacitación en gestión por resultados',
-//     descripcion: 'Capacitación al personal en metodologías de gestión',
-//     avance: 30,
-//     fecha: '22/07/2024',
-//     responsable: 'Unidad de Recursos Humanos',
-//     estado: 'En progreso',
-//     tipo: 'actividad',
-//   },
-//   {
-//     id: 3,
-//     codigo: 'PEI-ACT-003',
-//     titulo: 'Actualización del sistema de monitoreo',
-//     descripcion: 'Implementación de nuevas funcionalidades en el sistema',
-//     avance: 100,
-//     fecha: '10/05/2024',
-//     responsable: 'Unidad de Tecnología',
-//     estado: 'Completado',
-//     tipo: 'actividad',
-//   },
-//   {
-//     id: 4,
-//     codigo: 'PEI-ACT-004',
-//     titulo: 'Evaluación de desempeño institucional',
-//     descripcion: 'Evaluación anual del desempeño institucional',
-//     avance: 0,
-//     fecha: '01/08/2024',
-//     responsable: 'Unidad de Calidad',
-//     estado: 'Pendiente',
-//     tipo: 'actividad',
-//   },
-// ])
 
 // Items combinados y filtrados
 const filteredItems = computed(() => {
   let items = []
 
+  // Agregar PEI si corresponde
+  if (tipoFiltro.value === 'todos' || tipoFiltro.value === 'pei') {
+    if (peiItem.value) {
+      items.push(peiItem.value)
+    }
+  }
+
   // Agregar proyectos si corresponde
-  if (tipoFiltro.value === 'proyectos' || tipoFiltro.value === 'ambos') {
+  if (tipoFiltro.value === 'todos' || tipoFiltro.value === 'proyectos') {
     items = [...items, ...proyectos.value]
   }
 
   // Agregar actividades si corresponde
-  if (tipoFiltro.value === 'actividades' || tipoFiltro.value === 'ambos') {
+  if (tipoFiltro.value === 'todos' || tipoFiltro.value === 'actividades') {
     items = [...items, ...actividades.value]
   }
 
@@ -370,7 +331,9 @@ const filteredItems = computed(() => {
     const query = searchQuery.value.toLowerCase()
     items = items.filter(
       (item) =>
-        item.codigo.toLowerCase().includes(query) || item.titulo.toLowerCase().includes(query),
+        item.codigo.toLowerCase().includes(query) ||
+        item.titulo.toLowerCase().includes(query) ||
+        (item.descripcion && item.descripcion.toLowerCase().includes(query)),
     )
   }
 
@@ -389,14 +352,25 @@ const avancePromedio = computed(() => {
   return Math.round(total / actividades.value.length)
 })
 
-// Métodos para actividades
-// const verDetalleActividad = (actividad) => {
-//   console.log('Ver detalle de:', actividad)
-// }
+// Función para formatear fechas
+const formatFecha = (fechaString) => {
+  if (!fechaString) return ''
+  const fecha = new Date(fechaString)
+  return fecha.toLocaleDateString('es-ES')
+}
 
-// const generarSolicitud = (actividad) => {
-//   console.log('Generar solicitud para:', actividad)
-// }
+// Métodos para el PEI
+const verPlanificacionPEI = (pei) => {
+  console.log('Ver planificación del PEI:', pei)
+  // Navegar a la vista de planificación del PEI
+  // router.push(`/pei/${pei.id}/planificacion`)
+}
+
+const verDocumentacionPEI = (pei) => {
+  console.log('Ver documentación del PEI:', pei)
+  // Navegar a la documentación del PEI
+  // router.push(`/pei/${pei.id}/documentacion`)
+}
 </script>
 
 <style scoped>
@@ -424,5 +398,11 @@ const avancePromedio = computed(() => {
 
 .v-avatar {
   flex-shrink: 0;
+}
+
+/* Estilo especial para el item del PEI */
+.v-list-item:has(.v-avatar[color='deep-purple']) {
+  background-color: rgba(103, 58, 183, 0.04);
+  border-left: 4px solid rgb(103, 58, 183);
 }
 </style>
