@@ -6,15 +6,17 @@ export const usePlanificacionPeiStore = defineStore('planificacion-pei', () => {
   //Estados del Store
   const loading = ref(true)
   const error = ref(false)
-  const peiActual = ref(null)
-  const ActividadesPeiActual = ref([])
-  const TareasPeiActual = ref([])
+  const peiSeleccionado = ref(null)
+  const actividadesPeiSeleccionado = ref([])
+  const estructuraPeiSeleccionado = ref()
 
   //Cargar la informacion del Pei por Id
   const obtenerPeiPorId = async (id) => {
     loading.value = true
     try {
-      peiActual.value = await peiServicios.obtenerPorId(id)
+      peiSeleccionado.value = await peiServicios.obtenerPorId(id)
+      const respuesta = await peiServicios.obtenerEstructuraPeiPorId(id)
+      estructuraPeiSeleccionado.value = respuesta?.pei || ''
     } catch (err) {
       error.value = err.message
     } finally {
@@ -26,9 +28,9 @@ export const usePlanificacionPeiStore = defineStore('planificacion-pei', () => {
     //Estados
     loading,
     error,
-    peiActual,
-    ActividadesPeiActual,
-    TareasPeiActual,
+    peiSeleccionado,
+    actividadesPeiSeleccionado,
+    estructuraPeiSeleccionado,
     //Func
     obtenerPeiPorId,
   }

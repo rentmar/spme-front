@@ -1,22 +1,90 @@
 <template>
-  <div class="hotWraper">
+  <div class="hot-wrapper">
     <div class="content-wrapper">
       <!-- Panel Izquierdo - Tabla Excel -->
       <div class="excel-panel">
+        <!-- Toolbar principal -->
+        <v-toolbar flat density="comfortable" class="excel-toolbar">
+          <!-- Panel de informacion -->
+          <v-tooltip text="Mostrar/Esconder Panel de informacion" location="bottom">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" variant="text" class="toolbar-btn" @click="toogleSidePanel">
+                <v-icon size="18">mdi-view-agenda</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <!--Guardar-->
+          <v-tooltip text="Guardar Planificacion" location="bottom">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                variant="text"
+                class="toolbar-btn"
+                @click="guardarPlanificacion"
+              >
+                <v-icon size="18">mdi-content-save</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <!--Nueva Actividad-->
+          <v-tooltip text="Agregar nueva actividad" location="bottom">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" variant="text" class="toolbar-btn" @click="abrirNuevaActividad">
+                <v-icon size="18">mdi-plus-outline</v-icon>
+                <v-icon size="18">mdi-clipboard-text-outline</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <v-dialog v-model="mostrarModalActividad" fullscreen>
+            <v-card>
+              <v-toolbar>
+                <v-btn icon="mdi-close" @click="cerrarNuevaActividad"></v-btn>
+
+                <v-toolbar-title>Agregar Nueva Actividad/Proceso </v-toolbar-title>
+
+                <v-toolbar-items>
+                  <!-- <v-btn text="Guardar" variant="text"></v-btn> -->
+                </v-toolbar-items>
+              </v-toolbar>
+              <v-card-text>
+                <v-card-text>
+                  <SeleccionEstructuraActividadPei
+                    :pei-data="storePeiPlanificacion.estructuraPeiSeleccionado"
+                  ></SeleccionEstructuraActividadPei>
+                  <!-- <SeleccionEstructuraActividad
+                    :proyecto-data="props.proyectoEstructura"
+                    @crear-actividad="crearActividadPlan"
+                  ></SeleccionEstructuraActividad> -->
+                </v-card-text>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+        </v-toolbar>
+        <!-- Toolbar de información - Estilo Excel -->
+        <v-toolbar
+          flat
+          density="compact"
+          class="details-toolbar excel-style-toolbar"
+          v-if="selectedRowData"
+        ></v-toolbar>
+        <!-- Toolbar de actividades dinámicas -->
+        <v-toolbar flat density="comfortable" class="activity-toolbar"> </v-toolbar>
+        <!--Tabla del planificador-->
         <HotTable
+          v-if="inicializado"
           ref="hotTable"
           :data="tableData"
           :columns="columns"
           :colHeaders="headers"
           :rowHeaders="true"
-          :height="400"
-          :hiddenColumns="hiddenColumnsConfig"
-          :contextMenu="contextMenuOptions"
+          :height="1500"
+          :contextMenu="true"
           :language="'es-Mx'"
           :afterChange="handleChange"
+          :afterSelection="handleSelection"
           :licenseKey="'non-commercial-and-evaluation'"
-        >
-        </HotTable>
+          :hiddenColumns="hiddenColumnsConfig"
+        ></HotTable>
       </div>
       <!-- Panel Derecho - Contenido Adicional -->
       <div class="side-panel" v-if="sidePanelVisible"></div>
@@ -25,292 +93,311 @@
 </template>
 
 <script setup>
+//Tabla
 import HotTable from '@handsontable/vue3'
 import { registerAllModules } from 'handsontable/registry'
 import { registerLanguageDictionary } from 'handsontable/i18n'
 import { esMX } from 'handsontable/i18n'
-import { ref } from 'vue'
+import 'handsontable/dist/handsontable.full.css'
+import { ref, computed } from 'vue'
+import { useSnackbar } from '@/composables/useSnackbar'
+//Selectores
+import SeleccionEstructuraActividadPei from './parciales/SeleccionEstructuraActividadPei.vue'
+//Stores
+import { usePlanificacionPeiStore } from '../store/usePlanificacionPeiStore'
 
 // Registros
 registerAllModules()
 registerLanguageDictionary(esMX)
 
-/******************** Controles de la Tabla *******************************/
-//Informacion inicial de la tabla
+//Composables
+const { warningMsg } = useSnackbar()
+
+//Iniciar el store
+const storePeiPlanificacion = usePlanificacionPeiStore()
+
+/************ VARIABLES Y ESTADOS DE LA TABLA EXCEL **********************/
 const tableData = ref([])
-
-// Rótulos para columnas
-const headers = ref([
-  //Objetivo PEI
-  'Objetivo PEI',
-  //Indicador PEI
-  'Indicadores PEI',
-  //Objetivo General del Proyecto
-  'Objetivo General',
-  //Indicador OG
-  'Indicador OG',
-  //Resultado OG
-  'Resultado OG',
-  //Indicador Resultado OG
-  'Indicador Resultado OG',
-  //Objetivo Especifico
-  'Objetivo Especifico',
-  //Indicador OE
-  'Indicador OE',
-  //Producto OE
-  'Producto OE',
-  //Indicador Producto OE
-  //'Indicador Producto OE',
-  //Resultado OE
-  'Resultado OE',
-  //Indicador Resultado OE
-  'Indicador Resultado OE',
-  //Area Programa
-  'Programa/Area',
-  //Responsable
-  'Responsable',
-  //Actividad nueva
-  'Actividad Nueva',
-  //Proceso Actividad
-  'Proceso',
-  //Actividad
-  'Actividad Estructura',
-  'Actividad - CODIGO',
-  'Actividad',
-  'Proceso de la Actividad',
-  //Tipoo de actividad
-  'Tipo actividad',
-  //Fecha inicio
-  'Fecha Inicio',
-  //Fecha cierre
-  'Fecha Cierre',
-  //Supuestos Riesgos
-  'Supuestos Riesgos',
-  //Presupuesto Programa
-  'Presupuesto Programa',
-  //Presupuesto Global
-  'Presupuesto Global',
-  //Total Reportado
-  'Total Reportado',
-  'Total Ejecutado',
-  'Saldo',
-  'Grado de ejecucion',
-  'Medios de verificacion',
-])
-
-//Definicion de las columnas
-// Configuración de columnas personalizadas
+const inicializado = ref(true)
+//headers
+const headers = ref(true)
+//Columnas
 const columns = ref([])
+//Manejo de cambios
+const handleChange = () => {}
 
-/***************** Controles del Panel derecho ************************/
+//Esconder columnas
+const hiddenColumnsConfig = computed(() => {
+  return {
+    columns: [], // Columnas 1, 3 y 7
+    //columns: [10, 21, 20, 16, 11, 13], // Columnas 1, 3 y 7
+  }
+})
+/****************** Handle Selection ***********/
+//Manejar seleccion
+const selectedRowData = ref(null)
+const handleSelection = () => {}
+
+/******************* CONTROLES DE LA INTERFAZ EXCEL ********************/
+//Procedimiento guardar
+const confirmacionModal = ref(false)
+const guardando = ref(false)
+
+const guardarPlanificacion = async () => {
+  if (tableData.value.length === 0) {
+    warningMsg('No hay actividades para guardar', 3000)
+    return
+  }
+  confirmacionModal.value = true
+}
+
+//Agregar nueva actividad
+const mostrarModalActividad = ref(false)
+const abrirNuevaActividad = () => {
+  mostrarModalActividad.value = true
+}
+const cerrarNuevaActividad = () => {
+  mostrarModalActividad.value = false
+}
+
+/****************** CONTROLES DEL PANEL IZQUIERDO ************************/
 const sidePanelVisible = ref(false)
+const toogleSidePanel = async () => {
+  sidePanelVisible.value = !sidePanelVisible.value
+}
 </script>
 
 <style scoped>
+.flow-container {
+  width: 100%;
+  height: 1000px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+/* Also ensure the vue-flow element itself gets dimensions */
+.vue-flow {
+  width: 100%;
+  height: 100%;
+}
+
+/* Estilos (mantener igual) */
 .hot-wrapper {
   margin: 16px 0;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.hot-container {
-  display: flex;
-  flex-direction: column;
-  background-color: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.excel-toolbar {
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 4px 8px;
-}
-
-.excel-btn {
-  min-width: 36px !important;
-  height: 36px !important;
-  margin: 0 2px !important;
-  background-color: #ffffff !important;
-  border: 1px solid #e0e0e0 !important;
-  border-radius: 4px !important;
-  box-shadow: none !important;
-  transition: all 0.2s ease;
-}
-
-.excel-btn:hover {
-  background-color: #f0f0f0 !important;
-}
-
-.excel-btn:active {
-  background-color: #e0e0e0 !important;
-}
-
-/* Estilos para el panel de informacion */
-.main-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 16px;
-  background-color: #f5f5f5;
+  height: calc(100vh - 150px);
+  min-height: 1000px;
 }
 
 .content-wrapper {
   display: flex;
   gap: 16px;
-  height: calc(100vh - 150px); /* Ajusta según necesidades */
+  height: calc(100vh - 150px);
+  min-height: 700;
 }
 
 .excel-panel {
-  flex: 3; /* Ocupa 3 partes del espacio disponible */
-  min-width: 0; /* Necesario para que flex-shrink funcione correctamente */
+  flex: 3;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  height: 300%;
 }
 
 .side-panel {
-  flex: 1; /* Ocupa 1 parte del espacio disponible */
-  min-width: 300px; /* Ancho mínimo */
-  max-width: 400px; /* Ancho máximo */
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
 }
 
-.panel-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.panel-title {
-  background-color: #1976d2;
-  color: white;
-  padding: 12px 16px;
-}
-
-.panel-section {
-  margin-bottom: 16px;
-}
-
-.panel-section h4 {
-  margin-bottom: 12px;
-  color: #1976d2;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.stat-item {
-  text-align: center;
-  padding: 8px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #1976d2;
-}
-
-.stat-label {
-  font-size: 0.8rem;
-  color: #666;
-}
-/* Estilos tabs */
-/* Estilos para las pestañas */
-.v-tabs {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Estilos para la tabla de presupuesto */
-.budget-table {
-  width: 100%;
-  margin-top: 12px;
-}
-
-.budget-table th,
-.budget-table td {
-  padding: 8px 12px;
-}
-
-.budget-table thead {
-  background-color: #f5f5f5;
-}
-
-.text-right {
-  text-align: right;
-}
-
-.text-error {
-  color: #ff5252;
-}
-
-/* Estilos para el gráfico circular */
-.chart-container {
+/********* toolbar de actividad *********/
+/* Toolbar estilo Excel */
+.excel-style-toolbar {
+  background: linear-gradient(to bottom, #f3f3f3 0%, #e6e6e6 100%) !important;
+  border: 1px solid #d0d0d0 !important;
+  border-radius: 3px !important;
+  padding: 4px 8px !important;
+  min-height: 36px !important;
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  padding: 16px 0;
+  flex-wrap: nowrap;
 }
 
-.chart-legend {
+/* Contenedor de información horizontal */
+.excel-info-container.horizontal-layout {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 2px 0;
 }
 
-/* Estilos para la lista de actividades */
-.v-list {
-  background: transparent;
-}
-
-/* Ajustes generales para el contenido de las pestañas */
-.v-window-item {
-  padding: 8px 0;
-  height: 100%;
-  overflow-y: auto;
-}
-
-.panel-section {
-  margin-bottom: 16px;
-}
-
-.panel-section h4 {
-  margin-bottom: 12px;
-  color: #1976d2;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.stat-item {
-  text-align: center;
-  padding: 8px;
-  background-color: #f0f0f0;
+.horizontal-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: white;
+  border: 1px solid #d0d0d0;
   border-radius: 4px;
+  min-height: 28px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #1976d2;
+.info-text.excel-info-text {
+  font-size: 12px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.stat-label {
-  font-size: 0.8rem;
-  color: #666;
+.excel-label {
+  color: #605e5c;
+  font-weight: 600;
 }
 
-.handsontable .htDimmed {
-  background-color: #f5f5f5;
-  color: #999;
+.excel-value {
+  color: #323130;
+  font-weight: 400;
+}
+
+.excel-code {
+  color: #0078d4;
+  font-weight: 600;
+}
+
+.budget-value {
+  color: #107c10;
+  font-weight: 600;
+}
+
+/* Grupo de botones horizontal */
+.horizontal-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.excel-button {
+  min-width: auto !important;
+  height: 28px !important;
+  padding: 0 12px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.excel-button:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-1px);
+}
+
+.excel-button :deep(.v-btn__content) {
+  gap: 4px !important;
+}
+
+.excel-button :deep(.v-icon) {
+  margin-right: 4px !important;
+  margin-left: -2px !important;
+}
+
+/* Colores específicos para cada botón */
+.budget-button {
+  background: linear-gradient(to bottom, #0078d4 0%, #106ebe 100%) !important;
+  color: white !important;
+}
+
+.budget-button:hover {
+  background: linear-gradient(to bottom, #106ebe 0%, #005a9e 100%) !important;
+}
+
+.pei-button {
+  background: linear-gradient(to bottom, #107c10 0%, #0e6c0e 100%) !important;
+  color: white !important;
+}
+
+.pei-button:hover {
+  background: linear-gradient(to bottom, #0e6c0e 0%, #0d5c0d 100%) !important;
+}
+
+.structure-button {
+  background: linear-gradient(to bottom, #505a64 0%, #3b444b 100%) !important;
+  color: white !important;
+}
+
+.structure-button:hover {
+  background: linear-gradient(to bottom, #3b444b 0%, #2c3439 100%) !important;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 1200px) {
+  .excel-info-container.horizontal-layout {
+    gap: 8px;
+  }
+
+  .horizontal-item {
+    padding: 4px 8px;
+  }
+
+  .info-text.excel-info-text {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 900px) {
+  .excel-info-container.horizontal-layout {
+    gap: 6px;
+  }
+
+  .horizontal-item {
+    padding: 3px 6px;
+  }
+
+  .excel-button {
+    padding: 0 8px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* Scroll horizontal para pantallas muy pequeñas */
+.excel-info-container.horizontal-layout {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f0f0f0;
+}
+
+.excel-info-container.horizontal-layout::-webkit-scrollbar {
+  height: 4px;
+}
+
+.excel-info-container.horizontal-layout::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.excel-info-container.horizontal-layout::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+/* Efectos de focus para accesibilidad */
+.excel-button:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: 1px;
+}
+
+/* Mejor alineación vertical */
+.excel-style-toolbar {
+  align-items: center;
+}
+
+.horizontal-item {
+  align-items: center;
 }
 </style>

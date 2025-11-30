@@ -96,6 +96,15 @@ export const peiServicios = {
       console.error('Axios: no se pudo obtener la lista de actividades del pei: ' + idpei, err)
     }
   },
+  /* Estructura del pei */
+  obtenerEstructuraPeiPorId: async (idpei) => {
+    try {
+      const respuesta = await api.get('/pei/' + idpei + '/estructura/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: no se pudo obtener la estructura del pei: ' + idpei, err)
+    }
+  },
 }
 
 export const objetivoPeiServicios = {
