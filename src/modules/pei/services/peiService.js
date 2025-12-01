@@ -123,6 +123,42 @@ export const peiServicios = {
       console.error('Axios: No se pudo crear la actividad', err)
     }
   },
+  /* Crear Tarea PEI */
+  crearTareaPei: async (tareaData) => {
+    try {
+      const respuesta = await api.post('/tareas-actividad-pei/', tareaData)
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: No se pudo crear la tarea PEI', err)
+    }
+  },
+  /* Actualizar Tarea PEI */
+  updateTareaPei: async (idtareapei, tareaData) => {
+    try {
+      const respuesta = await api.put('/tareas-actividad-pei/' + idtareapei + '/', tareaData)
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: Nose pudo actualizar la Tarea', err)
+    }
+  },
+  /* Eliminar Tarea */
+  delTareaPei: async (idtareapei) => {
+    try {
+      const respuesta = await api.delete('/tareas-actividad-pei/' + idtareapei + '/')
+      return respuesta
+    } catch (err) {
+      console.error('Axios: Fallo al elimir la Tarea con id: ' + idtareapei, err)
+    }
+  },
+  /* Cargar una Actividad PEI por su id mas sus tareas*/
+  cargarActividadTareaPorIdActividad: async (idactividad) => {
+    try {
+      const respuesta = await api.get('/pei/actividad/' + idactividad + '/tareas/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: No se pudo cargar la actividad pei con id: ' + idactividad, err)
+    }
+  },
 }
 
 export const objetivoPeiServicios = {

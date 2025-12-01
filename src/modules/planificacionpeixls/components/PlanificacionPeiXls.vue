@@ -134,12 +134,12 @@
                   <template v-slot:prepend>
                     <v-icon size="16">mdi-plus-outline </v-icon>
                   </template>
-                  Subactividad
+                  Subactividad PEI
                 </v-btn>
               </template>
             </v-tooltip>
             <DialogTareaPei
-              v-model="mostrarDialogo"
+              v-model="mostrarDialogoSubactividad"
               :actividad="selectedRowData"
               :tarea="tareaSeleccionada"
               @guardar="crearNuevaTarea"
@@ -192,10 +192,10 @@
       </div>
       <!-- Panel Derecho - Contenido Adicional -->
       <div class="side-panel" v-if="sidePanelVisible">
-        <ListaTareasActividad
+        <ListaTareasActividadPei
           v-if="selectedRowData"
           :actividad="selectedRowData"
-        ></ListaTareasActividad>
+        ></ListaTareasActividadPei>
       </div>
     </div>
   </div>
@@ -212,12 +212,13 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useSnackbar } from '@/composables/useSnackbar'
 //Selectores
 import SeleccionEstructuraActividadPei from './parciales/SeleccionEstructuraActividadPei.vue'
-import DialogTareaPei from '@/modules/actividades/components/DialogTarea.vue'
+import DialogTareaPei from './parciales/DialogTareaPei.vue'
 import ComponentPresupuesto from '@/modules/planificacionxls/components/parciales/ComponentPresupuesto.vue'
-import ListaTareasActividad from '@/modules/planificacionxls/components/parciales/ListaTareasActividad.vue'
+import ListaTareasActividadPei from './parciales/ListaTareasActividadPei.vue'
 //Stores
 import { usePlanificacionPeiStore } from '../store/usePlanificacionPeiStore'
 import { usePlanificacionStore } from '@/modules/planificacionxls/store/usePlanificacionStore'
+import { peiServicios } from '@/modules/pei/services/peiService'
 // Registros
 registerAllModules()
 registerLanguageDictionary(esMX)
@@ -546,17 +547,19 @@ const cargar = async () => {
 
 /******************** Nueva activiad ****************************/
 const mostrarModalAgregarTarea = () => {
-  mostrarDialogo.value = true
+  mostrarDialogoSubactividad.value = true
 }
 
 const cerrarDialogo = () => {
-  mostrarDialogo.value = false
+  mostrarDialogoSubactividad.value = false
 }
 
 const crearNuevaTarea = async (payload) => {
   try {
     //await crearUnaTarea(payload)
-    mostrarDialogo.value = false
+    await peiServicios.crearTareaPei(payload)
+    console.log('SUBACTIVIDAD: ', payload)
+    mostrarDialogoSubactividad.value = false
     infoMsg('Subactividad creada')
   } catch (error) {
     console.error(error)
@@ -564,7 +567,7 @@ const crearNuevaTarea = async (payload) => {
   }
 }
 
-const mostrarDialogo = ref(false)
+const mostrarDialogoSubactividad = ref(false)
 const tareaSeleccionada = ref(null)
 /******************** Presupuesto *******************************/
 const mostrarPresupuesto = ref(false)
