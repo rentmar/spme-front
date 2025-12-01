@@ -159,6 +159,15 @@ export const peiServicios = {
       console.error('Axios: No se pudo cargar la actividad pei con id: ' + idactividad, err)
     }
   },
+  /* Guardar las actividades planificadas */
+  guardarActividadesPeiBulk: async (matrizActividad) => {
+    try {
+      const respuesta = await api.post('/pei/actividades/actualizar-lote/', matrizActividad)
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: No se pudo actualizar las actividades', err)
+    }
+  },
 }
 
 export const objetivoPeiServicios = {

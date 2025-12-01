@@ -289,6 +289,7 @@ const columns = computed(() => [
   },
   { data: 'fecha_inicio', title: 'Fecha Inicio', width: 110, type: 'date' },
   { data: 'fecha_cierre', title: 'Fecha Cierre', width: 110, type: 'date' },
+  { data: 'procedencia_fondos', title: 'Procedencia Fondos', width: 110 },
   { data: 'presupuesto', title: 'Presupuesto', width: 120, type: 'numeric' },
   {
     data: 'responsable', // Cambiar a username para el dropdown
@@ -337,16 +338,25 @@ const handleChange = (changes, source) => {
 //Esconder columnas
 const hiddenColumnsConfig = computed(() => {
   return {
-    columns: [],
+    columns: [10],
   }
 })
 
 /****************** Handle Selection ***********/
 //Manejar seleccion
 const selectedRowData = ref(null)
-const handleSelection = (row, column, row2, column2, preventScrolling, selectionLayerLevel) => {
-  if (row >= 0 && row < tableData.value.length) {
-    selectedRowData.value = tableData.value[row]
+const handleSelection = (startRow, startCol, endRow, endCol, selectionLayer) => {
+  if (startRow === endRow) {
+    const rowData = hotTable.value.hotInstance.getDataAtRow(startRow)
+    const rowObject = {}
+    columns.value.forEach((col, index) => {
+      if (col.data) {
+        rowObject[col.data] = rowData[index]
+      }
+    })
+    selectedRowData.value = rowObject
+  } else {
+    selectedRowData.value = null
   }
 }
 
@@ -360,33 +370,39 @@ const guardarPlanificacion = async () => {
     warningMsg('No hay actividades para guardar', 3000)
     return
   }
+  try {
+    await peiServicios.guardarActividadesPeiBulk(tableData.value)
+    successMsg('Planificación guardada exitosamente', 3000)
+  } catch (err) {
+    console.error('No se actualizo la planificacion', err)
+  }
 
   // Preparar datos para guardar
-  const actividadesActualizadas = tableData.value.map((actividad) => {
-    const usuario = storePlanificacion.listaUsuariosCompleta?.find(
-      (user) => user.username === actividad.responsable_username,
-    )
+  // const actividadesActualizadas = tableData.value.map((actividad) => {
+  //   const usuario = storePlanificacion.listaUsuariosCompleta?.find(
+  //     (user) => user.username === actividad.responsable_username,
+  //   )
 
-    return {
-      id: actividad.id,
-      codigo: actividad.codigo,
-      nombreCorto: actividad.nombreCorto,
-      descripcion: actividad.descripcion,
-      supuestos: actividad.supuestos,
-      riesgos: actividad.riesgos,
-      estado: actividad.estado,
-      tipo_actividad: actividad.tipo,
-      fecha_inicio: actividad.fecha_inicio,
-      fecha_cierre: actividad.fecha_cierre,
-      presupuesto: actividad.presupuesto,
-      responsable_id: usuario?.id || null,
-      gradoEjecucion: actividad.gradoEjecucion,
-    }
-  })
+  //   return {
+  //     id: actividad.id,
+  //     codigo: actividad.codigo,
+  //     nombreCorto: actividad.nombreCorto,
+  //     descripcion: actividad.descripcion,
+  //     supuestos: actividad.supuestos,
+  //     riesgos: actividad.riesgos,
+  //     estado: actividad.estado,
+  //     tipo_actividad: actividad.tipo,
+  //     fecha_inicio: actividad.fecha_inicio,
+  //     fecha_cierre: actividad.fecha_cierre,
+  //     presupuesto: actividad.presupuesto,
+  //     responsable_id: usuario?.id || null,
+  //     gradoEjecucion: actividad.gradoEjecucion,
+  //   }
+  // })
 
-  console.log('Actividades a guardar:', actividadesActualizadas)
-  confirmacionModal.value = true
-  successMsg('Planificación guardada exitosamente', 3000)
+  // console.log('Actividades a guardar:', actividadesActualizadas)
+  // confirmacionModal.value = true
+  // successMsg('Planificación guardada exitosamente', 3000)
 }
 
 //Agregar nueva actividad
@@ -456,9 +472,9 @@ const formatearActividadParaTabla = (actividad) => {
     tipo: actividad.tipo?.tipo_actividad || actividad.tipo?.sigla || 'No definido',
     fecha_inicio: actividad.fecha_inicio || '',
     fecha_cierre: actividad.fecha_cierre || '',
+    procedencia_fondos: actividad.procedencia_fondos || '',
     presupuesto: actividad.presupuesto || '0.00',
-    responsable_username: responsableUsername,
-    responsable_id: actividad.responsable?.id || null,
+    responsable: responsableUsername || null,
     gradoEjecucion: actividad.gradoEjecucion || '',
   }
 }

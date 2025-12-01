@@ -417,14 +417,14 @@ const getTareaEstadoIcon = (estado) => {
   return iconos[estado] || 'mdi-help-circle-outline'
 }
 
-const getTareaEstadoTexto = (estado) => {
-  const textos = {
-    PEN: 'Pendiente',
-    EPROG: 'En Progreso',
-    COMPL: 'Completada',
-  }
-  return textos[estado] || estado
-}
+// const getTareaEstadoTexto = (estado) => {
+//   const textos = {
+//     PEN: 'Pendiente',
+//     EPROG: 'En Progreso',
+//     COMPL: 'Completada',
+//   }
+//   return textos[estado] || estado
+// }
 
 const formatCurrency = (value) => {
   if (!value) return '$0.00'
