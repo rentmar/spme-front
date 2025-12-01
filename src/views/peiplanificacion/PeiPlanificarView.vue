@@ -29,7 +29,7 @@
             </v-toolbar>
 
             <v-card-text class="contenedor-planificacion">
-              <PlanificacionPeiXls></PlanificacionPeiXls>
+              <PlanificacionPeiXls :pei-id="idpei"></PlanificacionPeiXls>
               <!-- <PlanificacionActividadXls
                 :proyecto="proyecto"
                 :proyecto-estructura="proyectoEstructura"

@@ -105,6 +105,24 @@ export const peiServicios = {
       console.error('Axios: no se pudo obtener la estructura del pei: ' + idpei, err)
     }
   },
+  /* Obtener las actividades */
+  obtenerActividadesPeiPorId: async (idpei) => {
+    try {
+      const respuesta = await api.get('/pei/' + idpei + '/actividades-con-tareas/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: No se pudo obtener las actividades del Pei: ' + idpei, err)
+    }
+  },
+  /* Crear Actividades PEI */
+  crearActividadesPei: async (actividadData) => {
+    try {
+      const respuesta = await api.post('/pei/actividades/crear/', actividadData)
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: No se pudo crear la actividad', err)
+    }
+  },
 }
 
 export const objetivoPeiServicios = {

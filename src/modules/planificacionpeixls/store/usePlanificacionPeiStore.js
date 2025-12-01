@@ -17,6 +17,8 @@ export const usePlanificacionPeiStore = defineStore('planificacion-pei', () => {
       peiSeleccionado.value = await peiServicios.obtenerPorId(id)
       const respuesta = await peiServicios.obtenerEstructuraPeiPorId(id)
       estructuraPeiSeleccionado.value = respuesta?.pei || ''
+      const respuestaActividad = await peiServicios.obtenerActividadesPeiPorId(id)
+      actividadesPeiSeleccionado.value = respuestaActividad?.actividades || ''
     } catch (err) {
       error.value = err.message
     } finally {

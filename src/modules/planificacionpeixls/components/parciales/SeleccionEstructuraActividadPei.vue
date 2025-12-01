@@ -172,7 +172,7 @@
               <v-col cols="12" md="4">
                 <v-text-field
                   v-model="nuevaActividad.codigo"
-                  label="Código de Actividad"
+                  label="Código de Actividad *"
                   variant="outlined"
                   clearable
                   density="comfortable"
@@ -181,12 +181,12 @@
               </v-col>
               <v-col cols="12" md="8">
                 <v-text-field
-                  v-model="nuevaActividad.titulo"
-                  label="Nombre de la Actividad"
+                  v-model="nuevaActividad.nombreCorto"
+                  label="Nombre de la Actividad *"
                   variant="outlined"
                   clearable
                   density="comfortable"
-                  :rules="[(v) => !!v || 'El título es requerido']"
+                  :rules="[(v) => !!v || 'El nombre es requerido']"
                 ></v-text-field>
               </v-col>
               <v-col cols="12">
@@ -243,7 +243,7 @@
             </v-list-item>
             <v-list-item>
               <v-list-item-title
-                ><strong>Título:</strong> {{ nuevaActividad.titulo }}</v-list-item-title
+                ><strong>Nombre:</strong> {{ nuevaActividad.nombreCorto }}</v-list-item-title
               >
             </v-list-item>
             <v-list-item v-if="nuevaActividad.descripcion">
@@ -346,8 +346,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useActividad } from '@/modules/proyecto/composables/useActividad'
-import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
+import { peiServicios } from '@/modules/pei/services/peiService'
 
 // Props para recibir datos del PEI desde el componente padre
 const props = defineProps({
@@ -368,16 +367,41 @@ const selectedFactoresCriticos = ref([])
 const selectedIndicadoresCuantitativos = ref([])
 const selectedIndicadoresCualitativos = ref([])
 
-// Nueva actividad
+// Nueva actividad con los campos requeridos
 const nuevaActividad = ref({
   codigo: '',
-  titulo: '',
+  nombreCorto: '',
   descripcion: '',
+  supuestos: '',
+  riesgos: '',
+  objetivo_de_actividad: '',
+  descripcion_evaluacion: '',
+  descripcion_tipo_actividad: '',
+  tipo: 1,
+  fecha_programada: null,
+  fecha_inicio: null,
+  fecha_cierre: null,
+  presupuesto: '0',
+  presupuestoGlobal: '0',
+  totalReportado: '0.00',
+  totalEjecutado: '0.00',
+  saldo: '0',
+  gradoEjecucion: '',
+  procedencia_fondos: null,
+  estado: 'CRD',
+  pei: null,
+  responsable: null,
+  objetivos_pei_ids: [],
+  factores_criticos_ids: [],
+  indicadores_cuantitativos_ids: [],
+  indicadores_cualitativos_ids: [],
 })
 
-// Iniciar composables
-const { crearActividad: crearActividadComposable } = useActividad()
-const proyectoStore = useProyectoStore()
+//Inicializar el store
+//const storePeiPlanificacion = usePlanificacionPeiStore()
+
+// Definir las señales Emit
+const emit = defineEmits(['crear-actividad'])
 
 // Inicializar datos cuando el componente se monta
 onMounted(() => {
@@ -386,7 +410,7 @@ onMounted(() => {
 
 // Validación del formulario
 const esFormularioValido = computed(() => {
-  return nuevaActividad.value.codigo && nuevaActividad.value.titulo
+  return nuevaActividad.value.codigo && nuevaActividad.value.nombreCorto
 })
 
 // Función para inicializar datos del PEI
@@ -394,10 +418,12 @@ const inicializarDatos = () => {
   if (props.peiData.pei) {
     pei.value = { ...props.peiData.pei }
     objetivos.value = pei.value.objetivos || []
+    nuevaActividad.value.pei = pei.value.id
   } else {
     // Si viene directamente el objeto PEI
     pei.value = { ...props.peiData }
     objetivos.value = props.peiData.objetivos || []
+    nuevaActividad.value.pei = props.peiData.id
   }
 }
 
@@ -407,45 +433,6 @@ const onObjetivoSelected = () => {
   selectedFactoresCriticos.value = []
   selectedIndicadoresCuantitativos.value = []
   selectedIndicadoresCualitativos.value = []
-}
-
-// Obtener estructura de procedencia
-const obtenerEstructuraProcedencia = () => {
-  const estructura = {}
-
-  if (selectedObjetivo.value) {
-    estructura.objetivo = {
-      tipo: 'objetivo_pei',
-      data: selectedObjetivo.value,
-    }
-  }
-
-  if (selectedFactoresCriticos.value.length > 0) {
-    estructura.factores_criticos = selectedFactoresCriticos.value.map((factor) => ({
-      tipo: 'factor_critico',
-      data: factor,
-    }))
-  }
-
-  if (selectedIndicadoresCuantitativos.value.length > 0) {
-    estructura.indicadores_cuantitativos = selectedIndicadoresCuantitativos.value.map(
-      (indicador) => ({
-        tipo: 'indicador_cuantitativo',
-        data: indicador,
-      }),
-    )
-  }
-
-  if (selectedIndicadoresCualitativos.value.length > 0) {
-    estructura.indicadores_cualitativos = selectedIndicadoresCualitativos.value.map(
-      (indicador) => ({
-        tipo: 'indicador_cualitativo',
-        data: indicador,
-      }),
-    )
-  }
-
-  return estructura
 }
 
 // Obtener selecciones simples (solo IDs)
@@ -482,31 +469,22 @@ const mostrarDialogoConfirmacion = () => {
 const confirmarCreacion = async () => {
   dialogVisible.value = false
 
-  const estructuraProcedencia = obtenerEstructuraProcedencia()
   const seleccionesSimples = obtenerSeleccionesSimples()
 
-  // Almacenar en el store si es necesario
-  proyectoStore.almacenarNodosProcedenciaActividad(estructuraProcedencia)
-
-  const actividadCompleta = {
-    codigo: nuevaActividad.value.codigo,
-    nombreCorto: nuevaActividad.value.titulo,
-    descripcion: nuevaActividad.value.descripcion,
-    estado: 'PLAN',
-    estructuraProcedencia: {
-      datosProcedencia: estructuraProcedencia,
-      nodosRelacionados: proyectoStore.nodosVinculadosActividad,
-      seleccionesSimples: seleccionesSimples,
-    },
-    pei: pei.value.id,
-    objetivos_pei: seleccionesSimples.objetivoId ? [seleccionesSimples.objetivoId] : [],
-    indicadores_cuantitativos: seleccionesSimples.indicadoresCuantitativosIds || [],
-    indicadores_cualitativos: seleccionesSimples.indicadoresCualitativosIds || [],
+  // Preparar los datos según el formato requerido
+  const datosActividad = {
+    ...nuevaActividad.value,
+    objetivos_pei_ids: seleccionesSimples.objetivoId ? [seleccionesSimples.objetivoId] : [],
+    factores_criticos_ids: seleccionesSimples.factoresCriticosIds || [],
+    indicadores_cuantitativos_ids: seleccionesSimples.indicadoresCuantitativosIds || [],
+    indicadores_cualitativos_ids: seleccionesSimples.indicadoresCualitativosIds || [],
   }
 
   try {
-    await crearActividadComposable(actividadCompleta)
-    emit('crear-actividad', actividadCompleta)
+    //Crear la actividad
+    await peiServicios.crearActividadesPei(datosActividad)
+    console.log('Datos actividad: ', datosActividad)
+    emit('crear-actividad', datosActividad)
     resetSeleccion()
   } catch (error) {
     console.error('Error al crear actividad:', error)
@@ -519,15 +497,21 @@ const resetSeleccion = () => {
   selectedFactoresCriticos.value = []
   selectedIndicadoresCuantitativos.value = []
   selectedIndicadoresCualitativos.value = []
-  nuevaActividad.value = {
-    codigo: '',
-    titulo: '',
-    descripcion: '',
-  }
-}
 
-// Emit para comunicarse con el componente padre
-const emit = defineEmits(['crear-actividad'])
+  // Resetear solo los campos que el usuario ingresa
+  nuevaActividad.value.codigo = ''
+  nuevaActividad.value.nombreCorto = ''
+  nuevaActividad.value.descripcion = ''
+
+  // Mantener los valores por defecto de los otros campos
+  nuevaActividad.value.objetivos_pei_ids = []
+  nuevaActividad.value.factores_criticos_ids = []
+  nuevaActividad.value.indicadores_cuantitativos_ids = []
+  nuevaActividad.value.indicadores_cualitativos_ids = []
+
+  // Mantener el ID del PEI
+  nuevaActividad.value.pei = pei.value.id
+}
 </script>
 
 <style scoped>
