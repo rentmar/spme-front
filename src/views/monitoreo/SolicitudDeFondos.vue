@@ -569,20 +569,11 @@
   </v-container>
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre>
   {{ '*******************' }} -->
-  <!--<pre>{{ datosFormulario}}</pre>-->
-   <!-- <pre>{{ textoProcedencia }}</pre> -->
-     <!-- <pre>{{ datosFormulario }}</pre> -->
-    <!-- <p>{{ formData.forma_pago }}</p>
-    {{ '*******************' }}-->
     <!-- <pre>{{ formasPagoOptions }}</pre>
-    {{ '*******************' }} -->
-    <!-- <pre>{{ formaPagoElegido }}</pre>
     {{ '*******************' }} -->
     <!-- <pre>{{ formData.forma_pago }}</pre>
     {{ '*******************' }} -->
-    <!-- <pre>{{ formData.datos_forma_pago }}</pre>
-    {{ '*******************' }}
-    <pre>{{ formData.datos_forma_pago }}</pre> -->
+    <pre>{{ formData.datos_forma_pago }}</pre>
 </template>
 
 <script setup>
@@ -1027,7 +1018,7 @@ function exportToExcel() {
     ['FORMULARIO F-01: SOLICITUD DE FONDOS EN AVANCE CON CARGO A RENDICIÓN DE CUENTA', '', '', ''],
     [''],
     ['FORMULARIO Nro:', numeroFormularioSF, '', ''],
-    ['INFORMACIÓN DEL SOLICITANTE', '', '', ''],
+    ['INFORMACIÓN DEL RESPONSABLE', '', '', ''],
     ['Nombre Completo:', nombreCompletoSolicitante.value, '', ''],
     ['Documento de Identidad:', formData.value.documento_identidad, '', ''],
     ['Cargo:', formData.value.cargo, '', ''],
@@ -1048,13 +1039,27 @@ function exportToExcel() {
     ['Lugar de Solicitud:', formData.value.lugar_solicitud, '', ''],
     ['Fecha de Solicitud:', getCurrentDate1(), '', ''],
     [''],
+
+    ['DATOS PARA TRANSFERENCIA BANCARIA', '', '', ''],
+    ['Pago a nombre de:', formData.value.datos_forma_pago.transferencia.nombre_transferencia, '', ''],
+    ['C.I.:', formData.value.datos_forma_pago.transferencia.ci_transferencia,'', ''],
+    ['Banco:', formData.value.datos_forma_pago.transferencia.entidad_bancaria,'', ''],
+    ['Nro. Cuenta:', formData.value.datos_forma_pago.transferencia.numero_cuenta,'', ''],
+    ['Tipo Cuenta:', formData.value.datos_forma_pago.transferencia.tipo_cuenta,'', ''],
+    [''],
+
+    ['DATOS PARA OTROS PAGOS', '', '', ''],
+    ['Pago a nombre de:', formData.value.datos_forma_pago.otros.nombre_otros, '', ''],
+    ['C.I.:', formData.value.datos_forma_pago.otros.ci_otros, '', ''],
+    [''],
+
     ['FIRMAS Y VALIDACIONES', '', '', ''],
-    [
-      'Responsable:',
-      nombreResponsableElegido.value,
-      'Aprobado:',
-      formData.value.validacion_responsable ? '✓' : '✗',
-    ],
+    // [
+    //   'Responsable:',
+    //   nombreResponsableElegido.value,
+    //   'Aprobado:',
+    //   formData.value.validacion_responsable ? '✓' : '✗',
+    // ],
     [
       'Coordinador:',
       nombreCoordinadorElegido.value,

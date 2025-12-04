@@ -302,7 +302,7 @@
           <div class="form-section">
             <v-card-subtitle class="text-h6">Firmas</v-card-subtitle>
             <br>
-            <v-row>
+            <!--<v-row>
               <v-col cols="12" md="6">
                 <v-select
                   v-model="formData.idresponsable"
@@ -321,7 +321,7 @@
                   :disabled="!isAdmin"
                 ></v-checkbox>
               </v-col>
-            </v-row>
+            </v-row>-->
 
             <v-row>
               <v-col cols="12" md="6">
@@ -1009,7 +1009,7 @@ async function submitForm() {
       'descripcion_actividad',
       'lugar_actividad',
       'fecha_actividad',
-      'idresponsable',
+      //'idresponsable',
       'idcoordinador',
       'idcontador',
       'idadministrador'
@@ -1155,7 +1155,7 @@ function exportToExcel() {
     ['Lugar de Actividad:', formData.value.lugar_actividad, '', ''],
     ['Fecha de Actividad:', formData.value.fecha_actividad, '', ''],
     [''],
-    ['Responsable:', formData.value.idresponsable, '', ''],
+    //['Responsable:', formData.value.idresponsable, '', ''],
     ['Coordinador:', formData.value.idcoordinador, '', ''],
     ['Contador:', formData.value.idcontador, '', ''],
     ['Administrador:', formData.value.idadministrador, '', ''],
@@ -1164,7 +1164,7 @@ function exportToExcel() {
   ]
 
   // 2. Encabezados de la tabla de gastos
-  const expensesHeaders = ['Fecha', 'PARTIDA', 'Factura/Recibo', 'DESCRIPCIÓN DEL GASTO', 'MONTO (BS.)']
+  const expensesHeaders = ['FECHA', 'PARTIDA', 'FACTURA/RECIBO', 'DESCRIPCIÓN DEL GASTO', 'MONTO (BS.)']
 
   // 3. Datos de gastos
   const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [

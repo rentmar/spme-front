@@ -250,7 +250,7 @@
                       <v-tooltip text="Rendición de Cuentas" location="top">
                         <template v-slot:activator="{ props }">
                           <v-btn
-                            v-if="parseInt($route.query.showButton) === 1"
+                            v-if="parseInt($route.query.showButton) === 2"
                             v-bind="props"
                             icon="mdi-cash-check"
                             variant="text"
@@ -267,7 +267,7 @@
                       <v-tooltip text="Validar Rendición de Cuentas" location="bottom">
                         <template v-slot:activator="{ props }">
                           <v-btn
-                            v-if="parseInt($route.query.showButton) === 1"
+                            v-if="parseInt($route.query.showButton) === 2"
                             v-bind="props"
                             icon="mdi-check"
                             variant="text"
@@ -748,7 +748,7 @@
                 </v-list-item-subtitle>
                 <template v-slot:append>
                   <v-list-item-title
-                    v-if="solicitudF.validacionResponsable === true && solicitudF.validacionCoordinador === true"
+                    v-if="solicitudF.validacionCoordinador === true"
                     class="font-weight-bold text-success text-right"
                   >
                     <v-icon color="success" end>mdi-check</v-icon>
@@ -825,7 +825,7 @@
                 </v-list-item-subtitle>
                 <template v-slot:append>
                   <v-list-item-title
-                    v-if="solicitudF.validacionResponsable === true && solicitudF.validacionCoordinador === true && solicitudF.validacionContador === true && solicitudF.validacionAdministrador === true"
+                    v-if="solicitudF.validacionCoordinador === true && solicitudF.validacionContador === true && solicitudF.validacionAdministrador === true"
                     class="font-weight-bold text-success text-right"
                   >
                     <v-icon color="success" end>mdi-check</v-icon>
@@ -907,7 +907,7 @@
 
                 <template v-slot:append>
                   <v-list-item-title
-                    v-if="solicitudF.validacionResponsable === true && solicitudF.validacionCoordinador === true"
+                    v-if="solicitudF.validacionCoordinador === true"
                     class="font-weight-bold text-success text-right"
                   >
                     <v-icon color="success" end>mdi-check</v-icon>
@@ -954,7 +954,7 @@
 
                 <template v-slot:append>
                   <v-list-item-title
-                    v-if="solicitudF.validacionResponsable === true && solicitudF.validacionCoordinador === true"
+                    v-if="solicitudF.validacionCoordinador === true"
                     class="font-weight-bold text-success text-right"
                   >
                     <v-icon color="success" end>mdi-check</v-icon>
@@ -1000,7 +1000,7 @@
 
                 <template v-slot:append>
                   <v-list-item-title
-                    v-if="solicitudF.validacionResponsable === true && solicitudF.validacionCoordinador === true"
+                    v-if="solicitudF.validacionCoordinador === true"
                     class="font-weight-bold text-success text-right"
                   >
                     <v-icon color="success" end>mdi-check</v-icon>

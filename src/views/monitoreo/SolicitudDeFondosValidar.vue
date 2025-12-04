@@ -324,7 +324,13 @@
 
                   <v-row>
                     <v-col cols="12" md="6">
-                      <v-select
+                      <v-text-field
+                        v-model="formData.lugar_solicitud"
+                        label="Lugar de la Solicitud"
+                        variant="outlined"
+                        readonly
+                      ></v-text-field>
+                      <!-- <v-select
                         v-model="formData.forma_pago"
                         :items="formasPagoOptions"
                         item-title="formaPago"
@@ -332,13 +338,7 @@
                         label="Forma de Pago"
                         variant="outlined"
                         readonly
-                      ></v-select>
-                      <v-text-field
-                        v-model="formData.lugar_solicitud"
-                        label="Lugar de la Solicitud"
-                        variant="outlined"
-                        readonly
-                      ></v-text-field>
+                      ></v-select> -->
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-text-field
@@ -352,6 +352,86 @@
                       ></v-text-field>
                     </v-col>
                   </v-row>
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="formData.forma_pago"
+                        :items="formasPagoOptions"
+                        item-title="formaPago"
+                        item-value="id"
+                        label="Forma de Pago"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        readonly
+                      ></v-select>
+                    </v-col>
+                  </v-row>
+
+                  <div v-if="MostrarCamposOtros">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.otros.nombre_otros"
+                          label="Nombre a quien se realiza el pago"
+                          variant="outlined"
+                          readonly
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.otros.ci_otros"
+                          label="Documento de Identidad C.I."
+                          variant="outlined"
+                          readonly
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </div>
+                  <div v-if="MostrarCamposTransferencia">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.nombre_transferencia"
+                          label="Nombre completo a quien se realiza la transferencia"
+                          variant="outlined"
+                          readonly
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.ci_transferencia"
+                          label="Documento de Identidad C.I."
+                          variant="outlined"
+                          readonly
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.entidad_bancaria"
+                          label="Nombre de Entidad Bancaria"
+                          variant="outlined"
+                          readonly
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-select
+                          v-model="formData.datos_forma_pago.transferencia.tipo_cuenta"
+                          :items="['Ahorro', 'Corriente']"
+                          label="Tipo de Cuenta (Ahorro/ Corriente)"
+                          variant="outlined"
+                          readonly
+                        ></v-select>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.numero_cuenta"
+                          label="Número de Cuenta Bancaria"
+                          variant="outlined"
+                          readonly
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </div>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -362,8 +442,7 @@
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
                   </h3>
-
-                  <v-row>
+<!--              <v-row>
                     <v-col cols="12" md="6">
                       <v-select
                         v-model="formData.idresponsable"
@@ -391,7 +470,7 @@
                         }"
                       ></v-checkbox>
                     </v-col>
-                  </v-row>
+                  </v-row>-->
                   <v-row>
                     <v-col cols="12" md="6">
                       <v-select
@@ -473,8 +552,14 @@
       </v-row>
     </div>
   </v-container>
-      <!-- {{ '***************************************B' }}
-     <pre>{{ datosFormulario }}</pre> -->
+  <!-- {{ '***************************************B' }}
+  <pre>{{ datosFormulario }}</pre> -->
+  <!-- {{ '***************************************B' }}
+  <pre>{{ datosFormulario1 }}</pre>
+  {{ '***************************************C - formData.datos_forma_pago' }}
+  <pre>{{ formData.datos_forma_pago }}</pre>
+  {{ '***************************************D - formaPagoElegido' }}
+  <pre>{{ formaPagoElegido }}</pre> -->
 </template>
 
 <script setup>
@@ -529,6 +614,7 @@ const formData = ref({
   // Resto de campos del formulario
   detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
   forma_pago: null,
+  datos_forma_pago: { otros: {nombre_otros: '', ci_otros: ''}, transferencia: { nombre_transferencia: '', ci_transferencia: '', entidad_bancaria: '', tipo_cuenta: '', numero_cuenta: ''}},
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
   monto_solicitado: 0,
@@ -699,6 +785,25 @@ const formasPagoOptions = computed(() => {
     return datosFormulario.value.formaPago
   }
   return []
+})
+
+// Computed property to determine which payment method was selected
+const formaPagoElegido = computed(() => {
+  if (formData.value.forma_pago && formasPagoOptions.value.length > 0) {
+    const formaPago = formasPagoOptions.value.find((fp) => fp.id === formData.value.forma_pago)
+    return formaPago ? formaPago.formaPago : ''
+  }
+  return ''
+})
+
+// Show "Otros" fields when payment method is NOT "Transferencia Bancaria"
+const MostrarCamposOtros = computed(() => {
+  return formaPagoElegido.value !== 'Transferencia Bancaria'
+})
+
+// Show "Transferencia" fields when payment method IS "Transferencia Bancaria"
+const MostrarCamposTransferencia = computed(() => {
+  return formaPagoElegido.value === 'Transferencia Bancaria'
 })
 
 // 6. Para la función exportToExcel, necesitas obtener el texto de la forma de pago:
@@ -1279,34 +1384,53 @@ function actualizarDatosFormulario(solicitud) {
   formDatSF.value.fechaRealizacionActividadsf = solicitud.fechaRealizacionActividad || ''
   formDatSF.value.bloquearIconosSolFondossf = solicitud.bloquearIconosSolFondos || true
 
+  // Actualizar descripcion_actividad y objetivo_actividad desde la solicitud
+  if (solicitud.descripcion_actividad) {
+    formData.value.descripcion_actividad = solicitud.descripcion_actividad
+  }
+  if (solicitud.objetivo_actividad) {
+    formData.value.objetivo_actividad = solicitud.objetivo_actividad
+  }
+  if (solicitud.fechaRealizacionActividad) {
+    formData.value.fecha_ejecucion = solicitud.fechaRealizacionActividad
+  }
+
   //console.log('datosFormulario actualizado con los valores de la solicitud:', datosFormulario.value)
 
-  actualizarDetalleDestinoFondos(solicitud.detalleDestinoFondos)
+  actualizarDetalleDestinoFondos(formDatSF.value.detalleDestinoFondossf)
 
-  // Actualizar los campos de Información Adicional
-  actualizarInformacionAdicional()
+  // Actualizar los campos de Información Adicional - pasar solicitud directamente
+  actualizarInformacionAdicional(solicitud)
   actualizarValidadores()
 }
 
 // Función para parsear y actualizar el detalle de destino de fondos
 function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
   try {
+    console.log('Detalle de destino de fondos recibido:', JSON.stringify(detalleDestinoFondos,null,2))
     if (!detalleDestinoFondos) {
       formData.value.detalle_destino_fondos = []
       return
     }
 
-    // Parsear el JSON string
-    const detalleParseado = JSON.parse(detalleDestinoFondos)
+    // Determinar si es un string JSON o ya un objeto
+    let detalleParseado
+    if (typeof detalleDestinoFondos === 'string') {
+      detalleParseado = JSON.parse(detalleDestinoFondos)
+    } else {
+      detalleParseado = detalleDestinoFondos
+    }
+
+    console.log('Detalle de destino de fondos parseado:', detalleParseado)
 
     // Mapear al formato que espera la tabla
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
-      partida: `${index + 1}.${index + 1}.${index + 1}`, // Generar partida automáticamente o usar una lógica específica
+      partida: item.partida_sf || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
       descripcion_gasto: item.concepto || '',
       monto: item.monto || 0
     }))
 
-    //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
+    console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
   } catch (error) {
     console.error('Error al parsear detalleDestinoFondos:', error)
     formData.value.detalle_destino_fondos = []
@@ -1314,7 +1438,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
 }
 
 // Función para actualizar los campos de Información Adicional
-function actualizarInformacionAdicional() {
+function actualizarInformacionAdicional(solicitud) {
   // Actualizar forma_pago
   formData.value.forma_pago = formDatSF.value.formaPago_idsf
 
@@ -1323,6 +1447,35 @@ function actualizarInformacionAdicional() {
 
   // Actualizar fecha_solicitud
   formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
+
+  // Actualizar datos_forma_pago desde solicitud directamente
+
+  if (solicitud && solicitud.datos_forma_pago) {
+    const datosPago = solicitud.datos_forma_pago
+
+
+    // Los datos ya vienen en el formato correcto desde el backend
+    // Solo necesitamos asignarlos directamente
+    if (datosPago.transferencia) {
+      formData.value.datos_forma_pago.transferencia = {
+        nombre_transferencia: datosPago.transferencia.nombre_transferencia || '',
+        ci_transferencia: datosPago.transferencia.ci_transferencia || '',
+        entidad_bancaria: datosPago.transferencia.entidad_bancaria || '',
+        tipo_cuenta: datosPago.transferencia.tipo_cuenta || '',
+        numero_cuenta: datosPago.transferencia.numero_cuenta || ''
+      }
+
+    }
+
+    if (datosPago.otros) {
+      formData.value.datos_forma_pago.otros = {
+        nombre_otros: datosPago.otros.nombre_otros || '',
+        ci_otros: datosPago.otros.ci_otros || ''
+      }
+
+    }
+
+  }
 }
 
 // Función para extraer y formatear los validadores por ID
@@ -1340,12 +1493,12 @@ function actualizarValidadores() {
   )
 
   // Actualizar formData con los IDs encontrados
-  if (responsable) {
-    formData.value.idresponsable = responsable.id
-    //console.log('Responsable encontrado:', getNombreCompleto(responsable))
-  } else {
-    console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
-  }
+  // if (responsable) {
+  //   formData.value.idresponsable = responsable.id
+  //   //console.log('Responsable encontrado:', getNombreCompleto(responsable))
+  // } else {
+  //   console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
+  // }
 
   if (coordinador) {
     formData.value.idcoordinador = coordinador.id
