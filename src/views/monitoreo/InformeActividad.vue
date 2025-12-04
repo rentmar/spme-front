@@ -130,7 +130,7 @@
             ></v-textarea>
           </v-col>
 
-          <v-btn
+          <!-- <v-btn
             color="primary"
             variant="outlined"
             prepend-icon="mdi-chart-bar"
@@ -145,8 +145,12 @@
             :idactividad="idActividad"
             @guardarAvances="actualizarIndicadores"
           >
-          </Indicador-registro-bitacora>
-          <br />
+          </Indicador-registro-bitacora> -->
+
+          <RegistroAvanceIndicadores
+            :idactividad="idActividad"
+            @todos-los-registros-enviados="manejarRegistrosIndicadores"
+          ></RegistroAvanceIndicadores>
 
           <!-- <v-col cols="12" class="mt-4">
             <v-text-field
@@ -173,24 +177,7 @@
             <br />
             <v-row>
               <v-col cols="12">
-                <v-textarea
-                  v-model="formData.informacion_cuantitativa"
-                  label="Número de participantes, organizaciones, segmentación y grupos edad/sexo, autoridades"
-                  bg-color="blue-lighten-5"
-                  rows="3"
-                ></v-textarea>
-              </v-col>
-
-              <v-col cols="12">
-                <v-file-input
-                  v-model="formData.archivos_cuantitativos"
-                  label="Adjuntar archivos"
-                  multiple
-                  chips
-                  show-size
-                  :accept="acceptedFormats.herramientas"
-                  prepend-icon="mdi-paperclip"
-                ></v-file-input>
+                <InformacionCuantitativa></InformacionCuantitativa>
               </v-col>
             </v-row>
           </div>
@@ -203,15 +190,7 @@
             <br />
             <v-row>
               <v-col cols="12">
-                <v-textarea
-                  v-model="formData.descripcion_herramientas"
-                  label="Herramientas de Evaluacion y resultados"
-                  bg-color="blue-lighten-5"
-                  rows="3"
-                ></v-textarea>
-              </v-col>
-              <v-col cols="12">
-                <v-file-input
+                <!-- <v-file-input
                   v-model="formData.herramientas_archivos"
                   label="Adjuntar archivos"
                   multiple
@@ -219,7 +198,8 @@
                   show-size
                   :accept="acceptedFormats.herramientas"
                   prepend-icon="mdi-paperclip"
-                ></v-file-input>
+                ></v-file-input> -->
+                <HerramientasAplicadasResultados></HerramientasAplicadasResultados>
               </v-col>
             </v-row>
           </div>
@@ -327,6 +307,10 @@ import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vu
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
+import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
+import InformacionCuantitativa from '@/modules/formularios/components/InformacionCuantitativa.vue'
+import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAvanceIndicadores.vue'
+
 const modalAbierto = ref(false)
 
 // Composables
@@ -368,6 +352,10 @@ const indicadores = [
   { id: 3, nombre: 'Nivel de satisfacción de beneficiarios' },
   { id: 4, nombre: 'Cumplimiento de cronograma' },
 ]
+
+const manejarRegistrosIndicadores = async () => {
+  console.log('Registro de indicadores')
+}
 
 const formData = reactive({
   //contribucion_proyecto: '',

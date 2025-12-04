@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useReportes } from '../composables/useReportes'
 
-export const useIndicadoresStore = defineStore('reportes', () => {
+export const useIndicadoresStore = defineStore('indicadores-reportes', () => {
   // Estados
   const loading = ref(false)
   const error = ref(null)
@@ -36,6 +36,17 @@ export const useIndicadoresStore = defineStore('reportes', () => {
     })
   }
 
+  //Organiza la informacion de los indicadores
+  const organizarIndicadores = () => {
+    const indicadores = filtrarIndicadores()
+    return indicadores.map((indicador) => ({
+      id: indicador.id,
+      type: indicador.type,
+      tipo_dato: indicador.data.nodoProyecto.tipo,
+      nodoproyecto: indicador.data.nodoProyecto,
+    }))
+  }
+
   // Cargar la informacion de la actividad
   const cargarActividad = async (idindicador) => {
     loading.value = true
@@ -46,7 +57,7 @@ export const useIndicadoresStore = defineStore('reportes', () => {
       actividadInfo.value = actividadIndicadores.value
     } catch (e) {
       console.error('Error al cargar la actividad:', e)
-      error.value = 'No se pudo cargar la actividad. Inténtelo de nuevo.'
+      error.value = e
     } finally {
       loading.value = false
     }
@@ -59,5 +70,6 @@ export const useIndicadoresStore = defineStore('reportes', () => {
     cargarActividad,
     filtrarIndicadores,
     getIndicadoresForSelect,
+    organizarIndicadores,
   }
 })

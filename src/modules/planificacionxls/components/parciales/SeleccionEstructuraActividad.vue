@@ -280,41 +280,49 @@
               Crear Nueva Actividad
             </v-card-title>
 
-            <v-row>
-              <v-col cols="12" md="4">
-                <v-text-field
-                  v-model="nuevaActividad.codigo"
-                  label="Código de Actividad"
-                  variant="outlined"
-                  clearable
-                  density="comfortable"
-                  :rules="[(v) => !!v || 'El código es requerido']"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="8">
-                <v-text-field
-                  v-model="nuevaActividad.titulo"
-                  label="Nombre de la Actividad"
-                  variant="outlined"
-                  clearable
-                  density="comfortable"
-                  :rules="[(v) => !!v || 'El título es requerido']"
-                ></v-text-field>
-              </v-col>
-            </v-row>
+            <v-form ref="formActividad" v-model="formValido">
+              <v-row>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="nuevaActividad.codigo"
+                    label="Código de Actividad"
+                    variant="outlined"
+                    clearable
+                    density="comfortable"
+                    :rules="reglasCodigo"
+                    :error-messages="erroresCodigo"
+                    @blur="validarCodigoUnico"
+                    @input="limpiarErrorCodigo"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="8">
+                  <v-text-field
+                    v-model="nuevaActividad.titulo"
+                    label="Nombre de la Actividad"
+                    variant="outlined"
+                    clearable
+                    density="comfortable"
+                    :rules="reglasTitulo"
+                    :error-messages="erroresTitulo"
+                    @input="limpiarErrorTitulo"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
 
-            <v-card-actions class="pt-4">
-              <v-spacer></v-spacer>
-              <v-btn color="grey" variant="text" @click="resetSeleccion"> Cancelar </v-btn>
-              <v-btn
-                color="primary"
-                variant="flat"
-                @click="mostrarDialogoConfirmacion"
-                :disabled="!esFormularioValido"
-              >
-                Crear Actividad
-              </v-btn>
-            </v-card-actions>
+              <v-card-actions class="pt-4">
+                <v-spacer></v-spacer>
+                <v-btn color="grey" variant="text" @click="resetSeleccion"> Cancelar </v-btn>
+                <v-btn
+                  color="primary"
+                  variant="flat"
+                  @click="validarYMostrarConfirmacion"
+                  :disabled="!esFormularioValido"
+                  :loading="validando"
+                >
+                  Crear Actividad
+                </v-btn>
+              </v-card-actions>
+            </v-form>
           </div>
         </div>
 
@@ -404,13 +412,14 @@
                 }}</v-list-item-subtitle>
               </v-list-item>
 
-              <v-list-item v-if="collectedData.objetivoespecifico">
+              <!-- OBJETIVO ESPECÍFICO - CORREGIDO: usar objetivoespecificoog -->
+              <v-list-item v-if="collectedData.objetivoespecificoog">
                 <v-list-item-title>
                   <strong>Objetivo Específico:</strong>
-                  {{ collectedData.objetivoespecifico.data.codigo }}
+                  {{ collectedData.objetivoespecificoog.data.codigo }}
                 </v-list-item-title>
                 <v-list-item-subtitle>{{
-                  collectedData.objetivoespecifico.data.descripcion
+                  collectedData.objetivoespecificoog.data.descripcion
                 }}</v-list-item-subtitle>
               </v-list-item>
 
@@ -451,22 +460,22 @@
                 }}</v-list-item-subtitle>
               </v-list-item>
 
-              <v-list-item v-if="collectedData.productoe">
+              <v-list-item v-if="collectedData.productooe">
                 <v-list-item-title>
-                  <strong>Producto OE:</strong> {{ collectedData.productoe.data.codigo }}
+                  <strong>Producto OE:</strong> {{ collectedData.productooe.data.codigo }}
                 </v-list-item-title>
                 <v-list-item-subtitle>{{
-                  collectedData.productoe.data.descripcion
+                  collectedData.productooe.data.descripcion
                 }}</v-list-item-subtitle>
               </v-list-item>
 
-              <v-list-item v-if="collectedData.procesoproductoe">
+              <v-list-item v-if="collectedData.procesoproductooe">
                 <v-list-item-title>
                   <strong>Proceso Producto OE:</strong>
-                  {{ collectedData.procesoproductoe.data.codigo }}
+                  {{ collectedData.procesoproductooe.data.codigo }}
                 </v-list-item-title>
                 <v-list-item-subtitle>{{
-                  collectedData.procesoproductoe.data.titulo
+                  collectedData.procesoproductooe.data.titulo
                 }}</v-list-item-subtitle>
               </v-list-item>
             </v-list>
@@ -484,10 +493,14 @@
     </v-dialog>
   </v-container>
 </template>
+
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useActividad } from '@/modules/proyecto/composables/useActividad'
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
+import { useUserStore } from '@/stores/user'
+import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 // Props para recibir datos del proyecto desde el componente padre
 const props = defineProps({
@@ -497,11 +510,49 @@ const props = defineProps({
   },
 })
 
+//INicializar el composable
+const { usuario: usuarioInfo, informacionUsuarioPorNick } = useUsuario()
+
 // Variables reactivas para el estado del componente
 const proyecto = ref({})
 const objetivosGenerales = ref([])
 const dialogVisible = ref(false)
 const collectedData = ref({})
+
+// Variables reactivas para validación
+const formValido = ref(false)
+const validando = ref(false)
+const formActividad = ref(null)
+const erroresCodigo = ref([])
+const erroresTitulo = ref([])
+
+// Reglas de validación para el código
+const reglasCodigo = [
+  (v) => !!v || 'El código es requerido',
+  (v) => (v && v.length >= 3) || 'El código debe tener al menos 3 caracteres',
+  (v) => (v && v.length <= 20) || 'El código no puede exceder 20 caracteres',
+  (v) =>
+    /^[A-Z0-9_-]+$/.test(v) ||
+    'Solo se permiten letras mayúsculas, números, guiones y guiones bajos',
+  (v) => /^[A-Z]/.test(v) || 'El código debe comenzar con una letra mayúscula',
+]
+
+// Reglas de validación para el título
+const reglasTitulo = [
+  (v) => !!v || 'El título es requerido',
+  (v) => (v && v.length >= 5) || 'El título debe tener al menos 5 caracteres',
+  (v) => (v && v.length <= 200) || 'El título no puede exceder 200 caracteres',
+  (v) => (v && v.trim().length > 0) || 'El título no puede ser solo espacios en blanco',
+]
+
+//Datos del usuario
+const usuario = computed(() => {
+  return {
+    nombre: userStore.usuario,
+    role: userStore.rol,
+    permisos: userStore.permisos,
+  }
+})
 
 // Variables reactivas para la selección
 const selectedObjetivoGeneral = ref(null)
@@ -523,19 +574,114 @@ const nuevaActividad = ref({
   titulo: '',
 })
 
+// Validación del formulario (más estricta)
+const esFormularioValido = computed(() => {
+  return (
+    formValido.value &&
+    nuevaActividad.value.codigo &&
+    nuevaActividad.value.titulo &&
+    erroresCodigo.value.length === 0 &&
+    erroresTitulo.value.length === 0
+  )
+})
+
 // Iniciar composables
 const { crearActividad: crearActividadComposable } = useActividad()
+const { successMsg, errorMsg } = useSnackbar()
+//Iniciar stores
 const proyectoStore = useProyectoStore()
+const userStore = useUserStore()
 
 // Preprocesar datos cuando el componente se monta
 onMounted(() => {
   preprocesarDatos()
 })
 
-// Validación del formulario
-const esFormularioValido = computed(() => {
-  return nuevaActividad.value.codigo && nuevaActividad.value.titulo
-})
+// Métodos de validación
+const limpiarErrorCodigo = () => {
+  erroresCodigo.value = []
+}
+
+const limpiarErrorTitulo = () => {
+  erroresTitulo.value = []
+}
+
+// Validar que el código sea único
+const validarCodigoUnico = async () => {
+  if (!nuevaActividad.value.codigo) return
+
+  const codigo = nuevaActividad.value.codigo.trim().toUpperCase()
+
+  // Validar formato específico si es necesario
+  if (!/^[A-Z][A-Z0-9_-]{2,19}$/.test(codigo)) {
+    erroresCodigo.value = ['Formato de código inválido']
+    return
+  }
+
+  // Simular verificación de unicidad (reemplazar con llamada real a API)
+  const codigosExistentes = ['ACT001', 'ACT002', 'PROC001']
+  if (codigosExistentes.includes(codigo)) {
+    erroresCodigo.value = ['Este código ya está en uso']
+    return
+  }
+
+  // Si pasa todas las validaciones, limpiar errores
+  limpiarErrorCodigo()
+}
+
+// Validar título
+const validarTitulo = () => {
+  const titulo = nuevaActividad.value.titulo?.trim()
+
+  if (!titulo) {
+    erroresTitulo.value = ['El título es requerido']
+    return false
+  }
+
+  if (titulo.length < 5) {
+    erroresTitulo.value = ['El título debe tener al menos 5 caracteres']
+    return false
+  }
+
+  if (titulo.length > 200) {
+    erroresTitulo.value = ['El título no puede exceder 200 caracteres']
+    return false
+  }
+
+  // Validar que no sea solo números
+  if (/^\d+$/.test(titulo)) {
+    erroresTitulo.value = ['El título no puede contener solo números']
+    return false
+  }
+
+  limpiarErrorTitulo()
+  return true
+}
+
+// Función de validación completa
+const validarFormulario = async () => {
+  validando.value = true
+
+  // Validar el formulario de Vuetify
+  const { valid } = await formActividad.value.validate()
+
+  if (!valid) {
+    validando.value = false
+    return false
+  }
+
+  // Validaciones personalizadas
+  await validarCodigoUnico()
+  const tituloValido = validarTitulo()
+
+  if (erroresCodigo.value.length > 0 || !tituloValido) {
+    validando.value = false
+    return false
+  }
+
+  validando.value = false
+  return true
+}
 
 // Función para preprocesar los datos de la API
 const preprocesarDatos = () => {
@@ -584,7 +730,7 @@ const onObjetivoGeneralSelected = () => {
   selectedProcesoProductoOE.value = null
 }
 
-// 💡 Versión mejorada y segura de la función para recolectar datos
+// 💡 FUNCIÓN MANTENIENDO objetivoespecificoog
 const obtenerEstructuraProcedencia = () => {
   const estructura = {}
 
@@ -592,15 +738,15 @@ const obtenerEstructuraProcedencia = () => {
     objetivogeneral: selectedObjetivoGeneral,
     indicadorog: selectedIndicadorOG,
     resultadoog: selectedResultadoOG,
-    indicadorrog: selectedIndicadorResultadoOG,
-    procesorog: selectedProcesoOG,
-    objetivoespecificoog: selectedObjetivoEspecifico,
+    indicadorresultadoog: selectedIndicadorResultadoOG,
+    procesoog: selectedProcesoOG,
+    objetivoespecificoog: selectedObjetivoEspecifico, // Manteniendo objetivoespecificoog
     indicadoroe: selectedIndicadorOE,
     resultadooe: selectedResultadoOE,
-    indicadorroe: selectedIndicadorResultadoOE,
-    procesoroe: selectedProcesoOE,
+    indicadorresultadooe: selectedIndicadorResultadoOE,
+    procesooe: selectedProcesoOE,
     productooe: selectedProductoOE,
-    procesopoe: selectedProcesoProductoOE,
+    procesoproductooe: selectedProcesoProductoOE,
   }
 
   for (const tipo in selecciones) {
@@ -608,13 +754,11 @@ const obtenerEstructuraProcedencia = () => {
 
     if (valorSeleccionado) {
       if (Array.isArray(valorSeleccionado)) {
-        // Manejo de selecciones múltiples
         estructura[tipo] = valorSeleccionado.map((data) => ({
           tipo: tipo,
           data: data,
         }))
       } else {
-        // Manejo de selecciones simples
         estructura[tipo] = {
           tipo: tipo,
           data: valorSeleccionado,
@@ -626,7 +770,7 @@ const obtenerEstructuraProcedencia = () => {
   return estructura
 }
 
-// 💡 NUEVA FUNCIÓN: Obtiene las selecciones de manera simple (solo IDs) para edición
+// Función para obtener selecciones simples
 const obtenerSeleccionesSimples = () => {
   const seleccionesSimples = {}
 
@@ -670,10 +814,14 @@ const obtenerSeleccionesSimples = () => {
   return seleccionesSimples
 }
 
-// Mostrar el diálogo de confirmación
-const mostrarDialogoConfirmacion = () => {
-  collectedData.value = obtenerEstructuraProcedencia()
-  dialogVisible.value = true
+// Validar y mostrar confirmación
+const validarYMostrarConfirmacion = async () => {
+  const esValido = await validarFormulario()
+
+  if (esValido) {
+    collectedData.value = obtenerEstructuraProcedencia()
+    dialogVisible.value = true
+  }
 }
 
 // Crear actividad después de la confirmación
@@ -688,21 +836,67 @@ const confirmarCreacion = async () => {
     estructuraProcedencia: {
       datosProcedencia: collectedData.value,
       nodosRelacionados: proyectoStore.nodosVinculadosActividad,
-      // 💡 Se añade la nueva propiedad con las selecciones simples
       seleccionesSimples: obtenerSeleccionesSimples(),
     },
     proyecto: proyecto.value.id,
     responsable: nuevaActividad.value.responsable,
   }
 
-  //console.log(actividadCompleta.estructuraProcedencia)
-  //console.log(proyectoStore.nodosVinculadosActividad)
-  //console.log(actividadCompleta)
+  const actividadDatos = {
+    codigo: nuevaActividad.value.codigo,
+    nombreCorto: nuevaActividad.value.titulo,
+    descripcion: '',
+    supuestos: '',
+    riesgos: '',
+    objetivo_de_actividad: '',
+    descripcion_evaluacion: '',
+    descripcion_tipo_actividad: '',
+    fecha_programada: null,
+    fecha_inicio: null,
+    fecha_cierre: null,
+    presupuesto: '0',
+    presupuestoGlobal: '0',
+    totalReportado: '0',
+    totalEjecutado: '0',
+    saldo: '0',
+    gradoEjecucion: null,
+    procedencia_fondos: null,
+    estado: 'CRD',
+    rutaTrazadoIndicadores: null,
+    factoresCriticos: null,
+    estructuraProcedencia: {
+      datosProcedencia: collectedData.value,
+      nodosRelacionados: proyectoStore.nodosVinculadosActividad,
+      seleccionesSimples: obtenerSeleccionesSimples(),
+    },
+    estaInactiva: false,
+    tipo: 1,
+    proceso: null,
+    resultado_og: null,
+    resultado_oe: null,
+    producto_oe: null,
+    objetivo_pei: null,
+    indicador_pei: null,
+    proyecto: proyecto.value.id,
+    responsable: null,
+  }
+  const usr = {
+    usuario: usuario.value.nombre,
+  }
+  //console.log('Actividad a crear:', actividadCompleta)
   try {
-    await crearActividadComposable(actividadCompleta)
+    await informacionUsuarioPorNick(usr)
+    //console.log(usuarioInfo)
+    actividadDatos.responsable = usuarioInfo.value.id
+    //await crearActividadComposable(actividadCompleta)
+    //console.log('Actividad a crear datos')
+    //console.log(actividadDatos)
+    await crearActividadComposable(actividadDatos)
+    successMsg('Actividad Creada')
     emit('crear-actividad', actividadCompleta)
   } catch (e) {
     console.error(e)
+    errorMsg('Error al Crear Actividad')
   }
 }
 
@@ -723,6 +917,12 @@ const resetSeleccion = () => {
   nuevaActividad.value = {
     codigo: '',
     titulo: '',
+    responsable: '',
+  }
+  erroresCodigo.value = []
+  erroresTitulo.value = []
+  if (formActividad.value) {
+    formActividad.value.resetValidation()
   }
 }
 
@@ -758,5 +958,30 @@ const emit = defineEmits(['crear-actividad'])
 .bg-blue-lighten-5 {
   padding-top: 24px;
   padding-bottom: 24px;
+}
+
+/* Estilos para campos con error */
+.v-input--error {
+  border-color: #ff5252 !important;
+}
+
+/* Estilos para mensajes de error */
+.error-message {
+  color: #ff5252;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+/* Estilos para campos válidos */
+.v-input--success {
+  border-color: #4caf50 !important;
+}
+
+.activity-form-container {
+  border: 2px dashed #1976d2;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #e3f2fd;
+  position: relative;
 }
 </style>

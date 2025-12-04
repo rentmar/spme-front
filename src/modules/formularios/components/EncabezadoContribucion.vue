@@ -1,11 +1,11 @@
 <template>
   <div>
     <!-- Objetivo General -->
+    <label v-if="objetivogeneral">{{ getLabel('objetivogeneral') }}</label>
     <v-textarea
       v-if="objetivogeneral"
       v-model="caberaContribucion.objetivogeneral.data.contribucion"
-      :label="getLabel('objetivogeneral')"
-      hint="Contribución del objetivo general"
+      hint="Contribución al objetivo general"
       clearable
       variant="outlined"
       class="custom-textarea"
@@ -14,11 +14,11 @@
     ></v-textarea>
 
     <!-- Objetivo Específico Proyecto -->
+    <label v-if="objetivoespecifico">{{ getLabel('objetivoespecifico') }}</label>
     <v-textarea
       v-if="objetivoespecifico"
       v-model="caberaContribucion.objetivoespecifico.data.contribucion"
-      :label="getLabel('objetivoespecifico')"
-      hint="Contribución del objetivo específico proyecto"
+      hint="Contribución al objetivo específico proyecto"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -26,11 +26,11 @@
     ></v-textarea>
 
     <!-- Objetivo Específico OG -->
+    <label v-if="objetivoespecificoog">{{ getLabel('objetivoespecificoog') }}</label>
     <v-textarea
       v-if="objetivoespecificoog"
       v-model="caberaContribucion.objetivoespecificoog.data.contribucion"
-      :label="getLabel('objetivoespecificoog')"
-      hint="Contribución del objetivo específico OG"
+      hint="Contribución al objetivo específico OG"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -38,11 +38,11 @@
     ></v-textarea>
 
     <!-- Resultado OG -->
+    <label v-if="resultadoog">{{ getLabel('resultadoog') }}</label>
     <v-textarea
       v-if="resultadoog"
       v-model="caberaContribucion.resultadoog.data.contribucion"
-      :label="getLabel('resultadoog')"
-      hint="Contribución del resultado OG"
+      hint="Contribución al resultado OG"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -50,11 +50,11 @@
     ></v-textarea>
 
     <!-- Resultado OE -->
+    <label v-if="resultadooe"> {{ getLabel('resultadooe') }} </label>
     <v-textarea
       v-if="resultadooe"
       v-model="caberaContribucion.resultadooe.data.contribucion"
-      :label="getLabel('resultadooe')"
-      hint="Contribución del resultado OE"
+      hint="Contribución al resultado OE"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -62,11 +62,11 @@
     ></v-textarea>
 
     <!-- Producto OE -->
+    <label v-if="productooe"> {{ getLabel('productooe') }} </label>
     <v-textarea
       v-if="productooe"
       v-model="caberaContribucion.productooe.data.contribucion"
-      :label="getLabel('productooe')"
-      hint="Contribución del producto OE"
+      hint="Contribución al producto OE"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -74,11 +74,11 @@
     ></v-textarea>
 
     <!-- Producto ROE -->
+    <label v-if="productoroe">{{ getLabel('productoroe') }}</label>
     <v-textarea
       v-if="productoroe"
       v-model="caberaContribucion.productoroe.data.contribucion"
-      :label="getLabel('productoroe')"
-      hint="Contribución del producto ROE"
+      hint="Contribución al producto ROE"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -86,11 +86,11 @@
     ></v-textarea>
 
     <!-- Producto -->
+    <label v-if="producto">{{ getLabel('producto') }}</label>
     <v-textarea
       v-if="producto"
       v-model="caberaContribucion.producto.data.contribucion"
-      :label="getLabel('producto')"
-      hint="Contribución del producto"
+      hint="Contribución al producto"
       clearable
       variant="outlined"
       @update:modelValue="emitirPayloadCompleto"
@@ -267,23 +267,67 @@ const getLabel = (tipo) => {
   return tipoNames[tipo] || tipo
 }
 
+// Función para limpiar el payload - SOLO ESTA FUNCIÓN FUE MODIFICADA
+const limpiarPayload = (payloadCompleto) => {
+  const payloadLimpio = {
+    timestamp: payloadCompleto.timestamp,
+    evento: payloadCompleto.evento,
+    caberaContribucion: {},
+  }
+
+  // Solo incluir campos que tengan datos válidos
+  Object.keys(payloadCompleto.caberaContribucion).forEach((key) => {
+    const campo = payloadCompleto.caberaContribucion[key]
+    const data = campo.data
+
+    // Verificar si el campo tiene datos mínimos válidos
+    const tieneDatosValidos =
+      data &&
+      ((data.id && data.id !== '') ||
+        (data.codigo && data.codigo !== '') ||
+        (data.descripcion && data.descripcion !== '') ||
+        (data.contribucion && data.contribucion.trim() !== ''))
+
+    if (tieneDatosValidos) {
+      payloadLimpio.caberaContribucion[key] = {
+        tipo: campo.tipo,
+        data: { ...data },
+      }
+
+      // Limpiar campos vacíos en data
+      Object.keys(payloadLimpio.caberaContribucion[key].data).forEach((dataKey) => {
+        if (
+          payloadLimpio.caberaContribucion[key].data[dataKey] === '' ||
+          payloadLimpio.caberaContribucion[key].data[dataKey] === null
+        ) {
+          delete payloadLimpio.caberaContribucion[key].data[dataKey]
+        }
+      })
+    }
+  })
+
+  return payloadLimpio
+}
+
 // Función para emitir el payload completo
 const emitirPayloadCompleto = (evento = 'input') => {
-  const payload = {
+  const payloadCompleto = {
     timestamp: new Date().toISOString(),
     evento: evento,
     caberaContribucion: { ...caberaContribucion },
   }
+  // Limpiar el payload antes de emitirlo
+  const payloadLimpio = limpiarPayload(payloadCompleto)
 
   // Emitir el payload completo
-  emit('payload-actualizado', payload)
+  emit('payload-actualizado', payloadLimpio)
 
   // Guardar último payload para debug
   if (props.debugMode) {
-    lastPayload.value = payload
+    lastPayload.value = payloadLimpio
   }
 
-  console.log('Payload emitido:', payload)
+  console.log('Payload emitido:', payloadLimpio)
 }
 
 // Función para inicializar los datos desde la estructura de procedencia
@@ -437,46 +481,4 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* Estilos para solucionar el problema de etiquetas recortadas */
-:deep(.v-label) {
-  white-space: normal !important;
-  height: auto !important;
-  line-height: 1.5 !important;
-  max-width: 100% !important;
-}
-
-:deep(.custom-textarea .v-label) {
-  white-space: normal !important;
-  height: auto !important;
-  line-height: 1.5 !important;
-}
-
-:deep(.v-textarea .v-field__input) {
-  align-items: flex-start !important;
-}
-
-.debug-container {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-family: monospace;
-}
-
-.debug-container h4 {
-  margin: 0 0 10px 0;
-  color: #333;
-}
-
-.debug-container pre {
-  margin: 0;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  font-size: 12px;
-  color: #666;
-  max-height: 300px;
-  overflow-y: auto;
-}
-</style>
+<style scoped></style>

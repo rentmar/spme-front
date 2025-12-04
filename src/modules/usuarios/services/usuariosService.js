@@ -1,4 +1,5 @@
 import { apiUsuarios } from '@/services/axios'
+import { apiAxs } from '@/services/axios'
 import api from '@/services/axios'
 
 export const usuarioServicios = {
@@ -25,6 +26,29 @@ export const usuarioServicios = {
       return respuesta.data
     } catch (error) {
       console.log('Axios: error fecths nicks', error)
+    }
+  },
+  obtenerTokens: async (credenciales) => {
+    try {
+      const respuesta = await api.post('/token/', credenciales)
+      return respuesta.data
+    } catch (error) {
+      console.log('Axios: error al obtener tokens de autenticacion', error)
+      throw error
+    }
+  },
+  obtenerPermisosUsuario: async (tokenAcceso) => {
+    try {
+      const permisosData = await apiAxs.get('/permisos/usuario/', {
+        headers: {
+          Authorization: `Bearer ${tokenAcceso}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      return permisosData.data
+    } catch (err) {
+      console.error('Axios: error cargando informacion del usuario', err)
+      throw err
     }
   },
 }

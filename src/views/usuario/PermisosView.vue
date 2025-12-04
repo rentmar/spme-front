@@ -36,6 +36,10 @@
               <v-icon start>mdi-lock</v-icon>
               Permisos
             </v-tab>
+            <v-tab value="instancias">
+              <v-icon start>mdi-office-building</v-icon>
+              Instancias Gestoras
+            </v-tab>
           </v-tabs>
 
           <v-window v-model="tabActual">
@@ -352,6 +356,10 @@
                 </v-card-text>
               </v-card>
             </v-window-item>
+            <!--Instancias gestoras-->
+            <v-window-item value="instancias">
+              <AsignarInstanciasGestoras></AsignarInstanciasGestoras>
+            </v-window-item>
           </v-window>
         </v-col>
       </v-row>
@@ -542,6 +550,7 @@ import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vu
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
+import AsignarInstanciasGestoras from '@/modules/instanciaGestora/components/AsignarInstanciasGestoras.vue'
 
 const { successMsg, errorMsg } = useSnackbar()
 

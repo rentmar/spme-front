@@ -48,4 +48,10 @@ export const SELECT_OPTIONS = {
     'AART - Actividad de Articulación',
     'OTRO - Tipo Actividad',
   ],
+  razon_cambio: [
+    { valor: 'creacion', etiqueta: 'Creación' },
+    { valor: 'actualizacion', etiqueta: 'Actualización' },
+    { valor: 'eliminacion', etiqueta: 'Eliminación' },
+    { valor: 'reprogramacion', etiqueta: 'Reprogramación' },
+  ],
 }

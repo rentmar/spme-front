@@ -109,6 +109,11 @@ const router = createRouter({
       component: () => import('@/views/planeamiento/PeiAddActividadView.vue'),
     },
     {
+      path: '/planificacion/historial/',
+      name: 'planificacionHistorial',
+      component: () => import('@/views/planeamiento/PlanificacionSeguimientoView.vue'),
+    },
+    {
       /* A la vista de planificacion del proyecto */
       path: '/proyecto/:id/planificar',
       name: 'planificarProyecto',
@@ -277,13 +282,22 @@ const router = createRouter({
       path: '/monitoreo/formulario08/:id',
       component: () => import('@/views/monitoreo/SolicitudDePagoDirecto.vue'),
     },
-        {
+    {
       path: '/monitoreo/formulario088/:id',
       component: () => import('@/views/monitoreo/SolicitudDePagoDirectoValidar.vue'),
     },
+
     {
       path: '/monitoreo/formularioInf/:id',
       component: () => import('@/views/monitoreo/InformeActividad.vue'),
+    },
+    //Link al nuevo formulario de actividad
+
+    //Lista de actividades para informes
+    {
+      path: '/actividades/informe/',
+      name: 'actividades',
+      component: () => import('@/views/monitoreo/InformeListaActividadView.vue'),
     },
 
     /*************************  Reportes  **************************************************** */

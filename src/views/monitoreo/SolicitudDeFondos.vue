@@ -210,7 +210,7 @@
                     required
                   ></v-textarea>
                   <v-text-field
-                    v-model=" textoProcedencia "
+                    v-model="textoProcedencia"
                     label="Fuente de Financiamiento"
                     variant="outlined"
                     density="compact"
@@ -771,7 +771,6 @@ watch(
         formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)//newVal.actividad.fecha_cierre || ''
         formData.value.id_actividad = getSafeValue(newVal.actividad.id,0)//newVal.actividad.id || 0
         formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)//newVal.actividad.procedencia_fondos || ''
-
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
           //console.log('Formas de pago disponibles:', newVal.formaPago)

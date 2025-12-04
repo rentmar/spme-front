@@ -30,10 +30,20 @@ export const reportesServicios = {
   /****** Crear bitacora **********/
   grabarBitacora: async (data) => {
     try {
-      const respuesta = await apiRep.post('/bitacora-indicadores/', data)
+      const respuesta = await apiRep.post('/bitacora-indicador/crear/', data)
       return respuesta.data
     } catch (error) {
       console.error('Axios, error de registro en el bitacor', error)
+    }
+  },
+  /******** Bitacora por Indicador *********************/
+  obtenerBitacoraPorIdIndicador: async (idIndicador, tipoIndicador) => {
+    try {
+      const respuesta = await apiRep.post('')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios, error fetch ', error)
+      throw error
     }
   },
   /*************REPORTES PARA DESCARGA********************/
