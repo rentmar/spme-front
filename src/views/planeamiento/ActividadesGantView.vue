@@ -1,13 +1,14 @@
 <script>
 import axios from 'axios'
-const BASEURL=import.meta.env.VITE_API_BASE
+
+const baseUrl = import.meta.env.VITE_API_BASE
 
 export default {
   data() {
     return {
       cantidad: 12,
       ancho: 115,
-      anchoColumnaActividad: 250,
+      anchoColumnaActividad: 350,
       altolbl: 30,
       alto: 60,
       altoActividad: 40,
@@ -23,7 +24,18 @@ export default {
       currentPage: 1,
       mostrarHoy: true,
       fechaHoy: new Date().toISOString().split('T')[0],
-      meses: [
+      // Nueva variable para controlar el mes inicial
+      mesInicial: new Date().getMonth(), // Mes actual como punto de partida
+      anioInicial: new Date().getFullYear(), // Año actual como punto de partida
+      meses: [],
+      estados: [],
+      actividades: [],
+    }
+  },
+  computed: {
+    // Calcular los meses a mostrar basados en mesInicial y anioInicial
+    mesesParaMostrar() {
+      const nombresMeses = [
         'Enero',
         'Febrero',
         'Marzo',
@@ -36,15 +48,36 @@ export default {
         'Octubre',
         'Noviembre',
         'Diciembre',
-      ],
-      estados: [],
-      actividades: [],
-    }
-  },
-  computed: {
+      ]
+
+      const mesesAMostrar = []
+      const mitad = Math.floor(this.cantidad / 2)
+      let mesInicio = this.mesInicial - mitad
+      let anioInicio = this.anioInicial
+
+      while (mesInicio < 0) {
+        mesInicio += 12
+        anioInicio -= 1
+      }
+
+      for (let i = 0; i < this.cantidad; i++) {
+      const mesCalculado = (mesInicio + i) % 12
+      const anioCalculado = anioInicio + Math.floor((mesInicio + i) / 12)
+
+      mesesAMostrar.push({
+            nombre: `${nombresMeses[mesCalculado]} ${anioCalculado}`,
+            mes: mesCalculado,
+            anio: anioCalculado,
+            esMesActual: mesCalculado === this.mesInicial && anioCalculado === this.anioInicial
+          })
+        }
+
+        return mesesAMostrar
+      },
+
     viewBox() {
       const width =
-        this.xInicial + this.anchoColumnaActividad + (this.ancho + this.espacio) * this.cantidad
+        this.xInicial + this.anchoColumnaActividad + (this.ancho + this.espacio) * this.cantidad + 20 // +20 para margen
       const height = this.y + this.altolbl + this.itemsPerPage * (this.alto + 10) + 5
       return `0 0 ${width} ${height}`
     },
@@ -87,18 +120,53 @@ export default {
     },
   },
   mounted() {
-    if (this.actividades.length > 0 && !this.selectedActividad) {
-      this.selectedActividad = this.actividades[0]
-    }
+  // Inicializar con el mes actual al centro
+  const ahora = new Date()
+  this.mesInicial = ahora.getMonth()
+  this.anioInicial = ahora.getFullYear()
 
-    this.ajustarAlturaSVG()
-    window.addEventListener('resize', this.ajustarAlturaSVG)
-    this.obtenerActividades()
-  },
+  if (this.actividades.length > 0 && !this.selectedActividad) {
+    this.selectedActividad = this.actividades[0]
+  }
+
+  this.ajustarAlturaSVG()
+  window.addEventListener('resize', this.ajustarAlturaSVG)
+  this.obtenerActividades()
+},
   beforeUnmount() {
     window.removeEventListener('resize', this.ajustarAlturaSVG)
   },
   methods: {
+    // Métodos para navegar entre meses (uno por uno)
+    navegarMeses(direccion) {
+  if (direccion === 'adelante') {
+    if (this.mesInicial === 11) {
+      this.mesInicial = 0
+      this.anioInicial += 1
+    } else {
+      this.mesInicial += 1
+    }
+  } else {
+    if (this.mesInicial === 0) {
+      this.mesInicial = 11
+      this.anioInicial -= 1
+    } else {
+      this.mesInicial -= 1
+    }
+  }
+
+  // Forzar actualización del DOM
+  this.$nextTick(() => {
+    //lógica adicional después de la actualización
+  })
+},
+
+    irAlPresente() {
+      const ahora = new Date()
+      this.mesInicial = ahora.getMonth()
+      this.anioInicial = ahora.getFullYear()
+    },
+
     async obtenerActividades() {
       this.loading = true
       this.error = null
@@ -109,7 +177,7 @@ export default {
         // const token = this.userStore.token;
         const response = await axios.get(
 
-          BASEURL+'/actividades_api/obtenerActividadesGantt/',
+          baseUrl+'/actividades_api/obtenerActividadesGantt/',
 
           {
             headers: {
@@ -139,65 +207,66 @@ export default {
     },
 
     posicionEnEscalaGrafica(fecha) {
-      const date = new Date(fecha + 'T00:00:00')
-      const year = date.getFullYear()
-      const month = date.getMonth()
-      const day = date.getDate()
+  const date = new Date(fecha + 'T00:00:00')
+  const year = date.getFullYear()
+  const month = date.getMonth()
+  const day = date.getDate()
 
-      const monthWidth = this.ancho + this.espacio
-      const daysInMonth = new Date(year, month + 1, 0).getDate()
+  // Encontrar la posición del mes en nuestra escala actual
+  const mesEnEscala = this.mesesParaMostrar.findIndex(
+    m => m.mes === month && m.anio === year
+  )
 
-      const dayPosition = (day / daysInMonth) * monthWidth
+  if (mesEnEscala === -1) {
+    return -1 // Fuera del rango visible
+  }
 
-      return this.xInicial + this.anchoColumnaActividad + month * monthWidth + dayPosition - 5
-    },
+  const monthWidth = this.ancho + this.espacio
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
 
-    calcularAnchoBarra(fecha_iniciocio, fecha_cierre) {
-      const start = new Date(fecha_iniciocio + 'T00:00:00')
-      const end = new Date(fecha_cierre + 'T00:00:00')
+  const dayPosition = (day / daysInMonth) * monthWidth
 
-      const diffTime = Math.abs(end - start)
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+  // Posición mínima absoluta (inicio del área de meses)
+  const posicionMinima = this.xInicial + this.anchoColumnaActividad
 
-      const monthWidth = this.ancho + this.espacio
-      const daysInStartMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate()
+  return posicionMinima + mesEnEscala * monthWidth + dayPosition
+},
 
-      if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
-        return (diffDays / daysInStartMonth) * monthWidth
-      }
+  calcularBarra(actividad) {
 
-      let totalWidth = 0
-      let current = new Date(start)
+  const posicionMinima = this.xInicial + this.anchoColumnaActividad
+  const areaMaxima = posicionMinima + (this.ancho + this.espacio) * this.cantidad
 
-      while (current <= end) {
-        const daysInCurrentMonth = new Date(
-          current.getFullYear(),
-          current.getMonth() + 1,
-          0,
-        ).getDate()
+  let xInicio = this.posicionEnEscalaGrafica(actividad.fecha_inicio)
+  let xFin = this.posicionEnEscalaGrafica(actividad.fecha_cierre)
 
-        if (
-          current.getMonth() === start.getMonth() &&
-          current.getFullYear() === start.getFullYear()
-        ) {
-          const daysRemaining = daysInCurrentMonth - current.getDate() + 1
-          totalWidth += (daysRemaining / daysInCurrentMonth) * monthWidth
-        } else if (
-          current.getMonth() === end.getMonth() &&
-          current.getFullYear() === end.getFullYear()
-        ) {
-          const daysPassed = end.getDate()
-          totalWidth += (daysPassed / daysInCurrentMonth) * monthWidth
-        } else {
-          totalWidth += monthWidth
-        }
+  // Si la barra empieza antes del área visible, ajustar al inicio del área
+  if (xInicio < posicionMinima) {
+    xInicio = posicionMinima
+  }
 
-        current = new Date(current.getFullYear(), current.getMonth() + 1, 1)
-      }
+  // Si la barra termina después del área visible, ajustar al final del área
+  if (xFin > areaMaxima) {
+    xFin = areaMaxima
+  }
 
-      return totalWidth
-    },
+  // Si alguna fecha está completamente fuera del rango visible
+  if (xInicio === -1 || xFin === -1) {
+    return { x: 0, width: 0 }
+  }
 
+  // Si después de los ajustes el inicio es mayor que el fin, no mostrar barra
+  if (xInicio >= xFin) {
+    return { x: 0, width: 0 }
+  }
+
+  const width = Math.max(xFin - xInicio, 2) // Mínimo 2px para que sea visible
+
+  return {
+    x: xInicio,
+    width: width
+  }
+},
     showActividadDetails(actividad) {
       this.selectedActividad = actividad
     },
@@ -214,6 +283,17 @@ export default {
         svgElement.style.height = `${alturaVentana * 0.6}px`
       }
     },
+
+    esFechaVisible(fecha) {
+  const date = new Date(fecha + 'T00:00:00')
+  const year = date.getFullYear()
+  const month = date.getMonth()
+
+  return this.mesesParaMostrar.some(m =>
+    m.mes === month && m.anio === year
+  )
+},
+
     splitTextIntoLines(text, maxLength) {
       const words = text.split(' ')
       const lines = []
@@ -233,7 +313,6 @@ export default {
   },
 }
 </script>
-<!---->
 <template>
   <v-container>
     <v-toolbar color="primary" dark>
@@ -258,6 +337,30 @@ export default {
           :item-value="(item) => item.value"
           clearable
         ></v-select>
+      </v-col>
+    </v-row>
+
+    <!-- Controles de navegación de meses en una sola línea -->
+    <v-row class="mt-4 justify-center align-center">
+      <v-col cols="12" class="d-flex justify-center align-center flex-wrap gap-2">
+        <v-btn @click="navegarMeses('atras')" color="primary" size="small">
+          <v-icon>mdi-chevron-left</v-icon>
+          Mes Anterior
+        </v-btn>
+
+        <v-btn @click="irAlPresente" color="secondary" size="small">
+          <v-icon>mdi-calendar-today</v-icon>
+          Mes Actual
+        </v-btn>
+
+        <v-btn @click="navegarMeses('adelante')" color="primary" size="small">
+          Mes Siguiente
+          <v-icon>mdi-chevron-right</v-icon>
+        </v-btn>
+
+        <v-chip color="info" variant="outlined" class="ml-2">
+          Mostrando: {{ mesesParaMostrar[0]?.nombre }} - {{ mesesParaMostrar[mesesParaMostrar.length - 1]?.nombre }}
+        </v-chip>
       </v-col>
     </v-row>
 
@@ -289,7 +392,7 @@ export default {
       <v-col cols="12" md="9">
         <svg id="fondo" :viewBox="viewBox">
           <!-- Cabecera con meses -->
-          <g v-for="(mes, i) in meses" :key="i">
+          <g v-for="(mes, i) in mesesParaMostrar" :key="i">
             <rect
               :x="xInicial + anchoColumnaActividad + i * (ancho + espacio)"
               :y="y"
@@ -307,7 +410,7 @@ export default {
               font-family="Arial"
               alignment-baseline="middle"
             >
-              {{ mes }}
+              {{ mes.nombre }}
             </text>
           </g>
 
@@ -396,12 +499,12 @@ export default {
               </tspan>
             </text>
 
-            <!-- Barra de la actividad -->
             <rect
+              v-if="calcularBarra(actividad).width > 0"
               @click="showActividadDetails(actividad)"
-              :x="posicionEnEscalaGrafica(actividad.fecha_inicio)"
+              :x="calcularBarra(actividad).x"
               :y="y + altolbl + fila * (alto + 10) + 5 + 10"
-              :width="calcularAnchoBarra(actividad.fecha_inicio, actividad.fecha_cierre)"
+              :width="calcularBarra(actividad).width"
               :height="altoActividad"
               :fill="obtenerColorEstado(actividad.estado)"
               :stroke="obtenerColorEstado(actividad.estado)"

@@ -5,7 +5,11 @@ import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
-// Refs para los campos del formulario
+import personIcon from '@/assets/img/person-circle.svg'
+import eyeIcon from '@/assets/img/eye-fill.svg'
+import eyeSlashIcon from '@/assets/img/eye-slash-fill.svg'
+import logo from '@/assets/img/logo.png'
+
 const usuario = ref('')
 const password = ref('')
 const usuarioError = ref('')
@@ -14,29 +18,22 @@ const showAlert = ref(false)
 const alertMessage = ref('')
 const alertType = ref('danger')
 
-// Stores y router
+// Variable para controlar visibilidad de contraseña
+const showPassword = ref(false)
+// Referencia al input de contraseña
+const passwordInput = ref(null)
+
 const router = useRouter()
 const userStore = useUserStore()
-const loading = ref(false)
+const baseUrl = import.meta.env.VITE_API_BASE
 
-// Verificar si ya está autenticado al cargar el componente
-onMounted(async () => {
-  console.log('🔍 Verificando sesión existente...')
-
-  // Inicializar la sesión si hay token en localStorage
-  if (!userStore.initialized) {
-    await userStore.initialize()
+// Método para alternar visibilidad de contraseña
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value
+  if (passwordInput.value) {
+    passwordInput.value.focus()
   }
-
-  // Si ya está autenticado, redirigir al home
-  if (userStore.isAuthenticated) {
-    console.log('✅ Usuario ya autenticado, redirigiendo...')
-    console.log('Datos del usuario:', userStore.userData)
-    router.push('/home')
-  } else {
-    console.log('❌ Usuario no autenticado')
-  }
-})
+}
 
 const displayAlert = (message, type) => {
   alertMessage.value = message
@@ -73,25 +70,23 @@ const btnlogin = async () => {
   }
 
   try {
-    console.log('🔄 Iniciando login para usuario:', usuario.value)
 
-    // const response = await axios.post(
-    //   'http://127.0.0.1:8000/autenticacion_api/autenticarUsuario/',
-    //   {
-    //     usuario: usuario.value,
-    //     password: password.value,
-    //   },
-    // )
-
-    const response = await userStore.login({
-      username: usuario.value,
-      password: password.value,
-    })
-
-    if (userStore.isAuthenticated) {
-      setTimeout(() => {
-        router.push('/home')
-      }, 1000)
+    const response = await axios.post(
+      baseUrl+'/autenticacion_api/autenticarUsuario/',
+      {
+        usuario: usuario.value,
+        password: password.value,
+      },
+    )
+    if (response.data.validacion === true) {
+      userStore.setUserData({
+        usuario: response.data.usuario,
+        rol: response.data.rol,
+        permisos: response.data.permisos,
+      })
+      router.push('/home')
+    } else {
+      displayAlert(response.data.mensaje, 'danger')
     }
 
     // if (response.data.validacion === true) {
@@ -169,7 +164,7 @@ const testStore = () => {
                   />
                   <span class="input-group-text">
                     <img
-                      src="../assets/img/person-circle.svg"
+                      :src="personIcon"
                       alt="Usuario"
                       class="icono"
                       style="height: 1.25rem"
@@ -183,7 +178,8 @@ const testStore = () => {
 
                 <div class="input-group has-validation">
                   <input
-                    type="password"
+                    ref="passwordInput"
+                    :type="showPassword ? 'text' : 'password'"
                     class="form-control"
                     :class="{ 'is-invalid': passwordError }"
                     placeholder="Password"
@@ -191,10 +187,15 @@ const testStore = () => {
                     v-model="password"
                     required
                   />
-                  <span class="input-group-text">
+                  <span
+                    class="input-group-text"
+                    style="cursor: pointer;"
+                    @click="togglePasswordVisibility"
+                    :title="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                  >
                     <img
-                      src="../assets/img/lock-fill.svg"
-                      alt="Password"
+                      :src="showPassword ? eyeSlashIcon : eyeIcon"
+                      :alt="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                       class="icono"
                       style="height: 1.25rem"
                     />
@@ -221,7 +222,7 @@ const testStore = () => {
               </div>
             </div>
             <div class="col-sm-6 d-flex align-items-center justify-content-center">
-              <img src="../assets/img/logo.png" alt="Logo" class="logo img-fluid" />
+              <img :src="logo" alt="Logo" class="logo img-fluid" />
             </div>
           </div>
         </div>
