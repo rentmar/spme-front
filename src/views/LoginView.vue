@@ -5,6 +5,11 @@ import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
+import personIcon from '@/assets/img/person-circle.svg'
+import eyeIcon from '@/assets/img/eye-fill.svg'
+import eyeSlashIcon from '@/assets/img/eye-slash-fill.svg'
+import logo from '@/assets/img/logo.png'
+
 const usuario = ref('')
 const password = ref('')
 const usuarioError = ref('')
@@ -12,9 +17,22 @@ const passwordError = ref('')
 const showAlert = ref(false)
 const alertMessage = ref('')
 const alertType = ref('danger')
+// Variable para controlar visibilidad de contraseña
+const showPassword = ref(false)
+// Referencia al input de contraseña
+const passwordInput = ref(null)
+
 const router = useRouter()
 const userStore = useUserStore()
 const baseUrl = import.meta.env.VITE_API_BASE
+
+// Método para alternar visibilidad de contraseña
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value
+  if (passwordInput.value) {
+    passwordInput.value.focus()
+  }
+}
 
 const displayAlert = (message, type) => {
   alertMessage.value = message
@@ -98,7 +116,7 @@ const btnlogin = async () => {
                   />
                   <span class="input-group-text">
                     <img
-                      src="../assets/img/person-circle.svg"
+                      :src="personIcon"
                       alt="Usuario"
                       class="icono"
                       style="height: 1.25rem"
@@ -112,7 +130,8 @@ const btnlogin = async () => {
 
                 <div class="input-group has-validation">
                   <input
-                    type="password"
+                    ref="passwordInput"
+                    :type="showPassword ? 'text' : 'password'"
                     class="form-control"
                     :class="{ 'is-invalid': passwordError }"
                     placeholder="Password"
@@ -120,10 +139,15 @@ const btnlogin = async () => {
                     v-model="password"
                     required
                   />
-                  <span class="input-group-text">
+                  <span
+                    class="input-group-text"
+                    style="cursor: pointer;"
+                    @click="togglePasswordVisibility"
+                    :title="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                  >
                     <img
-                      src="../assets/img/lock-fill.svg"
-                      alt="Password"
+                      :src="showPassword ? eyeSlashIcon : eyeIcon"
+                      :alt="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                       class="icono"
                       style="height: 1.25rem"
                     />
@@ -140,7 +164,7 @@ const btnlogin = async () => {
               </form>
             </div>
             <div class="col-sm-6 d-flex align-items-center justify-content-center">
-              <img src="../assets/img/logo.png" alt="Logo" class="logo img-fluid" />
+              <img :src="logo" alt="Logo" class="logo img-fluid" />
             </div>
           </div>
         </div>

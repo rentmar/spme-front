@@ -628,8 +628,8 @@ const fetchUsers = async () => {
     nombre: user.nombre,
     paterno: user.paterno,
     materno: user.materno,
-    ci: user.ci,
     correo: user.correo,
+    ci: user.ci,
     usuario: user.usuario,
     cargo: user.cargo,
     banco: user.banco,
@@ -657,8 +657,8 @@ const openCreateDialog = () => {
     nombre: '',
     paterno: '',
     materno: '',
-    ci: '',
     correo:'',
+    ci: '',
     cargo: '',
     banco: '',
     numero_cuenta: '',
@@ -673,7 +673,6 @@ const openCreateDialog = () => {
 }
 
 const openEditDialog = (user) => {
-  console.log(user)
   currentUser.value = { ...user }
   isEditing.value = true
   userDialog.value = true
@@ -694,8 +693,8 @@ const saveUser = async () => {
       nombre: currentUser.value.nombre,
       paterno: currentUser.value.paterno,
       materno: currentUser.value.materno,
-      ci: currentUser.value.ci,
       correo: currentUser.value.correo,
+      ci: currentUser.value.ci,
       cargo: currentUser.value.cargo,
       banco: currentUser.value.banco,
       numero_cuenta: currentUser.value.numero_cuenta,
@@ -811,7 +810,6 @@ const toggleUserStatus = async (user) => {
 
 const viewUserDetails = (user) => {
   // Navegar a la vista de detalles del usuario
-  console.log('Viewing user details:', user)
 }
 
 const applyFilters = () => {
