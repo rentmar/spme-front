@@ -51,4 +51,13 @@ export const usuarioServicios = {
       throw err
     }
   },
+  /* Obtener la lista de usuarios, sin superusuario */
+  obtenerListaUsuario: async () => {
+    try {
+      const respuesta = await api.get('/usuarios/public/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: Error al cargar la lista de usuarios', err)
+    }
+  },
 }

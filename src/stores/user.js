@@ -10,9 +10,17 @@ export const useUserStore = defineStore('user', () => {
   const refreshToken = ref(localStorage.getItem('refresh_token')) //Refresco
   const isLoading = ref(false) //Bandera de carga
   const initialized = ref(false)
+  const listaUsuarios = ref(null)
 
   //Iniciar composables
-  const { tokens, permisosUsuario, obtenerPermisos, obtenerTokens } = useUsuario()
+  const {
+    tokens,
+    permisosUsuario,
+    listaUsuariosMensajes,
+    obtenerPermisos,
+    obtenerTokens,
+    obtenerListaUsuarios,
+  } = useUsuario()
 
   //GETTERS
   /*const isAuthenticated = computed(() => !!userData.value)
@@ -102,6 +110,8 @@ export const useUserStore = defineStore('user', () => {
       setTokens(tokens)
       //Cargar Informacion adicional del usuario
       await loadUserInfo()
+      //Cargar lista de usuarios
+      await cargarListaUsuarios()
 
       return tokens
     } catch (error) {
@@ -168,6 +178,19 @@ export const useUserStore = defineStore('user', () => {
     initialized.value = true
   }
 
+  //Lista de usuarios
+  const cargarListaUsuarios = async () => {
+    isLoading.value = true
+    try {
+      await obtenerListaUsuarios()
+      listaUsuarios.value = listaUsuariosMensajes.value.data
+    } catch (error) {
+      console.error('Error cargando la lista de usuarios', error)
+    } finally {
+      isLoading.value = true
+    }
+  }
+
   return {
     //Estado
     userData, //Datos del usuario
@@ -175,6 +198,7 @@ export const useUserStore = defineStore('user', () => {
     refreshToken, //Token JWT de refresco
     isLoading, //Estado de carga
     initialized, //Inicializado
+    listaUsuarios, //Lista de usuarios, superusuarios excluido
 
     //Getters
     isAuthenticated, //Comprobacion de autenticacion
@@ -196,5 +220,6 @@ export const useUserStore = defineStore('user', () => {
     login, //login con credenciales
     initialize, //Inicializar session automatica
     loadUserInfo, //Cargar informacion del usuario
+    cargarListaUsuarios,
   }
 })
