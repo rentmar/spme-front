@@ -33,11 +33,12 @@
                 :proyecto-estructura="proyectoEstructura"
                 :cargando="!cargaCompleta"
               /> -->
-              <PlanificacionActividadXls
+              <!-- <PlanificacionActividadXls
                 :proyecto="proyecto"
                 :proyecto-estructura="proyectoEstructura"
                 :cargando="!cargaCompleta"
-              ></PlanificacionActividadXls>
+              ></PlanificacionActividadXls> -->
+              <PlanificacionProyectoActividades></PlanificacionProyectoActividades>
             </v-card-text>
           </v-card>
         </v-col>
@@ -54,6 +55,7 @@ import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
 import PlanificacionActividadXls from '@/modules/planificacionxls/components/PlanificacionActividadXls.vue'
+import PlanificacionProyectoActividades from '@/modules/planificacionxls/components/PlanificacionProyectoActividades.vue'
 
 //Estado de carga
 const cargaCompleta = ref(false) //Cambiar a false en produccion
