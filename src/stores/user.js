@@ -37,6 +37,8 @@ export const useUserStore = defineStore('user', () => {
   const usuario = computed(() => userData.value?.user?.username || 'invitado')
   //Rol del usuario actual
   const rol = computed(() => userData.value?.user?.cargo || 'invitado')
+  //Correo electronico del usuario
+  const correo = computed(() => userData.value?.user?.correo || 'NoCorreo')
   //Permisos del usuario
   //const permisos = computed(() => userData.value?.permisos || '')
 
@@ -206,6 +208,7 @@ export const useUserStore = defineStore('user', () => {
     rol, //Rol de usuario
     //Permisos del usuario
     id, //Id del usuario
+    correo, //Correo del usuario
 
     //Actiones - Gestion de datos
     setUserData, //Guardar datos de usuario

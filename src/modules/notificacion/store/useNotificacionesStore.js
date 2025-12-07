@@ -9,7 +9,7 @@ export const useNotificacionesStore = defineStore('notificaciones', () => {
   const loading = ref(false)
   const error = ref(null)
   const noLeidosCuenta = ref(0)
-  const pollingIntervalo = ref(null)
+  //const pollingIntervalo = ref(null)
 
   //Iniciar el store de usuario
   const usuarioStore = useUserStore()
