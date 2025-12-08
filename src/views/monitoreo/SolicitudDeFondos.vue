@@ -567,13 +567,15 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ formData.detalle_destino_fondos }}</pre>
-  {{ '*******************' }} -->
+  <pre>{{ formData }}</pre>
+  {{ '*******************' }}
     <!-- <pre>{{ formasPagoOptions }}</pre>
     {{ '*******************' }} -->
     <!-- <pre>{{ formData.forma_pago }}</pre>
     {{ '*******************' }} -->
-    <pre>{{ formData.datos_forma_pago }}</pre>
+    <!--<pre>{{ datosFormulario }}</pre>
+    {{ '*******************' }}-->
+    <pre>{{ coordinadoresList }}</pre>
 </template>
 
 <script setup>
@@ -630,20 +632,11 @@ const formData = ref({
   // Campos de forma de pago
   forma_pago: null,
   datos_forma_pago: { otros: {nombre_otros: '', ci_otros: ''}, transferencia: { nombre_transferencia: '', ci_transferencia: '', entidad_bancaria: '', tipo_cuenta: '', numero_cuenta: ''}},
-  // nombre_otros: '',
-  // ci_otros: '',
-  // nombre_cheque: '',
-  // ci_cheque: '',
-  // nombre_transferencia: '',
-  // ci_transferencia: '',
-  // entidad_bancaria: '',
-  // tipo_cuenta: '',
-  // numero_cuenta: '',
-  // Campos de validación
   validacion_responsable: false,
   idresponsable: null,
   validacion_coordinador: false,
   idcoordinador: null,
+  correo_coordinador: '',
 })
 
 //datos para abrir Solicitud de Fondos
@@ -799,6 +792,26 @@ watch(
   { deep: true },
 )
 
+// WATCH PARA GUARDAR EL CORREO DEL COORDINADOR CUANDO SE SELECCIONA
+watch(
+  () => formData.value.idcoordinador,
+  (newIdCoordinador) => {
+    if (newIdCoordinador && coordinadoresList.value.length > 0) {
+      const coordinadorSeleccionado = coordinadoresList.value.find(
+        (coordinador) => coordinador.id === newIdCoordinador
+      )
+
+      if (coordinadorSeleccionado && coordinadorSeleccionado.correo) {
+        formData.value.correo_coordinador = coordinadorSeleccionado.correo
+      } else {
+        formData.value.correo_coordinador = ''
+      }
+    } else {
+      formData.value.correo_coordinador = ''
+    }
+  }
+)
+
 // Métodos
 function getNombreCompleto(user) {
   return `${user.nombre} ${user.paterno} ${user.materno}`.trim()
@@ -839,7 +852,7 @@ async function cargarDatos() {
 
     const rawData = await response.json()
     datosFormulario.value = strictSanitizeData(rawData)
-    //console.log('Datos cargados exitosamente:', datosFormulario.value)
+    console.log('Datos cargados exitosamente:', rawData)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -978,6 +991,43 @@ async function submitForm() {
     //bloquearIconoSF.value = true;
     exportToExcel()
     resetForm()
+
+
+    // Enviar notificación por correo al coordinador
+    try {
+      const emailPayload = {
+        emails: [formData.value.correo_coordinador],
+        datos_solicitud: {
+          codigo: numeroFormularioSF.value || 'SOL-PROV',
+          titulo: 'Formulario Sol. Fondos',
+          solicitante: nombreCompletoSolicitante.value,
+          tipo: 'Solicitud de Actividad',
+          prioridad: 'alta',
+          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
+          url_revision: `${window.location.origin}/monitoreo/formulario011/${idSolicitudFondos.value}`
+        }
+      }
+
+      console.log('Payload enviado al servidor:', emailPayload)
+
+      const emailResponse = await fetch('http://localhost:8000/api-msg/correos/solicitud-pendiente/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json',},
+        body: JSON.stringify(emailPayload),
+      })
+
+      if (emailResponse.ok) {
+        console.log('Correo de notificación enviado exitosamente')
+      } else {
+        console.warn('No se pudo enviar el correo de notificación')
+      }
+    } catch (emailError) {
+      console.error('Error al enviar correo de notificación:', emailError)
+      // No detenemos el flujo si falla el envío del correo
+    }
+
+
+
     console.log('Respuesta del servidor:', data)
 
     setTimeout(() => {

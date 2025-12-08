@@ -10,9 +10,17 @@ export const useUserStore = defineStore('user', () => {
   const refreshToken = ref(localStorage.getItem('refresh_token')) //Refresco
   const isLoading = ref(false) //Bandera de carga
   const initialized = ref(false)
+  const listaUsuarios = ref(null)
 
   //Iniciar composables
-  const { tokens, permisosUsuario, obtenerPermisos, obtenerTokens } = useUsuario()
+  const {
+    tokens,
+    permisosUsuario,
+    listaUsuariosMensajes,
+    obtenerPermisos,
+    obtenerTokens,
+    obtenerListaUsuarios,
+  } = useUsuario()
 
   //GETTERS
   /*const isAuthenticated = computed(() => !!userData.value)
@@ -29,6 +37,8 @@ export const useUserStore = defineStore('user', () => {
   const usuario = computed(() => userData.value?.user?.username || 'invitado')
   //Rol del usuario actual
   const rol = computed(() => userData.value?.user?.cargo || 'invitado')
+  //Correo electronico del usuario
+  const correo = computed(() => userData.value?.user?.correo || 'NoCorreo')
   //Permisos del usuario
   //const permisos = computed(() => userData.value?.permisos || '')
 
@@ -39,7 +49,6 @@ export const useUserStore = defineStore('user', () => {
   const setUserData = async (data) => {
     userData.value = data.value
     sessionStorage.setItem('userData', JSON.stringify(data.value))
-
   }
 
   //Limpia los datos de session y tokens
@@ -58,10 +67,8 @@ export const useUserStore = defineStore('user', () => {
   //Recupera datos de session previa (sin autenticar)
   const loadFromSession = () => {
     const storedData = sessionStorage.getItem('userData')
-    //console.log('🟡 [userStore] loadFromSession data cruda:', storedData)
     if (storedData) {
       userData.value = JSON.parse(storedData)
-      //console.log('🟡 [userStore] userData después de load:', userData.value)
     }
   }
 
@@ -105,6 +112,8 @@ export const useUserStore = defineStore('user', () => {
       setTokens(tokens)
       //Cargar Informacion adicional del usuario
       await loadUserInfo()
+      //Cargar lista de usuarios
+      await cargarListaUsuarios()
 
       return tokens
     } catch (error) {
@@ -171,6 +180,19 @@ export const useUserStore = defineStore('user', () => {
     initialized.value = true
   }
 
+  //Lista de usuarios
+  const cargarListaUsuarios = async () => {
+    isLoading.value = true
+    try {
+      await obtenerListaUsuarios()
+      listaUsuarios.value = listaUsuariosMensajes.value.data
+    } catch (error) {
+      console.error('Error cargando la lista de usuarios', error)
+    } finally {
+      isLoading.value = true
+    }
+  }
+
   return {
     //Estado
     userData, //Datos del usuario
@@ -178,6 +200,7 @@ export const useUserStore = defineStore('user', () => {
     refreshToken, //Token JWT de refresco
     isLoading, //Estado de carga
     initialized, //Inicializado
+    listaUsuarios, //Lista de usuarios, superusuarios excluido
 
     //Getters
     isAuthenticated, //Comprobacion de autenticacion
@@ -185,6 +208,7 @@ export const useUserStore = defineStore('user', () => {
     rol, //Rol de usuario
     //Permisos del usuario
     id, //Id del usuario
+    correo, //Correo del usuario
 
     //Actiones - Gestion de datos
     setUserData, //Guardar datos de usuario
@@ -199,5 +223,6 @@ export const useUserStore = defineStore('user', () => {
     login, //login con credenciales
     initialize, //Inicializar session automatica
     loadUserInfo, //Cargar informacion del usuario
+    cargarListaUsuarios,
   }
 })
