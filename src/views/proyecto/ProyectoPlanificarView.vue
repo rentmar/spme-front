@@ -38,7 +38,11 @@
                 :proyecto-estructura="proyectoEstructura"
                 :cargando="!cargaCompleta"
               ></PlanificacionActividadXls> -->
-              <PlanificacionProyectoActividades></PlanificacionProyectoActividades>
+              <PlanificacionProyectoActividades
+                :proyecto="proyecto"
+                :proyecto-estructura="proyectoEstructura"
+                :cargando="!cargaCompleta"
+              ></PlanificacionProyectoActividades>
             </v-card-text>
           </v-card>
         </v-col>

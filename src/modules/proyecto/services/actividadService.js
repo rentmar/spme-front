@@ -81,4 +81,85 @@ export const actividadServicios = {
       console.log('Axios: fetch actividades tareas', err)
     }
   },
+  /*Lista de Actividades y tareas*/
+  actividadesTareasLista: async () => {
+    try {
+      const respuesta = await api.get('/actividades-tareas-lista/todas/')
+      return respuesta.data
+    } catch (err) {
+      console.log('Axios: fetch de actividades y tareas', err)
+    }
+  },
+  actividadInforPorId: async (idactividad) => {
+    try {
+      const respuesta = await api.get('/actividad-indicadores-proyecto/' + idactividad + '/')
+      return respuesta.data
+    } catch (error) {
+      console.log('Axios: fecth actividad por id: ' + error, error)
+      throw error
+    }
+  },
+  /*********************************************************/
+  /******************* TAREAS ******************************/
+  /*********************************************************/
+  //Obtener todas las tareas
+  tareaAll: async () => {
+    try {
+      const respuesta = await api.get('/tareas-actividad/')
+      return respuesta.data
+    } catch (error) {
+      console.log('Axios: fetch de todas las tareas', error)
+      throw error
+    }
+  },
+  //Obtener una tarea por su id
+  tareaPorId: async (idtarea) => {
+    try {
+      const respuesta = await api.get('/tareas-actividad/' + idtarea + '/')
+      return respuesta.data
+    } catch (error) {
+      console.log('Axios: fetch tarea con id: ' + idtarea, error)
+      throw error
+    }
+  },
+  /* Crear una tarea */
+  tareaCrear: async (tareaData) => {
+    try {
+      const respuesta = await api.post('/tareas-actividad/', tareaData)
+      return respuesta.data
+    } catch (error) {
+      console.log('axios: error al crear tarea', error)
+      throw error
+    }
+  },
+  /* Actualizar una tarea por su id */
+  tareaUpdate: async (idtarea, tareaData) => {
+    try {
+      const respuesta = await api.put('/tareas-actividad/' + idtarea + '/', tareaData)
+      return respuesta.data
+    } catch (error) {
+      console.log('axios: error al actualizar tarea con id: ' + idtarea, error)
+      throw error
+    }
+  },
+  /*Eliminar una tarea por su id */
+  tareaDelete: async (idtarea) => {
+    try {
+      const respuesta = await api.delete('/tareas-actividad/' + idtarea + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al eliminar tarea  id' + idtarea, error)
+      throw error
+    }
+  },
+  /* Tarea con detalles */
+  tareaDetalles: async (idtarea) => {
+    try {
+      const respuesta = await api.get('/tarea-detalles/' + idtarea + '/')
+      return respuesta.data
+    } catch (error) {
+      console.log('Axios: fetch tarea con id: ' + idtarea, error)
+      throw error
+    }
+  },
 }
