@@ -251,8 +251,20 @@ const router = createRouter({
       component: () => import('@/views/monitoreo/SolicitudDeFondos.vue'),
     },
     {
+      path: '/monitoreo/formulario011/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeFondosValidar.vue'),
+    },
+    {
       path: '/monitoreo/formulario02/:id',
       component: () => import('@/views/monitoreo/RendicionDeCuentas.vue'),
+    },
+    {
+      path: '/monitoreo/formulario022/:id',
+      component: () => import('@/views/monitoreo/RendicionDeCuentasValidar.vue'),
+    },
+    {
+      path: '/monitoreo/formulario033/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeReposicionValidar.vue'),
     },
     {
       path: '/monitoreo/formulario03/:id',
@@ -263,10 +275,18 @@ const router = createRouter({
       component: () => import('@/views/monitoreo/SolicitudDeViaje.vue'),
     },
     {
+      path: '/monitoreo/formulario055/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeViajeValidar.vue'),
+    },
+    {
       path: '/monitoreo/formulario08/:id',
       component: () => import('@/views/monitoreo/SolicitudDePagoDirecto.vue'),
     },
-    //Link al formulario de actividad - antiguo
+    {
+      path: '/monitoreo/formulario088/:id',
+      component: () => import('@/views/monitoreo/SolicitudDePagoDirectoValidar.vue'),
+    },
+
     {
       path: '/monitoreo/formularioInf/:id',
       component: () => import('@/views/monitoreo/InformeActividad.vue'),

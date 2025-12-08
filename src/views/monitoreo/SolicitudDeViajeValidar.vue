@@ -3,7 +3,7 @@
     <v-card id="formulario-pdf" class="pa-6">
 
       <PaginaTituloIcono
-        :titulo="'Solicitud de Viaje'"
+        :titulo="'Validar Solicitud de Viaje'"
         :icon="'mdi-file-document-multiple'"
       ></PaginaTituloIcono>
       <br />
@@ -23,20 +23,22 @@
         <v-form @submit.prevent="submitForm">
           <div class="form-section">
             <v-text-field
-              v-model="formData.evento"
+              v-model="solicitudDeViaje.evento"
               label="Nombre del Seminario, curso, taller o reunión"
               bg-color="blue-lighten-5"
               required
+              readonly
             ></v-text-field>
 
             <v-row>
               <v-col cols="12" sm="6">
                 <v-text-field
-                  v-model="formData.fecha_evento"
+                  v-model="solicitudDeViaje.fechaEvento"
                   label="Fecha de Evento"
                   bg-color="blue-lighten-5"
                   type="date"
                   required
+                  readonly
                   :max="formData.fecha_fin"
                 ></v-text-field>
               </v-col>
@@ -45,38 +47,43 @@
             </v-row>
 
             <v-text-field
-              v-model="formData.lugar_evento"
+              v-model="solicitudDeViaje.lugarEvento"
               label="Lugar de realización"
               bg-color="blue-lighten-5"
               required
+              readonly
             ></v-text-field>
 
             <v-text-field
-              v-model="formData.instituciones_participantes"
+              v-model="solicitudDeViaje.institucionesParticipantes"
               label="Organizaciones Participantes"
               bg-color="blue-lighten-5"
               required
+              readonly
             ></v-text-field>
 
             <v-text-field
-              v-model="formData.institucion_queinvita"
+              v-model="solicitudDeViaje.organizador"
               label="Institución que invita"
               bg-color="blue-lighten-5"
               required
+              readonly
             ></v-text-field>
 
             <v-text-field
-              v-model="formData.quien_cubregastos"
+              v-model="solicitudDeViaje.quienCubreGastos"
               label="Quien cubre los gastos de estadía, transporte y viáticos"
               bg-color="blue-lighten-5"
               required
+              readonly
             ></v-text-field>
 
             <v-text-field
-              v-model="formData.fondos_unitas"
+              v-model="solicitudDeViaje.fondosUnitas"
               label="Fondos UNITAS"
               bg-color="blue-lighten-5"
               required
+              readonly
             ></v-text-field>
 
             <v-text-field
@@ -86,19 +93,21 @@
             ></v-text-field>
 
             <v-textarea
-              v-model="formData.justificacion_asistencia"
+              v-model="solicitudDeViaje.justificacionAsistencia"
               label="Justificación de la importancia de asistir al evento y su relación con el trabajo que desarrolla"
               bg-color="blue-lighten-5"
               rows="3"
               required
+              readonly
             ></v-textarea>
 
             <v-textarea
-              v-model="formData.tareas_previas"
+              v-model="solicitudDeViaje.tareasPrevias"
               label="Tareas previas que debe cumplir para asistir al evento"
               bg-color="blue-lighten-5"
               rows="3"
               required
+              readonly
             ></v-textarea>
           </div>
 
@@ -137,6 +146,7 @@
                       bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
+                      readonly
                     ></v-text-field>
                   </td>
                   <td>
@@ -145,6 +155,7 @@
                       bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
+                      readonly
                     ></v-text-field>
                   </td>
                   <td>
@@ -155,6 +166,7 @@
                       hide-details
                       density="compact"
                       min="0"
+                      readonly
                     ></v-text-field>
                   </td>
                   <td>
@@ -183,17 +195,19 @@
             variant="outlined"
             bg-color="blue-lighten-5"
             required
+            readonly
           ></v-select>
 
           <div class="form-section">
             <v-text-field
-              v-model="formData.lugar_solicitud"
+              v-model="solicitudDeViaje.lugarSolicitud"
               bg-color="blue-lighten-5"
               label="Lugar de la Solicitud"
               required
+              readonly
             ></v-text-field>
             <v-text-field
-              v-model="formData.fecha_solicitud"
+              v-model="solicitudDeViaje.fechaSolicitud"
               label="Fecha de la Solicitud"
               type="date"
               required
@@ -215,14 +229,24 @@
                   item-value="id"
                   label="Responsable del Cargo de Cuenta"
                   required
+                  readonly
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
-                <v-checkbox
-                  v-model="formData.validacion_responsable"
-                  label="Aprobado por Responsable del Cargo de Cuenta"
-                  :disabled="isFrozen"
-                ></v-checkbox>
+                      <v-checkbox
+                        v-model="solicitudDeViaje.validacionResponsable"
+                        :label="`Aprobado por Responsable ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                        :disabled="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
+                        :readonly="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
+                        :color="puedeValidarResponsable ? 'primary' : 'grey'"
+                        @update:modelValue="(newValue) => {
+                          if (newValue) {
+                            nextTick(() => {
+                              validarViaje('responsable');
+                            });
+                          }
+                        }"
+                      ></v-checkbox>
               </v-col>
             </v-row>
             <v-row>
@@ -235,13 +259,23 @@
                   item-value="id"
                   label="Coordinador"
                   required
+                  readonly
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
-                  v-model="formData.validacion_coordinador"
-                  label="Aprobado por Coordinador"
-                  :disabled="isFrozen"
+                  v-model="solicitudDeViaje.validacionCoordinador"
+                  :label="`Aprobado por Coordinador ${puedeValidarCoordinador ? '(Usted)' : ''}`"
+                  :disabled="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
+                  :readonly="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
+                  :color="puedeValidarCoordinador ? 'primary' : 'grey'"
+                  @update:modelValue="(newValue) => {
+                    if (newValue) {
+                      nextTick(() => {
+                        validarViaje('coordinador');
+                      });
+                    }
+                  }"
                 ></v-checkbox>
               </v-col>
             </v-row>
@@ -269,14 +303,13 @@
       </v-card-text>
     </v-card>
   </v-container>
-  <!-- {{ datosFormulario }}
-    {{ '*********************A' }}
-   <pre>{{ datosFormulario }}</pre> -->
+  <!-- <pre>{{ datosFormasDePago.formasPago }}</pre>
+    {{ '*********************B' }} -->
 </template>
 
 <script setup>
 import * as XLSX from 'xlsx';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, nextTick } from 'vue';
 import axios from 'axios';
 import { useUserStore } from '@/stores/user'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
@@ -288,8 +321,10 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
+const idSolicitud = route.query.solicitud_id || null
 console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
+console.log('ID Solicitud', idSolicitud)
 
 const userStore = useUserStore()
 const usuario = computed(() => {
@@ -299,7 +334,7 @@ const usuario = computed(() => {
     id: userStore.userId,
   }
 })
-console.log('ID Usuario:', usuario.value.id)
+console.log('ID de Usuario:', usuario.value.id)
 
 const baseurl = import.meta.env.VITE_API_BASE
 
@@ -308,15 +343,17 @@ const responsablesList = ref([]);
 const coordinadoresList = ref([]);
 const datosSolicitante = ref([])
 const solicitante = ref(null)
+const solicitudDeViaje = ref({})  //viene de la funccion cargarSolicitudesDeViaje
 const numeroFormulario = ref('')
 
 const cargandoGeneral = ref(true)
 
 //variables para carga de datos
-const datosFormulario = ref(null)   //necesario para tarjetas de encabezado
+const datosFormulario = ref(null)
 const error = ref(null)
 const isLoading = ref(false)
 const formasPago = ref([])
+const formaPago = ref()
 
 const formData = ref({
   evento: '',
@@ -361,13 +398,6 @@ const totalMontoSolicitado = computed(() => {
     (total, gasto) => total + Number(gasto.monto || 0),
     0
   );
-});
-
-const isFrozen = computed(() => {
-  if (!usuario.value || !formData.value.id_coordinador) {
-    return true;
-  }
-  return true;
 });
 
 function getNombreCompleto(user) {
@@ -427,6 +457,7 @@ async function cargarFormasDePago() {
 
     const data = await response.json()
     formasPago.value = data.formasPago // Asignar directamente el array
+    formaPago.value = formasPago.value.find((user) => user.id === solicitudDeViaje.value.formaPago_id)
     //console.log('Formas de pago cargadas:', formasPago.value)
   } catch (err) {
     console.error('Error:', err)
@@ -446,6 +477,52 @@ async function cargarUsuarios() {
   } catch (error) {
     console.error('Error al cargar la lista de usuarios:', error);
     alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
+  }
+}
+
+async function cargarSolicitudesDeViaje() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudesViaje/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_solicitud_viaje: idSolicitud
+      }),
+    })
+    //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+      )
+    }
+
+    const rawData = await response.json()
+    //console.log('SoicitudDeViaje Recibido@@@@@@@@@@@@@@:', JSON.stringify(rawData,null,2))
+
+    solicitudDeViaje.value = rawData.solicitudes[0]
+
+    formData.value.detalle_destino_fondos = solicitudDeViaje.value.detalleGasto.items.map(item =>({
+      partida: item.partida || '',
+      descripcion_gasto: item.concepto || '',
+      monto: item.monto || 0
+    }))
+    formData.value.forma_pago = solicitudDeViaje.value.formaPago_id
+    formData.value.id_responsable = solicitudDeViaje.value.responsable_id
+    formData.value.id_coordinador = solicitudDeViaje.value.coordinador_id
+
+    //console.log('Datos cargados exitosamente:', JSON.stringify(solicitudDeViaje.value,null,2))
+  } catch (err) {
+    error.value = err.message
+    console.error('Ha ocurrido un error:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
   }
 }
 
@@ -766,9 +843,99 @@ function applyExcelStyles(
   }
 }
 
+const puedeValidarResponsable = computed(() => {
+  const idUsuarioLogueado = usuario.value?.id
+  const idResponsableAsignado = solicitudDeViaje.value?.responsable_id
+  return idUsuarioLogueado === idResponsableAsignado
+})
+
+const puedeValidarCoordinador = computed(() => {
+  const idUsuarioLogueado = usuario.value?.id
+  const idCoordinadorAsignado = solicitudDeViaje.value?.coordinador_id
+  return idUsuarioLogueado === idCoordinadorAsignado
+})
+
+async function validarViaje(tipoValidador) {
+  // Verificar permisos según el tipo de validador
+  let tienePermiso = false;
+  let claveValidacion = '';
+
+  switch (tipoValidador) {
+    case 'responsable':
+      tienePermiso = puedeValidarResponsable.value;
+      claveValidacion = 'validacion_responsable';
+      break;
+    case 'coordinador':
+      tienePermiso = puedeValidarCoordinador.value;
+      claveValidacion = 'validacion_coordinador';
+      break;
+    default:
+      alert('Tipo de validador no reconocido.');
+      return;
+  }
+
+  if (!tienePermiso) {
+    alert('Usted no está autorizado para validar esta rendición como ' + tipoValidador + '.');
+    solicitudDeViaje.value[claveValidacion] = false;
+    return;
+  }
+
+   // Crear el payload específico para la validación
+  const payload = {
+    id_solicitud_viaje: solicitudDeViaje.value?.id || idSolicitud,
+    [claveValidacion]: true     //validacion_responsable: true o validacion_coordinador: true
+  };
+  console.log('888888888888888888888', JSON.stringify(payload,null,2))
+
+  if (!payload.id_solicitud_viaje) {
+    alert('Error: No se encontró el ID de la reposicion para validar.');
+    formData.value[claveValidacion] = false; // Revertir
+    return;
+  }
+
+  // Ejecutar la llamada PATCH
+  loading.value = true;
+  try {
+    const response = await fetch(
+      baseurl+'/monitoreo_api/actualizar-validacion-solicitud-viaje/',
+      //baseurl+'/monitoreo_api/actualizar-validacion-solicitud-reembolso/',
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        `Error al actualizar: ${response.status} - ${errorData.detail || errorData.mensaje || 'Error desconocido'}`
+      );
+    }
+
+    //const result = await response.json();
+    alert('Rendición validada exitosamente.');
+
+    // Recargar los datos para reflejar los cambios
+    await cargarSolicitudesDeViaje();
+
+  } catch (err) {
+    console.error('Error al validar la solicitud:', err);
+    alert(`Error al validar la solicitud: ${err.message}`);
+
+    // Revertir el cambio en caso de error
+    formData.value[claveValidacion] = false;
+  } finally {
+    loading.value = false;
+  }
+}
+
 onMounted(async () => {
   await cargarUsuarios();
   cargarDatos()
+  cargarSolicitudesDeViaje()
   cargarFormasDePago()
 });
 </script>

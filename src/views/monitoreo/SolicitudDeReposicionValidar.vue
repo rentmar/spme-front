@@ -21,7 +21,7 @@
     <div v-if="!cargandoGeneral">
       <!--Titulo de la pagina-->
       <PaginaTituloIcono
-        :titulo="'Solicitud de Reposicion'"
+        :titulo="'Validar Solicitud de Reposición'"
         :icon="'mdi-cash-check'"
       ></PaginaTituloIcono>
       <!--Encabezado del Proyecto-->
@@ -174,8 +174,7 @@
                     label="Descripción de la Actividad"
                     variant="outlined"
                     rows="3"
-                    bg-color="blue-lighten-5"
-                    required
+                    readonly
                   ></v-textarea>
                   <v-row>
                     <v-col cols="12" md="4">
@@ -202,12 +201,11 @@
                     </v-col>
                   </v-row>
                   <v-textarea
-                    v-model="formData.objetivo_actividad"
+                    v-model="datosSolicitudDeReposicion.objetivo_actividad"
                     label="Objetivo de la Actividad"
                     variant="outlined"
                     rows="3"
-                    bg-color="blue-lighten-5"
-                    required
+                    readonly
                   ></v-textarea>
                   <v-text-field
                     v-model=" textoProcedencia "
@@ -220,13 +218,12 @@
 
                   <v-col cols="12" md="4">
                     <v-text-field
-                      v-model="formData.fecha_ejecucion"
+                      v-model="datosSolicitudDeReposicion.fecha_ejecucion"
                       label="Fecha de ejecucion de actividad"
                       type="date"
                       variant="outlined"
                       density="compact"
-                      bg-color="blue-lighten-5"
-                      required
+                      readonly
                     ></v-text-field>
                   </v-col>
                 </div>
@@ -246,6 +243,7 @@
                       variant="outlined"
                       prepend-icon="mdi-plus"
                       @click="addGasto"
+                      disabled
                     >
                       Agregar Item
                     </v-btn>
@@ -264,7 +262,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
+                      <tr v-for="(gasto, index) in datosSolicitudDeReposicion.detalleGastos.items" :key="index">
                         <td class="narrow-column">
                           <v-text-field
                             v-model="gasto.partida"
@@ -273,19 +271,17 @@
                             hide-details
                             placeholder="1.1.1"
                             class="compact-field"
-                            bg-color="blue-lighten-5"
-                            required
+                            readonly
                           ></v-text-field>
                         </td>
                         <td class="wide-column">
                           <v-text-field
-                            v-model="gasto.descripcion_gasto"
+                            v-model="gasto.concepto"
                             variant="outlined"
                             density="compact"
                             hide-details
                             placeholder="Descripción del gasto"
-                            bg-color="blue-lighten-5"
-                            required
+                            readonly
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
@@ -297,8 +293,7 @@
                             hide-details
                             placeholder="0.00"
                             class="compact-field"
-                            bg-color="blue-lighten-5"
-                            required
+                            readonly
                           ></v-text-field>
                         </td>
                         <td class="text-center action-column">
@@ -308,6 +303,7 @@
                             size="small"
                             variant="text"
                             @click="removeGasto(index)"
+                            disabled
                           >
                             <v-icon>mdi-delete</v-icon>
                           </v-btn>
@@ -329,26 +325,24 @@
                   <v-row>
                     <v-col cols="12" md="6">
                       <v-select
-                        v-model="formData.forma_pago"
+                        v-model="datosSolicitudDeReposicion.forma_pago"
                         :items="formasPagoOptions"
                         item-title="formaPago"
                         item-value="id"
                         label="Forma de Pago"
                         variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
+                        readonly
                       ></v-select>
                       <v-text-field
-                        v-model="formData.lugar_solicitud"
+                        v-model="datosSolicitudDeReposicion.lugar_solicitud"
                         label="Lugar de la Solicitud"
                         variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
+                        readonly
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-text-field
-                        v-model="formData.fecha_solicitud"
+                        v-model="datosSolicitudDeReposicion.fecha_solicitud"
                         label="Fecha de la Solicitud"
                         type="date"
                         variant="outlined"
@@ -372,46 +366,58 @@
                   <v-row>
                     <v-col cols="12" md="6">
                       <v-select
-                        v-model="formData.idresponsable"
+                        v-model="datosSolicitudDeReposicion.responsable_id"
                         :items="responsablesList"
                         :item-title="getNombreCompleto"
                         item-value="id"
                         label="Responsable del Cargo de Cuenta"
                         variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
+                        readonly
                       ></v-select>
                     </v-col>
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
-                        v-model="formDatSF.validacionResponsablesf"
+                        v-model="datosSolicitudDeReposicion.validacionResponsable"
                         :label="`Aprobado por Responsable del Cargo de Cuenta ${puedeValidarResponsable ? '(Usted)' : ''}`"
-                        :disabled="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
-                        :readonly="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
+                        :disabled="!puedeValidarResponsable || datosSolicitudDeReposicion.validacionResponsable"
+                        :readonly="!puedeValidarResponsable || datosSolicitudDeReposicion.validacionResponsable"
                         :color="puedeValidarResponsable ? 'primary' : 'grey'"
+                        @update:modelValue="(newValue) => {
+                          if (newValue) {
+                            nextTick(() => {
+                              validarReposicion('responsable');
+                            });
+                          }
+                        }"
                       ></v-checkbox>
                     </v-col>
                   </v-row>
                   <v-row>
                     <v-col cols="12" md="6">
                       <v-select
-                        v-model="formData.idcoordinador"
+                        v-model="datosSolicitudDeReposicion.coordinador_id"
                         :items="coordinadoresList"
                         :item-title="getNombreCompleto"
                         item-value="id"
                         label="Coordinador"
                         variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
+                        readonly
                       ></v-select>
                     </v-col>
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
-                        v-model="formDatSF.validacionCoordinadorsf"
+                        v-model="datosSolicitudDeReposicion.validacionCoordinador"
                         :label="`Aprobado por Coordinador ${puedeValidarCoordinador ? '(Usted)' : ''}`"
-                        :disabled="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
-                        :readonly="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
+                        :disabled="!puedeValidarCoordinador || datosSolicitudDeReposicion.validacionCoordinador"
+                        :readonly="!puedeValidarCoordinador || datosSolicitudDeReposicion.validacionCoordinador"
                         :color="puedeValidarCoordinador ? 'primary' : 'grey'"
+                        @update:modelValue="(newValue) => {
+                          if (newValue) {
+                            nextTick(() => {
+                              validarReposicion('coordinador');
+                            });
+                          }
+                        }"
                       ></v-checkbox>
                     </v-col>
                   </v-row>
@@ -429,12 +435,23 @@
                     Cancelar
                   </v-btn>
                   <v-btn
+                    color="secondary"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-backspace-outline"
+                    @click="resetForm"
+                    disabled
+                  >
+                    Limpiar
+                  </v-btn>
+                  <v-btn
                     color="primary"
                     variant="flat"
                     size="large"
                     prepend-icon="mdi-send"
                     type="submit"
                     :loading="loading"
+                    disabled
                   >
                     Enviar Solicitud
                   </v-btn>
@@ -446,12 +463,12 @@
       </v-row>
     </div>
   </v-container>
-    <!--  {{ '***************************************B' }}
-     <pre>{{ datosFormulario }}</pre> -->
+  <!-- <pre>{{ datosSolicitudDeReposicion }}</pre>
+  {{ '**********************************' }} -->
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
@@ -464,25 +481,17 @@ const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 const idSolicitud = route.query.solicitud_id || null
-console.log('ID Actividad:', idActividad)
-console.log('ID Tarea:', idTarea)
-//console.log('ID Solicitud:', idSolicitud)
-
-const userStore = useUserStore()
-const usuario = computed(() => {
-  return {
-    nombre: userStore.usuario,
-    role: userStore.rol,
-    id: userStore.userId,
-  }
-})
-console.log('ID Usuario:', usuario.value.id)
+console.log('ID de Actividad:', idActividad)
+console.log('ID de Tarea:', idTarea)
+console.log('ID de Solicitud:', idSolicitud)
 
 const baseurl = import.meta.env.VITE_API_BASE
 
 //variables para carga de datos
 const datosFormulario = ref(null)
 const datosFormulario1 = ref(null)
+const solicitudDeReposicion = ref([]) //se carga de la funcion cargarSolicitudDeReposicion
+//const datosFormularioValidarSR = ref(null)
 const error = ref(null)
 const isLoading = ref(false)
 
@@ -546,10 +555,35 @@ const formDatSF = ref({
   bloquearIconosSolFondossf: true
 })
 
+const datosSolicitudDeReposicion = ref({
+descripcion_actividad: '',
+objetivo_actividad: '',
+fecha_ejecucion: '',
+detalleGastos: '{"items":[]}',
+forma_pago: null,
+fecha_solicitud: '',
+lugar_solicitud: '',
+validacionResponsable: false,
+responsable_id: null,
+validacionCoordinador: false,
+coordinador_id: null,
+usuario_id: null,
+actividad_id: null,
+})
+
 //datos para abrir Solicitud de Fondos
 const idSolicitudFondos = ref(null)
 const numeroFormularioSF = ref(null)
 // Nuevo estado para controlar el bloqueo
+
+const userStore = useUserStore()
+const usuario = computed(() => {
+  return {
+    nombre: userStore.usuario,
+    role: userStore.rol,
+    id: userStore.userId,
+  }
+})
 
 const textoProcedencia = computed(() => {
   const fuentes = Array.isArray(formData.value?.fuente_financiamiento)
@@ -815,7 +849,7 @@ async function cargarSolicitudFondos() {
       const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
       const coincideSolicitud = solicitud.id?.toString() === idSolicitud?.toString()
 
-      // console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
+      //console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
 
       return coincideActividad && coincideTarea && coincideSolicitud
     })
@@ -823,9 +857,48 @@ async function cargarSolicitudFondos() {
     datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
     actualizarDatosFormulario(solicitudesFiltradas[0])
 
+    //console.log('6666666666:', JSON.stringify(datosFormulario1.value,null,2) )
+
   } catch (err) {
     error.value = err.message
     console.error('Error al cargar solicitudes:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
+  }
+}
+
+async function cargarSolicitudDeReposicion() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudReembolso/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_actividad: idActividad,
+        id_tarea: idTarea,
+        id: idSolicitud,
+        //usuario: usuario.value.nombre,
+      }),
+    })
+    //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+      )
+    }
+    const rawData = await response.json()
+    //console.log('SoicitudDeReposicion Recibido:', JSON.stringify(rawData,null,2))
+    solicitudDeReposicion.value = strictSanitizeData(rawData.solicitudes[0]) //para actividad y tarea
+    actualizarDatosSolicitudReposicion(rawData.solicitudes[0])
+    //console.log('@@@@@@@@@@@@@:', JSON.stringify(solicitudDeReposicion.value,null,2))
+  } catch (err) {
+    error.value = err.message
+    console.error('Ha ocurrido un error:', err)
   } finally {
     isLoading.value = false
     cargandoGeneral.value = false
@@ -861,7 +934,6 @@ async function submitForm() {
     const payload = {
       detalle_destino_fondos: JSON.stringify({
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
-          partida: gasto.partida,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
@@ -869,20 +941,22 @@ async function submitForm() {
       forma_pago: formData.value.forma_pago,
       lugar_solicitud: formData.value.lugar_solicitud,
       fecha_solicitud: formData.value.fecha_solicitud,
+      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
       monto_solicitado: totalMontoSolicitado.value,
-      descripcion_reposicion: formData.value.descripcion_actividad,
-      objetivo_reposicion: formData.value.objetivo_actividad,
-      fecha_donde_se_realizo_actividad: formData.value.fecha_ejecucion,
       validacion_responsable: formData.value.validacion_responsable,
       id_responsable: formData.value.idresponsable,
       validacion_coordinador: formData.value.validacion_coordinador,
       id_coordinador: formData.value.idcoordinador,
       id_usuario: formData.value.id_usuario,
-      id_actividad: formData.value.id_actividad,
+      actividad: {
+        id_actividad: formData.value.id_actividad,
+        descripcion_actividad: formData.value.descripcion_actividad,
+        objetivo_actividad: formData.value.objetivo_actividad,
+      },
       id_tarea: idTarea || null,
     }
 
-    const response = await fetch(baseurl+'/monitoreo_api/crearSolicitudReembolso/', {
+    const response = await fetch(baseurl+'/api/monitoreo/crear-solicitud-fondos/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1183,6 +1257,31 @@ function actualizarDatosFormulario(solicitud) {
   actualizarValidadores()
 }
 
+function actualizarDatosSolicitudReposicion(solicitud) {
+  if (!solicitud) return
+
+  // Actualizar las propiedades de datosFormulario con los valores de la solicitud
+  datosSolicitudDeReposicion.value.descripcion_actividad = solicitud.descripcionReposicion || '',
+  datosSolicitudDeReposicion.value.objetivo_actividad = solicitud.objetivoReposicion || '',
+  datosSolicitudDeReposicion.value.fecha_ejecucion = solicitud.fechaDondeSeRealizoActividad || '',
+  datosSolicitudDeReposicion.value.detalleGastos = JSON.parse(solicitud.detalleDestinoFondos) || '{"items":[]}',
+  datosSolicitudDeReposicion.value.forma_pago = solicitud.formaPago_id || null,
+  datosSolicitudDeReposicion.value.fecha_solicitud = solicitud.fechaSolicitud || '',
+  datosSolicitudDeReposicion.value.lugar_solicitud = solicitud.lugarSolicitud || '',
+  datosSolicitudDeReposicion.value.validacionResponsable = solicitud.validacionResponsable || false,
+  datosSolicitudDeReposicion.value.responsable_id = solicitud.responsable_id || null,
+  datosSolicitudDeReposicion.value.validacionCoordinador = solicitud.validacionCoordinador || false,
+  datosSolicitudDeReposicion.value.coordinador_id = solicitud.coordinador_id || null,
+  datosSolicitudDeReposicion.value.usuario_id = solicitud.usuario_id || null,
+  datosSolicitudDeReposicion.value.actividad_id = solicitud.actividad_id || null,
+
+  actualizarDetalleDestinoFondos(solicitud.detalleDestinoFondos)
+
+  // Actualizar los campos de Información Adicional
+  actualizarInformacionAdicional()
+  actualizarValidadores()
+}
+
 // Función para parsear y actualizar el detalle de destino de fondos
 function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
   try {
@@ -1201,7 +1300,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
       monto: item.monto || 0
     }))
 
-    console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
+    //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
   } catch (error) {
     console.error('Error al parsear detalleDestinoFondos:', error)
     formData.value.detalle_destino_fondos = []
@@ -1218,12 +1317,6 @@ function actualizarInformacionAdicional() {
 
   // Actualizar fecha_solicitud
   formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
-
-  console.log('Información adicional actualizada:', {
-    forma_pago: formData.value.forma_pago,
-    lugar_solicitud: formData.value.lugar_solicitud,
-    fecha_solicitud: formData.value.fecha_solicitud
-  })
 }
 
 // Función para extraer y formatear los validadores por ID
@@ -1272,38 +1365,102 @@ function actualizarListasValidadores() {
   coordinadoresList.value = datosFormulario.value.validadores.filter(
     validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
   )
-
-  console.log('Responsables list:', responsablesList.value)
-  console.log('Coordinadores list:', coordinadoresList.value)
 }
 
 // Verificación mejorada con roles
 const puedeValidarResponsable = computed(() => {
-  const usuarioActualId = datosFormulario.value?.usuario?.id
-  const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
-  const responsableAsignadoId = formData.value.idresponsable
-
-  // El usuario puede validar si es el responsable asignado Y tiene el cargo correspondiente
-  return usuarioActualId === responsableAsignadoId &&
-         usuarioActualCargo?.includes('responsable')
+  const idUsuarioLogueado = usuario.value?.id
+  const idResponsableAsignado = datosSolicitudDeReposicion.value?.responsable_id
+  return idUsuarioLogueado === idResponsableAsignado
 })
 
 const puedeValidarCoordinador = computed(() => {
-  const usuarioActualId = datosFormulario.value?.usuario?.id
-  const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
-  const coordinadorAsignadoId = formData.value.idcoordinador
-
-  // El usuario puede validar si es el coordinador asignado Y tiene el cargo correspondiente
-  return usuarioActualId === coordinadorAsignadoId &&
-         usuarioActualCargo?.includes('coordinador')
+  const idUsuarioLogueado = usuario.value?.id
+  const idCoordinadorAsignado = datosSolicitudDeReposicion.value?.coordinador_id
+  return idUsuarioLogueado === idCoordinadorAsignado
 })
+
+async function validarReposicion(tipoValidador) {
+  // Verificar permisos según el tipo de validador
+  let tienePermiso = false;
+  let claveValidacion = '';
+
+  switch (tipoValidador) {
+    case 'responsable':
+      tienePermiso = puedeValidarResponsable.value;
+      claveValidacion = 'validacion_responsable';
+      break;
+    case 'coordinador':
+      tienePermiso = puedeValidarCoordinador.value;
+      claveValidacion = 'validacion_coordinador';
+      break;
+    default:
+      alert('Tipo de validador no reconocido.');
+      return;
+  }
+
+  if (!tienePermiso) {
+    alert('Usted no está autorizado para validar esta rendición como ' + tipoValidador + '.');
+    datosSolicitudDeReposicion.value[claveValidacion] = false;
+    return;
+  }
+
+   // Crear el payload específico para la validación
+  const payload = {
+    id_solicitud: datosSolicitudDeReposicion.value?.id || idSolicitud,
+    [claveValidacion]: true     //validacion_responsable: true o validacion_coordinador: true
+  };
+
+  if (!payload.id_solicitud) {
+    alert('Error: No se encontró el ID de la reposicion para validar.');
+    formData.value[claveValidacion] = false; // Revertir
+    return;
+  }
+
+  // Ejecutar la llamada PATCH
+  loading.value = true;
+  try {
+    const response = await fetch(
+      baseurl+'/monitoreo_api/actualizar-validacion-solicitud-reembolso/',
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        `Error al actualizar: ${response.status} - ${errorData.detail || errorData.mensaje || 'Error desconocido'}`
+      );
+    }
+
+    //const result = await response.json();
+    alert('Rendición validada exitosamente.');
+
+    // Recargar los datos para reflejar los cambios
+    await cargarSolicitudDeReposicion();
+
+  } catch (err) {
+    console.error('Error al validar la solicitud:', err);
+    alert(`Error al validar la solicitud: ${err.message}`);
+
+    // Revertir el cambio en caso de error
+    formData.value[claveValidacion] = false;
+  } finally {
+    loading.value = false;
+  }
+}
 
 // Ciclo de vida
 onMounted(async () => {
   await cargarDatos()
   await cargarSolicitudFondos()
+  await cargarSolicitudDeReposicion()
   await textoProcedencia.value
-  resetForm()
 })
 </script>
 
