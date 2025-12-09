@@ -59,6 +59,11 @@ const router = createRouter({
       component: () => import('../views/pei/PeiIndicadoresView.vue'),
     },
     {
+      path: '/pei/:id/planificar',
+      name: 'planificarPei',
+      component: () => import('@/views/peiplanificacion/PeiPlanificarView.vue'),
+    },
+    {
       path: '/proyecto',
       name: 'proyecto',
       component: () => import('../views/proyecto/ProyectoListView.vue'),
@@ -289,7 +294,8 @@ const router = createRouter({
 
     {
       path: '/monitoreo/formularioInf/:id',
-      component: () => import('@/views/monitoreo/InformeActividad.vue'),
+      //component: () => import('@/views/monitoreo/InformeActividad.vue'),
+      component: () => import('@/views/monitoreo/InformeActividadView.vue'),
     },
     //Link al nuevo formulario de actividad
 

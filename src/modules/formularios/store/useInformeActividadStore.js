@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useActividad } from '@/modules/proyecto/composables/useActividad'
-import { useInformeActividad } from '../composable/useInformeActividad'
+import { useInformeActividad } from '../composables/useInformeActividad'
+
 export const useInformeActividadStore = defineStore('informe-actividad', () => {
   //Estados
   const loading = ref(false)

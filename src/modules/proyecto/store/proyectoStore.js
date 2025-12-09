@@ -6,6 +6,8 @@ import {
   proyectoResultadoProducto,
 } from '../services/proyectoService'
 
+import { usePeiVigente } from '@/modules/pei/composables/usePeiVigente'
+
 //Store de los proyectos
 export const useProyectoStore = defineStore('proyecto', () => {
   /**** Estados activos del Store ****/
@@ -22,8 +24,29 @@ export const useProyectoStore = defineStore('proyecto', () => {
   const edges = ref(null)
   const cargando = ref(false) //Indicador de carga
   const error = ref(null) //Mensaje de error
+  //PEI
+  const peiVigente = ref(null)
+
+  //Iniciar el composable
+  const { cargarPeiVigente, peiVigente: pei } = usePeiVigente()
 
   /***  ACCIONES    ***/
+
+  //Obtener el PEI VIgente
+  const obtenerPeiVigente = async () => {
+    cargando.value = true
+    error.value = null
+    try {
+      cargarPeiVigente()
+      peiVigente.value = pei
+    } catch (err) {
+      console.error('No se cargi el Pei vigente', err)
+      error.value = err
+    } finally {
+      cargando.value = false
+    }
+  }
+
   //Obtener todos los Proyectos
   const obtenerProyectos = async () => {
     cargando.value = true
@@ -90,6 +113,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
     //Peticion http y almacenamiento de datos
     try {
       proyectosPlanificacion.value = await proyectoServicios.obtenerTodosPlanificacion(idpei)
+      obtenerPeiVigente()
     } catch (err) {
       error.value = err
     } finally {
@@ -290,6 +314,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
     error, //ref
     nodes, //ref
     edges, //ref
+    peiVigente,
     getTiposNodos,
     obtenerProyectos, //accion
     obtenerProyectosPlanificacion, //accion, todos los proyectos en estado de planificacion

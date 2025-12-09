@@ -105,12 +105,12 @@
                         </template>
                         <v-list-item-title>Editar</v-list-item-title>
                       </v-list-item>
-                      <v-list-item @click="cambiarEstadoTarea(tarea)">
+                      <!-- <v-list-item @click="cambiarEstadoTarea(tarea)">
                         <template #prepend>
                           <v-icon size="16">mdi-sync</v-icon>
                         </template>
                         <v-list-item-title>Cambiar Estado</v-list-item-title>
-                      </v-list-item>
+                      </v-list-item> -->
                       <v-divider></v-divider>
                       <v-list-item @click="eliminarTarea(tarea)" color="error">
                         <template #prepend>
@@ -175,7 +175,7 @@
     </div>
 
     <!-- Diálogo para agregar/editar tarea -->
-    <DialogTarea
+    <DialogTareaPei
       v-model="mostrarDialogo"
       :actividad="actividad"
       :tarea="tareaSeleccionada"
@@ -195,12 +195,10 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
-import { useInformeActividadStore } from '@/modules/formularios/store/useInformeActividadStore'
-<<<<<<< HEAD
+import DialogTareaPei from './DialogTareaPei.vue'
+import { useInformeActividadPeiStore } from '@/modules/formularios/store/useInformeActividadPeiStore'
+import { peiServicios } from '@/modules/pei/services/peiService'
 
-=======
->>>>>>> desarrollo
 const props = defineProps({
   actividad: {
     type: Object,
@@ -209,12 +207,15 @@ const props = defineProps({
 })
 
 // Iniciar el store
-const storeInfActividad = useInformeActividadStore()
+const storeInfActividad = useInformeActividadPeiStore()
 
 // Estados locales
 const busqueda = ref('')
 const mostrarDialogo = ref(false)
 const tareaSeleccionada = ref(null)
+
+// Usar variable local para tareas para actualización inmediata
+const tareasLocales = ref([])
 
 // Snackbar
 const snackbar = ref({
@@ -233,12 +234,14 @@ const cargarInformacion = async () => {
   console.log('🔄 Cargando información para actividad ID:', props.actividad.id)
 
   try {
-    await storeInfActividad.cargarActividadPorId(props.actividad.id)
+    await storeInfActividad.cargarActividadPeiPorId(props.actividad.id)
+
+    // Actualizar tareas locales con datos del store
+    tareasLocales.value = [...(storeInfActividad.tareas || [])]
+
     console.log('✅ Carga completada:', {
       actividad: storeInfActividad.actividad,
-      tareas: storeInfActividad.tareas,
-      cantidadTareas: storeInfActividad.tareas?.length,
-      loading: storeInfActividad.loading,
+      cantidadTareas: tareasLocales.value.length,
     })
   } catch (err) {
     console.error('❌ Error al cargar la actividad:', err)
@@ -246,15 +249,8 @@ const cargarInformacion = async () => {
   }
 }
 
-// Computed properties CORREGIDAS
-const actividad = computed(() => {
-  return storeInfActividad.actividad
-})
-
-const tareas = computed(() => {
-  const tareasStore = storeInfActividad.tareas || []
-  return tareasStore
-})
+// Usar tareas locales en lugar de las del store directamente
+const tareas = computed(() => tareasLocales.value)
 
 const isLoading = computed(() => storeInfActividad.loading)
 
@@ -316,10 +312,24 @@ const cerrarDialogo = () => {
 const manejarGuardarTarea = async (payload) => {
   try {
     if (tareaSeleccionada.value) {
+      // Actualizar tarea existente
+      const tareaActualizada = await peiServicios.updateTareaPei(payload.id, payload)
+
+      // Actualizar inmediatamente en el array local
+      const index = tareasLocales.value.findIndex((t) => t.id === payload.id)
+      if (index !== -1) {
+        tareasLocales.value[index] = { ...tareasLocales.value[index], ...tareaActualizada }
+      }
+
       mostrarMensaje('Subactividad actualizada correctamente', 'success')
     } else {
+      // Crear nueva tarea
+      const nuevaTarea = await peiServicios.crearTareaPei(payload)
+
+      // Agregar inmediatamente al array local
+      tareasLocales.value.unshift(nuevaTarea)
+
       mostrarMensaje('Subactividad creada correctamente', 'success')
-      await cargarInformacion()
     }
     cerrarDialogo()
   } catch (error) {
@@ -328,21 +338,32 @@ const manejarGuardarTarea = async (payload) => {
   }
 }
 
-const cambiarEstadoTarea = async (tarea) => {
-  try {
-    const nuevosEstados = {
-      PEN: 'EPROG',
-      EPROG: 'COMPL',
-      COMPL: 'PEN',
-    }
-    const nuevoEstado = nuevosEstados[tarea.estado]
-    mostrarMensaje(`Estado cambiado a ${getTareaEstadoTexto(nuevoEstado)}`, 'success')
-    await cargarInformacion()
-  } catch (error) {
-    console.error('Error al cambiar estado:', error)
-    mostrarMensaje('Error al cambiar estado', 'error')
-  }
-}
+// const cambiarEstadoTarea = async (tarea) => {
+//   try {
+//     const nuevosEstados = {
+//       PEN: 'EPROG',
+//       EPROG: 'COMPL',
+//       COMPL: 'PEN',
+//     }
+//     const nuevoEstado = nuevosEstados[tarea.estado]
+
+//     // Actualizar estado localmente inmediatamente
+//     const index = tareasLocales.value.findIndex((t) => t.id === tarea.id)
+//     if (index !== -1) {
+//       tareasLocales.value[index].estado = nuevoEstado
+//     }
+
+//     // Actualizar en el servidor
+//     await peiServicios.updateTareaPei(tarea.id, { estado: nuevoEstado })
+
+//     mostrarMensaje(`Estado cambiado a ${getTareaEstadoTexto(nuevoEstado)}`, 'success')
+//   } catch (error) {
+//     console.error('Error al cambiar estado:', error)
+//     mostrarMensaje('Error al cambiar estado', 'error')
+//     // Revertir cambio local si falla
+//     cargarInformacion()
+//   }
+// }
 
 const eliminarTarea = async (tarea) => {
   if (!confirm(`¿Estás seguro de eliminar la subactividad "${tarea.titulo}"?`)) {
@@ -350,12 +371,31 @@ const eliminarTarea = async (tarea) => {
   }
 
   try {
-    mostrarMensaje('Subactividad eliminada correctamente', 'success')
-    await cargarInformacion()
-  } catch (error) {
-    console.error('Error al eliminar subactividad:', error)
+    //Eliminar en el servidor
+    await peiServicios.delTareaPei(tarea.id)
+
+    //Eliminar localmente
+    tareasLocales.value = tareasLocales.value.filter((t) => t.id !== tarea.id)
+  } catch (err) {
+    console.error('Error al eliminar la subactivida', err)
     mostrarMensaje('Error al eliminar la subactividad', 'error')
+    cargarInformacion()
   }
+
+  // try {
+  //   // Eliminar localmente inmediatamente
+  //   tareasLocales.value = tareasLocales.value.filter((t) => t.id !== tarea.id)
+
+  //   // Eliminar en el servidor
+  //   await peiServicios.eliminarTareaPei(tarea.id)
+
+  //   mostrarMensaje('Subactividad eliminada correctamente', 'success')
+  // } catch (error) {
+  //   console.error('Error al eliminar subactividad:', error)
+  //   mostrarMensaje('Error al eliminar la subactividad', 'error')
+  //   // Revertir eliminación local si falla
+  //   cargarInformacion()
+  // }
 }
 
 // Helper methods para tareas
@@ -377,14 +417,14 @@ const getTareaEstadoIcon = (estado) => {
   return iconos[estado] || 'mdi-help-circle-outline'
 }
 
-const getTareaEstadoTexto = (estado) => {
-  const textos = {
-    PEN: 'Pendiente',
-    EPROG: 'En Progreso',
-    COMPL: 'Completada',
-  }
-  return textos[estado] || estado
-}
+// const getTareaEstadoTexto = (estado) => {
+//   const textos = {
+//     PEN: 'Pendiente',
+//     EPROG: 'En Progreso',
+//     COMPL: 'Completada',
+//   }
+//   return textos[estado] || estado
+// }
 
 const formatCurrency = (value) => {
   if (!value) return '$0.00'
@@ -417,7 +457,20 @@ const mostrarMensaje = (mensaje, color = 'success') => {
     color: color,
   }
 }
+
+// También puedes agregar una función para forzar recarga si es necesario
+const recargarDatos = async () => {
+  await cargarInformacion()
+}
+
+// Exponer funciones si es necesario
+defineExpose({
+  recargarDatos,
+  tareas: tareasLocales,
+})
 </script>
+
+<!-- El template se mantiene igual -->
 
 <style scoped>
 .panel-info {
