@@ -1407,7 +1407,7 @@ function actualizarDatosFormulario(solicitud) {
 // Función para parsear y actualizar el detalle de destino de fondos
 function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
   try {
-    console.log('Detalle de destino de fondos recibido:', JSON.stringify(detalleDestinoFondos,null,2))
+    //console.log('Detalle de destino de fondos recibido:', JSON.stringify(detalleDestinoFondos,null,2))
     if (!detalleDestinoFondos) {
       formData.value.detalle_destino_fondos = []
       return
@@ -1421,7 +1421,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
       detalleParseado = detalleDestinoFondos
     }
 
-    console.log('Detalle de destino de fondos parseado:', detalleParseado)
+    //console.log('Detalle de destino de fondos parseado:', detalleParseado)
 
     // Mapear al formato que espera la tabla
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
@@ -1430,7 +1430,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
       monto: item.monto || 0
     }))
 
-    console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
+    //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
   } catch (error) {
     console.error('Error al parsear detalleDestinoFondos:', error)
     formData.value.detalle_destino_fondos = []

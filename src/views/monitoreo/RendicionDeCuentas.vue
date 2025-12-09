@@ -571,6 +571,29 @@ const totalMontoGastado = computed(() => {
    formData.value.monto_gastado = Number(newValue);
  });
 
+// Computed properties para obtener nombres completos de validadores
+const nombreCoordinadorCompleto = computed(() => {
+  const coordinador = coordinadoresList.value.find(
+    (user) => user.id === formData.value.idcoordinador
+  );
+  return coordinador ? getNombreCompleto(coordinador) : '';
+});
+
+const nombreContadorCompleto = computed(() => {
+  const contador = contadoresList.value.find(
+    (user) => user.id === formData.value.idcontador
+  );
+  return contador ? getNombreCompleto(contador) : '';
+});
+
+const nombreAdministradorCompleto = computed(() => {
+  const administrador = administradoresList.value.find(
+    (user) => user.id === formData.value.idadministrador
+  );
+  return administrador ? getNombreCompleto(administrador) : '';
+});
+
+
 // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
 watch(
   datosFormulario,
@@ -625,8 +648,8 @@ watch(
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
         responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
         coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
-        contadoresList.value = newVal.validadores.filter((user) => user.cargo === 'contador')
-        administradoresList.value = newVal.validadores.filter((user) => user.cargo === 'administrador')
+        contadoresList.value = newVal.validadores.filter((user) => user.cargo === 'contable')
+        administradoresList.value = newVal.validadores.filter((user) => user.cargo === 'admin')
       }
     }
   },
@@ -1156,9 +1179,9 @@ function exportToExcel() {
     ['Fecha de Actividad:', formData.value.fecha_actividad, '', ''],
     [''],
     //['Responsable:', formData.value.idresponsable, '', ''],
-    ['Coordinador:', formData.value.idcoordinador, '', ''],
-    ['Contador:', formData.value.idcontador, '', ''],
-    ['Administrador:', formData.value.idadministrador, '', ''],
+    ['Coordinador:', nombreCoordinadorCompleto.value, '', ''],
+    ['Contador:', nombreContadorCompleto.value, '', ''],
+    ['Administrador:', nombreAdministradorCompleto.value, '', ''],
     [''],
     ['DETALLE DEL DESTINO DE FONDOS', '', '', ''],
   ]

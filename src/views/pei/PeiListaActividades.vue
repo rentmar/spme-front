@@ -134,7 +134,7 @@
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
                             v-bind="props"
-                            icon="mdi-check"
+                            icon="mdi-thumb-up"
                             variant="text"
                             color="primary"
                             size="small"
@@ -168,7 +168,7 @@
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
                             v-bind="props"
-                            icon="mdi-check"
+                            icon="mdi-thumb-up"
                             variant="text"
                             color="deep-purple"
                             size="small"
@@ -201,7 +201,7 @@
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
                             v-bind="props"
-                            icon="mdi-check"
+                            icon="mdi-thumb-up"
                             variant="text"
                             color="teal-lighten-2"
                             size="small"
@@ -234,7 +234,7 @@
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
                             v-bind="props"
-                            icon="mdi-check"
+                            icon="mdi-thumb-up"
                             variant="text"
                             color="warning"
                             size="small"
@@ -269,7 +269,7 @@
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 2"
                             v-bind="props"
-                            icon="mdi-check"
+                            icon="mdi-thumb-up"
                             variant="text"
                             color="error"
                             size="small"
@@ -1025,6 +1025,7 @@
   </v-container>
       <!-- {{ '********************************' }}
      <pre>{{ datosFormulario2 }}</pre> -->
+     <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
 </template>
 
 <script setup>
@@ -1176,12 +1177,19 @@ const getStatusColor = (status) => {
 }
 
 const abrirFormulario011 = (idSolicitudF) => {
-  router.push({
+  const routeConfig = {
     path: `/monitoreo/formulario011/${actividadIdParaValidar.value}`,
     query: {
       solicitud_id: idSolicitudF
     }
-  });
+  };
+
+  // Add tarea_id to query if it exists
+  if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
+    routeConfig.query.tarea_id = tareaIdParaValidar.value;
+  }
+
+  router.push(routeConfig);
 }
 
 const abrirFormularioRendicionC = (idSolicitudF) => {
