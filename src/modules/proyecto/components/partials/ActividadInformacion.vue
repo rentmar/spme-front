@@ -11,39 +11,31 @@
         <div class="activity-title-container">
           <div class="d-flex align-center">
             <h3 class="text-h6 font-weight-bold activity-title mr-2">
-              {{ actividad.codigo }}
+              {{ actividad?.codigo || 'Sin codigo' }}
             </h3>
-            <v-chip :color="estadoColor(actividad.estado)" size="x-small" class="status-chip">
-              {{ actividad.estado }}
+            <v-chip :color="estadoColor(actividad?.estado)" size="x-small" class="status-chip">
+              {{ actividad?.estado }}
             </v-chip>
           </div>
           <div class="text-caption text-medium-emphasis activity-subtitle">
-            {{ actividad.descripcion }}
+            {{ actividad?.descripcion || 'Sin Descripcion' }}
           </div>
-        </div>
-        <v-spacer></v-spacer>
-        <div class="d-flex">
-          <v-chip class="ml-1" color="indigo-lighten-4" density="compact" size="x-small">
-            <v-icon start icon="mdi-school" size="x-small"></v-icon>
-            {{ actividad.tipo }}
-          </v-chip>
         </div>
       </div>
     </v-card-title>
-
     <v-card-text class="activity-content pa-3">
       <v-row dense>
         <v-col cols="12" sm="6">
           <div class="d-flex align-center mb-1">
             <v-icon icon="mdi-calendar" class="mr-1" size="x-small"></v-icon>
             <span class="text-caption"
-              ><strong>Programada:</strong> {{ actividad.fecha_programada }}</span
+              ><strong>Programada:</strong> {{ actividad?.fecha_programada || 'Sin Fecha' }}</span
             >
           </div>
           <div class="d-flex align-center mb-1">
             <v-icon icon="mdi-account" class="mr-1" size="x-small"></v-icon>
             <span class="text-caption"
-              ><strong>Responsable:</strong> {{ actividad.responsable }}</span
+              ><strong>Responsable:</strong> {{ actividad?.responsable || 'Sin responsable' }}</span
             >
           </div>
         </v-col>
@@ -51,22 +43,27 @@
           <div class="d-flex align-center mb-1">
             <v-icon icon="mdi-finance" class="mr-1" size="x-small"></v-icon>
             <span class="text-caption"
-              ><strong>Presupuesto:</strong> ${{ actividad.presupuesto }}</span
+              ><strong>Presupuesto:</strong> ${{
+                actividad?.presupuesto || 'Sin presupuesto'
+              }}</span
             >
           </div>
           <div class="d-flex align-center mb-1">
             <v-icon icon="mdi-calendar-end" class="mr-1" size="x-small"></v-icon>
-            <span class="text-caption"><strong>Cierre:</strong> {{ actividad.fecha_cierre }}</span>
+            <span class="text-caption"
+              ><strong>Cierre:</strong> {{ actividad?.fecha_cierre || 'Sin fecha de cierre' }}</span
+            >
           </div>
         </v-col>
       </v-row>
     </v-card-text>
   </v-card>
+  <!-- {{ actividad }} -->
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { onMounted } from 'vue'
+import { useActividad } from '../../composables/useActividad'
 
 const props = defineProps({
   actividadId: {
@@ -75,12 +72,15 @@ const props = defineProps({
   },
 })
 
-console.log('Actividad ID desde props:', props.actividadId)
+const { actividad, cargarActividadPorId } = useActividad()
 
-// 1. Define una variable reactiva para guardar los datos de la actividad
-const actividad = ref({})
+onMounted(() => {
+  if (props.actividadId) {
+    //obtenerDatosActividad()
+    cargarActividadPorId(props.actividadId)
+  }
+})
 
-// 2. Función para determinar el color del chip según el estado
 function estadoColor(estado) {
   switch (estado) {
     case 'Planificada':
@@ -93,29 +93,6 @@ function estadoColor(estado) {
       return 'orange'
   }
 }
-
-// 3. Función asíncrona para hacer la llamada a la API
-async function obtenerDatosActividad() {
-  const url = 'http://127.0.0.1:8000/actividades_api/obtenerEncabezadoActividadId/'
-  const data = {
-    actividad_id: props.actividadId,
-  }
-  try {
-    const response = await axios.post(url, data)
-    console.log('response', response.data)
-    // 4. Actualiza la variable reactiva con los datos de la respuesta
-    actividad.value = response.data
-  } catch (error) {
-    console.error('Error al obtener los datos de la actividad:', error)
-  }
-}
-
-// 5. Usa onMounted para llamar a la función cuando el componente se renderiza
-onMounted(() => {
-  if (props.actividadId) {
-    obtenerDatosActividad()
-  }
-})
 </script>
 
 <style scoped>
