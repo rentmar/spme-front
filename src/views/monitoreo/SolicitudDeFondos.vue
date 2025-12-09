@@ -226,6 +226,17 @@
                       required
                     ></v-text-field>
                   </v-col>
+                  <v-col cols="12">
+                    <v-file-input
+                      v-model="formData.medios_archivos"
+                      label="Adjuntar Medios de verificacion"
+                      multiple
+                      chips
+                      show-size
+                      :accept="acceptedFormats.medios"
+                      prepend-icon="mdi-paperclip"
+                    ></v-file-input>
+                  </v-col>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -482,14 +493,14 @@
                     Firmas y Validaciones
                   </h3>
 
-                  <!-- <v-row>
+                  <v-row>
                     <v-col cols="12" md="6">
                       <v-select
-                        v-model="formData.idresponsable"
-                        :items="responsablesList"
+                        v-model="formData.idcontador"
+                        :items="contadoresList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Responsable del Cargo de Cuenta"
+                        label="Contador"
                         variant="outlined"
                         bg-color="blue-lighten-5"
                         required
@@ -498,11 +509,11 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formData.validacion_responsable"
-                        label="Aprobado por Responsable del Cargo de Cuenta"
+                        label="Aprobado por Contador"
                         :disabled="isFrozen"
                       ></v-checkbox>
                     </v-col>
-                  </v-row> -->
+                  </v-row>
                   <v-row>
                     <v-col cols="12" md="6">
                       <v-select
@@ -564,15 +575,15 @@
       </v-row>
     </div>
   </v-container>
-  <pre>{{ formData }}</pre>
-  {{ '*******************' }}
+  <!-- <pre>{{ coordinadoresList }}</pre>
+  {{ '*******************' }} -->
   <!-- <pre>{{ formasPagoOptions }}</pre>
     {{ '*******************' }} -->
   <!-- <pre>{{ formData.forma_pago }}</pre>
     {{ '*******************' }} -->
   <!--<pre>{{ datosFormulario }}</pre>
     {{ '*******************' }}-->
-  <pre>{{ coordinadoresList }}</pre>
+  <!-- <pre>{{ coordinadoresList }}</pre> -->
 </template>
 
 <script setup>
@@ -583,20 +594,16 @@ import ActividadInformacion from '@/modules/proyecto/components/partials/Activid
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
-//Mensajes
-import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
 
 const router = useRouter()
 const route = useRoute()
-const idActividad = route.params.id || null
-const idTarea = route.query.tarea_id || null
+// Convertir a número y validar
+const idActividad = route.params.id ? parseInt(route.params.id) : null
+const idTarea = route.query.tarea_id ? parseInt(route.query.tarea_id) : null
 console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
 
 const baseurl = import.meta.env.VITE_API_BASE
-
-//Iniciar el composable
-const { enviarMensajeAutomatico } = useNotificaciones()
 
 //variables para carga de datos
 const datosFormulario = ref(null)
@@ -608,7 +615,11 @@ const cargandoGeneral = ref(true)
 const loading = ref(false)
 const form = ref(null)
 const responsablesList = ref([])
+const contadoresList = ref([])
 const coordinadoresList = ref([])
+const acceptedFormats = ref({
+  medios: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx',
+})
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)
@@ -625,6 +636,7 @@ const formData = ref({
   fecha_ejecucion: '',
   fuente_financiamiento: '',
   id_actividad: 0,
+  id_tarea: 0,
   id_usuario: 0,
   // Resto de campos del formulario
   detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
@@ -643,11 +655,12 @@ const formData = ref({
       numero_cuenta: '',
     },
   },
-  validacion_responsable: false,
-  idresponsable: null,
+  validacion_contador: false,
+  idcontador: null,
   validacion_coordinador: false,
   idcoordinador: null,
   correo_coordinador: '',
+  medios_archivos: [],
 })
 
 //datos para abrir Solicitud de Fondos
@@ -660,10 +673,10 @@ const usuario = computed(() => {
   return {
     nombre: userStore.usuario,
     role: userStore.rol,
-    id: userStore.userId,
+    id: userStore.id,
   }
 })
-console.log('ID Usuario:', usuario.value.id)
+console.log('ID Usuario:', JSON.stringify(usuario.value.id, null, 2)) //.value.id)
 
 const textoProcedencia = computed(() => {
   const fuentes = Array.isArray(formData.value?.fuente_financiamiento)
@@ -719,11 +732,16 @@ const nombreCoordinadorElegido = computed(() => {
   return coordinador ? getNombreCompleto(coordinador) : ''
 })
 
-const nombreResponsableElegido = computed(() => {
-  const responsable = responsablesList.value.find(
-    (user) => user.id === formData.value.idresponsable,
-  )
-  return responsable ? getNombreCompleto(responsable) : ''
+// const nombreResponsableElegido = computed(() => {
+//   const responsable = responsablesList.value.find(
+//     (user) => user.id === formData.value.idresponsable,
+//   )
+//   return responsable ? getNombreCompleto(responsable) : ''
+// })
+
+const nombreContadorElegido = computed(() => {
+  const contador = contadoresList.value.find((user) => user.id === formData.value.idcontador)
+  return contador ? getNombreCompleto(contador) : ''
 })
 
 const totalMontoSolicitado = computed(() => {
@@ -772,6 +790,8 @@ watch(
         formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio) //newVal.actividad.fecha_inicio || ''
         formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre) //newVal.actividad.fecha_cierre || ''
         formData.value.id_actividad = getSafeValue(newVal.actividad.id, 0) //newVal.actividad.id || 0
+        // Asignar id_tarea desde los parámetros de la ruta si existe
+        formData.value.id_tarea = idTarea || 0
         formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos) //newVal.actividad.procedencia_fondos || ''
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
@@ -798,10 +818,13 @@ watch(
         //console.log('Cargando validadores:', newVal.validadores)
         responsablesList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'responsable') || []
+        contadoresList.value =
+          newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
         coordinadoresList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
       } else {
         responsablesList.value = []
+        contadoresList.value = []
         coordinadoresList.value = []
       }
     }
@@ -858,7 +881,7 @@ async function cargarDatos() {
         usuario: usuario.value.nombre,
       }),
     })
-    console.log('Respuesta de la API recibida:', idActividad, usuario.value.nombre)
+    //console.log('Respuesta de la API recibida:', idActividad, usuario.value.nombre)
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -869,7 +892,7 @@ async function cargarDatos() {
 
     const rawData = await response.json()
     datosFormulario.value = strictSanitizeData(rawData)
-    console.log('Datos cargados exitosamente:', rawData)
+    //console.log('Datos cargados exitosamente:', rawData)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -951,6 +974,16 @@ function removeGasto(index) {
 async function submitForm() {
   loading.value = true
   try {
+    // Validar que id_actividad siempre sea válido
+    if (!formData.value.id_actividad || formData.value.id_actividad <= 0) {
+      throw new Error('Error: No se puede crear el formulario sin una actividad válida.')
+    }
+
+    // Validar que id_tarea sea válido cuando se está creando una solicitud para una tarea
+    if (idTarea && (!formData.value.id_tarea || formData.value.id_tarea <= 0)) {
+      throw new Error('Error: No se puede crear el formulario sin una tarea válida.')
+    }
+
     //Validar si el formulario está completo
     if (
       !formData.value.lugar_solicitud ||
@@ -978,14 +1011,16 @@ async function submitForm() {
       fecha_realizacion_actividad: formData.value.fecha_ejecucion,
       monto_solicitado: totalMontoSolicitado.value,
       validacion_responsable: formData.value.validacion_responsable,
-      id_responsable: formData.value.idresponsable,
+      id_responsable: formData.value.idcontador,
       validacion_coordinador: formData.value.validacion_coordinador,
       id_coordinador: formData.value.idcoordinador,
       id_usuario: formData.value.id_usuario,
       id_actividad: formData.value.id_actividad,
       descripcion_actividad: formData.value.descripcion_actividad,
       objetivo_actividad: formData.value.objetivo_actividad,
-      id_tarea: idTarea || null,
+      // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
+      ...(formData.value.id_tarea &&
+        formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
       datos_forma_pago: formData.value.datos_forma_pago,
       bloquear_icono_sf: true,
     }
@@ -1010,17 +1045,7 @@ async function submitForm() {
     exportToExcel()
     resetForm()
 
-    const cuerpoMensaje = {
-      destinatario_id: payload.id_coordinador,
-      asunto: 'Solicitud de fondos: ' + numeroFormularioSF.value,
-      contenido: 'La solicitud de Fondos: ' + numeroFormularioSF.value + ' requiere su aprobacion',
-      tipo: 'sistema',
-      prioridad: 3,
-      icono: '✅',
-      accion_url: '',
-      accion_texto: '',
-    }
-
+    ////////////////////////////////////////////////////////////////////////////
     // Enviar notificación por correo al coordinador
     try {
       const emailPayload = {
@@ -1032,11 +1057,11 @@ async function submitForm() {
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
           descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario011/${idSolicitudFondos.value}`,
+          url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
 
-      console.log('Payload enviado al servidor:', emailPayload)
+      console.log('emailPayload enviado al servidor:', emailPayload)
 
       const emailResponse = await fetch(
         'http://localhost:8000/api-msg/correos/solicitud-pendiente/',
@@ -1052,14 +1077,11 @@ async function submitForm() {
       } else {
         console.warn('No se pudo enviar el correo de notificación')
       }
-
-      console.log('Cuerpo mensaje:', cuerpoMensaje)
-
-      await enviarMensajeAutomatico(cuerpoMensaje)
     } catch (emailError) {
       console.error('Error al enviar correo de notificación:', emailError)
       // No detenemos el flujo si falla el envío del correo
     }
+    ///////////////////////////////////////////////////////////////////////////////
 
     console.log('Respuesta del servidor:', data)
 
@@ -1086,7 +1108,7 @@ function resetForm() {
     fecha_solicitud: getCurrentDate(),
     monto_solicitado: 0,
     validacion_responsable: false,
-    idresponsable: null,
+    idcontador: null,
     validacion_coordinador: false,
     idcoordinador: null,
     //id_usuario: 0,
@@ -1141,12 +1163,12 @@ function exportToExcel() {
     [''],
 
     ['FIRMAS Y VALIDACIONES', '', '', ''],
-    // [
-    //   'Responsable:',
-    //   nombreResponsableElegido.value,
-    //   'Aprobado:',
-    //   formData.value.validacion_responsable ? '✓' : '✗',
-    // ],
+    [
+      'Contador:',
+      nombreContadorElegido.value,
+      'Aprobado:',
+      formData.value.validacion_contador ? '✓' : '✗',
+    ],
     [
       'Coordinador:',
       nombreCoordinadorElegido.value,

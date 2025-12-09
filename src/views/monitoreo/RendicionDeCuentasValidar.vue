@@ -306,7 +306,7 @@
           <div class="form-section">
             <v-card-subtitle class="text-h6">Firmas</v-card-subtitle>
             <br>
-            <v-row>
+            <!-- <v-row>
               <v-col cols="12" md="6">
                 <v-select
                   v-model="formDataRC.idresponsable"
@@ -334,7 +334,7 @@
                   }"
                 ></v-checkbox>
               </v-col>
-            </v-row>
+            </v-row> -->
 
             <v-row>
               <v-col cols="12" md="6">
