@@ -92,7 +92,9 @@
 
           <!-- Sección 2: Herramientas Aplicadas y Resultados -->
           <div class="form-section">
-            <v-card-subtitle class="text-h6">Herramientas Aplicadas y Resultados</v-card-subtitle>
+            <v-card-subtitle class="text-h6"
+              >Herramientas Aplicadas y Resultados (Opcional)</v-card-subtitle
+            >
             <br />
             <v-row>
               <v-col cols="12">

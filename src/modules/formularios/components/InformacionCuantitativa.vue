@@ -27,13 +27,13 @@
     <div class="mb-6">
       <h4 class="text-subtitle-1 mb-3">
         <v-icon icon="mdi-gender-male-female" class="mr-2"></v-icon>
-        División por Género
+        Identidad de Genero
       </h4>
       <v-row>
         <v-col cols="12" sm="6">
           <v-text-field
             v-model="varones"
-            label="Varones"
+            label="Hombres"
             type="number"
             min="0"
             variant="outlined"
@@ -44,6 +44,26 @@
           <v-text-field
             v-model="mujeres"
             label="Mujeres"
+            type="number"
+            min="0"
+            variant="outlined"
+            @update:model-value="actualizarTotales"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-text-field
+            v-model="otro"
+            label="Otro"
+            type="number"
+            min="0"
+            variant="outlined"
+            @update:model-value="actualizarTotales"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-text-field
+            v-model="pnd"
+            label="PND"
             type="number"
             min="0"
             variant="outlined"
@@ -91,8 +111,7 @@
       </h4>
       <v-alert type="info" density="compact" class="mb-4">
         <v-icon icon="mdi-information" class="mr-1"></v-icon>
-        Esta sección registra la participación de personas con discapacidad según el tipo de
-        discapacidad
+        Esta sección registra la participación de personas según el tipo de discapacidad
       </v-alert>
 
       <v-row>
@@ -148,6 +167,7 @@
                 density="compact"
                 placeholder="Ej: Discapacidad visual, auditiva, motriz, etc."
                 :rules="[(v) => !!v || 'Campo requerido']"
+                readonly
               ></v-text-field>
             </v-col>
             <v-col cols="12" sm="4" md="3">
@@ -732,6 +752,8 @@ import { ref, reactive, computed, watch } from 'vue'
 const totalParticipantes = ref(0)
 const varones = ref(0)
 const mujeres = ref(0)
+const otro = ref(0)
+const pnd = ref(0)
 const archivos = ref([])
 const nuevoArchivo = ref([])
 
@@ -739,9 +761,12 @@ const nuevoArchivo = ref([])
 const totalConDiscapacidad = ref(0)
 const necesidadesAccesibilidad = ref('')
 const tiposDiscapacidad = ref([
-  { tipo: 'Discapacidad visual', cantidad: 0 },
-  { tipo: 'Discapacidad auditiva', cantidad: 0 },
-  { tipo: 'Discapacidad motriz', cantidad: 0 },
+  { tipo: 'Discapacidad Visual', cantidad: 0 },
+  { tipo: 'Discapacidad Auditiva', cantidad: 0 },
+  { tipo: 'Discapacidad Fisica', cantidad: 0 },
+  { tipo: 'Discapacidad Psiquico/mental', cantidad: 0 },
+  { tipo: 'Discapacidad Intelectual', cantidad: 0 },
+  { tipo: 'Discapacidad Multiple', cantidad: 0 },
 ])
 
 // Grupos de edad
@@ -781,7 +806,12 @@ const organizacionCantidades = ref([0])
 
 // Computed properties para los totales
 const sumaGenero = computed(() => {
-  return parseInt(varones.value || 0) + parseInt(mujeres.value || 0)
+  return (
+    parseInt(varones.value || 0) +
+    parseInt(mujeres.value || 0) +
+    parseInt(otro.value || 0) +
+    parseInt(pnd.value || 0)
+  )
 })
 
 const sumaEdades = computed(() => {
