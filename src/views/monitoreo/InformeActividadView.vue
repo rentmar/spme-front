@@ -196,6 +196,11 @@ import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAva
 import InformacionCuantitativa from '@/modules/formularios/components/InformacionCuantitativa.vue'
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
 import axios from 'axios'
+import { useRoute } from 'vue-router'
+
+//idactividad
+const route = useRoute()
+const idactividad = route.params.id
 
 //Inicializar el store
 const storeInfActividad = useInformeActividadStore()
@@ -301,7 +306,7 @@ const cargandoGeneral = ref(false)
 const cargarDatos = async () => {
   cargandoGeneral.value = true
   try {
-    await storeInfActividad.cargarActividadPorId(1)
+    await storeInfActividad.cargarActividadPorId(idactividad)
   } catch (error) {
     console.error('Error cargando actividad:', error)
   } finally {
