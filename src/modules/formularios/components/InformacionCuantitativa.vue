@@ -13,6 +13,12 @@
         type="number"
         min="0"
         variant="outlined"
+        :error="errorTotalDiscapacidad"
+        :error-messages="
+          errorTotalDiscapacidad
+            ? ['El total de personas con discapacidad no puede exceder este valor']
+            : []
+        "
         @update:model-value="actualizarTotales"
       ></v-text-field>
     </div>
@@ -74,6 +80,173 @@
         <v-icon icon="mdi-alert-circle" class="mr-1"></v-icon>
         La suma de participantes por edades ({{ sumaEdades }}) no coincide con el total de
         participantes ({{ totalParticipantes }})
+      </v-alert>
+    </div>
+
+    <!-- Sección para Personas con Discapacidad -->
+    <div class="mb-6">
+      <h4 class="text-subtitle-1 mb-3">
+        <v-icon icon="mdi-wheelchair-accessibility" class="mr-2"></v-icon>
+        Personas con Discapacidad
+      </h4>
+      <v-alert type="info" density="compact" class="mb-4">
+        <v-icon icon="mdi-information" class="mr-1"></v-icon>
+        Esta sección registra la participación de personas con discapacidad según el tipo de
+        discapacidad
+      </v-alert>
+
+      <v-row>
+        <v-col cols="12">
+          <v-text-field
+            v-model="totalConDiscapacidad"
+            label="Total de personas con discapacidad"
+            type="number"
+            min="0"
+            :max="maxDiscapacidad"
+            variant="outlined"
+            :error="errorTotalDiscapacidad"
+            :error-messages="errorTotalDiscapacidad ? [`Máximo permitido: ${maxDiscapacidad}`] : []"
+            :hint="`Máximo permitido: ${maxDiscapacidad} (total de participantes)`"
+            persistent-hint
+            @update:model-value="validarDiscapacidad"
+          >
+            <template v-slot:append v-if="totalParticipantes > 0">
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <span v-bind="props" class="text-caption">
+                    {{ porcentajeDiscapacidad }}% del total
+                  </span>
+                </template>
+                <span>Porcentaje de personas con discapacidad</span>
+              </v-tooltip>
+            </template>
+          </v-text-field>
+        </v-col>
+      </v-row>
+
+      <!-- Tipos de discapacidad -->
+      <div class="mb-4">
+        <v-card variant="outlined" class="pa-4">
+          <v-card-title class="text-subtitle-2 font-weight-medium pb-2">
+            Distribución por tipo de discapacidad
+            <v-chip
+              v-if="totalConDiscapacidad > 0"
+              size="small"
+              class="ml-2"
+              :color="errorDiscapacidad ? 'error' : 'success'"
+            >
+              {{ sumaDiscapacidades }} / {{ totalConDiscapacidad }}
+            </v-chip>
+          </v-card-title>
+
+          <v-row v-for="(discapacidad, index) in tiposDiscapacidad" :key="index" class="mb-3">
+            <v-col cols="12" sm="6" md="5">
+              <v-text-field
+                v-model="discapacidad.tipo"
+                :label="`Tipo de discapacidad ${index + 1}`"
+                variant="outlined"
+                density="compact"
+                placeholder="Ej: Discapacidad visual, auditiva, motriz, etc."
+                :rules="[(v) => !!v || 'Campo requerido']"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="4" md="3">
+              <v-text-field
+                v-model="discapacidad.cantidad"
+                label="Cantidad"
+                type="number"
+                min="0"
+                :max="maxDiscapacidadIndividual(index)"
+                variant="outlined"
+                density="compact"
+                :error="errorCantidadDiscapacidad(index)"
+                :error-messages="
+                  errorCantidadDiscapacidad(index)
+                    ? [`Máximo: ${maxDiscapacidadIndividual(index)}`]
+                    : []
+                "
+                @update:model-value="validarDiscapacidadIndividual(index)"
+              >
+                <template
+                  v-slot:append
+                  v-if="discapacidad.cantidad > 0 && totalConDiscapacidad > 0"
+                >
+                  <v-tooltip location="top">
+                    <template v-slot:activator="{ props }">
+                      <span v-bind="props" class="text-caption">
+                        {{ calcularPorcentajeDiscapacidad(discapacidad.cantidad) }}%
+                      </span>
+                    </template>
+                    <span>Porcentaje del total con discapacidad</span>
+                  </v-tooltip>
+                </template>
+              </v-text-field>
+            </v-col>
+            <v-col cols="12" sm="2" md="3" class="d-flex align-center">
+              <v-chip
+                v-if="discapacidad.cantidad > 0 && totalConDiscapacidad > 0"
+                size="small"
+                :color="errorDiscapacidad ? 'error' : 'primary'"
+                variant="outlined"
+              >
+                {{ calcularPorcentajeDiscapacidad(discapacidad.cantidad) }}%
+              </v-chip>
+            </v-col>
+            <v-col cols="12" sm="1" md="1" class="d-flex align-center">
+              <v-btn
+                v-if="tiposDiscapacidad.length > 1"
+                icon
+                size="small"
+                variant="text"
+                color="error"
+                @click="eliminarDiscapacidad(index)"
+              >
+                <v-icon icon="mdi-delete"></v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
+
+          <v-btn
+            color="primary"
+            variant="outlined"
+            @click="agregarDiscapacidad"
+            size="small"
+            block
+            class="mt-2"
+          >
+            <v-icon icon="mdi-plus" class="mr-1"></v-icon>
+            Agregar tipo de discapacidad
+          </v-btn>
+        </v-card>
+      </div>
+
+      <!-- Necesidades de accesibilidad -->
+      <div class="mb-3">
+        <v-card variant="outlined" class="pa-4">
+          <v-card-title class="text-subtitle-2 font-weight-medium pb-2">
+            Necesidades de accesibilidad identificadas
+          </v-card-title>
+          <v-textarea
+            v-model="necesidadesAccesibilidad"
+            label="Describa las necesidades de accesibilidad identificadas"
+            variant="outlined"
+            rows="2"
+            density="compact"
+            placeholder="Ej: Intérprete de lengua de señas, materiales en braille, rampas de acceso, etc."
+          ></v-textarea>
+        </v-card>
+      </div>
+
+      <v-alert v-if="errorDiscapacidad" type="error" density="compact" class="mt-2">
+        <v-icon icon="mdi-alert-circle" class="mr-1"></v-icon>
+        La suma de personas por tipo de discapacidad ({{ sumaDiscapacidades }}) no coincide con el
+        total registrado ({{ totalConDiscapacidad }})
+      </v-alert>
+
+      <v-alert v-if="errorTotalDiscapacidad" type="warning" density="compact" class="mt-2">
+        <v-icon icon="mdi-alert" class="mr-1"></v-icon>
+        El total de personas con discapacidad ({{ totalConDiscapacidad }}) no puede exceder el total
+        de participantes ({{ totalParticipantes }})
       </v-alert>
     </div>
 
@@ -253,8 +426,14 @@
 
     <!-- Resumen de Totales -->
     <div class="mb-6" v-if="mostrarResumen">
-      <v-alert :type="totalesCoinciden ? 'success' : 'warning'" density="compact">
-        <v-icon :icon="totalesCoinciden ? 'mdi-check-circle' : 'mdi-alert'" class="mr-2"></v-icon>
+      <v-alert
+        :type="totalesCoinciden && !errorTotalDiscapacidad ? 'success' : 'warning'"
+        density="compact"
+      >
+        <v-icon
+          :icon="totalesCoinciden && !errorTotalDiscapacidad ? 'mdi-check-circle' : 'mdi-alert'"
+          class="mr-2"
+        ></v-icon>
         <div class="d-flex justify-space-between align-center">
           <span>Resumen de totales:</span>
           <strong>{{ totalParticipantes }} participantes</strong>
@@ -283,6 +462,28 @@
                 class="ml-2"
               >
                 {{ sumaEdades }}
+              </v-chip>
+            </v-col>
+            <v-col cols="12" sm="6" md="3" class="d-flex align-center mb-1">
+              <v-icon
+                icon="mdi-wheelchair-accessibility"
+                size="small"
+                class="mr-2 text-primary"
+              ></v-icon>
+              <span class="text-caption">Discapacidad:</span>
+              <v-chip
+                :color="errorDiscapacidad || errorTotalDiscapacidad ? 'error' : 'primary'"
+                variant="outlined"
+                size="small"
+                class="ml-2"
+              >
+                {{ totalConDiscapacidad }}
+                <v-icon
+                  v-if="errorTotalDiscapacidad"
+                  icon="mdi-alert"
+                  size="x-small"
+                  class="ml-1"
+                ></v-icon>
               </v-chip>
             </v-col>
             <v-col cols="12" sm="6" md="3" class="d-flex align-center mb-1">
@@ -323,9 +524,9 @@
             </v-col>
           </v-row>
         </div>
-        <div v-if="!totalesCoinciden" class="mt-2 text-caption">
+        <div v-if="!totalesCoinciden || errorTotalDiscapacidad" class="mt-2 text-caption">
           <v-icon icon="mdi-information" size="small" class="mr-1"></v-icon>
-          Los totales parciales no coinciden con el total general
+          Los totales parciales no coinciden con el total general o hay errores de validación
         </div>
       </v-alert>
 
@@ -525,7 +726,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 
 // Datos reactivos
 const totalParticipantes = ref(0)
@@ -533,6 +734,15 @@ const varones = ref(0)
 const mujeres = ref(0)
 const archivos = ref([])
 const nuevoArchivo = ref([])
+
+// Datos para discapacidad
+const totalConDiscapacidad = ref(0)
+const necesidadesAccesibilidad = ref('')
+const tiposDiscapacidad = ref([
+  { tipo: 'Discapacidad visual', cantidad: 0 },
+  { tipo: 'Discapacidad auditiva', cantidad: 0 },
+  { tipo: 'Discapacidad motriz', cantidad: 0 },
+])
 
 // Grupos de edad
 const gruposEdad = [
@@ -580,6 +790,12 @@ const sumaEdades = computed(() => {
   }, 0)
 })
 
+const sumaDiscapacidades = computed(() => {
+  return tiposDiscapacidad.value.reduce((sum, discapacidad) => {
+    return sum + parseInt(discapacidad.cantidad || 0)
+  }, 0)
+})
+
 const sumaOcupaciones = computed(() => {
   return ocupaciones.value.reduce((sum, ocupacion) => {
     return sum + parseInt(ocupacion.cantidad || 0)
@@ -622,13 +838,50 @@ const tamañoTotalArchivos = computed(() => {
   }, 0)
 })
 
-// Estados de error
+// Validaciones para discapacidad
+const maxDiscapacidad = computed(() => {
+  return parseInt(totalParticipantes.value || 0)
+})
+
+const errorTotalDiscapacidad = computed(() => {
+  return parseInt(totalConDiscapacidad.value || 0) > parseInt(totalParticipantes.value || 0)
+})
+
+const porcentajeDiscapacidad = computed(() => {
+  const total = parseInt(totalParticipantes.value || 1)
+  const discapacidad = parseInt(totalConDiscapacidad.value || 0)
+  return ((discapacidad / total) * 100).toFixed(1)
+})
+
+const maxDiscapacidadIndividual = (index) => {
+  const totalDiscapacidad = parseInt(totalConDiscapacidad.value || 0)
+  const sumaRestante = tiposDiscapacidad.value.reduce((sum, disc, i) => {
+    if (i !== index) {
+      return sum + parseInt(disc.cantidad || 0)
+    }
+    return sum
+  }, 0)
+
+  return Math.max(0, totalDiscapacidad - sumaRestante)
+}
+
+const errorCantidadDiscapacidad = (index) => {
+  const cantidad = parseInt(tiposDiscapacidad.value[index]?.cantidad || 0)
+  const maxPermitido = maxDiscapacidadIndividual(index)
+  return cantidad > maxPermitido
+}
+
+// Estados de error generales
 const errorGenero = computed(() => {
   return sumaGenero.value !== parseInt(totalParticipantes.value || 0)
 })
 
 const errorEdades = computed(() => {
   return sumaEdades.value !== parseInt(totalParticipantes.value || 0)
+})
+
+const errorDiscapacidad = computed(() => {
+  return sumaDiscapacidades.value !== parseInt(totalConDiscapacidad.value || 0)
 })
 
 const errorOcupaciones = computed(() => {
@@ -657,6 +910,46 @@ const totalesCoinciden = computed(() => {
 const mostrarResumen = computed(() => {
   return parseInt(totalParticipantes.value || 0) > 0
 })
+
+// Métodos para discapacidad
+const calcularPorcentajeDiscapacidad = (cantidad) => {
+  const total = parseInt(totalConDiscapacidad.value || 1)
+  return ((cantidad / total) * 100).toFixed(1)
+}
+
+const agregarDiscapacidad = () => {
+  tiposDiscapacidad.value.push({ tipo: '', cantidad: 0 })
+}
+
+const eliminarDiscapacidad = (index) => {
+  if (tiposDiscapacidad.value.length > 1) {
+    tiposDiscapacidad.value.splice(index, 1)
+  }
+}
+
+const validarDiscapacidad = () => {
+  // Si el total de discapacidad excede el total de participantes, ajustarlo
+  if (parseInt(totalConDiscapacidad.value || 0) > parseInt(totalParticipantes.value || 0)) {
+    // Mantener el valor pero mostrar error
+    // La validación se maneja a través de computed properties
+  }
+
+  // Si la suma de discapacidades es mayor que el nuevo total, ajustar
+  if (sumaDiscapacidades.value > parseInt(totalConDiscapacidad.value || 0)) {
+    // Podríamos ajustar automáticamente, pero mejor dejar que el usuario corrija
+    // y mostrar el error
+  }
+}
+
+const validarDiscapacidadIndividual = (index) => {
+  const cantidad = parseInt(tiposDiscapacidad.value[index]?.cantidad || 0)
+  const maxPermitido = maxDiscapacidadIndividual(index)
+
+  if (cantidad > maxPermitido) {
+    // Mantener el valor pero mostrar error
+    // La validación se maneja a través de computed properties
+  }
+}
 
 // Método para calcular porcentaje
 const calcularPorcentaje = (cantidad) => {
@@ -746,6 +1039,17 @@ const eliminarOrganizacion = (index) => {
 const eliminarArchivo = (index) => {
   archivos.value.splice(index, 1)
 }
+
+// Watch para ajustar automáticamente si el total de participantes cambia
+watch(totalParticipantes, (newVal) => {
+  const total = parseInt(newVal || 0)
+  const discapacidad = parseInt(totalConDiscapacidad.value || 0)
+
+  if (discapacidad > total) {
+    // Podríamos ajustar automáticamente, pero mejor mostrar error
+    // y dejar que el usuario corrija manualmente
+  }
+})
 </script>
 
 <style scoped>

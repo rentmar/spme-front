@@ -52,6 +52,17 @@ export const useIndicadoresStore = defineStore('reportes', () => {
     }
   }
 
+  //Organiza la informacion de los indicadores
+  const organizarIndicadores = () => {
+    const indicadores = filtrarIndicadores()
+    return indicadores.map((indicador) => ({
+      id: indicador.id,
+      type: indicador.type,
+      tipo_dato: indicador.data.nodoProyecto.tipo,
+      nodoproyecto: indicador.data.nodoProyecto,
+    }))
+  }
+
   return {
     loading,
     error,
@@ -59,5 +70,6 @@ export const useIndicadoresStore = defineStore('reportes', () => {
     cargarActividad,
     filtrarIndicadores,
     getIndicadoresForSelect,
+    organizarIndicadores,
   }
 })

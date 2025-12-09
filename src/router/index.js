@@ -268,7 +268,8 @@ const router = createRouter({
     },
     {
       path: '/monitoreo/formularioInf/:id',
-      component: () => import('@/views/monitoreo/InformeActividad.vue'),
+      //component: () => import('@/views/monitoreo/InformeActividad.vue'),
+      component: () => import('@/views/monitoreo/InformeActividadView.vue'),
     },
 
     /*************************  Reportes  **************************************************** */

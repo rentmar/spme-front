@@ -13,6 +13,7 @@ const actividad = ref(null)
 const proyectoDatos = ref(null)
 const mensaje = ref(null)
 const actividadTarea = ref([])
+const actividadInfo = ref(null)
 
 // Estados específicos para tareas
 const tareasActividad = ref([])
@@ -173,6 +174,18 @@ export function useActividad() {
     }
   }
 
+  //Obtener una actividad por su id mas sus tareas y proyectos
+  async function obtenerActidadPorId(idactividad) {
+    loading.value = true
+    try {
+      const respuesta = await actividadServicios.actividadInforPorId(idactividad)
+      actividadInfo.value = respuesta
+    } catch (err) {
+      error.value = err
+      throw err
+    }
+  }
+
   return {
     loading, //ref
     error, //ref
@@ -181,6 +194,7 @@ export function useActividad() {
     mensaje,
     actividadTarea,
     tareaActual,
+    actividadInfo,
     cargarActividades,
     cargarActividadPorId,
     cargarActividadesPorIdProyecto, //
@@ -191,5 +205,6 @@ export function useActividad() {
     obtenerListaActividadesTareas,
     cargarTareasDeActividad,
     actividadesTareas,
+    obtenerActidadPorId,
   }
 }
