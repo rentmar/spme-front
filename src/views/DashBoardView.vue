@@ -21,14 +21,15 @@
           />
 
           <v-row class="mb-6">
-
             <v-col cols="12" md="4">
               <v-card class="summary-card" color="primary" variant="tonal">
                 <v-card-text>
                   <div class="d-flex justify-space-between align-center">
                     <div>
                       <div class="text-h6">PEIs Vigentes / Total</div>
-                      <div class="text-h4 mt-2">{{ summary.pei_vigentes }} / {{ summary.total_pei }}</div>
+                      <div class="text-h4 mt-2">
+                        {{ summary.pei_vigentes }} / {{ summary.total_pei }}
+                      </div>
                     </div>
                     <v-icon size="48">mdi-file-document-multiple</v-icon>
                   </div>
@@ -56,7 +57,9 @@
                   <div class="d-flex justify-space-between align-center">
                     <div>
                       <div class="text-h6">Actividades Planificadas / Total</div>
-                      <div class="text-h4 mt-2">{{ summary.actividades_planificadas }} / {{ summary.total_actividades }}</div>
+                      <div class="text-h4 mt-2">
+                        {{ summary.actividades_planificadas }} / {{ summary.total_actividades }}
+                      </div>
                     </div>
                     <v-icon size="48">mdi-calendar-check</v-icon>
                   </div>
@@ -66,7 +69,6 @@
           </v-row>
 
           <v-row class="mb-6">
-
             <v-col cols="12" md="4">
               <v-card class="summary-card" color="success" variant="tonal">
                 <v-card-text>
@@ -111,58 +113,59 @@
               </v-card>
             </v-col>
           </v-row>
-
         </v-col>
       </v-row>
     </template>
-
-    </v-container>
+  </v-container>
 </template>
 
 <script>
-import axios from 'axios';
+import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
+import axios from 'axios'
 const baseUrl = import.meta.env.VITE_API_BASE
 export default {
   data() {
     return {
       loading: true,
       summary: {
-        "actividades_planificadas": 0,
-        "total_actividades": 0,
-        "actividades_ejecucion": 0,
-        "actividades_finalizadas": 0,
-        "total_presupuesto": "0.00",
-        "total_presupuesto_global": "0.00",
-        "pei_vigentes": 0,
-        "total_pei": 0,
-        "total_proyectos": 0
-      }
-    };
+        actividades_planificadas: 0,
+        total_actividades: 0,
+        actividades_ejecucion: 0,
+        actividades_finalizadas: 0,
+        total_presupuesto: '0.00',
+        total_presupuesto_global: '0.00',
+        pei_vigentes: 0,
+        total_pei: 0,
+        total_proyectos: 0,
+      },
+    }
   },
 
   methods: {
     async fetchDashboardData() {
-      const API_URL = baseUrl+'/actividades_api/obtenerDashboardActividad/';
+      const API_URL = baseUrl + '/actividades_api/obtenerDashboardActividad/'
 
-      this.loading = true;
+      this.loading = true
 
       try {
-        const response = await axios.get(API_URL);
+        const response = await axios.get(API_URL)
 
-        this.summary = response.data;
-
+        this.summary = response.data
       } catch (error) {
-        console.error('Error al obtener datos del dashboard:', error);
+        console.error('Error al obtener datos del dashboard:', error)
       } finally {
-        this.loading = false;
+        this.loading = false
       }
-    }
+    },
   },
 
   mounted() {
-    this.fetchDashboardData();
-  }
-};
+    this.fetchDashboardData()
+  },
+  components: {
+    PaginaTituloIcono,
+  },
+}
 </script>
 
 <style scoped>

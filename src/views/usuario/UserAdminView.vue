@@ -18,86 +18,72 @@
       <v-row>
         <v-col cols="12">
           <PaginaTituloIcono :titulo="'ADMINISTRACIÓN DE USUARIOS'" :icon="'mdi-account-cog'" />
-           <!-- EXCEL-->
-      <div>
-
-    <v-btn
-      color="primary"
-      @click="openImportDialog"
-      class="mr-2"
-    >
-      <v-icon left>mdi-upload</v-icon>
-      Importar Excel
-    </v-btn>
-    <v-dialog v-model="importDialog" max-width="500px">
-      <v-card>
-        <v-card-title class="d-flex justify-space-between align-center">
-          <span>Importar Usuarios desde Excel</span>
-          <v-btn icon @click="importDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-
-        <v-card-text>
-          <v-alert type="info" class="mb-4">
-            <div class="text-body-2">
-              <strong>Formato requerido:</strong> El archivo Excel debe contener las siguientes columnas:
-              <ul class="mt-2">
-                <li><strong>usuario</strong> (requerido)</li>
-                <li><strong>nombre</strong> (requerido)</li>
-                <li><strong>paterno</strong> (requerido)</li>
-                <li><strong>materno</strong> (opcional)</li>
-                <li><strong>ci</strong> (requerido)</li>
-                <li><strong>cargo</strong> (requerido)</li>
-                <li><strong>banco</strong> (opcional)</li>
-                <li><strong>numero_cuenta</strong> (opcional)</li>
-                <li><strong>tipo_cuenta</strong> (opcional)</li>
-                <li><strong>is_active</strong> (true/false)</li>
-                <li><strong>password</strong> (si está vacío, se usará "password123")</li>
-                <li><strong>permisos</strong> (opcional)</li>
-              </ul>
-            </div>
-          </v-alert>
-
-          <v-file-input
-            ref="fileInput"
-            v-model="file"
-            accept=".xlsx,.xls,.ods"
-            label="Seleccionar archivo Excel"
-            prepend-icon="mdi-file-excel"
-            @change="handleFileSelect"
-            :loading="importingUsers"
-          ></v-file-input>
-
-          <div class="text-center mt-4">
-            <v-btn
-              color="primary"
-              text
-              @click="downloadTemplate"
-              class="mr-2"
-            >
-              <v-icon left>mdi-download</v-icon>
-              Descargar Plantilla
+          <!-- EXCEL-->
+          <div>
+            <v-btn color="primary" @click="openImportDialog" class="mr-2">
+              <v-icon left>mdi-upload</v-icon>
+              Importar Excel
             </v-btn>
+            <v-dialog v-model="importDialog" max-width="500px">
+              <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <span>Importar Usuarios desde Excel</span>
+                  <v-btn icon @click="importDialog = false">
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
+                </v-card-title>
+
+                <v-card-text>
+                  <v-alert type="info" class="mb-4">
+                    <div class="text-body-2">
+                      <strong>Formato requerido:</strong> El archivo Excel debe contener las
+                      siguientes columnas:
+                      <ul class="mt-2">
+                        <li><strong>usuario</strong> (requerido)</li>
+                        <li><strong>nombre</strong> (requerido)</li>
+                        <li><strong>paterno</strong> (requerido)</li>
+                        <li><strong>materno</strong> (opcional)</li>
+                        <li><strong>ci</strong> (requerido)</li>
+                        <li><strong>cargo</strong> (requerido)</li>
+                        <li><strong>banco</strong> (opcional)</li>
+                        <li><strong>numero_cuenta</strong> (opcional)</li>
+                        <li><strong>tipo_cuenta</strong> (opcional)</li>
+                        <li><strong>is_active</strong> (true/false)</li>
+                        <li><strong>password</strong> (si está vacío, se usará "password123")</li>
+                        <li><strong>permisos</strong> (opcional)</li>
+                      </ul>
+                    </div>
+                  </v-alert>
+
+                  <v-file-input
+                    ref="fileInput"
+                    v-model="file"
+                    accept=".xlsx,.xls,.ods"
+                    label="Seleccionar archivo Excel"
+                    prepend-icon="mdi-file-excel"
+                    @change="handleFileSelect"
+                    :loading="importingUsers"
+                  ></v-file-input>
+
+                  <div class="text-center mt-4">
+                    <v-btn color="primary" text @click="downloadTemplate" class="mr-2">
+                      <v-icon left>mdi-download</v-icon>
+                      Descargar Plantilla
+                    </v-btn>
+                  </div>
+                </v-card-text>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="grey" text @click="importDialog = false" :disabled="importingUsers">
+                    Cancelar
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </div>
-        </v-card-text>
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="grey"
-            text
-            @click="importDialog = false"
-            :disabled="importingUsers"
-          >
-            Cancelar
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </div>
-
-    <!--FIN EXCEL-->
+          <!--FIN EXCEL-->
           <!-- Barra de acciones -->
           <div class="users-admin-actions mb-4">
             <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreateDialog">
@@ -180,7 +166,6 @@
 
               <!-- Acciones -->
               <template v-slot:item.actions="{ item }">
-
                 <!-- <div class="d-flex">
                   <v-menu>
                     <template v-slot:activator="{ props }">
@@ -233,57 +218,57 @@
                   </v-menu>
                 </div>
                  -->
-              <div class="d-flex">
-                <v-menu>
-                  <template v-slot:activator="{ props }">
-                    <v-btn
-                      icon
-                      size="small"
-                      color="secondary"
-                      variant="text"
-                      v-bind="props"
-                      class="ml-1"
-                    >
-                      <v-icon>mdi-dots-vertical</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-list density="compact">
-                    <v-list-item @click="openEditDialog(item)" :loading="loadingEdit">
-                      <template v-slot:prepend>
-                        <v-icon icon="mdi-pencil"></v-icon>
-                      </template>
-                      <v-list-item-title>Editar</v-list-item-title>
-                    </v-list-item>
+                <div class="d-flex">
+                  <v-menu>
+                    <template v-slot:activator="{ props }">
+                      <v-btn
+                        icon
+                        size="small"
+                        color="secondary"
+                        variant="text"
+                        v-bind="props"
+                        class="ml-1"
+                      >
+                        <v-icon>mdi-dots-vertical</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-list density="compact">
+                      <v-list-item @click="openEditDialog(item)" :loading="loadingEdit">
+                        <template v-slot:prepend>
+                          <v-icon icon="mdi-pencil"></v-icon>
+                        </template>
+                        <v-list-item-title>Editar</v-list-item-title>
+                      </v-list-item>
 
-                    <v-list-item @click="openResetPasswordDialog(item)">
-                      <template v-slot:prepend>
-                        <v-icon icon="mdi-key"></v-icon>
-                      </template>
-                      <v-list-item-title>Resetear contraseña</v-list-item-title>
-                    </v-list-item>
+                      <v-list-item @click="openResetPasswordDialog(item)">
+                        <template v-slot:prepend>
+                          <v-icon icon="mdi-key"></v-icon>
+                        </template>
+                        <v-list-item-title>Resetear contraseña</v-list-item-title>
+                      </v-list-item>
 
-                    <v-list-item @click="toggleUserStatus(item)">
-                      <template v-slot:prepend>
-                        <v-icon
-                          :icon="
-                            item.status === 'active' ? 'mdi-account-off' : 'mdi-account-check'
-                          "
-                        ></v-icon>
-                      </template>
-                      <v-list-item-title>
-                        {{ item.status === 'active' ? 'Desactivar' : 'Activar' }}
-                      </v-list-item-title>
-                    </v-list-item>
+                      <v-list-item @click="toggleUserStatus(item)">
+                        <template v-slot:prepend>
+                          <v-icon
+                            :icon="
+                              item.status === 'active' ? 'mdi-account-off' : 'mdi-account-check'
+                            "
+                          ></v-icon>
+                        </template>
+                        <v-list-item-title>
+                          {{ item.status === 'active' ? 'Desactivar' : 'Activar' }}
+                        </v-list-item-title>
+                      </v-list-item>
 
-                    <v-list-item @click="viewUserDetails(item)">
-                      <template v-slot:prepend>
-                        <v-icon icon="mdi-eye"></v-icon>
-                      </template>
-                      <v-list-item-title>Ver detalles</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </div>
+                      <v-list-item @click="viewUserDetails(item)">
+                        <template v-slot:prepend>
+                          <v-icon icon="mdi-eye"></v-icon>
+                        </template>
+                        <v-list-item-title>Ver detalles</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </div>
               </template>
             </v-data-table>
           </v-card>
@@ -414,142 +399,143 @@
      -->
 
     <!-- Crear/Editar Usuario -->
-<v-dialog v-model="userDialog" max-width="800" persistent>
-  <v-card>
-    <v-card-title>{{ isEditing ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</v-card-title>
-    <v-card-text>
-      <v-form ref="userForm" @submit.prevent="saveUser">
-        <v-row>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="currentUser.nombre"
-              label="Nombre"
-              :rules="[required]"
-              variant="outlined"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="currentUser.paterno"
-              label="Apellido Paterno"
-              variant="outlined"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="currentUser.materno"
-              label="Apellido Materno"
-              variant="outlined"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="currentUser.ci"
-              label="C.I."
-              variant="outlined"
-            ></v-text-field>
-          </v-col>
+    <v-dialog v-model="userDialog" max-width="800" persistent>
+      <v-card>
+        <v-card-title>{{ isEditing ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</v-card-title>
+        <v-card-text>
+          <v-form ref="userForm" @submit.prevent="saveUser">
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.nombre"
+                  label="Nombre"
+                  :rules="[required]"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.paterno"
+                  label="Apellido Paterno"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.materno"
+                  label="Apellido Materno"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.ci"
+                  label="C.I."
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
 
-          <!-- NUEVO CAMPO CORREO -->
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="currentUser.correo"
-              label="Correo Electrónico"
-              :rules="[required, emailRule]"
-              type="email"
-              variant="outlined"
-            ></v-text-field>
-          </v-col>
+              <!-- NUEVO CAMPO CORREO -->
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.correo"
+                  label="Correo Electrónico"
+                  :rules="[required, emailRule]"
+                  type="email"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
 
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="currentUser.usuario"
-              label="Nombre de Usuario"
-              :rules="[required]"
-              variant="outlined"
-            ></v-text-field>
-          </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.usuario"
+                  label="Nombre de Usuario"
+                  :rules="[required]"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
 
-          <!-- CAMBIO: SELECT PARA CARGO -->
-          <v-col cols="12" md="6">
-            <v-select
-              v-model="currentUser.cargo"
-              :items="cargoOptions"
-              label="Cargo"
-              :rules="[required]"
-              variant="outlined"
-            ></v-select>
-          </v-col>
+              <!-- CAMBIO: SELECT PARA CARGO -->
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="currentUser.cargo"
+                  :items="cargoOptions"
+                  label="Cargo"
+                  :rules="[required]"
+                  variant="outlined"
+                ></v-select>
+              </v-col>
 
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="currentUser.banco"
-              label="Banco"
-              variant="outlined"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="currentUser.numero_cuenta"
-              label="Número de Cuenta"
-              variant="outlined"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-select
-              v-model="currentUser.tipo_cuenta"
-              :items="accountTypeOptions"
-              label="Tipo de Cuenta"
-              :rules="[required]"
-              required
-            ></v-select>
-          </v-col>
-          <v-col cols="12" md="6" v-if="!isEditing">
-            <v-text-field
-              v-model="currentUser.password"
-              label="Contraseña"
-              :rules="[required, minLength(8)]"
-              type="password"
-              variant="outlined"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="6" v-if="!isEditing">
-            <v-text-field
-              v-model="currentUser.passwordConfirm"
-              label="Confirmar contraseña"
-              :rules="[required, passwordMatch]"
-              type="password"
-              variant="outlined"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-select
-              v-model="currentUser.permisos"
-              :items="availablePermissions"
-              label="Permisos"
-              :rules="[required]"
-              variant="outlined"
-            ></v-select>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-select
-              v-model="currentUser.is_active"
-              :items="statusOptions"
-              label="Estado"
-              :rules="[required]"
-              variant="outlined"
-            ></v-select>
-          </v-col>
-        </v-row>
-      </v-form>
-    </v-card-text>
-    <v-card-actions class="justify-end">
-      <v-btn color="grey" @click="userDialog = false">Cancelar</v-btn>
-      <v-btn color="primary" @click="saveUser" :loading="savingUser">Guardar</v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
-<!-- Resetear contraseña -->
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.banco"
+                  label="Banco"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="currentUser.numero_cuenta"
+                  label="Número de Cuenta"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="currentUser.tipo_cuenta"
+                  :items="accountTypeOptions"
+                  label="Tipo de Cuenta"
+                  :rules="[required]"
+                  variant="outlined"
+                  required
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="6" v-if="!isEditing">
+                <v-text-field
+                  v-model="currentUser.password"
+                  label="Contraseña"
+                  :rules="[required, minLength(8)]"
+                  type="password"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6" v-if="!isEditing">
+                <v-text-field
+                  v-model="currentUser.passwordConfirm"
+                  label="Confirmar contraseña"
+                  :rules="[required, passwordMatch]"
+                  type="password"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="currentUser.permisos"
+                  :items="availablePermissions"
+                  label="Permisos"
+                  :rules="[required]"
+                  variant="outlined"
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="currentUser.is_active"
+                  :items="statusOptions"
+                  label="Estado"
+                  :rules="[required]"
+                  variant="outlined"
+                ></v-select>
+              </v-col>
+            </v-row>
+          </v-form>
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn color="grey" @click="userDialog = false">Cancelar</v-btn>
+          <v-btn color="primary" @click="saveUser" :loading="savingUser">Guardar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- Resetear contraseña -->
     <v-dialog v-model="resetPasswordDialog" max-width="500" persistent>
       <v-card>
         <v-card-title>Resetear contraseña</v-card-title>
@@ -667,12 +653,7 @@ const availablePermissions = ['A', 'B', 'C', 'D'] // Ajustar según tus permisos
 
 const accountTypeOptions = ['Ahorros', 'Corriente']
 
-const cargoOptions = [
-  'admin',
-  'coordinador',
-  'tecnico',
-  'contable'
-]
+const cargoOptions = ['admin', 'coordinador', 'tecnico', 'contable']
 
 const userForm = ref(null)
 const baseUrl = import.meta.env.VITE_API_BASE
@@ -798,28 +779,27 @@ const fetchUsers = async () => {
     tableLoading.value = true
     loading.value = true
 
-    const response = await axios.get(baseUrl+'/autenticacion_api/listaUsuarios/');
-    const data = response.data;
-    users.value = data.usuarios.map(user => ({
-    id: user.id,
-    nombre: user.nombre,
-    paterno: user.paterno,
-    materno: user.materno,
-    correo: user.correo,
-    ci: user.ci,
-    usuario: user.usuario,
-    cargo: user.cargo,
-    banco: user.banco,
-    numero_cuenta: user.numero_cuenta,
-    tipo_cuenta: user.tipo_cuenta,
-    permisos: user.permisos,
-    is_active: user.es_activo,
-    roles: [user.cargo],
-    status: user.es_activo ? 'active' : 'inactive',
-    avatar: null,
-    lastLogin: null,
-    }));
-
+    const response = await axios.get(baseUrl + '/autenticacion_api/listaUsuarios/')
+    const data = response.data
+    users.value = data.usuarios.map((user) => ({
+      id: user.id,
+      nombre: user.nombre,
+      paterno: user.paterno,
+      materno: user.materno,
+      correo: user.correo,
+      ci: user.ci,
+      usuario: user.usuario,
+      cargo: user.cargo,
+      banco: user.banco,
+      numero_cuenta: user.numero_cuenta,
+      tipo_cuenta: user.tipo_cuenta,
+      permisos: user.permisos,
+      is_active: user.es_activo,
+      roles: [user.cargo],
+      status: user.es_activo ? 'active' : 'inactive',
+      avatar: null,
+      lastLogin: null,
+    }))
   } catch (error) {
     errorMsg('Error al cargar usuarios')
     console.error('Error fetching users:', error)
@@ -835,7 +815,7 @@ const openCreateDialog = () => {
     nombre: '',
     paterno: '',
     materno: '',
-    correo:'',
+    correo: '',
     ci: '',
     cargo: '',
     banco: '',
@@ -885,30 +865,22 @@ const saveUser = async () => {
       const updatePayload = {
         ...payload,
         id_usuario: currentUser.value.id,
-
-      };
-       await axios.put(
-        baseUrl+'/autenticacion_api/actualizarUsuario/',
-        updatePayload
-      );
-      successMsg('Usuario actualizado correctamente');
+      }
+      await axios.put(baseUrl + '/autenticacion_api/actualizarUsuario/', updatePayload)
+      successMsg('Usuario actualizado correctamente')
     } else {
       const createPayload = {
         ...payload,
         password: currentUser.value.password,
       }
 
-      await axios.post(
-        baseUrl+'/autenticacion_api/crearUsuario/',
-        createPayload
-      )
+      await axios.post(baseUrl + '/autenticacion_api/crearUsuario/', createPayload)
       successMsg('Usuario creado correctamente')
     }
-    await fetchUsers();
+    await fetchUsers()
     userDialog.value = false
   } catch (error) {
-    errorMsg('Error al guardar usuario',error)
-
+    errorMsg('Error al guardar usuario', error)
   } finally {
     savingUser.value = false
   }
@@ -938,10 +910,7 @@ const resetPassword = async () => {
       password: newPwd,
     }
 
-    await axios.put(
-      baseUrl+'/autenticacion_api/cambiarPwdUsuario/',
-      payload
-    );
+    await axios.put(baseUrl + '/autenticacion_api/cambiarPwdUsuario/', payload)
 
     successMsg('Contraseña actualizada correctamente')
     resetPasswordDialog.value = false
@@ -964,10 +933,7 @@ const toggleUserStatus = async (user) => {
       activo: nuevoEstado,
     }
 
-    await axios.put(
-      baseUrl+'/autenticacion_api/cambiarEstadoUsuario/',
-      payload
-    );
+    await axios.put(baseUrl + '/autenticacion_api/cambiarEstadoUsuario/', payload)
 
     const userToUpdate = users.value.find((u) => u.id === user.id)
     if (userToUpdate) {
@@ -1064,7 +1030,7 @@ const handleFileSelect = (event) => {
   const validTypes = [
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.oasis.opendocument.spreadsheet'
+    'application/vnd.oasis.opendocument.spreadsheet',
   ]
 
   if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|ods)$/)) {
@@ -1096,7 +1062,6 @@ const readExcelFile = (file) => {
       }
 
       processImportedData(jsonData)
-
     } catch (error) {
       console.error('Error reading Excel file:', error)
       errorMsg('Error al leer el archivo Excel')
@@ -1112,31 +1077,33 @@ const readExcelFile = (file) => {
 
 const processImportedData = (data) => {
   // Validar estructura del archivo
-  const requiredFields = ['usuario', 'nombre', 'paterno', 'ci', 'cargo','correo']
+  const requiredFields = ['usuario', 'nombre', 'paterno', 'ci', 'cargo', 'correo']
   const firstRow = data[0]
 
-  const missingFields = requiredFields.filter(field => !(field in firstRow))
+  const missingFields = requiredFields.filter((field) => !(field in firstRow))
   if (missingFields.length > 0) {
     errorMsg(`Faltan campos requeridos en el archivo: ${missingFields.join(', ')}`)
     return
   }
 
   // Preparar datos para importar
-  const usersToImport = data.map((row, index) => ({
-    usuario: row.usuario || '',
-    nombre: row.nombre || '',
-    paterno: row.paterno || '',
-    materno: row.materno || '',
-    ci: row.ci ? String(row.ci) : '',
-    correo: row.correo || '',
-    cargo: row.cargo || '',
-    banco: row.banco || '',
-    numero_cuenta: row.numero_cuenta ? String(row.numero_cuenta) : '',
-    tipo_cuenta: row.tipo_cuenta || '',
-    is_active: row.is_active !== undefined ? Boolean(row.is_active) : true,
-    password: row.password || 'password123', // Contraseña por defecto
-    permisos: row.permisos || '',
-  })).filter(user => user.usuario && user.nombre && user.ci) // Filtrar filas vacías
+  const usersToImport = data
+    .map((row, index) => ({
+      usuario: row.usuario || '',
+      nombre: row.nombre || '',
+      paterno: row.paterno || '',
+      materno: row.materno || '',
+      ci: row.ci ? String(row.ci) : '',
+      correo: row.correo || '',
+      cargo: row.cargo || '',
+      banco: row.banco || '',
+      numero_cuenta: row.numero_cuenta ? String(row.numero_cuenta) : '',
+      tipo_cuenta: row.tipo_cuenta || '',
+      is_active: row.is_active !== undefined ? Boolean(row.is_active) : true,
+      password: row.password || 'password123', // Contraseña por defecto
+      permisos: row.permisos || '',
+    }))
+    .filter((user) => user.usuario && user.nombre && user.ci) // Filtrar filas vacías
 
   if (usersToImport.length === 0) {
     errorMsg('No hay datos válidos para importar')
@@ -1170,10 +1137,7 @@ const importUsers = async (usersToImport) => {
           permisos: user.permisos,
         }
 
-        await axios.post(
-          baseUrl+'/autenticacion_api/crearUsuario/',
-          payload
-        )
+        await axios.post(baseUrl + '/autenticacion_api/crearUsuario/', payload)
       } catch (error) {
         console.error(`Error importing user ${user.usuario}:`, error)
         // Continuar con el siguiente usuario aunque falle uno
@@ -1190,7 +1154,6 @@ const importUsers = async (usersToImport) => {
 
     // Recargar lista de usuarios
     await fetchUsers()
-
   } catch (error) {
     console.error('Error in import process:', error)
     errorMsg('Error durante la importación')
@@ -1214,8 +1177,8 @@ const downloadTemplate = () => {
       tipo_cuenta: 'Ahorros',
       is_active: true,
       password: 'password123',
-      permisos: 'A,B,C'
-    }
+      permisos: 'A,B,C',
+    },
   ]
 
   const worksheet = XLSX.utils.json_to_sheet(templateData)

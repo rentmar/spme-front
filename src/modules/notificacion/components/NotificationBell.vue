@@ -31,6 +31,7 @@
     <!-- Diálogo de notificaciones -->
     <v-dialog v-model="dialogoVisible" max-width="600px" scrollable>
       <v-card>
+        <!--Encabezado del cuadro de dialogo-->
         <v-card-title class="d-flex align-center justify-space-between bg-primary">
           <div class="d-flex align-center">
             <v-icon color="white" class="mr-2">mdi-bell-alert</v-icon>
@@ -472,6 +473,7 @@ const marcarComoLeida = async (notificacion) => {
   }
 }
 
+//Funcion para marcar todas como leidas
 const marcarTodasComoLeidas = async () => {
   marcarTodas.value = true
 

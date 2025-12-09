@@ -61,23 +61,26 @@ export default {
       }
 
       for (let i = 0; i < this.cantidad; i++) {
-      const mesCalculado = (mesInicio + i) % 12
-      const anioCalculado = anioInicio + Math.floor((mesInicio + i) / 12)
+        const mesCalculado = (mesInicio + i) % 12
+        const anioCalculado = anioInicio + Math.floor((mesInicio + i) / 12)
 
-      mesesAMostrar.push({
-            nombre: `${nombresMeses[mesCalculado]} ${anioCalculado}`,
-            mes: mesCalculado,
-            anio: anioCalculado,
-            esMesActual: mesCalculado === this.mesInicial && anioCalculado === this.anioInicial
-          })
-        }
+        mesesAMostrar.push({
+          nombre: `${nombresMeses[mesCalculado]} ${anioCalculado}`,
+          mes: mesCalculado,
+          anio: anioCalculado,
+          esMesActual: mesCalculado === this.mesInicial && anioCalculado === this.anioInicial,
+        })
+      }
 
-        return mesesAMostrar
-      },
+      return mesesAMostrar
+    },
 
     viewBox() {
       const width =
-        this.xInicial + this.anchoColumnaActividad + (this.ancho + this.espacio) * this.cantidad + 20 // +20 para margen
+        this.xInicial +
+        this.anchoColumnaActividad +
+        (this.ancho + this.espacio) * this.cantidad +
+        20 // +20 para margen
       const height = this.y + this.altolbl + this.itemsPerPage * (this.alto + 10) + 5
       return `0 0 ${width} ${height}`
     },
@@ -120,46 +123,46 @@ export default {
     },
   },
   mounted() {
-  // Inicializar con el mes actual al centro
-  const ahora = new Date()
-  this.mesInicial = ahora.getMonth()
-  this.anioInicial = ahora.getFullYear()
+    // Inicializar con el mes actual al centro
+    const ahora = new Date()
+    this.mesInicial = ahora.getMonth()
+    this.anioInicial = ahora.getFullYear()
 
-  if (this.actividades.length > 0 && !this.selectedActividad) {
-    this.selectedActividad = this.actividades[0]
-  }
+    if (this.actividades.length > 0 && !this.selectedActividad) {
+      this.selectedActividad = this.actividades[0]
+    }
 
-  this.ajustarAlturaSVG()
-  window.addEventListener('resize', this.ajustarAlturaSVG)
-  this.obtenerActividades()
-},
+    this.ajustarAlturaSVG()
+    window.addEventListener('resize', this.ajustarAlturaSVG)
+    this.obtenerActividades()
+  },
   beforeUnmount() {
     window.removeEventListener('resize', this.ajustarAlturaSVG)
   },
   methods: {
     // Métodos para navegar entre meses (uno por uno)
     navegarMeses(direccion) {
-  if (direccion === 'adelante') {
-    if (this.mesInicial === 11) {
-      this.mesInicial = 0
-      this.anioInicial += 1
-    } else {
-      this.mesInicial += 1
-    }
-  } else {
-    if (this.mesInicial === 0) {
-      this.mesInicial = 11
-      this.anioInicial -= 1
-    } else {
-      this.mesInicial -= 1
-    }
-  }
+      if (direccion === 'adelante') {
+        if (this.mesInicial === 11) {
+          this.mesInicial = 0
+          this.anioInicial += 1
+        } else {
+          this.mesInicial += 1
+        }
+      } else {
+        if (this.mesInicial === 0) {
+          this.mesInicial = 11
+          this.anioInicial -= 1
+        } else {
+          this.mesInicial -= 1
+        }
+      }
 
-  // Forzar actualización del DOM
-  this.$nextTick(() => {
-    //lógica adicional después de la actualización
-  })
-},
+      // Forzar actualización del DOM
+      this.$nextTick(() => {
+        //lógica adicional después de la actualización
+      })
+    },
 
     irAlPresente() {
       const ahora = new Date()
@@ -171,13 +174,12 @@ export default {
       this.loading = true
       this.error = null
 
-      console.log('BASEURL', BASEURL);
+      console.log('BASEURL', baseUrl)
 
       try {
         // const token = this.userStore.token;
         const response = await axios.get(
-
-          baseUrl+'/actividades_api/obtenerActividadesGantt/',
+          baseUrl + 'actividades_api/obtenerActividadesGantt/',
 
           {
             headers: {
@@ -207,66 +209,63 @@ export default {
     },
 
     posicionEnEscalaGrafica(fecha) {
-  const date = new Date(fecha + 'T00:00:00')
-  const year = date.getFullYear()
-  const month = date.getMonth()
-  const day = date.getDate()
+      const date = new Date(fecha + 'T00:00:00')
+      const year = date.getFullYear()
+      const month = date.getMonth()
+      const day = date.getDate()
 
-  // Encontrar la posición del mes en nuestra escala actual
-  const mesEnEscala = this.mesesParaMostrar.findIndex(
-    m => m.mes === month && m.anio === year
-  )
+      // Encontrar la posición del mes en nuestra escala actual
+      const mesEnEscala = this.mesesParaMostrar.findIndex((m) => m.mes === month && m.anio === year)
 
-  if (mesEnEscala === -1) {
-    return -1 // Fuera del rango visible
-  }
+      if (mesEnEscala === -1) {
+        return -1 // Fuera del rango visible
+      }
 
-  const monthWidth = this.ancho + this.espacio
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
+      const monthWidth = this.ancho + this.espacio
+      const daysInMonth = new Date(year, month + 1, 0).getDate()
 
-  const dayPosition = (day / daysInMonth) * monthWidth
+      const dayPosition = (day / daysInMonth) * monthWidth
 
-  // Posición mínima absoluta (inicio del área de meses)
-  const posicionMinima = this.xInicial + this.anchoColumnaActividad
+      // Posición mínima absoluta (inicio del área de meses)
+      const posicionMinima = this.xInicial + this.anchoColumnaActividad
 
-  return posicionMinima + mesEnEscala * monthWidth + dayPosition
-},
+      return posicionMinima + mesEnEscala * monthWidth + dayPosition
+    },
 
-  calcularBarra(actividad) {
+    calcularBarra(actividad) {
+      const posicionMinima = this.xInicial + this.anchoColumnaActividad
+      const areaMaxima = posicionMinima + (this.ancho + this.espacio) * this.cantidad
 
-  const posicionMinima = this.xInicial + this.anchoColumnaActividad
-  const areaMaxima = posicionMinima + (this.ancho + this.espacio) * this.cantidad
+      let xInicio = this.posicionEnEscalaGrafica(actividad.fecha_inicio)
+      let xFin = this.posicionEnEscalaGrafica(actividad.fecha_cierre)
 
-  let xInicio = this.posicionEnEscalaGrafica(actividad.fecha_inicio)
-  let xFin = this.posicionEnEscalaGrafica(actividad.fecha_cierre)
+      // Si la barra empieza antes del área visible, ajustar al inicio del área
+      if (xInicio < posicionMinima) {
+        xInicio = posicionMinima
+      }
 
-  // Si la barra empieza antes del área visible, ajustar al inicio del área
-  if (xInicio < posicionMinima) {
-    xInicio = posicionMinima
-  }
+      // Si la barra termina después del área visible, ajustar al final del área
+      if (xFin > areaMaxima) {
+        xFin = areaMaxima
+      }
 
-  // Si la barra termina después del área visible, ajustar al final del área
-  if (xFin > areaMaxima) {
-    xFin = areaMaxima
-  }
+      // Si alguna fecha está completamente fuera del rango visible
+      if (xInicio === -1 || xFin === -1) {
+        return { x: 0, width: 0 }
+      }
 
-  // Si alguna fecha está completamente fuera del rango visible
-  if (xInicio === -1 || xFin === -1) {
-    return { x: 0, width: 0 }
-  }
+      // Si después de los ajustes el inicio es mayor que el fin, no mostrar barra
+      if (xInicio >= xFin) {
+        return { x: 0, width: 0 }
+      }
 
-  // Si después de los ajustes el inicio es mayor que el fin, no mostrar barra
-  if (xInicio >= xFin) {
-    return { x: 0, width: 0 }
-  }
+      const width = Math.max(xFin - xInicio, 2) // Mínimo 2px para que sea visible
 
-  const width = Math.max(xFin - xInicio, 2) // Mínimo 2px para que sea visible
-
-  return {
-    x: xInicio,
-    width: width
-  }
-},
+      return {
+        x: xInicio,
+        width: width,
+      }
+    },
     showActividadDetails(actividad) {
       this.selectedActividad = actividad
     },
@@ -285,14 +284,12 @@ export default {
     },
 
     esFechaVisible(fecha) {
-  const date = new Date(fecha + 'T00:00:00')
-  const year = date.getFullYear()
-  const month = date.getMonth()
+      const date = new Date(fecha + 'T00:00:00')
+      const year = date.getFullYear()
+      const month = date.getMonth()
 
-  return this.mesesParaMostrar.some(m =>
-    m.mes === month && m.anio === year
-  )
-},
+      return this.mesesParaMostrar.some((m) => m.mes === month && m.anio === year)
+    },
 
     splitTextIntoLines(text, maxLength) {
       const words = text.split(' ')
@@ -359,7 +356,8 @@ export default {
         </v-btn>
 
         <v-chip color="info" variant="outlined" class="ml-2">
-          Mostrando: {{ mesesParaMostrar[0]?.nombre }} - {{ mesesParaMostrar[mesesParaMostrar.length - 1]?.nombre }}
+          Mostrando: {{ mesesParaMostrar[0]?.nombre }} -
+          {{ mesesParaMostrar[mesesParaMostrar.length - 1]?.nombre }}
         </v-chip>
       </v-col>
     </v-row>

@@ -655,9 +655,13 @@ import { proyectoServicios } from '@/modules/proyecto/services/proyectoService'
 //Instancias Gestoras
 import { useInstanciaGestora } from '@/modules/instanciaGestora/composables/useInstanciaGestora'
 import { useProcedenciaFondos } from '@/modules/proyecto/composables/useProcedenciaFondos'
+import { useUserStore } from '@/stores/user'
 
 //Instancias gestoras, des
 const { instancias, cargarInstancias } = useInstanciaGestora()
+
+//Store
+const usuarioStore = useUserStore()
 
 //Enrutador
 const router = useRouter()
@@ -685,7 +689,7 @@ const proyecto = reactive({
   pei: peiVigente.value.id,
   estado: 'ES',
   instancia_gestora: [],
-  creado_por: 'Admin',
+  creado_por: usuarioStore.usuario,
   fecha_inicio: null,
   fecha_finalizacion: null,
   presupuesto: null,
