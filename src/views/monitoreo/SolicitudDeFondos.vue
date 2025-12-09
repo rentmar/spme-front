@@ -1017,7 +1017,7 @@ async function submitForm() {
       tipo: 'sistema',
       prioridad: 3,
       icono: '✅',
-      accion_url: 'http://localhost:5173/pei/listaactividades?showButton=1',
+      accion_url: '',
       accion_texto: '',
     }
 
