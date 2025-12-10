@@ -164,7 +164,7 @@
             <v-row>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field
-                  v-model="formData.monto_solicitado"
+                  v-model="formData.monto_asignado"
                   label="Monto Asignado (Bs.)"
                   readonly
                 ></v-text-field>
@@ -410,6 +410,8 @@
   </div>
      <!-- {{ '*************************' }}
      <pre>{{ datosFormulario1 }}</pre> -->
+     <pre>{{ formData.monto_asignado }}</pre>
+     <pre>{{ route }}</pre>
 </template>
 
 <script setup>
@@ -491,12 +493,13 @@ const formData = ref({
   lugar_solicitud: '',
   fecha_actual: getCurrentDate(),
   fecha_solicitud: '',
-  monto_solicitado: 0,
+  //monto_solicitado: 0,
   validacion_responsable: false,
   idresponsable: null,
   validacion_coordinador: false,
   idcoordinador: null,
   monto_asignado: 0,
+  monto_gastado: 0,
   formulario_numero:'',
   validacion_contador: false,
   validacion_administrador: false,
@@ -534,7 +537,7 @@ const formDatSF = ref({
  return {
  	nombre: userStore.usuario,
  	role: userStore.rol,
-  id: userStore.userId,
+  id: userStore.id,
    };
  });
   console.log('ID Usuario:', usuario1.value.id)
@@ -554,7 +557,7 @@ const actividadData = ref({
 
 // Propiedades computadas
 const saldoPorReembolsar = computed(() => {
-  const montoAsignado = Number(formData.value.monto_solicitado) || 0;
+  const montoAsignado = Number(formData.value.monto_asignado) || 0;
   const montoGastado = Number(totalMontoGastado.value) || 0;
   return (montoAsignado - montoGastado).toFixed(2);
 });
@@ -959,7 +962,7 @@ watch(solicitudesFondos, (newSolicitudes) => {
       //console.log('Solicitud encontrada, pre-llenando datos:', solicitudEncontrada)
 
       // Pre-llenar campos con los datos de la solicitud
-      formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+      //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
       formData.value.monto_asignado = solicitudEncontrada.montoSolicitado || 0 // Asumiendo que monto asignado = monto solicitado
 
       // También puedes pre-llenar otros campos si es necesario
@@ -997,7 +1000,7 @@ watch(solicitudesFondos, (newSolicitudes) => {
     solicitud.value = solicitudEncontrada
 
     if (solicitudEncontrada) {
-      formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+      //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
       formData.value.monto_asignado = solicitudEncontrada.formaPago || 0
     }
   }
@@ -1071,6 +1074,7 @@ async function submitForm() {
     const payload = {
       numeroFormulario: formDatSF.value.numeroFormulariosf || '',
       //numeroFormulario: formData.value.numeroFormulario || "",
+      montoAsignado: formData.value.monto_asignado,
       montoDescargado: Number(totalMontoGastado.value),
       cpteDiario: formData.value.cpte_diario,
       fechaDesembolso: formData.value.fecha_desembolso,
@@ -1169,7 +1173,7 @@ function exportToExcel() {
     [''],
     ['Cpte. Diario:', formData.value.cpte_diario, '', ''],
     ['Fecha de Desembolso:', formData.value.fecha_desembolso, '', ''],
-    ['Monto Asignado (Bs.):', formData.value.monto_solicitado, '', ''],
+    ['Monto Asignado (Bs.):', formData.value.monto_asignado, '', ''],
     ['Monto Gastado (Bs.):', Number(totalMontoGastado.value), '', ''],
     [''],
     ['Saldo por Reembolsar (Bs.):', Number(saldoPorReembolsar.value), '', ''],
