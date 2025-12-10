@@ -594,7 +594,12 @@ import ActividadInformacion from '@/modules/proyecto/components/partials/Activid
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
+import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
 
+//Inicar Composable
+const { enviarMensajeAutomatico } = useNotificaciones()
+
+//Routes
 const router = useRouter()
 const route = useRoute()
 // Convertir a número y validar
@@ -1042,8 +1047,21 @@ async function submitForm() {
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
     //bloquearIconoSF.value = true;
+
+    const cuerpoMensaje = {
+      destinatario_id: payload.id_coordinador,
+      asunto: 'Solicitud de Fondos - Coordinado',
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value,
+      tipo: 'sistema',
+      prioridad: 3,
+      accion_url: '',
+      accion_texto: '',
+    }
+
     exportToExcel()
     resetForm()
+
+    await enviarMensajeAutomatico(cuerpoMensaje)
 
     ////////////////////////////////////////////////////////////////////////////
     // Enviar notificación por correo al coordinador
