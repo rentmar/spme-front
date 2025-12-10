@@ -87,6 +87,87 @@ export const peiServicios = {
       console.error('No se pudo obtener la lista de PEIs', error)
     }
   },
+  /* Extraer las actividades y tareas del pei */
+  actividadesPorIdPei: async (idpei) => {
+    try {
+      const respuesta = await api.get('/pei/' + idpei + '/actividades-con-tareas/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: no se pudo obtener la lista de actividades del pei: ' + idpei, err)
+    }
+  },
+  /* Estructura del pei */
+  obtenerEstructuraPeiPorId: async (idpei) => {
+    try {
+      const respuesta = await api.get('/pei/' + idpei + '/estructura/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: no se pudo obtener la estructura del pei: ' + idpei, err)
+    }
+  },
+  /* Obtener las actividades */
+  obtenerActividadesPeiPorId: async (idpei) => {
+    try {
+      const respuesta = await api.get('/pei/' + idpei + '/actividades-con-tareas/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: No se pudo obtener las actividades del Pei: ' + idpei, err)
+    }
+  },
+  /* Crear Actividades PEI */
+  crearActividadesPei: async (actividadData) => {
+    try {
+      const respuesta = await api.post('/pei/actividades/crear/', actividadData)
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: No se pudo crear la actividad', err)
+    }
+  },
+  /* Crear Tarea PEI */
+  crearTareaPei: async (tareaData) => {
+    try {
+      const respuesta = await api.post('/tareas-actividad-pei/', tareaData)
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: No se pudo crear la tarea PEI', err)
+    }
+  },
+  /* Actualizar Tarea PEI */
+  updateTareaPei: async (idtareapei, tareaData) => {
+    try {
+      const respuesta = await api.put('/tareas-actividad-pei/' + idtareapei + '/', tareaData)
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: Nose pudo actualizar la Tarea', err)
+    }
+  },
+  /* Eliminar Tarea */
+  delTareaPei: async (idtareapei) => {
+    try {
+      const respuesta = await api.delete('/tareas-actividad-pei/' + idtareapei + '/')
+      return respuesta
+    } catch (err) {
+      console.error('Axios: Fallo al elimir la Tarea con id: ' + idtareapei, err)
+    }
+  },
+  /* Cargar una Actividad PEI por su id mas sus tareas*/
+  cargarActividadTareaPorIdActividad: async (idactividad) => {
+    try {
+      const respuesta = await api.get('/pei/actividad/' + idactividad + '/tareas/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: No se pudo cargar la actividad pei con id: ' + idactividad, err)
+    }
+  },
+  /* Guardar las actividades planificadas */
+  guardarActividadesPeiBulk: async (matrizActividad) => {
+    try {
+      const respuesta = await api.post('/pei/actividades/actualizar-lote/', matrizActividad)
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: No se pudo actualizar las actividades', err)
+    }
+  },
 }
 
 export const objetivoPeiServicios = {

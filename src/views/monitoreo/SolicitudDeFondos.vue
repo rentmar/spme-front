@@ -25,18 +25,19 @@
         :icon="'mdi-cash-check'"
       ></PaginaTituloIcono>
       <!--Encabezado del Proyecto-->
-       <ProyectoIdHeader
+      <ProyectoIdHeader
         v-if="datosFormulario"
         :proyecto-id="datosFormulario.actividad?.proyecto"
       ></ProyectoIdHeader>
       <br />
       <!--Encabezado de la Actividad-->
-        <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
+
+      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
       <v-row>
         <!-- Panel lateral de información -->
         <v-col cols="12" md="4" lg="3">
-           <v-card elevation="2" rounded="lg" class="mb-4">
+          <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="primary" density="compact">
               <v-toolbar-title class="text-white">Información General</v-toolbar-title>
             </v-toolbar>
@@ -44,14 +45,14 @@
               <div class="info-item mb-3">
                 <div class="text-subtitle-2 text-medium-emphasis">Actividad:</div>
                 <div class="text-body-1 font-weight-medium">
-                   {{ datosFormulario.actividad.nombreCorto }}
+                  {{ datosFormulario.actividad.nombreCorto }}
                 </div>
               </div>
               <div class="info-item mb-3">
                 <div class="text-subtitle-2 text-medium-emphasis">Estado:</div>
                 <v-chip color="warning" size="small" class="mt-1">
                   <v-icon small class="mr-1">mdi-progress-clock</v-icon>
-                   {{ datosFormulario.actividad.estado }}
+                  {{ datosFormulario.actividad.estado }}
                 </v-chip>
               </div>
             </v-card-text>
@@ -575,10 +576,17 @@
       </v-row>
     </div>
   </v-container>
- <!-- <pre>{{ coordinadoresList }}</pre>
+  <!-- <pre>{{ coordinadoresList }}</pre>
   {{ '*******************' }} -->
-    <!-- <pre>{{ formasPagoOptions }}</pre>
+  <!-- <pre>{{ formasPagoOptions }}</pre>
     {{ '*******************' }} -->
+
+  <!-- <pre>{{ formData.forma_pago }}</pre>
+    {{ '*******************' }} -->
+  <!--<pre>{{ datosFormulario }}</pre>
+    {{ '*******************' }}-->
+  <!-- <pre>{{ coordinadoresList }}</pre> -->
+
 </template>
 
 <script setup>
@@ -646,15 +654,17 @@ const formData = ref({
   // Campos de forma de pago
   forma_pago: null,
   datos_forma_pago: {
-     otros: { nombre_otros: '', ci_otros: '' },
-      transferencia: {
-         nombre_transferencia: '',
-         ci_transferencia: '',
-         entidad_bancaria: '',
-         tipo_cuenta: '',
-         numero_cuenta: '',
-        },
-      },
+
+    otros: { nombre_otros: '', ci_otros: '' },
+    transferencia: {
+      nombre_transferencia: '',
+      ci_transferencia: '',
+      entidad_bancaria: '',
+      tipo_cuenta: '',
+      numero_cuenta: '',
+    },
+  },
+
   validacion_contador: false,
   idcontador: null,
   validacion_coordinador: false,
@@ -817,11 +827,12 @@ watch(
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
         //console.log('Cargando validadores:', newVal.validadores)
         responsablesList.value =
-        newVal.validadores.filter((user) => user && user.cargo === 'responsable') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'responsable') || []
         contadoresList.value =
-        newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
         coordinadoresList.value =
-        newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
+
       } else {
         responsablesList.value = []
         contadoresList.value = []
@@ -997,33 +1008,33 @@ async function submitForm() {
     }
 
     const payload = {
-    // detalle_destino_fondos should be an object, not a stringified JSON
-    detalle_destino_fondos: {
-      items: formData.value.detalle_destino_fondos.map((gasto) => ({
-        partida_sf: gasto.partida, // Changed from 'partida' to 'partida_sf'
-        concepto: gasto.descripcion_gasto,
-        monto: Number(gasto.monto),
-      })),
-    },
-    forma_pago: formData.value.forma_pago,
-    lugar_solicitud: formData.value.lugar_solicitud,
-    fecha_solicitud: formData.value.fecha_solicitud,
-    fecha_realizacion_actividad: formData.value.fecha_ejecucion,
-    monto_solicitado: totalMontoSolicitado.value,
-    validacion_responsable: formData.value.validacion_responsable,
-    id_responsable: formData.value.idcontador,
-    validacion_coordinador: formData.value.validacion_coordinador,
-    id_coordinador: formData.value.idcoordinador,
-    id_usuario: formData.value.id_usuario,
-    id_actividad: formData.value.id_actividad,
-    descripcion_actividad: formData.value.descripcion_actividad,
-    objetivo_actividad: formData.value.objetivo_actividad,
-    // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
-    ...(formData.value.id_tarea &&
-      formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
-    datos_forma_pago: formData.value.datos_forma_pago,
-    bloquear_icono_sf: true,
-  }
+      // detalle_destino_fondos should be an object, not a stringified JSON
+      detalle_destino_fondos: {
+        items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida_sf: gasto.partida, // Changed from 'partida' to 'partida_sf'
+          concepto: gasto.descripcion_gasto,
+          monto: Number(gasto.monto),
+        })),
+      },
+      forma_pago: formData.value.forma_pago,
+      lugar_solicitud: formData.value.lugar_solicitud,
+      fecha_solicitud: formData.value.fecha_solicitud,
+      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
+      monto_solicitado: totalMontoSolicitado.value,
+      validacion_responsable: formData.value.validacion_responsable,
+      id_responsable: formData.value.idcontador,
+      validacion_coordinador: formData.value.validacion_coordinador,
+      id_coordinador: formData.value.idcoordinador,
+      id_usuario: formData.value.id_usuario,
+      id_actividad: formData.value.id_actividad,
+      descripcion_actividad: formData.value.descripcion_actividad,
+      objetivo_actividad: formData.value.objetivo_actividad,
+      // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
+      ...(formData.value.id_tarea &&
+        formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
+      datos_forma_pago: formData.value.datos_forma_pago,
+      bloquear_icono_sf: true,
+    }
 
     console.log('Payload enviado al servidor:', payload)
     const response = await fetch(baseurl + '/api/monitoreo/crear-solicitud-fondos/', {
@@ -1076,14 +1087,13 @@ async function submitForm() {
       console.log('emailPayload enviado al servidor:', emailPayload)
 
       const emailResponse = await fetch(
-        //http://localhost:8000/api-msg/correos/solicitud-pendiente/
-        baseurl + '/api-msg/correos/solicitud-pendiente/',
+        'http://localhost:8000/api-msg/correos/solicitud-pendiente/',
         {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailPayload),
-      },
-    )
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(emailPayload),
+        },
+      )
 
       if (emailResponse.ok) {
         console.log('Correo de notificación enviado exitosamente')
@@ -1094,7 +1104,8 @@ async function submitForm() {
       console.error('Error al enviar correo de notificación:', emailError)
       // No detenemos el flujo si falla el envío del correo
     }
-///////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////
 
     console.log('Respuesta del servidor:', data)
 

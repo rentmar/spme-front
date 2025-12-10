@@ -12,13 +12,15 @@
         <p class="mt-4 text-h6">Cargando Proyecto...</p>
       </template>
     </v-overlay>
-
     <!-- CONTENIDO -->
     <template v-if="cargaCompleta">
       <v-row>
         <v-col cols="12" md="12">
-          <PaginaTituloIcono :titulo="'planificacion'" :icon="'mdi-calendar'" />
-          <ProyectoHeader v-if="proyecto" :proyecto="proyecto" />
+          <PaginaTituloIcono :titulo="'Planificacion PEI'" :icon="'mdi-calendar'" />
+
+          <PeiHeader v-if="storePeiPlan.peiActual" :pei="storePeiPlan.peiActual"></PeiHeader>
+
+          <!-- <ProyectoHeader v-if="proyecto" :proyecto="proyecto" /> -->
 
           <v-card class="mb-4" min-height="1000">
             <v-toolbar color="info" density="compact">
@@ -27,22 +29,12 @@
             </v-toolbar>
 
             <v-card-text class="contenedor-planificacion">
-              <!-- Componente hijo con prop de carga -->
-              <!-- <PlanificacionXls
-                :proyecto="proyecto"
-                :proyecto-estructura="proyectoEstructura"
-                :cargando="!cargaCompleta"
-              /> -->
+              <PlanificacionPeiXls :pei-id="idpei"></PlanificacionPeiXls>
               <!-- <PlanificacionActividadXls
                 :proyecto="proyecto"
                 :proyecto-estructura="proyectoEstructura"
                 :cargando="!cargaCompleta"
               ></PlanificacionActividadXls> -->
-              <PlanificacionProyectoActividades
-                :proyecto="proyecto"
-                :proyecto-estructura="proyectoEstructura"
-                :cargando="!cargaCompleta"
-              ></PlanificacionProyectoActividades>
             </v-card-text>
           </v-card>
         </v-col>
@@ -52,78 +44,37 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, provide, readonly } from 'vue'
-import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
-import { storeToRefs } from 'pinia'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { usePlanificacionPeiStore } from '@/modules/planificacionpeixls/store/usePlanificacionPeiStore'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
-import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
-import PlanificacionActividadXls from '@/modules/planificacionxls/components/PlanificacionActividadXls.vue'
-import PlanificacionProyectoActividades from '@/modules/planificacionxls/components/PlanificacionProyectoActividades.vue'
+import PeiHeader from '@/modules/pei/components/partials/PeiHeader.vue'
+import PlanificacionPeiXls from '@/modules/planificacionpeixls/components/PlanificacionPeiXls.vue'
 
 //Estado de carga
-const cargaCompleta = ref(false) //Cambiar a false en produccion
-const errorCarga = ref(null)
+const cargaCompleta = ref(true)
+const errorCarga = ref(false)
 
-//Obtener el id del proyecto de la ruta
+//Obtener el id del pei, desde la ruta
 const route = useRoute()
-const idproyecto = route.params.id
-//console.log(idproyecto)
+const idpei = route.params.id
 
-//Composables
+//Iniciar el Store
+const storePeiPlan = usePlanificacionPeiStore()
 
-// Inicializar Store
-const proyectoStore = useProyectoStore()
-
-/****** Iniciar y desestructurar stores **********/
-//Store del Proyecto
-const {
-  proyectoActual: proyecto,
-  cargando: cargandoProyecto,
-  proyectoEstructura,
-  proyectoEstructuraNodos,
-} = storeToRefs(proyectoStore)
-const {
-  obtenerProyectoPorId,
-  obtenerProyectoEstructuraPorId,
-  obtenerProyectoEstructuraNodosPorId,
-} = proyectoStore
-
+//Hook
 onMounted(async () => {
   await cargarDatos()
 })
 
-provide('proyectoEstructura', readonly(proyectoEstructuraNodos))
-
-//Watch para la carga completa
-watch(
-  [cargandoProyecto, proyecto, proyectoEstructura],
-  ([cargando, proy, estructura]) => {
-    if (!cargando && proy && estructura) {
-      cargaCompleta.value = true
-    }
-  },
-  { immediate: true },
-)
-
+//Funcion de carga de datos
 const cargarDatos = async () => {
   try {
-    errorCarga.value = null
-    await Promise.all([
-      await obtenerProyectoPorId(idproyecto),
-      await obtenerProyectoEstructuraPorId(idproyecto),
-      await obtenerProyectoEstructuraNodosPorId(idproyecto),
-    ])
+    storePeiPlan.obtenerPeiPorId(idpei)
   } catch (err) {
-    console.erro('Error al cargar datos', err)
-    errorCarga
+    console.log('Error al cargar la informacion del PEI', err)
   }
 }
-
-// Estado de carga
-const cargandoGeneral = computed(() => {
-  return cargandoProyecto.value
-})
 </script>
 
 <style scoped>
@@ -219,7 +170,7 @@ const cargandoGeneral = computed(() => {
 .contenedor-planificacion {
   width: 100%;
   height: 100%;
-  min-height: 1000px;
+  min-height: 800px;
   position: relative;
   padding: 0;
 }
