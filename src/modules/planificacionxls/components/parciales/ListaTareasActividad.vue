@@ -197,10 +197,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 import { useInformeActividadStore } from '@/modules/formularios/store/useInformeActividadStore'
-<<<<<<< HEAD
 
-=======
->>>>>>> desarrollo
 const props = defineProps({
   actividad: {
     type: Object,
