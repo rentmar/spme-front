@@ -233,4 +233,62 @@ export const indicadorPeiServicios = {
       throw error
     }
   },
+  /* update */
+  updateIndCualitativo: async (idindicador, indData) => {
+    try {
+      const respuesta = await api.put('/indicadores-cualitativos/' + idindicador + '/', indData)
+      return respuesta.data
+    } catch (error) {
+      console.log('Axios: Error al crear el indicador cualitativo', error)
+      throw error
+    }
+  },
+  updateIndCuantitativo: async (idindicador, indData) => {
+    try {
+      const respuesta = await api.put('/indicadores-cuantitativos/' + idindicador + '/', indData)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se pudo crear el indicador cualitativo', error)
+      throw error
+    }
+  },
+}
+
+export const factorPeiServicios = {
+  // Crear un nuevo factor crítico
+  crear: async (factorData) => {
+    try {
+      const response = await api.post('/factores-criticos/', factorData)
+      return response.data
+    } catch (error) {
+      console.error('Error al crear factor crítico:', error)
+      throw error
+    }
+  },
+  listar: async () => {
+    try {
+      const response = await api.get('/api/factores-criticos/')
+      return response
+    } catch (error) {
+      console.error('Error al crear factor crítico:', error)
+    }
+  },
+  update: async (factorId, factorData) => {
+    try {
+      const response = await api.put(`/factores-criticos/${factorId}/`, factorData)
+      return response.data
+    } catch (error) {
+      console.error('Error al actualizar factor crítico:', error)
+      throw error
+    }
+  },
+  eliminar: async (factorId) => {
+    try {
+      const response = await api.delete(`/factores-criticos/${factorId}/`)
+      return response.data
+    } catch (error) {
+      console.error('Error al eliminar factor crítico:', error)
+      throw error
+    }
+  },
 }
