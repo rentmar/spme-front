@@ -576,16 +576,15 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ coordinadoresList }}</pre>
+  <!-- <pre>{{ datosFormulario }}</pre>
   {{ '*******************' }} -->
   <!-- <pre>{{ formasPagoOptions }}</pre>
     {{ '*******************' }} -->
-
   <!-- <pre>{{ formData.forma_pago }}</pre>
     {{ '*******************' }} -->
-  <!--<pre>{{ datosFormulario }}</pre>
-    {{ '*******************' }}-->
-  <!-- <pre>{{ coordinadoresList }}</pre> -->
+  <!-- <pre>{{ formData.correo_coordinador }}</pre>
+    {{ '*******************' }}
+   <pre>{{ formData.correo_contador }}</pre> -->
 
 </template>
 
@@ -610,6 +609,7 @@ const idActividad = route.params.id ? parseInt(route.params.id) : null
 const idTarea = route.query.tarea_id ? parseInt(route.query.tarea_id) : null
 console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
+//console.log('ID aaaaaaa', JSON.stringify(route,null,2))
 
 const baseurl = import.meta.env.VITE_API_BASE
 
@@ -670,6 +670,8 @@ const formData = ref({
   validacion_coordinador: false,
   idcoordinador: null,
   correo_coordinador: '',
+  correo_contador: '',
+  codigo_actividad: '',
   medios_archivos: [],
 })
 
@@ -784,25 +786,26 @@ watch(
       }
 
       // Llenar campos del usuario
-      formData.value.nombre = getSafeValue(usuario.nombre) //usuario.nombre || ''
-      formData.value.paterno = getSafeValue(usuario.paterno) //usuario.paterno || ''
-      formData.value.materno = getSafeValue(usuario.materno) //usuario.materno || ''
-      formData.value.cargo = getSafeValue(usuario.cargo) //usuario.cargo || ''
-      formData.value.documento_identidad = getSafeValue(usuario.ci) //usuario.ci || ''
-      formData.value.id_usuario = getSafeValue(usuario.id, 0) //usuario.id || 0
+      formData.value.nombre = getSafeValue(usuario.nombre)
+      formData.value.paterno = getSafeValue(usuario.paterno)
+      formData.value.materno = getSafeValue(usuario.materno)
+      formData.value.cargo = getSafeValue(usuario.cargo)
+      formData.value.documento_identidad = getSafeValue(usuario.ci)
+      formData.value.id_usuario = getSafeValue(usuario.id,0)
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
         //console.log('Auto-llenando datos de actividad:', newVal.actividad)
 
-        formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion) //newVal.actividad.descripcion || ''
-        formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad) //newVal.actividad.objetivo_de_actividad || ''
-        formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio) //newVal.actividad.fecha_inicio || ''
-        formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre) //newVal.actividad.fecha_cierre || ''
-        formData.value.id_actividad = getSafeValue(newVal.actividad.id, 0) //newVal.actividad.id || 0
+        formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)
+        formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)
+        formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)
+        formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)
+        formData.value.id_actividad = getSafeValue(newVal.actividad.id, 0)
+        formData.value.codigo_actividad = getSafeValue(newVal.actividad.codigo)
         // Asignar id_tarea desde los parámetros de la ruta si existe
         formData.value.id_tarea = idTarea || 0
-        formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos) //newVal.actividad.procedencia_fondos || ''
+        formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
           //console.log('Formas de pago disponibles:', newVal.formaPago)
@@ -811,15 +814,9 @@ watch(
         // También actualizar actividadData para el componente ActividadInformacion
         actividadData.value = {
           ...actividadData.value,
-          descripcion: getSafeValue(newVal.actividad.descripcion, actividadData.value.descripcion), //newVal.actividad.descripcion || actividadData.value.descripcion,
-          fecha_programada: getSafeValue(
-            newVal.actividad.fecha_inicio,
-            actividadData.value.fecha_programada,
-          ), //newVal.actividad.fecha_inicio || actividadData.value.fecha_programada,
-          fecha_cierre: getSafeValue(
-            newVal.actividad.fecha_cierre,
-            actividadData.value.fecha_cierre,
-          ), //newVal.actividad.fecha_cierre || actividadData.value.fecha_cierre,
+          descripcion: getSafeValue(newVal.actividad.descripcion, actividadData.value.descripcion),
+          fecha_programada: getSafeValue(newVal.actividad.fecha_inicio, actividadData.value.fecha_programada),
+          fecha_cierre: getSafeValue(newVal.actividad.fecha_cierre, actividadData.value.fecha_cierre),
         }
       }
 
@@ -843,14 +840,12 @@ watch(
   { deep: true },
 )
 
-// WATCH PARA GUARDAR EL CORREO DEL COORDINADOR CUANDO SE SELECCIONA
+// WATCH PARA GUARDAR EL CORREO DEL COORDINADOR Y DEL CONTADOR CUANDO SE SELECCIONA
 watch(
   () => formData.value.idcoordinador,
   (newIdCoordinador) => {
     if (newIdCoordinador && coordinadoresList.value.length > 0) {
-      const coordinadorSeleccionado = coordinadoresList.value.find(
-        (coordinador) => coordinador.id === newIdCoordinador,
-      )
+      const coordinadorSeleccionado = coordinadoresList.value.find((coordinador) => coordinador.id === newIdCoordinador )
 
       if (coordinadorSeleccionado && coordinadorSeleccionado.correo) {
         formData.value.correo_coordinador = coordinadorSeleccionado.correo
@@ -859,6 +854,23 @@ watch(
       }
     } else {
       formData.value.correo_coordinador = ''
+    }
+  },
+)
+
+watch(
+  () => formData.value.idcontador,
+  (newIdContador) => {
+    if (newIdContador && contadoresList.value.length > 0) {
+      const contadorSeleccionado = contadoresList.value.find((contador) => contador.id === newIdContador )
+
+      if (contadorSeleccionado && contadorSeleccionado.correo) {
+        formData.value.correo_contador = contadorSeleccionado.correo
+      } else {
+        formData.value.correo_contador = ''
+      }
+    } else {
+      formData.value.correo_contador = ''
     }
   },
 )
@@ -1022,7 +1034,7 @@ async function submitForm() {
       fecha_realizacion_actividad: formData.value.fecha_ejecucion,
       monto_solicitado: totalMontoSolicitado.value,
       validacion_responsable: formData.value.validacion_responsable,
-      id_responsable: formData.value.idcontador,
+      contador_id: formData.value.idcontador,
       validacion_coordinador: formData.value.validacion_coordinador,
       id_coordinador: formData.value.idcoordinador,
       id_usuario: formData.value.id_usuario,
@@ -1034,9 +1046,10 @@ async function submitForm() {
         formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
       datos_forma_pago: formData.value.datos_forma_pago,
       bloquear_icono_sf: true,
+      codigo_actividad: formData.value.codigo_actividad,
     }
 
-    console.log('Payload enviado al servidor:', payload)
+    console.log('Payload enviado al servidor:', JSON.stringify(payload,null,2))
     const response = await fetch(baseurl + '/api/monitoreo/crear-solicitud-fondos/', {
       method: 'POST',
       headers: {
@@ -1068,11 +1081,10 @@ async function submitForm() {
 
     await enviarMensajeAutomatico(cuerpoMensaje)
 
-////////////////////////////////////////////////////////////////////////////
-    // Enviar notificación por correo al coordinador
+    ///////// Enviar notificación por correo al coordinador y al contador//////////
     try {
       const emailPayload = {
-        emails: [formData.value.correo_coordinador],
+        emails: [formData.value.correo_coordinador, formData.value.correo_contador],
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Fondos',
@@ -1085,9 +1097,7 @@ async function submitForm() {
       }
 
       console.log('emailPayload enviado al servidor:', emailPayload)
-
-      const emailResponse = await fetch(
-        'http://localhost:8000/api-msg/correos/solicitud-pendiente/',
+      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1145,7 +1155,7 @@ function exportToExcel() {
   const mainData = [
     ['FORMULARIO F-01: SOLICITUD DE FONDOS EN AVANCE CON CARGO A RENDICIÓN DE CUENTA', '', '', ''],
     [''],
-    ['FORMULARIO Nro:', numeroFormularioSF, '', ''],
+    ['FORMULARIO Nro:', numeroFormularioSF.value, '', ''],
     ['INFORMACIÓN DEL RESPONSABLE', '', '', ''],
     ['Nombre Completo:', nombreCompletoSolicitante.value, '', ''],
     ['Documento de Identidad:', formData.value.documento_identidad, '', ''],

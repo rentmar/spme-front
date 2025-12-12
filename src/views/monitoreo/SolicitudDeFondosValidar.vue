@@ -226,6 +226,17 @@
                       readonly
                     ></v-text-field>
                   </v-col>
+                  <v-col cols="12">
+                    <v-file-input
+                      v-model="formData.medios_archivos"
+                      label="Adjuntar Medios de verificacion"
+                      multiple
+                      chips
+                      show-size
+                      :accept="acceptedFormats.medios"
+                      prepend-icon="mdi-paperclip"
+                    ></v-file-input>
+                  </v-col>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -442,22 +453,22 @@
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
                   </h3>
-<!--              <v-row>
+                  <!-- <v-row>
                     <v-col cols="12" md="6">
                       <v-select
-                        v-model="formData.idresponsable"
-                        :items="responsablesList"
+                        v-model="formData.idcontador"
+                        :items="contadoresList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Responsable del Cargo de Cuenta"
+                        label="Contador"
                         variant="outlined"
                         readonly
                       ></v-select>
                     </v-col>
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
-                        v-model="formDatSF.validacionResponsablesf"
-                        :label="`Aprobado por Responsable del Cargo de Cuenta ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                        v-model="formDatSF.validacionContadorsf"
+                        :label="`Aprobado por Contador ${puedeValidarResponsable ? '(Usted)' : ''}`"
                         :disabled="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :readonly="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :color="puedeValidarResponsable ? 'primary' : 'grey'"
@@ -470,7 +481,7 @@
                         }"
                       ></v-checkbox>
                     </v-col>
-                  </v-row>-->
+                  </v-row> -->
                   <v-row>
                     <v-col cols="12" md="6">
                       <v-select
@@ -553,7 +564,7 @@
     </div>
   </v-container>
   <!-- {{ '***************************************B' }}
-  <pre>{{ datosFormulario }}</pre> -->
+  <pre>{{ datosFormulario1 }}</pre> -->
   <!-- {{ '***************************************B' }}
   <pre>{{ datosFormulario1 }}</pre>
   {{ '***************************************C - formData.datos_forma_pago' }}

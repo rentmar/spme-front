@@ -21,7 +21,7 @@
     <div v-if="!cargandoGeneral">
       <!--Titulo de la pagina-->
       <PaginaTituloIcono
-        :titulo="'Solicitud de Fondos'"
+        :titulo="'Solicitud de Pago'"
         :icon="'mdi-cash-check'"
       ></PaginaTituloIcono>
       <!--Encabezado del Proyecto-->
@@ -182,8 +182,8 @@
                         type="date"
                         variant="outlined"
                         density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
+                        bg-color="blue-lighten-5"
+                        required
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="4">
@@ -193,8 +193,8 @@
                         type="date"
                         variant="outlined"
                         density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
+                        bg-color="blue-lighten-5"
+                        required
                       ></v-text-field>
                     </v-col>
                   </v-row>
@@ -211,8 +211,8 @@
                     label="Fuente de Financiamiento"
                     variant="outlined"
                     density="compact"
-                    bg-color="grey-lighten-4"
-                    readonly
+                    bg-color="blue-lighten-5"
+                    required
                   ></v-text-field>
 
                   <v-col cols="12" md="4">
@@ -665,6 +665,7 @@ const formData = ref({
   validacion_coordinador: false,
   idcoordinador: null,
   correo_coordinador: '',
+  correo_contador: '',
   medios_archivos: [],
 })
 
@@ -842,9 +843,7 @@ watch(
   () => formData.value.idcoordinador,
   (newIdCoordinador) => {
     if (newIdCoordinador && coordinadoresList.value.length > 0) {
-      const coordinadorSeleccionado = coordinadoresList.value.find(
-        (coordinador) => coordinador.id === newIdCoordinador,
-      )
+      const coordinadorSeleccionado = coordinadoresList.value.find((coordinador) => coordinador.id === newIdCoordinador )
 
       if (coordinadorSeleccionado && coordinadorSeleccionado.correo) {
         formData.value.correo_coordinador = coordinadorSeleccionado.correo
@@ -853,6 +852,23 @@ watch(
       }
     } else {
       formData.value.correo_coordinador = ''
+    }
+  },
+)
+
+watch(
+  () => formData.value.idcontador,
+  (newIdContador) => {
+    if (newIdContador && contadoresList.value.length > 0) {
+      const contadorSeleccionado = contadoresList.value.find((contador) => contador.id === newIdContador )
+
+      if (contadorSeleccionado && contadorSeleccionado.correo) {
+        formData.value.correo_contador = contadorSeleccionado.correo
+      } else {
+        formData.value.correo_contador = ''
+      }
+    } else {
+      formData.value.correo_contador = ''
     }
   },
 )
@@ -1016,7 +1032,7 @@ async function submitForm() {
     fecha_realizacion_actividad: formData.value.fecha_ejecucion,
     monto_solicitado: totalMontoSolicitado.value,
     validacion_responsable: formData.value.validacion_responsable,
-    id_responsable: formData.value.idcontador,
+    contador_id: formData.value.idcontador,
     validacion_coordinador: formData.value.validacion_coordinador,
     id_coordinador: formData.value.idcoordinador,
     id_usuario: formData.value.id_usuario,
@@ -1030,8 +1046,8 @@ async function submitForm() {
     bloquear_icono_sf: true,
   }
 
-    console.log('Payload enviado al servidor:', payload)
-    const response = await fetch(baseurl + '/api/monitoreo/crear-solicitud-fondos/', {
+    console.log('Payload enviado al servidor:', JSON.stringify(payload,null,2))
+    const response = await fetch(baseurl + '/monitoreo_api/crearSolicitudPagoDirecto/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1049,7 +1065,7 @@ async function submitForm() {
 
     const cuerpoMensaje = {
       destinatario_id: payload.id_coordinador,
-      asunto: 'Solicitud de Fondos - Coordinado',
+      asunto: 'Solicitud de Pago - Coordinado',
       contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value,
       tipo: 'sistema',
       prioridad: 3,
@@ -1066,7 +1082,7 @@ async function submitForm() {
     // Enviar notificación por correo al coordinador
     try {
       const emailPayload = {
-        emails: [formData.value.correo_coordinador],
+        emails: [formData.value.correo_coordinador, formData.value.correo_contador],
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Fondos',
@@ -1137,9 +1153,9 @@ function resetForm() {
 function exportToExcel() {
   // 1. Crear datos principales con formato de formulario
   const mainData = [
-    ['FORMULARIO F-01: SOLICITUD DE FONDOS EN AVANCE CON CARGO A RENDICIÓN DE CUENTA', '', '', ''],
+    ['FORMULARIO F-08: SOLICITUD DE PAGO DIRECTO', '', '', ''],
     [''],
-    ['FORMULARIO Nro:', numeroFormularioSF, '', ''],
+    ['FORMULARIO Nro:', numeroFormularioSF.value, '', ''],
     ['INFORMACIÓN DEL RESPONSABLE', '', '', ''],
     ['Nombre Completo:', nombreCompletoSolicitante.value, '', ''],
     ['Documento de Identidad:', formData.value.documento_identidad, '', ''],

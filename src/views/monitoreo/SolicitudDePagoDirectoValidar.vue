@@ -21,7 +21,7 @@
     <div v-if="!cargandoGeneral">
       <!--Titulo de la pagina-->
       <PaginaTituloIcono
-        :titulo="'Validar Solicitud de Fondos'"
+        :titulo="'Validar Solicitud de Pago Directo'"
         :icon="'mdi-cash-check'"
       ></PaginaTituloIcono>
       <!--Encabezado del Proyecto-->
@@ -553,7 +553,7 @@
     </div>
   </v-container>
   <!-- {{ '***************************************B' }}
-  <pre>{{ datosFormulario }}</pre> -->
+  <pre>{{ datosFormulario1 }}</pre> -->
   <!-- {{ '***************************************B' }}
   <pre>{{ datosFormulario1 }}</pre>
   {{ '***************************************C - formData.datos_forma_pago' }}
@@ -584,7 +584,7 @@ const baseurl = import.meta.env.VITE_API_BASE
 
 //variables para carga de datos
 const datosFormulario = ref(null)     //viene de funcion cargarDatos y actualiza formData
-const datosFormulario1 = ref(null)    //viene de funcion cargarSolicitudFondos y actualiza detalle_destino_fondos
+const datosFormulario1 = ref(null)    //viene de funcion cargarSolicitudPago y actualiza detalle_destino_fondos
 const error = ref(null)
 const isLoading = ref(false)
 
@@ -828,7 +828,7 @@ function getCurrentDate() {
   return `${year}-${month}-${day}`
 }
 
-async function cargarDatos() {
+async function cargarDatos() {        //endpoint que obtiene datos de Actividad
   isLoading.value = true
   error.value = null
   try {
@@ -851,7 +851,7 @@ async function cargarDatos() {
     }
 
     const rawData = await response.json()
-    datosFormulario.value = strictSanitizeData(rawData)
+    datosFormulario.value = strictSanitizeData(rawData)   //datosFormulario extrae datos de Actividad
     //console.log('Datos cargados exitosamente:', datosFormulario.value)
   } catch (err) {
     error.value = err.message
@@ -920,12 +920,12 @@ function strictSanitizeData(data) {
   return sanitized;
 }
 
-async function cargarSolicitudFondos() {
+async function cargarSolicitudPago() {    //endpoint que obtiene datos de la tabla spme_monitoreo_solicitudpagodirecto
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudFondos/', {
-      method: 'GET',
+    const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudesPagoDirecto/', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -936,17 +936,15 @@ async function cargarSolicitudFondos() {
     }
 
     const data = await response.json()
+    //console.log('hhhhhhhhhhhhhhhhhh:', JSON.stringify(data,null,2))
 
     // Filtrar las solicitudes por actividad_id y tarea_id
     const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
-
       // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
       const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
       const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
       const coincideSolicitud = solicitud.id?.toString() === idSolicitud?.toString()
-
       //console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
-
       return coincideActividad && coincideTarea && coincideSolicitud
     })
 
@@ -1555,7 +1553,7 @@ const puedeValidarCoordinador = computed(() => {
 // Ciclo de vida
 onMounted(async () => {
   await cargarDatos()
-  await cargarSolicitudFondos()
+  await cargarSolicitudPago()
   await textoProcedencia.value
 })
 </script>
