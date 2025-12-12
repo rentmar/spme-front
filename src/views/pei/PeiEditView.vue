@@ -560,7 +560,7 @@
                     placeholder="Describa el denominador..."
                   ></v-textarea>
                   <v-text-field
-                    v-model="indicadorCuantitativo.umbral_des_numeral"
+                    v-model.number="indicadorCuantitativo.umbral_des_numeral"
                     variant="outlined"
                     label="Umbral numérico (%)"
                     type="number"
@@ -1044,75 +1044,119 @@ const solicitarEliminarObjetivo = async (objetivo) => {
   }
 }
 
-// Gestión de Indicadores
 const abrirModalNuevoIndicador = (objetivoId) => {
+  console.log('=== NUEVO INDICADOR ===')
+  console.log('Objetivo ID:', objetivoId)
+
   objetivoSeleccionado.value = objetivoId
   indicadorEdit.value = { id: '', tipo: '' }
-  indicadorCualitativo.value = {
-    codigo: '',
-    descripcion: '',
-    captura_informacion: '',
-    responsabilidad: '',
-    frecuencia_recopilacion: '',
-    uso_informacion: '',
-    umbral_des_literal_um1: '',
-    umbral_des_literal_um2: '',
-    umbral_des_literal_um3: '',
-    objetivo: objetivoId,
-  }
-  indicadorCuantitativo.value = {
-    codigo: '',
-    descripcion: '',
-    numerador: '',
-    denominador: '',
-    umbral_des_numeral: '',
-    umbral_des_literal_um1: '',
-    umbral_des_literal_um2: '',
-    umbral_des_literal_um3: '',
-    frecuencia_recopilacion: '',
-    uso_informacion: '',
-    objetivo: objetivoId,
-  }
+
+  // Resetear CUALITATIVO con asignación directa
+  indicadorCualitativo.value.codigo = ''
+  indicadorCualitativo.value.descripcion = ''
+  indicadorCualitativo.value.captura_informacion = ''
+  indicadorCualitativo.value.responsabilidad = ''
+  indicadorCualitativo.value.frecuencia_recopilacion = ''
+  indicadorCualitativo.value.uso_informacion = ''
+  indicadorCualitativo.value.umbral_des_literal_um1 = ''
+  indicadorCualitativo.value.umbral_des_literal_um2 = ''
+  indicadorCualitativo.value.umbral_des_literal_um3 = ''
+  indicadorCualitativo.value.objetivo = objetivoId
+
+  // Resetear CUANTITATIVO con asignación directa
+  indicadorCuantitativo.value.codigo = ''
+  indicadorCuantitativo.value.descripcion = ''
+  indicadorCuantitativo.value.captura_informacion = ''
+  indicadorCuantitativo.value.responsabilidad = ''
+  indicadorCuantitativo.value.frecuencia_recopilacion = ''
+  indicadorCuantitativo.value.uso_informacion = ''
+  indicadorCuantitativo.value.numerador = ''
+  indicadorCuantitativo.value.denominador = ''
+  indicadorCuantitativo.value.umbral_des_numeral = null // Usar null, no string vacío
+  indicadorCuantitativo.value.umbral_des_literal_um1 = ''
+  indicadorCuantitativo.value.umbral_des_literal_um2 = ''
+  indicadorCuantitativo.value.umbral_des_literal_um3 = ''
+  indicadorCuantitativo.value.objetivo = objetivoId
+
   tabModalIndicador.value = 'cualitativo'
   dialogIndicador.value = true
+
+  console.log('Formularios inicializados para nuevo indicador')
 }
 
 const editarIndicador = (indicador, objetivoId) => {
+  console.log('=== EDICIÓN DE INDICADOR ===')
+  console.log('Indicador recibido:', indicador)
+  console.log('Tipo:', indicador.tipo)
+  console.log('Objetivo ID:', objetivoId)
+
   objetivoSeleccionado.value = objetivoId
   indicadorEdit.value = { id: indicador.id, tipo: indicador.tipo }
 
-  if (indicador.tipo.includes('cualitativo')) {
+  if (indicador.tipo === 'CUALITATIVO' || indicador.tipo.includes('cualitativo')) {
+    console.log('Cargando indicador CUALITATIVO')
     tabModalIndicador.value = 'cualitativo'
-    indicadorCualitativo.value = {
-      codigo: indicador.codigo,
-      descripcion: indicador.descripcion,
-      captura_informacion: indicador.captura_informacion || '',
-      responsabilidad: indicador.responsabilidad || '',
-      frecuencia_recopilacion: indicador.frecuencia_recopilacion || '',
-      uso_informacion: indicador.uso_informacion || '',
-      umbral_des_literal_um1: indicador.umbral_des_literal_um1 || '',
-      umbral_des_literal_um2: indicador.umbral_des_literal_um2 || '',
-      umbral_des_literal_um3: indicador.umbral_des_literal_um3 || '',
-      objetivo: objetivoId,
-    }
-  } else if (indicador.tipo.includes('cuantitativo')) {
+
+    // CORRECCIÓN: Asignar directamente los valores del indicador
+    indicadorCualitativo.value.codigo = indicador.codigo || ''
+    indicadorCualitativo.value.descripcion = indicador.descripcion || ''
+    indicadorCualitativo.value.captura_informacion = indicador.captura_informacion || ''
+    indicadorCualitativo.value.responsabilidad = indicador.responsabilidad || ''
+    indicadorCualitativo.value.frecuencia_recopilacion = indicador.frecuencia_recopilacion || ''
+    indicadorCualitativo.value.uso_informacion = indicador.uso_informacion || ''
+    indicadorCualitativo.value.umbral_des_literal_um1 = indicador.umbral_des_literal_um1 || ''
+    indicadorCualitativo.value.umbral_des_literal_um2 = indicador.umbral_des_literal_um2 || ''
+    indicadorCualitativo.value.umbral_des_literal_um3 = indicador.umbral_des_literal_um3 || ''
+    indicadorCualitativo.value.objetivo = objetivoId
+
+    console.log('Datos cargados (cualitativo):', indicadorCualitativo.value)
+  } else if (indicador.tipo === 'CUANTITATIVO' || indicador.tipo.includes('cuantitativo')) {
+    console.log('Cargando indicador CUANTITATIVO')
     tabModalIndicador.value = 'cuantitativo'
-    indicadorCuantitativo.value = {
-      codigo: indicador.codigo,
-      descripcion: indicador.descripcion,
-      numerador: indicador.numerador || '',
-      denominador: indicador.denominador || '',
-      umbral_des_numeral: indicador.umbral_des_numeral || '',
-      umbral_des_literal_um1: indicador.umbral_des_literal_um1 || '',
-      umbral_des_literal_um2: indicador.umbral_des_literal_um2 || '',
-      umbral_des_literal_um3: indicador.umbral_des_literal_um3 || '',
-      frecuencia_recopilacion: indicador.frecuencia_recopilacion || '',
-      uso_informacion: indicador.uso_informacion || '',
-      objetivo: objetivoId,
+
+    // CORRECCIÓN: Asignar directamente los valores del indicador
+    indicadorCuantitativo.value.codigo = indicador.codigo || ''
+    indicadorCuantitativo.value.descripcion = indicador.descripcion || ''
+    indicadorCuantitativo.value.captura_informacion = indicador.captura_informacion || ''
+    indicadorCuantitativo.value.responsabilidad = indicador.responsabilidad || ''
+    indicadorCuantitativo.value.frecuencia_recopilacion = indicador.frecuencia_recopilacion || ''
+    indicadorCuantitativo.value.uso_informacion = indicador.uso_informacion || ''
+    indicadorCuantitativo.value.numerador = indicador.numerador || ''
+    indicadorCuantitativo.value.denominador = indicador.denominador || ''
+
+    // Manejo especial para umbral_des_numeral (puede ser null)
+    if (
+      indicador.umbral_des_numeral === null ||
+      indicador.umbral_des_numeral === undefined ||
+      indicador.umbral_des_numeral === ''
+    ) {
+      indicadorCuantitativo.value.umbral_des_numeral = null
+    } else {
+      // Convertir a número
+      const valor = parseInt(indicador.umbral_des_numeral, 10)
+      indicadorCuantitativo.value.umbral_des_numeral = isNaN(valor) ? null : valor
     }
+
+    indicadorCuantitativo.value.umbral_des_literal_um1 = indicador.umbral_des_literal_um1 || ''
+    indicadorCuantitativo.value.umbral_des_literal_um2 = indicador.umbral_des_literal_um2 || ''
+    indicadorCuantitativo.value.umbral_des_literal_um3 = indicador.umbral_des_literal_um3 || ''
+    indicadorCuantitativo.value.objetivo = objetivoId
+
+    console.log('Datos cargados (cuantitativo):', indicadorCuantitativo.value)
+    console.log(
+      'umbral_des_numeral procesado:',
+      indicadorCuantitativo.value.umbral_des_numeral,
+      'tipo:',
+      typeof indicadorCuantitativo.value.umbral_des_numeral,
+    )
   }
 
   dialogIndicador.value = true
+
+  // Forzar actualización de la UI
+  setTimeout(() => {
+    console.log('Modal abierto, formularios listos')
+  }, 100)
 }
 
 const guardarIndicador = async () => {
@@ -1120,43 +1164,88 @@ const guardarIndicador = async () => {
     if (tabModalIndicador.value === 'cualitativo') {
       if (formIndCualitativo.value) {
         const { valid } = await formIndCualitativo.value.validate()
-        if (!valid) return
+        if (!valid) {
+          console.log('Validación falló en formulario cualitativo')
+          return
+        }
       }
 
       cargandoAccion.value = true
 
+      // Preparar datos para cualitativo
+      const datosParaEnviar = {
+        codigo: indicadorCualitativo.value.codigo,
+        descripcion: indicadorCualitativo.value.descripcion,
+        captura_informacion: indicadorCualitativo.value.captura_informacion || null,
+        responsabilidad: indicadorCualitativo.value.responsabilidad || null,
+        frecuencia_recopilacion: indicadorCualitativo.value.frecuencia_recopilacion || null,
+        uso_informacion: indicadorCualitativo.value.uso_informacion || null,
+        umbral_des_literal_um1: indicadorCualitativo.value.umbral_des_literal_um1 || null,
+        umbral_des_literal_um2: indicadorCualitativo.value.umbral_des_literal_um2 || null,
+        umbral_des_literal_um3: indicadorCualitativo.value.umbral_des_literal_um3 || null,
+        objetivo: indicadorCualitativo.value.objetivo,
+      }
+
+      console.log('Enviando indicador cualitativo:', datosParaEnviar)
+
       if (indicadorEdit.value.id) {
-        // Actualizar indicador cualitativo existente
-        await indicadorPeiServicios.updateIndCualitativo(
-          indicadorEdit.value.id,
-          indicadorCualitativo.value,
-        )
+        await indicadorPeiServicios.updateIndCualitativo(indicadorEdit.value.id, datosParaEnviar)
         successMsg('Indicador cualitativo actualizado')
-        console.log('IND CUAL', indicadorCualitativo.value)
       } else {
-        // Crear nuevo indicador cualitativo
-        await agregarIndicadorCualitativo(objetivoSeleccionado.value, indicadorCualitativo.value)
+        await agregarIndicadorCualitativo(indicadorCualitativo.value.objetivo, datosParaEnviar)
         successMsg('Indicador cualitativo creado')
       }
     } else {
       if (formIndCuantitativo.value) {
         const { valid } = await formIndCuantitativo.value.validate()
-        if (!valid) return
+        if (!valid) {
+          console.log('Validación falló en formulario cuantitativo')
+          return
+        }
       }
 
       cargandoAccion.value = true
 
-      if (indicadorEdit.value.id) {
-        // Actualizar indicador cuantitativo existente
-        await indicadorPeiServicios.updateIndCuantitativo(
-          indicadorEdit.value.id,
-          indicadorCuantitativo.value,
-        )
-        successMsg('Indicador cuantitativo actualizado')
-        console.log('IND CUAN', indicadorCuantitativo)
+      // Preparar datos para cuantitativo
+      const datosParaEnviar = {
+        codigo: indicadorCuantitativo.value.codigo,
+        descripcion: indicadorCuantitativo.value.descripcion,
+        captura_informacion: indicadorCuantitativo.value.captura_informacion || null,
+        responsabilidad: indicadorCuantitativo.value.responsabilidad || null,
+        frecuencia_recopilacion: indicadorCuantitativo.value.frecuencia_recopilacion || null,
+        uso_informacion: indicadorCuantitativo.value.uso_informacion || null,
+        numerador: indicadorCuantitativo.value.numerador || null,
+        denominador: indicadorCuantitativo.value.denominador || null,
+        umbral_des_literal_um1: indicadorCuantitativo.value.umbral_des_literal_um1 || null,
+        umbral_des_literal_um2: indicadorCuantitativo.value.umbral_des_literal_um2 || null,
+        umbral_des_literal_um3: indicadorCuantitativo.value.umbral_des_literal_um3 || null,
+        objetivo: indicadorCuantitativo.value.objetivo,
+      }
+
+      // Manejo especial de umbral_des_numeral
+      if (
+        indicadorCuantitativo.value.umbral_des_numeral === null ||
+        indicadorCuantitativo.value.umbral_des_numeral === '' ||
+        indicadorCuantitativo.value.umbral_des_numeral === undefined
+      ) {
+        datosParaEnviar.umbral_des_numeral = null
       } else {
-        // Crear nuevo indicador cuantitativo
-        await agregarIndicadorCuantitativo(objetivoSeleccionado.value, indicadorCuantitativo.value)
+        const umbral = parseInt(indicadorCuantitativo.value.umbral_des_numeral, 10)
+        if (isNaN(umbral) || umbral < 0 || umbral > 100) {
+          errorMsg('El umbral numérico debe ser un número entre 0 y 100')
+          cargandoAccion.value = false
+          return
+        }
+        datosParaEnviar.umbral_des_numeral = umbral
+      }
+
+      console.log('Enviando indicador cuantitativo:', datosParaEnviar)
+
+      if (indicadorEdit.value.id) {
+        await indicadorPeiServicios.updateIndCuantitativo(indicadorEdit.value.id, datosParaEnviar)
+        successMsg('Indicador cuantitativo actualizado')
+      } else {
+        await agregarIndicadorCuantitativo(indicadorCuantitativo.value.objetivo, datosParaEnviar)
         successMsg('Indicador cuantitativo creado')
       }
     }
@@ -1164,8 +1253,14 @@ const guardarIndicador = async () => {
     await cargarDatos()
     cerrarModalIndicador()
   } catch (error) {
-    console.error('Error al guardar indicador', error)
-    errorMsg('No se pudo guardar el indicador')
+    console.error('Error al guardar indicador:', error)
+
+    if (error.response) {
+      console.error('Error response:', error.response.data)
+      errorMsg(`Error: ${error.response.data?.detail || error.message}`)
+    } else {
+      errorMsg('Error de conexión al guardar el indicador')
+    }
   } finally {
     cargandoAccion.value = false
   }
