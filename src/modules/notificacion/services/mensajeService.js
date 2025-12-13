@@ -140,4 +140,18 @@ export const mensajeServicios = {
       throw new Error(`Error envio mensajes automatico: ${error.message}`)
     }
   },
+  /* Marcar mensajes leidos */
+  marcarMensajesLeidos: async (mensajesData, accessToken) => {
+    try {
+      const respuesta = await apiMsg.post('mensajes/marcar-leidos/', mensajesData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+      return respuesta
+    } catch (error) {
+      console.error('Axios: error al marcar leidos', error)
+      throw new Error(`Error envio mensajes automatico: ${error.message}`)
+    }
+  },
 }

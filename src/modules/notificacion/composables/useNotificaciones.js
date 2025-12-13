@@ -47,8 +47,23 @@ export function useNotificaciones() {
 
   //Mensaje automatico del sistema
   async function enviarMensajeAutomatico(mensajeData) {
+    loading.value = true
     try {
       const respuesta = await mensajeServicios.crearMensajeAutomaticoSistema(mensajeData)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Cambiar estado de mensajes a leidos
+  //mensajesIds: [1, 2, 3, 4]
+  async function cambiarMensajeALeidos(mensajesIds, accessToken) {
+    loading.value = true
+    try {
+      const respuesta = await mensajeServicios.marcarMensajesLeidos(mensajesIds, accessToken)
       return respuesta
     } catch (err) {
       error.value = err
@@ -66,5 +81,6 @@ export function useNotificaciones() {
     enviarMensajeSistema,
     enviarMensajeMultiple,
     enviarMensajeAutomatico,
+    cambiarMensajeALeidos,
   }
 }
