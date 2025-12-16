@@ -11,6 +11,5 @@ export const SELECT_OPTIONS_MENSAJES = {
     { title: 'Baja', value: 1 },
     { title: 'Media', value: 3 },
     { title: 'Alta', value: 4 },
-    { title: 'Urgente', value: 5 },
   ],
 }

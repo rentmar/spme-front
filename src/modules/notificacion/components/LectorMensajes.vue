@@ -50,7 +50,7 @@
             </v-icon>
           </v-btn>
 
-          <v-btn
+          <!-- <v-btn
             icon
             size="small"
             @click="toggleDestacar"
@@ -61,7 +61,7 @@
             <v-icon size="20">
               {{ message?.destacado ? 'mdi-star' : 'mdi-star-outline' }}
             </v-icon>
-          </v-btn>
+          </v-btn> -->
 
           <v-btn
             icon
@@ -708,17 +708,17 @@ const toggleArchivar = async () => {
   }
 }
 
-const toggleDestacar = async () => {
-  if (!props.message) return
+// const toggleDestacar = async () => {
+//   if (!props.message) return
 
-  try {
-    const destacado = !props.message.destacado
-    // Aquí deberías implementar la lógica para marcar como destacado
-    emit('star', { id: props.message.id, starred: destacado })
-  } catch (error) {
-    console.error('Error al destacar:', error)
-  }
-}
+//   try {
+//     const destacado = !props.message.destacado
+//     // Aquí deberías implementar la lógica para marcar como destacado
+//     emit('star', { id: props.message.id, starred: destacado })
+//   } catch (error) {
+//     console.error('Error al destacar:', error)
+//   }
+// }
 
 const eliminarMensaje = async () => {
   if (!props.message) return

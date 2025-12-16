@@ -106,6 +106,8 @@
               <v-select
                 v-model="filtroTipo"
                 :items="SELECT_OPTIONS_MENSAJES.tipo"
+                item-title="title"
+                item-value="value"
                 label="Tipo"
                 density="compact"
                 variant="outlined"
@@ -119,6 +121,8 @@
               <v-select
                 v-model="filtroPrioridad"
                 :items="SELECT_OPTIONS_MENSAJES.prioridad"
+                item-title="title"
+                item-value="value"
                 label="Prioridad"
                 density="compact"
                 variant="outlined"
@@ -521,6 +525,24 @@
                               }}
                             </v-icon>
                           </v-btn>
+                          <!-- BOTÓN DE ELIMINAR -->
+                          <v-btn
+                            icon
+                            size="x-small"
+                            variant="text"
+                            @click.stop="toggleEliminar(notificacion)"
+                            :title="notificacion.estado === 'eliminado' ? 'Recuperar' : 'Eliminar'"
+                            color="error"
+                            class="quick-action"
+                          >
+                            <v-icon size="16">
+                              {{
+                                notificacion.estado === 'eliminado'
+                                  ? 'mdi-delete-restore'
+                                  : 'mdi-delete'
+                              }}
+                            </v-icon>
+                          </v-btn>
                         </div>
                       </div>
                     </div>
@@ -786,6 +808,7 @@ import { SELECT_OPTIONS_MENSAJES } from '@/modules/notificacion/utils/selectOpti
 import { onMounted, ref, computed, watch } from 'vue'
 import { useNotificacionesStore } from '@/modules/notificacion/store/useNotificacionesStore'
 import { useUserStore } from '@/stores/user'
+import { useSnackbar } from '@/composables/useSnackbar'
 import LectorMensajes from '@/modules/notificacion/components/LectorMensajes.vue'
 import EditorMensajes from '@/modules/notificacion/components/EditorMensajes.vue'
 
@@ -823,6 +846,9 @@ const editorMensajeOriginal = ref(null)
 // Inicializar stores
 const mensajesStore = useNotificacionesStore()
 const usuarioStore = useUserStore()
+
+//Inciar composables
+const { successMsg, errorMsg } = useSnackbar()
 
 // Computed para obtener datos del store
 const notificaciones = computed(() => mensajesStore.notificaciones)
@@ -959,13 +985,6 @@ const carpetas = computed(() => [
     badgeColor: 'success',
   },
   {
-    title: 'Destacados',
-    value: 'destacados',
-    icon: 'mdi-star',
-    count: notificaciones.value.filter((n) => n.prioridad >= 4).length,
-    badgeColor: 'warning',
-  },
-  {
     title: 'Archivados',
     value: 'archivados',
     icon: 'mdi-archive',
@@ -984,15 +1003,9 @@ const carpetas = computed(() => [
 // Resumen usando datos del store
 const summary = computed(() => {
   const total = notificaciones.value.length
-  const totalNoLeidas =
-    mensajesStore.totalNoLeidas ||
-    notificaciones.value.filter((n) => n.estado === 'no_leido' || !n.es_leido).length
-  const totalUrgentes =
-    mensajesStore.totalUrgentes ||
-    notificaciones.value.filter((n) => n.prioridad >= 4 || n.es_urgente).length
-  const totalArchivadas =
-    mensajesStore.totalArchivadas ||
-    notificaciones.value.filter((n) => n.estado === 'archivado').length
+  const totalNoLeidas = mensajesStore.noLeidosCuenta || 0
+  const totalUrgentes = mensajesStore.totalUrgentes || 0
+  const totalArchivadas = mensajesStore.totalArchivadas || 0
 
   return {
     totalNotificaciones: total,
@@ -1115,19 +1128,32 @@ const recargar = async () => {
     await mensajesStore.cargarNotificaciones()
     // Resetear a página 1 después de recargar
     paginaActual.value = 1
+    // Limpiar selección
+    notificacionesSeleccionadas.value = []
+    todosSeleccionados.value = false
+    successMsg('Mensajes actualizados')
   } catch (error) {
     console.error('Error al recargar:', error)
+    errorMsg('Error al actualizar mensajes')
   } finally {
     recargando.value = false
   }
 }
 
 const marcarTodasComoLeidas = async () => {
-  const promesas = notificacionesPaginadas.value
-    .filter((n) => n.estado === 'no_leido' || !n.es_leido)
-    .map((n) => mensajesStore.marcarComoLeida(n.id))
+  try {
+    const ids = notificacionesPaginadas.value
+      .filter((n) => n.estado === 'no_leido' || !n.es_leido)
+      .map((n) => n.id)
 
-  await Promise.all(promesas)
+    if (ids.length === 0) return
+
+    await mensajesStore.marcarComoLeidos(ids)
+    successMsg(`${ids.length} mensajes marcados como leídos`)
+  } catch (error) {
+    console.error('Error al marcar todas como leídas:', error)
+    errorMsg('No se pudieron marcar todos los mensajes')
+  }
 }
 
 const notificacionesFiltradas = computed(() => {
@@ -1217,31 +1243,40 @@ const getIniciales = (name) => {
 const getTipoTexto = (tipo) => {
   if (!tipo) return 'General'
 
+  const tipoOption = SELECT_OPTIONS_MENSAJES.tipo.find((t) => t.value === tipo)
+  if (tipoOption) return tipoOption.title
+
   const map = {
+    privado: 'PRIVADO',
+    sistema: 'SISTEMA',
+    alerta: 'ALERTA',
+    recordatorio: 'RECORDATORIO',
+    reprogramacion: 'REPROGRAMACIÓN',
+    retraso: 'RETRASO',
     reunion: 'Reunión',
-    recordatorio: 'Recordatorio',
     social: 'Social',
-    sistema: 'Sistema',
     administrativo: 'Administrativo',
     feedback: 'Feedback',
     comentario: 'Comentario',
     capacitacion: 'Capacitación',
-    privado: 'Privado',
   }
   return map[tipo] || tipo.charAt(0).toUpperCase() + tipo.slice(1)
 }
 
 const getTipoColor = (tipo) => {
   const map = {
-    reunion: 'blue',
-    recordatorio: 'orange',
-    social: 'pink',
+    privado: 'indigo',
     sistema: 'red',
+    alerta: 'orange',
+    recordatorio: 'green',
+    reprogramacion: 'blue',
+    retraso: 'error',
+    reunion: 'blue',
+    social: 'pink',
     administrativo: 'grey',
     feedback: 'green',
     comentario: 'teal',
     capacitacion: 'purple',
-    privado: 'indigo',
   }
   return map[tipo] || 'grey'
 }
@@ -1291,6 +1326,8 @@ const getDescripcionCarpetaVacia = (carpeta, tieneFiltros = false) => {
 const seleccionarNotificacion = async (notificacion) => {
   notificacionSeleccionada.value = notificacion
   lectorVisible.value = true
+
+  // Marcar como leída si no lo está
   if (notificacion.estado === 'no_leido' || !notificacion.es_leido) {
     await marcarComoLeida(notificacion)
   }
@@ -1315,76 +1352,86 @@ const limpiarSeleccion = () => {
 // Funciones de estado
 const marcarComoLeida = async (notificacion) => {
   try {
-    //await mensajesStore.marcarComoLeida(notificacion.id)
-    console.log('Marcar como leida')
+    await mensajesStore.marcarComoLeida(notificacion.id)
+    successMsg('Marcado como leído')
   } catch (error) {
+    errorMsg('No se pudo marcar como leído')
     console.error('Error al marcar como leída:', error)
   }
 }
 
 const marcarSeleccionadasComoLeidas = async () => {
-  const promesas = notificacionesSeleccionadas.value
-    .filter((id) => {
-      const notif = notificaciones.value.find((n) => n.id === id)
-      return notif && (notif.estado === 'no_leido' || !notif.es_leido)
-    })
-    .map((id) => mensajesStore.marcarComoLeida(id))
-
-  await Promise.all(promesas)
-  notificacionesSeleccionadas.value = []
+  try {
+    await mensajesStore.marcarComoLeidos(notificacionesSeleccionadas.value)
+    successMsg(`${notificacionesSeleccionadas.value.length} mensajes marcados como leídos`)
+    notificacionesSeleccionadas.value = []
+  } catch (error) {
+    errorMsg('No se pudieron marcar como leídos')
+    console.error('Error al marcar seleccionadas como leídas:', error)
+  }
 }
 
 const toggleArchivar = async (notificacion) => {
   try {
     if (notificacion.estado === 'archivado') {
-      await mensajesStore.restaurarNotificacion(notificacion.id)
+      await mensajesStore.restaurarArchivado(notificacion.id)
+      successMsg('Mensaje restaurado')
     } else {
-      await mensajesStore.archivarNotificacion(notificacion.id)
+      await mensajesStore.archivarMensajes(notificacion.id)
+      successMsg('Mensaje archivado')
     }
   } catch (error) {
+    errorMsg('No se pudo realizar la acción')
     console.error('Error al archivar/desarchivar:', error)
   }
 }
 
 const archivarSeleccionadas = async () => {
-  const promesas = notificacionesSeleccionadas.value.map((id) =>
-    mensajesStore.archivarNotificacion(id),
-  )
-
-  await Promise.all(promesas)
-  notificacionesSeleccionadas.value = []
+  try {
+    await mensajesStore.archivarMensajes(notificacionesSeleccionadas.value)
+    successMsg(`${notificacionesSeleccionadas.value.length} mensajes archivados`)
+    notificacionesSeleccionadas.value = []
+  } catch (error) {
+    errorMsg('No se pudieron archivar los mensajes')
+    console.error('Error al archivar seleccionadas:', error)
+  }
 }
 
 const toggleEliminar = async (notificacion) => {
   try {
     if (notificacion.estado === 'eliminado') {
-      await mensajesStore.restaurarNotificacion(notificacion.id)
+      await mensajesStore.restaurarMensaje(notificacion.id)
+      successMsg('Mensaje restaurado')
     } else {
-      await mensajesStore.eliminarNotificacion(notificacion.id)
+      await mensajesStore.eliminarMensaje(notificacion.id)
+      successMsg('Mensaje movido a papelera')
     }
   } catch (error) {
+    errorMsg('No se pudo realizar la acción')
     console.error('Error al eliminar/restaurar:', error)
   }
 }
 
 const eliminarSeleccionadas = async () => {
-  if (carpetaSeleccionada.value === 'papelera') {
-    // Eliminación permanente
-    notificacionesSeleccionadas.value.forEach((id) => {
-      const index = notificaciones.value.findIndex((n) => n.id === id)
-      if (index > -1) {
-        notificaciones.value.splice(index, 1)
+  try {
+    if (carpetaSeleccionada.value === 'papelera') {
+      // Eliminar permanentemente
+      for (const id of notificacionesSeleccionadas.value) {
+        await mensajesStore.eliminarPermanentemente(id)
       }
-    })
-  } else {
-    // Mover a papelera
-    const promesas = notificacionesSeleccionadas.value.map((id) =>
-      mensajesStore.eliminarNotificacion(id),
-    )
-
-    await Promise.all(promesas)
+      successMsg(`${notificacionesSeleccionadas.value.length} mensajes eliminados permanentemente`)
+    } else {
+      // Mover a papelera
+      await Promise.all(
+        notificacionesSeleccionadas.value.map((id) => mensajesStore.eliminarMensaje(id)),
+      )
+      successMsg(`${notificacionesSeleccionadas.value.length} mensajes movidos a papelera`)
+    }
+    notificacionesSeleccionadas.value = []
+  } catch (error) {
+    errorMsg('No se pudieron eliminar los mensajes')
+    console.error('Error al eliminar seleccionadas:', error)
   }
-  notificacionesSeleccionadas.value = []
 }
 
 // Watch para actualizar selección completa
@@ -1421,31 +1468,21 @@ const cerrarLector = () => {
 }
 
 const handleMarkRead = (messageId) => {
-  // Actualizar estado local si es necesario
-  const index = notificaciones.value.findIndex((n) => n.id === messageId)
-  if (index > -1) {
-    notificaciones.value[index].es_leido = true
-    notificaciones.value[index].estado = 'leido'
-  }
+  // Ya se maneja automáticamente desde seleccionarNotificacion
+  console.log('Mensaje marcado como leído:', messageId)
 }
 
 const handleArchive = ({ id, archived }) => {
-  // Actualizar estado local
-  const index = notificaciones.value.findIndex((n) => n.id === id)
-  if (index > -1) {
-    notificaciones.value[index].estado = archived ? 'archivado' : 'leido'
+  if (archived) {
+    mensajesStore.archivarMensajes([id])
+  } else {
+    mensajesStore.restaurarArchivado(id)
   }
 }
 
 const handleDelete = ({ id, deleted }) => {
-  // Actualizar estado local
-  const index = notificaciones.value.findIndex((n) => n.id === id)
-  if (index > -1) {
-    notificaciones.value[index].estado = deleted ? 'eliminado' : 'leido'
-  }
-
-  // Si se eliminó, cerrar el lector
   if (deleted) {
+    mensajesStore.eliminarMensaje(id)
     cerrarLector()
   }
 }
@@ -1458,8 +1495,6 @@ const handleReply = (message) => {
 const handleReplyAll = (message) => {
   console.log('Responder a todos:', message)
   abrirEditor('responder', message)
-  // Nota: Para implementar "responder a todos" necesitarías modificar el componente EditorMensaje
-  // para que incluya automáticamente todos los destinatarios originales + CC
 }
 
 const handleForward = (message) => {
@@ -1484,29 +1519,36 @@ const handleStar = ({ id, starred }) => {
 
 const handleActionCompleted = (messageId) => {
   console.log('Acción completada para mensaje:', messageId)
-  // Aquí puedes implementar la lógica para marcar la acción como completada
 }
 
 /******************** Editor de Mensajes ***********************/
 const handleMensajeEnviado = ({ tipo, datos }) => {
   console.log('Mensaje enviado:', datos)
   recargar()
-  // Aquí podrías actualizar la lista de mensajes
   if (tipo === 'mensaje') {
-    // Añadir el mensaje a la lista de enviados
-    // Recargar mensajes o actualizar localmente
     recargar()
   }
 }
 
 const handleMensajeGuardado = ({ tipo, datos }) => {
   console.log('Mensaje guardado como borrador:', datos)
-  // Mostrar confirmación al usuario
 }
 
 const handleEditorCancelado = () => {
   console.log('Editor cancelado')
-  // No es necesario hacer nada, el editor se cerrará automáticamente
+}
+
+/******************** Reinicializar vista ***********************/
+const reinicializarVista = () => {
+  filtroTipo.value = null
+  filtroPrioridad.value = null
+  search.value = ''
+  paginaActual.value = 1
+  notificacionesSeleccionadas.value = []
+  todosSeleccionados.value = false
+  notificacionSeleccionada.value = null
+  lectorVisible.value = false
+  carpetaSeleccionada.value = 'entrada'
 }
 
 /******************** Carga de la informacion ***********************/
@@ -1520,8 +1562,10 @@ const cargar = async () => {
   try {
     await mensajesStore.cargarNotificaciones()
     await usuarioStore.cargarListaUsuarios()
+    console.log('Carga completada:', mensajesStore.notificaciones.length, 'mensajes')
   } catch (error) {
     console.error('Error al cargar los mensajes', error)
+    errorMsg('Error al cargar los mensajes')
   } finally {
     loading.value = false
   }
@@ -1535,6 +1579,24 @@ watch(
       loading.value = false
     }
   },
+)
+
+// Watch para detectar cambios en el usuario
+watch(
+  () => usuarioStore.currentUser?.id,
+  () => {
+    reinicializarVista()
+    cargar()
+  },
+)
+
+// Watch para depurar cambios en las notificaciones
+watch(
+  () => mensajesStore.notificaciones,
+  (newVal) => {
+    console.log('Notificaciones actualizadas en store:', newVal.length)
+  },
+  { deep: true },
 )
 </script>
 
@@ -1817,6 +1879,9 @@ watch(
 .quick-actions {
   opacity: 0;
   transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .message-item:hover .quick-actions {
@@ -1957,6 +2022,10 @@ watch(
   .page-numbers {
     justify-content: center;
   }
+
+  .quick-actions {
+    opacity: 1; /* Mostrar siempre en móvil */
+  }
 }
 
 @media (max-width: 600px) {
@@ -2025,6 +2094,14 @@ watch(
 
   .message-detail-card {
     margin: 8px !important;
+  }
+
+  .quick-actions {
+    gap: 2px;
+  }
+
+  .quick-action {
+    padding: 4px;
   }
 }
 

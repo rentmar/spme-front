@@ -32,7 +32,7 @@ export const mensajeServicios = {
       throw new Error(`Error al obtener bandeja: ${error.message}`)
     }
   },
-  /* Obtener mensaje */
+  /* Obtener mensaje y marcarlo como leido */
   obtenerMensaje: async (idmensaje, accessToken) => {
     try {
       const respuesta = await apiMsg.get('/mensajes/' + idmensaje + '/', {
@@ -143,7 +143,7 @@ export const mensajeServicios = {
   /* Marcar mensajes leidos */
   marcarMensajesLeidos: async (mensajesData, accessToken) => {
     try {
-      const respuesta = await apiMsg.post('mensajes/marcar-leidos/', mensajesData, {
+      const respuesta = await apiMsg.post('/mensajes/marcar-leidos/', mensajesData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -152,6 +152,64 @@ export const mensajeServicios = {
     } catch (error) {
       console.error('Axios: error al marcar leidos', error)
       throw new Error(`Error envio mensajes automatico: ${error.message}`)
+    }
+  },
+  /*Eliminar mensaje*/
+  eliminarMensajes: async (mensajeData, accessToken) => {
+    try {
+      const respuesta = await apiMsg.delete('/mensajes/eliminar-multiples/', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        mensajeData,
+      })
+      return respuesta
+    } catch (error) {
+      console.error('Axios: error a eliminar mensajes', error)
+    }
+  },
+  /* Elimar (soft) un mensaje */
+  eliminarMensaje: async (idmensaje, accessToken) => {
+    try {
+      const respuesta = await apiMsg.delete('/mensajes/' + idmensaje + '/eliminar/', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+      return respuesta
+    } catch (error) {
+      console.error('Axios: Error al eliminar mensaje con id: ' + idmensaje, error)
+    }
+  },
+  /* Eliminar (hard), mensaje */
+  eliminarMensajeHard: async (idmensaje, accessToken) => {
+    try {
+      const respuesta = await apiMsg.delete(
+        '/mensajes/' + idmensaje + '/eliminar/?tipo_eliminacion=hard',
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      )
+      return respuesta
+    } catch (error) {
+      console.error('Axios: Error al eliminar(hard) mensaje con id: ' + idmensaje, error)
+    }
+  },
+  /* Cambiar estados */
+  cambiarEstadoMensajes: async (mensajeData, accessToken) => {
+    try {
+      const respuesta = await apiMsg.patch('/mensajes/cambiar-estado/', mensajeData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      return respuesta
+    } catch (error) {
+      console.error('Axios: Canbiar el estado de multiples mensajes', error)
     }
   },
 }
