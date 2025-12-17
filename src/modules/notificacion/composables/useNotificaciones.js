@@ -19,6 +19,7 @@ export function useNotificaciones() {
       loading.value = false
     }
   }
+
   //Enviar mensaje sistema
   async function enviarMensajeSistema(mensajeData, accessToken) {
     loading.value = true

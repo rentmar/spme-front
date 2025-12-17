@@ -16,13 +16,7 @@
     <template v-if="!loading && datosExisten">
       <!-- Encabezado -->
       <v-row class="ma-0 pa-4 header-bg">
-        <v-col cols="12" class="pa-0">
-          <pagina-titulo-icono
-            :titulo="'Mensajes Enviados'"
-            :subtitulo="'Historial de todos los mensajes que has enviado'"
-            :icon="'mdi-send'"
-          ></pagina-titulo-icono>
-        </v-col>
+        <v-col cols="12" class="pa-0"> </v-col>
       </v-row>
 
       <!-- Barra de herramientas -->
@@ -488,14 +482,11 @@
                 <v-col cols="12" md="6">
                   <div class="info-item mb-3">
                     <div class="text-caption text-grey mb-1">Prioridad</div>
-                    <v-chip
-                      :color="mensajeSeleccionado.prioridad >= 4 ? 'error' : 'info'"
-                      size="small"
-                    >
+                    <v-chip :color="getPrioridadColor(mensajeSeleccionado.prioridad)" size="small">
                       <v-icon size="14" class="mr-1">
-                        {{ mensajeSeleccionado.prioridad >= 4 ? 'mdi-alert' : 'mdi-information' }}
+                        {{ getPrioridadIcon(mensajeSeleccionado.prioridad) }}
                       </v-icon>
-                      Nivel {{ mensajeSeleccionado.prioridad }}
+                      {{ getPrioridadTexto(mensajeSeleccionado.prioridad) }}
                       <span v-if="mensajeSeleccionado.es_urgente"> (Urgente)</span>
                     </v-chip>
                   </div>
@@ -718,7 +709,8 @@ import { useUserStore } from '@/stores/user'
 import { useSnackbar } from '@/composables/useSnackbar'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
-
+// Importar las opciones de mensajes
+import { SELECT_OPTIONS_MENSAJES } from '../utils/selectOptionsMensajes'
 // Props modificados para recibir datos
 const props = defineProps({
   datosMensajes: {
@@ -972,22 +964,13 @@ const getIniciales = (name) => {
     .substring(0, 2)
 }
 
+// Funciones para tipos usando SELECT_OPTIONS_MENSAJES
 const getTipoTexto = (tipo) => {
-  const map = {
-    privado: 'Privado',
-    sistema: 'Sistema',
-    alerta: 'Alerta',
-    recordatorio: 'Recordatorio',
-    reprogramacion: 'Reprogramación',
-    retraso: 'Retraso',
-    reunion: 'Reunión',
-    social: 'Social',
-    administrativo: 'Administrativo',
-    feedback: 'Feedback',
-    comentario: 'Comentario',
-    capacitacion: 'Capacitación',
-  }
-  return map[tipo] || tipo.charAt(0).toUpperCase() + tipo.slice(1)
+  // Buscar en las opciones importadas
+  const tipoEncontrado = SELECT_OPTIONS_MENSAJES.tipo.find((t) => t.value === tipo)
+
+  // Si existe, usar el title, sino usar la transformación por defecto
+  return tipoEncontrado ? tipoEncontrado.title : tipo.charAt(0).toUpperCase() + tipo.slice(1)
 }
 
 const getTipoColor = (tipo) => {
@@ -998,12 +981,6 @@ const getTipoColor = (tipo) => {
     recordatorio: 'green',
     reprogramacion: 'blue',
     retraso: 'error',
-    reunion: 'blue',
-    social: 'pink',
-    administrativo: 'grey',
-    feedback: 'green',
-    comentario: 'teal',
-    capacitacion: 'purple',
   }
   return map[tipo] || 'grey'
 }
@@ -1016,16 +993,35 @@ const getTipoIcon = (tipo) => {
     recordatorio: 'mdi-bell',
     reprogramacion: 'mdi-calendar-sync',
     retraso: 'mdi-clock-alert',
-    reunion: 'mdi-account-group',
-    social: 'mdi-account',
-    administrativo: 'mdi-file-document',
-    feedback: 'mdi-comment',
-    comentario: 'mdi-message-text',
-    capacitacion: 'mdi-school',
   }
   return map[tipo] || 'mdi-email'
 }
 
+// Funciones para prioridad usando SELECT_OPTIONS_MENSAJES
+const getPrioridadTexto = (prioridad) => {
+  const prioridadEncontrada = SELECT_OPTIONS_MENSAJES.prioridad.find((p) => p.value === prioridad)
+  return prioridadEncontrada ? prioridadEncontrada.title : `Prioridad ${prioridad}`
+}
+
+const getPrioridadColor = (prioridad) => {
+  const map = {
+    1: 'success', // Baja
+    2: 'warning', // Media
+    3: 'error', // Alta
+  }
+  return map[prioridad] || 'info'
+}
+
+const getPrioridadIcon = (prioridad) => {
+  const map = {
+    1: 'mdi-information', // Baja
+    2: 'mdi-alert-circle', // Media
+    3: 'mdi-alert', // Alta
+  }
+  return map[prioridad] || 'mdi-information'
+}
+
+// Funciones para estado (sin cambios)
 const getEstadoTexto = (estado) => {
   const map = {
     no_leido: 'No Leído',
@@ -1131,6 +1127,7 @@ const descargarIndividual = (mensaje) => {
     ['Tipo', mensaje.tipo_display || getTipoTexto(mensaje.tipo)],
     ['Estado', mensaje.estado_display || getEstadoTexto(mensaje.estado)],
     ['Prioridad', mensaje.prioridad],
+    ['Prioridad Texto', getPrioridadTexto(mensaje.prioridad)],
     ['Urgente', mensaje.es_urgente ? 'Sí' : 'No'],
     ['Fecha de Envío', formatDateTime(mensaje.fecha_envio)],
     ['Fecha de Lectura', mensaje.fecha_leido ? formatDateTime(mensaje.fecha_leido) : 'No leído'],
@@ -1181,6 +1178,7 @@ const exportarExcel = async () => {
       Tipo: mensaje.tipo_display || getTipoTexto(mensaje.tipo),
       Estado: mensaje.estado_display || getEstadoTexto(mensaje.estado),
       Prioridad: mensaje.prioridad,
+      'Prioridad Texto': getPrioridadTexto(mensaje.prioridad),
       Urgente: mensaje.es_urgente ? 'Sí' : 'No',
       'Fecha Envío': formatDateTime(mensaje.fecha_envio),
       'Fecha Lectura': mensaje.fecha_leido ? formatDateTime(mensaje.fecha_leido) : 'No leído',
@@ -1212,6 +1210,7 @@ const exportarExcel = async () => {
       { wch: 15 }, // Tipo
       { wch: 15 }, // Estado
       { wch: 10 }, // Prioridad
+      { wch: 15 }, // Prioridad Texto
       { wch: 10 }, // Urgente
       { wch: 20 }, // Fecha Envío
       { wch: 20 }, // Fecha Lectura

@@ -1181,6 +1181,7 @@ const recargar = async () => {
   recargando.value = true
   try {
     await mensajesStore.cargarNotificaciones()
+    await mensajesStore.cargarNotificacionesEnviadas()
     // Resetear a página 1 después de recargar
     paginaActual.value = 1
     // Limpiar selección
@@ -1577,8 +1578,8 @@ const handleActionCompleted = (messageId) => {
 }
 
 /******************** Editor de Mensajes ***********************/
-const handleMensajeEnviado = ({ tipo, datos }) => {
-  console.log('Mensaje enviado:', datos)
+const handleMensajeEnviado = ({ tipo, datosResponse }) => {
+  console.log('Mensaje enviado:', datosResponse)
   recargar()
   if (tipo === 'mensaje') {
     recargar()

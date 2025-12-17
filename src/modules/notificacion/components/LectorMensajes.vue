@@ -27,7 +27,7 @@
 
         <!-- Acciones rápidas en el encabezado -->
         <div class="d-flex align-center gap-1">
-          <v-btn
+          <!--  <v-btn
             v-if="!message?.es_leido"
             icon
             size="small"
@@ -36,9 +36,9 @@
             variant="text"
           >
             <v-icon size="20">mdi-check</v-icon>
-          </v-btn>
+          </v-btn> -->
 
-          <v-btn
+          <!-- <v-btn
             icon
             size="small"
             @click="toggleArchivar"
@@ -48,7 +48,7 @@
             <v-icon size="20">
               {{ message?.estado === 'archivado' ? 'mdi-archive-arrow-up' : 'mdi-archive' }}
             </v-icon>
-          </v-btn>
+          </v-btn> -->
 
           <!-- <v-btn
             icon
@@ -62,7 +62,7 @@
               {{ message?.destacado ? 'mdi-star' : 'mdi-star-outline' }}
             </v-icon>
           </v-btn> -->
-
+          <!--
           <v-btn
             icon
             size="small"
@@ -74,7 +74,7 @@
             <v-icon size="20">
               {{ message?.estado === 'eliminado' ? 'mdi-delete-restore' : 'mdi-delete' }}
             </v-icon>
-          </v-btn>
+          </v-btn> -->
 
           <v-btn icon size="small" @click="closeDialog" variant="text">
             <v-icon>mdi-close</v-icon>
@@ -340,7 +340,7 @@
 
           <!-- Acciones principales -->
           <div class="d-flex align-center gap-2">
-            <v-btn
+            <!--  <v-btn
               color="primary"
               variant="tonal"
               prepend-icon="mdi-reply"
@@ -366,7 +366,7 @@
               @click="reenviarMensaje"
             >
               Reenviar
-            </v-btn>
+            </v-btn> -->
           </div>
 
           <!-- Acciones secundarias -->

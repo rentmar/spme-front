@@ -9,7 +9,7 @@ export const SELECT_OPTIONS_MENSAJES = {
   ],
   prioridad: [
     { title: 'Baja', value: 1 },
-    { title: 'Media', value: 3 },
-    { title: 'Alta', value: 4 },
+    { title: 'Media', value: 2 },
+    { title: 'Alta', value: 3 },
   ],
 }

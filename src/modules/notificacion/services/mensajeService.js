@@ -229,7 +229,7 @@ export const mensajeServicios = {
   /* Enviar mensajes multiples destinatarios con registro de remitente */
   crearMensajesMultiplesRemitente: async (mensajeData, accessToken) => {
     try {
-      const respuesta = await apiMsg.post('/mensajes/crear/multiple/', mensajeData, {
+      const respuesta = await apiMsg.post('/mensajes/remite-enviar-multiple/', mensajeData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

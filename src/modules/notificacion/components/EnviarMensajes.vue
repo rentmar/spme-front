@@ -249,23 +249,9 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-
-// Opciones de selección (como las proporcionaste)
-const SELECT_OPTIONS_MENSAJES = {
-  tipo: [
-    { title: 'PRIVADO', value: 'privado' },
-    { title: 'SISTEMA', value: 'sistema' },
-    { title: 'ALERTA', value: 'alerta' },
-    { title: 'RECORDATORIO', value: 'recordatorio' },
-    { title: 'REPROGRAMACION', value: 'reprogramacion' },
-    { title: 'RETRASO', value: 'retraso' },
-  ],
-  prioridad: [
-    { title: 'Baja', value: 1 },
-    { title: 'Media', value: 3 },
-    { title: 'Alta', value: 4 },
-  ],
-}
+import { useNotificaciones } from '../composables/useNotificaciones'
+import { SELECT_OPTIONS_MENSAJES } from '../utils/selectOptionsMensajes'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 // Props
 const props = defineProps({
@@ -280,6 +266,10 @@ const emit = defineEmits(['update:modelValue', 'enviado', 'cancelado'])
 
 // Store
 const usuarioStore = useUserStore()
+
+//Iniciar composables
+const { enviarMensajesMultiplesConRemitente } = useNotificaciones()
+const { successMsg, errorMsg } = useSnackbar()
 
 // Referencias
 const formRef = ref(null)
@@ -300,7 +290,7 @@ const formulario = ref({
   asunto: '',
   contenido: '',
   tipo: 'privado', // Valor por defecto
-  prioridad: 3, // Media por defecto
+  prioridad: 2, // Media por defecto
 })
 
 // Emojis disponibles (categorizados)
@@ -382,7 +372,7 @@ const inicializarFormulario = async () => {
     asunto: '',
     contenido: '',
     tipo: 'privado',
-    prioridad: 3, // Media
+    prioridad: 2, // Media
   }
 
   // Cargar usuarios si no están cargados
@@ -473,7 +463,7 @@ const enviarMensaje = async () => {
   try {
     // Preparar datos del mensaje según lo que espera tu API
     const datosMensaje = {
-      destinatario_id: destinatarioId.value,
+      destinatarios_ids: destinatarioId.value,
       asunto: formulario.value.asunto.trim(),
       contenido: formulario.value.contenido.trim(),
       tipo: formulario.value.tipo,
@@ -482,19 +472,34 @@ const enviarMensaje = async () => {
 
     console.log('Enviando mensaje:', datosMensaje)
 
-    // Enviar mensaje (ajusta según tu API)
-    const response = await fetch('/api/mensajes/enviar/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${usuarioStore.accessToken}`,
-      },
-      body: JSON.stringify(datosMensaje),
-    })
+    const response = await enviarMensajesMultiplesConRemitente(
+      datosMensaje,
+      usuarioStore.accessToken,
+    )
 
-    const data = await response.json()
+    console.log('Respuesta al envio: ', response)
+    const datosResponse = response.message
 
     //Comprobar el envio
+    if (response.success) {
+      console.log('Mensaje enviado')
+      successMsg('¡Mensaje enviado exitosamente!')
+      //Limpiar el formulario
+      formulario.value = {
+        asunto: '',
+        contenido: '',
+        tipo: 'privado',
+        prioridad: 2,
+      }
+      //Cerrar el dialogo
+      setTimeout(() => {
+        dialogVisible.value = false
+        emit('enviado', datosResponse)
+      }, 1500)
+    } else {
+      console.log('Mensaje no enviado')
+      errorMsg('Error al enviar mensaje')
+    }
 
     // if (response.ok && data.success) {
     //   mostrarSuccess('¡Mensaje enviado exitosamente!')
