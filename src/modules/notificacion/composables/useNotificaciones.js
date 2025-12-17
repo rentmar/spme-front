@@ -199,6 +199,44 @@ export function useNotificaciones() {
     }
   }
 
+  //Enviar mensajes multiples registrando al remitente
+  // const mensajeData = {
+  //   destinatarios_ids: [2, 3, 4],
+  //   asunto: 'Mensaje para el equipo',
+  //   contenido: 'Contenido del mensaje',
+  //   prioridad: 3,
+  //   metadata: {},
+  // }
+  async function enviarMensajesMultiplesConRemitente(mensajeData, accessToken) {
+    loading.value = true
+    try {
+      const respuesta = await mensajeServicios.crearMensajesMultiplesRemitente(
+        mensajeData,
+        accessToken,
+      )
+      return respuesta
+    } catch (err) {
+      error.value = err
+      throw new Error('Error al generar multiples mensajes con remitente', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Obtener mensajes enviados de un usuario
+  async function leerMensajesEnviados(accessToken) {
+    loading.value = true
+    try {
+      const respuesta = await mensajeServicios.obtenerMensajesEnviados(accessToken)
+      return respuesta
+    } catch (err) {
+      error.value = err
+      throw new Error('Erro al leer los mensajes enviados', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados
     loading,
@@ -208,8 +246,10 @@ export function useNotificaciones() {
     enviarMensajeSistema,
     enviarMensajeMultiple,
     enviarMensajeAutomatico,
+    enviarMensajesMultiplesConRemitente,
     cambiarMensajeALeidos,
     leerMensaje,
+    leerMensajesEnviados,
     cambiarEstadoMensaje,
     cambiarEstadoMensajes,
     eliminarMensajesHard,

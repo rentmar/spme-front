@@ -212,4 +212,32 @@ export const mensajeServicios = {
       console.error('Axios: Canbiar el estado de multiples mensajes', error)
     }
   },
+  /* Obtener los mensajes enviados */
+  obtenerMensajesEnviados: async (accessToken) => {
+    try {
+      const respuesta = await apiMsg.get('/mensajes/enviados/', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      return respuesta
+    } catch (error) {
+      console.error('Axios: Error al cargar los mensajes enviados', error)
+    }
+  },
+  /* Enviar mensajes multiples destinatarios con registro de remitente */
+  crearMensajesMultiplesRemitente: async (mensajeData, accessToken) => {
+    try {
+      const respuesta = await apiMsg.post('/mensajes/crear/multiple/', mensajeData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al crear mensajes multiples con remitente', error)
+      throw new Error(`Error envio mensajes multiples c/remitente: ${error.message}`)
+    }
+  },
 }

@@ -18,788 +18,844 @@
       </div>
     </v-overlay>
 
-    <!-- CONTENIDO PRINCIPAL -->
     <template v-if="!loading && !storeLoading">
-      <!-- Encabezado principal -->
+      <!-- ENCABEZADO CON SELECTOR DE VISTA -->
       <v-row class="ma-0 pa-4 header-bg">
         <v-col cols="12" class="pa-0">
-          <pagina-titulo-icono
-            :titulo="'Bandeja de Mensajes'"
-            :subtitulo="'Gestiona tus notificaciones y comunicaciones'"
-            :icon="'mdi-email'"
-          ></pagina-titulo-icono>
-        </v-col>
-      </v-row>
+          <div class="d-flex align-center justify-space-between">
+            <!-- Título según vista -->
+            <pagina-titulo-icono
+              :titulo="
+                vistaSeleccionada === 'bandeja' ? 'Bandeja de Mensajes' : 'Mensajes Enviados'
+              "
+              :subtitulo="
+                vistaSeleccionada === 'bandeja'
+                  ? 'Gestiona tus notificaciones y comunicaciones'
+                  : 'Historial de todos los mensajes que has enviado'
+              "
+              :icon="vistaSeleccionada === 'bandeja' ? 'mdi-email' : 'mdi-send'"
+            ></pagina-titulo-icono>
 
-      <!-- ENCABEZADO HORIZONTAL (antes sidebar) -->
-      <v-row class="ma-0 px-4 pt-0 pb-2 header-toolbar">
-        <v-col cols="12" class="pa-0">
-          <v-card class="header-card" elevation="1" flat>
-            <!-- Navegación de carpetas horizontal -->
-            <div class="d-flex align-center pa-3 border-bottom">
-              <div class="d-flex align-center gap-1 flex-grow-1 overflow-x-auto folders-container">
-                <v-btn
-                  v-for="carpeta in carpetas"
-                  :key="carpeta.value"
-                  :color="carpetaSeleccionada === carpeta.value ? 'primary' : undefined"
-                  :variant="carpetaSeleccionada === carpeta.value ? 'tonal' : 'text'"
-                  size="small"
-                  @click="carpetaSeleccionada = carpeta.value"
-                  class="folder-btn text-capitalize"
-                  rounded="lg"
-                >
-                  <v-icon start size="18">
-                    {{ carpeta.icon }}
-                  </v-icon>
-                  {{ carpeta.title }}
-                  <v-badge
-                    v-if="carpeta.count > 0"
-                    :color="carpeta.badgeColor"
-                    :content="carpeta.count"
-                    inline
-                    size="small"
-                    class="ml-1"
-                  ></v-badge>
-                </v-btn>
-              </div>
-
-              <!-- Estadísticas rápidas -->
-              <div class="d-flex align-center gap-3 ml-4 stats-summary">
-                <div class="text-center px-2">
-                  <div class="text-body-1 font-weight-bold text-primary">
-                    {{ summary.totalNotificaciones }}
-                  </div>
-                  <div class="text-caption text-grey">Total</div>
-                </div>
-                <v-divider vertical></v-divider>
-                <div class="text-center px-2">
-                  <div class="text-body-1 font-weight-bold text-primary">
-                    {{ summary.totalNoLeidas }}
-                  </div>
-                  <div class="text-caption text-grey">No leídos</div>
-                </div>
-                <v-divider vertical></v-divider>
-                <div class="text-center px-2">
-                  <div class="text-body-1 font-weight-bold text-error">
-                    {{ summary.totalUrgentes }}
-                  </div>
-                  <div class="text-caption text-grey">Urgentes</div>
-                </div>
-                <v-divider vertical></v-divider>
-                <div class="text-center px-2">
-                  <div class="text-body-1 font-weight-bold text-warning">
-                    {{ summary.totalArchivadas }}
-                  </div>
-                  <div class="text-caption text-grey">Archivados</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Filtros horizontales -->
-            <div class="d-flex align-center pa-3 gap-3 filters-toolbar">
-              <div class="d-flex align-center gap-2">
-                <v-icon size="18" color="grey">mdi-filter</v-icon>
-                <span class="text-caption text-grey font-weight-medium">Filtros:</span>
-              </div>
-
-              <!-- Filtro por tipo -->
-              <v-select
-                v-model="filtroTipo"
-                :items="SELECT_OPTIONS_MENSAJES.tipo"
-                item-title="title"
-                item-value="value"
-                label="Tipo"
-                density="compact"
-                variant="outlined"
-                hide-details
-                clearable
-                style="width: 160px"
-                class="compact-select"
-              ></v-select>
-
-              <!-- Filtro por prioridad -->
-              <v-select
-                v-model="filtroPrioridad"
-                :items="SELECT_OPTIONS_MENSAJES.prioridad"
-                item-title="title"
-                item-value="value"
-                label="Prioridad"
-                density="compact"
-                variant="outlined"
-                hide-details
-                clearable
-                style="width: 140px"
-                class="compact-select"
-              ></v-select>
-
-              <!-- Indicador de filtros activos -->
-              <div v-if="filtrosActivos" class="d-flex align-center gap-1 ml-2">
-                <v-chip
-                  v-for="filtro in filtrosActivosLista"
-                  :key="filtro.key"
-                  size="x-small"
+            <!-- Selector de vista Bandeja/Enviados -->
+            <v-btn-toggle
+              v-model="vistaSeleccionada"
+              mandatory
+              density="comfortable"
+              variant="outlined"
+              rounded
+              class="ml-4"
+              color="primary"
+            >
+              <v-btn value="bandeja">
+                <v-icon start>mdi-email</v-icon>
+                Bandeja
+                <v-badge
+                  v-if="summary.totalNoLeidas > 0"
+                  :content="summary.totalNoLeidas"
                   color="primary"
-                  variant="outlined"
-                  density="compact"
-                  closable
-                  @click:close="removerFiltro(filtro.key)"
-                  class="mr-1"
-                >
-                  {{ filtro.label }}: {{ filtro.value }}
-                </v-chip>
-                <v-btn
-                  size="x-small"
-                  variant="text"
-                  color="error"
-                  @click="limpiarFiltros"
-                  class="text-caption"
-                >
-                  <v-icon size="14">mdi-close</v-icon>
-                  Limpiar
-                </v-btn>
-              </div>
-
-              <!-- Espaciador -->
-              <v-spacer></v-spacer>
-
-              <!-- PAGINADOR EN EL ENCABEZADO -->
-              <div
-                v-if="notificacionesFiltradas.length > 0"
-                class="d-flex align-center gap-3 header-paginator"
-              >
-                <!-- Control de items por página -->
-                <div class="d-flex align-center gap-1 items-per-page-control">
-                  <span class="text-caption text-grey">Mostrar:</span>
-                  <v-select
-                    v-model="itemsPorPagina"
-                    :items="opcionesItemsPorPagina"
-                    density="compact"
-                    variant="outlined"
-                    hide-details
-                    style="width: 80px"
-                    class="items-select elevation-1"
-                    @update:model-value="handleItemsPorPaginaChange"
-                  ></v-select>
-                  <span class="text-caption text-grey">mensajes</span>
-                </div>
-
-                <!-- Información de paginación -->
-                <div class="d-flex flex-column align-center pagination-info">
-                  <div class="text-caption text-grey">
-                    <span class="font-weight-bold text-primary"
-                      >{{ inicioPagina }}-{{ finPagina }}</span
-                    >
-                    de
-                    <span class="font-weight-bold">{{ notificacionesFiltradas.length }}</span>
-                  </div>
-
-                  <!-- Navegación por números de página -->
-                  <div class="d-flex gap-1 page-numbers">
-                    <v-btn
-                      v-for="pagina in paginasNumeros"
-                      :key="pagina"
-                      :color="paginaActual === pagina ? 'primary' : undefined"
-                      variant="tonal"
-                      size="x-small"
-                      :class="{
-                        'active-page': paginaActual === pagina,
-                        'ellipsis-btn': pagina === '...',
-                      }"
-                      :disabled="pagina === '...'"
-                      @click="pagina !== '...' && irAPagina(pagina)"
-                      min-width="32"
-                      height="32"
-                    >
-                      <template v-if="pagina === '...'">
-                        <v-icon size="14">mdi-dots-horizontal</v-icon>
-                      </template>
-                      <template v-else>
-                        {{ pagina }}
-                      </template>
-                    </v-btn>
-                  </div>
-                </div>
-
-                <!-- Selector de página -->
-                <div class="d-flex align-center gap-1 page-selector">
-                  <span class="text-caption text-grey">Ir a:</span>
-                  <v-select
-                    v-model="paginaActual"
-                    :items="paginasDisponibles"
-                    density="compact"
-                    variant="outlined"
-                    hide-details
-                    style="width: 70px"
-                    class="page-select elevation-1"
-                  ></v-select>
-                  <span class="text-caption text-grey">de {{ totalPaginas }}</span>
-                </div>
-              </div>
-            </div>
-          </v-card>
+                  inline
+                  class="ml-2"
+                ></v-badge>
+              </v-btn>
+              <v-btn value="enviados">
+                <v-icon start>mdi-send</v-icon>
+                Enviados
+              </v-btn>
+            </v-btn-toggle>
+          </div>
         </v-col>
       </v-row>
 
-      <!-- CONTENIDO PRINCIPAL - SOLO MENSAJES -->
-      <v-row class="ma-0 content-row">
-        <!-- Lista de mensajes - Ocupa todo el ancho -->
-        <v-col cols="12" class="pa-4 messages-col-full">
-          <v-card class="messages-card" elevation="2" rounded="lg">
-            <!-- Barra superior de acciones -->
-            <div class="d-flex align-center justify-space-between pa-4 border-bottom action-bar">
-              <div class="d-flex align-center gap-2">
-                <v-checkbox
-                  v-model="todosSeleccionados"
-                  hide-details
-                  density="compact"
-                  class="mt-0"
-                  @change="toggleSeleccionTodos"
-                ></v-checkbox>
-
-                <v-btn
-                  v-if="notificacionesSeleccionadas.length > 0"
-                  icon
-                  size="small"
-                  variant="text"
-                  @click="limpiarSeleccion"
-                  title="Limpiar selección"
-                  class="btn-clear"
+      <!-- COMPONENTE SEGÚN VISTA SELECCIONADA -->
+      <template v-if="vistaSeleccionada === 'bandeja'">
+        <!-- Tu vista actual de bandeja (todo el contenido original) -->
+        <!-- ENCABEZADO HORIZONTAL (antes sidebar) -->
+        <v-row class="ma-0 px-4 pt-0 pb-2 header-toolbar">
+          <v-col cols="12" class="pa-0">
+            <v-card class="header-card" elevation="1" flat>
+              <!-- Navegación de carpetas horizontal -->
+              <div class="d-flex align-center pa-3 border-bottom">
+                <div
+                  class="d-flex align-center gap-1 flex-grow-1 overflow-x-auto folders-container"
                 >
-                  <v-icon size="20">mdi-close</v-icon>
-                </v-btn>
-                <v-divider vertical class="mx-2"></v-divider>
-                <!-- Acciones para selección múltiple -->
-                <template v-if="notificacionesSeleccionadas.length > 0">
                   <v-btn
-                    color="primary"
+                    v-for="carpeta in carpetas"
+                    :key="carpeta.value"
+                    :color="carpetaSeleccionada === carpeta.value ? 'primary' : undefined"
+                    :variant="carpetaSeleccionada === carpeta.value ? 'tonal' : 'text'"
                     size="small"
-                    variant="tonal"
-                    prepend-icon="mdi-check"
-                    @click="marcarSeleccionadasComoLeidas"
-                    class="text-capitalize action-btn"
+                    @click="carpetaSeleccionada = carpeta.value"
+                    class="folder-btn text-capitalize"
+                    rounded="lg"
                   >
-                    Leer
+                    <v-icon start size="18">
+                      {{ carpeta.icon }}
+                    </v-icon>
+                    {{ carpeta.title }}
+                    <v-badge
+                      v-if="carpeta.count > 0"
+                      :color="carpeta.badgeColor"
+                      :content="carpeta.count"
+                      inline
+                      size="small"
+                      class="ml-1"
+                    ></v-badge>
                   </v-btn>
-                  <v-btn
-                    color="warning"
-                    size="small"
-                    variant="tonal"
-                    prepend-icon="mdi-archive"
-                    @click="archivarSeleccionadas"
-                    class="text-capitalize action-btn"
-                  >
-                    Archivar
-                  </v-btn>
-                  <v-btn
-                    color="error"
-                    size="small"
-                    variant="tonal"
-                    prepend-icon="mdi-delete"
-                    @click="eliminarSeleccionadas"
-                    class="text-capitalize action-btn"
-                  >
-                    {{ carpetaSeleccionada === 'papelera' ? 'Eliminar' : 'Papelera' }}
-                  </v-btn>
-                </template>
-                <template v-else>
-                  <v-btn
-                    variant="tonal"
-                    size="small"
-                    prepend-icon="mdi-refresh"
-                    @click="recargar"
-                    :loading="recargando"
-                    class="text-capitalize action-btn"
-                  >
-                    Actualizar
-                  </v-btn>
-                  <v-btn
-                    variant="tonal"
-                    size="small"
-                    prepend-icon="mdi-check-all"
-                    @click="marcarTodasComoLeidas"
-                    :disabled="summary.totalNoLeidas === 0"
-                    class="text-capitalize action-btn"
-                  >
-                    Marcar todas
-                  </v-btn>
-                  <v-btn
-                    variant="tonal"
-                    size="small"
-                    prepend-icon="mdi-email"
-                    @click="abrirEditor('nuevo')"
-                    class="text-capitalize action-btn"
-                  >
-                    Nuevo Mensaje
-                  </v-btn>
-                </template>
+                </div>
+
+                <!-- Estadísticas rápidas -->
+                <div class="d-flex align-center gap-3 ml-4 stats-summary">
+                  <div class="text-center px-2">
+                    <div class="text-body-1 font-weight-bold text-primary">
+                      {{ summary.totalNotificaciones }}
+                    </div>
+                    <div class="text-caption text-grey">Total</div>
+                  </div>
+                  <v-divider vertical></v-divider>
+                  <div class="text-center px-2">
+                    <div class="text-body-1 font-weight-bold text-primary">
+                      {{ summary.totalNoLeidas }}
+                    </div>
+                    <div class="text-caption text-grey">No leídos</div>
+                  </div>
+                  <v-divider vertical></v-divider>
+                  <div class="text-center px-2">
+                    <div class="text-body-1 font-weight-bold text-error">
+                      {{ summary.totalUrgentes }}
+                    </div>
+                    <div class="text-caption text-grey">Urgentes</div>
+                  </div>
+                  <v-divider vertical></v-divider>
+                  <div class="text-center px-2">
+                    <div class="text-body-1 font-weight-bold text-warning">
+                      {{ summary.totalArchivadas }}
+                    </div>
+                    <div class="text-caption text-grey">Archivados</div>
+                  </div>
+                </div>
               </div>
-              <!-- Búsqueda y vista -->
-              <div class="d-flex align-center gap-2">
-                <v-text-field
-                  v-model="search"
-                  placeholder="Buscar en mensajes..."
-                  prepend-inner-icon="mdi-magnify"
-                  variant="outlined"
+
+              <!-- Filtros horizontales -->
+              <div class="d-flex align-center pa-3 gap-3 filters-toolbar">
+                <div class="d-flex align-center gap-2">
+                  <v-icon size="18" color="grey">mdi-filter</v-icon>
+                  <span class="text-caption text-grey font-weight-medium">Filtros:</span>
+                </div>
+
+                <!-- Filtro por tipo -->
+                <v-select
+                  v-model="filtroTipo"
+                  :items="SELECT_OPTIONS_MENSAJES.tipo"
+                  item-title="title"
+                  item-value="value"
+                  label="Tipo"
                   density="compact"
+                  variant="outlined"
                   hide-details
-                  style="width: 240px"
                   clearable
-                  class="search-field"
-                  @update:model-value="handleSearch"
-                >
-                  <template v-slot:append-inner v-if="search">
-                    <v-chip size="x-small" color="info" class="ml-1">
-                      {{ resultadoBusquedaTexto }}
-                    </v-chip>
-                  </template>
-                </v-text-field>
+                  style="width: 160px"
+                  class="compact-select"
+                ></v-select>
 
-                <v-btn-toggle
-                  v-model="vista"
-                  mandatory
+                <!-- Filtro por prioridad -->
+                <v-select
+                  v-model="filtroPrioridad"
+                  :items="SELECT_OPTIONS_MENSAJES.prioridad"
+                  item-title="title"
+                  item-value="value"
+                  label="Prioridad"
                   density="compact"
                   variant="outlined"
-                  divided
-                  class="ml-2 view-toggle"
-                >
-                  <v-btn value="lista" size="small" title="Vista lista">
-                    <v-icon size="18">mdi-format-list-bulleted</v-icon>
-                  </v-btn>
-                  <v-btn value="detalle" size="small" title="Vista detalle">
-                    <v-icon size="18">mdi-card-text</v-icon>
-                  </v-btn>
-                </v-btn-toggle>
-              </div>
-            </div>
+                  hide-details
+                  clearable
+                  style="width: 140px"
+                  class="compact-select"
+                ></v-select>
 
-            <!-- Lista de mensajes - SIN ALTURA FIJA -->
-            <div class="messages-list">
-              <!-- Indicador de filtros aplicados -->
-              <div v-if="filtrosActivos || search" class="px-4 pt-3">
-                <v-alert type="info" density="comfortable" variant="tonal" class="mb-3">
-                  <div class="d-flex align-center justify-space-between">
-                    <div class="d-flex align-center">
-                      <v-icon size="18" color="primary" class="mr-2">mdi-filter</v-icon>
-                      <span class="text-body-2 font-weight-medium">
-                        {{ resultadoFiltroCompletoTexto }}
-                      </span>
-                    </div>
-                    <v-btn
-                      size="x-small"
-                      variant="text"
-                      color="error"
-                      @click="limpiarTodosLosFiltros"
-                      class="text-caption"
-                    >
-                      <v-icon size="14" class="mr-1">mdi-filter-off</v-icon>
-                      Limpiar filtros
-                    </v-btn>
-                  </div>
-                </v-alert>
-              </div>
-
-              <template v-if="notificacionesPaginadas.length > 0">
-                <!-- Vista lista (compacta) -->
-                <template v-if="vista === 'lista'">
-                  <div
-                    v-for="notificacion in notificacionesPaginadas"
-                    :key="notificacion.id"
-                    :class="[
-                      'message-item',
-                      'px-4',
-                      'py-3',
-                      {
-                        unread: notificacion.estado === 'no_leido' || !notificacion.es_leido,
-                        selected: notificacionSeleccionada?.id === notificacion.id,
-                        important: notificacion.prioridad >= 4 || notificacion.es_urgente,
-                        archived: notificacion.estado === 'archivado',
-                      },
-                    ]"
-                    @click="seleccionarNotificacion(notificacion)"
-                  >
-                    <div class="d-flex align-center gap-3">
-                      <!-- Checkbox -->
-                      <v-checkbox
-                        :model-value="notificacionesSeleccionadas.includes(notificacion.id)"
-                        @click.stop="toggleSeleccion(notificacion.id)"
-                        density="compact"
-                        hide-details
-                        class="mt-0 message-checkbox"
-                      ></v-checkbox>
-                      <!-- Estado -->
-                      <div class="message-status">
-                        <div class="status-indicator" :class="notificacion.estado"></div>
-                        <v-icon
-                          v-if="notificacion.estado === 'no_leido' || !notificacion.es_leido"
-                          color="primary"
-                          size="16"
-                          class="message-icon"
-                        >
-                          mdi-email
-                        </v-icon>
-                        <v-icon v-else color="grey" size="16" class="message-icon">
-                          mdi-email-open
-                        </v-icon>
-
-                        <v-icon
-                          v-if="notificacion.prioridad >= 4 || notificacion.es_urgente"
-                          color="error"
-                          size="14"
-                          class="message-important"
-                        >
-                          mdi-alert-circle
-                        </v-icon>
-                      </div>
-                      <!-- Remitente -->
-                      <div class="message-sender">
-                        <v-avatar
-                          size="32"
-                          :color="getAvatarColor(notificacion.remitente?.nombre_completo)"
-                          class="mr-2"
-                        >
-                          <span class="text-white text-caption">
-                            {{ getIniciales(notificacion.remitente?.nombre_completo) }}
-                          </span>
-                        </v-avatar>
-                        <div>
-                          <div class="text-body-2 font-weight-medium text-truncate">
-                            {{ notificacion.remitente?.nombre_completo || 'Sistema' }}
-                          </div>
-                          <div class="text-caption text-grey">
-                            {{ getTipoTexto(notificacion.tipo) }}
-                          </div>
-                        </div>
-                      </div>
-                      <!-- Asunto y vista previa -->
-                      <div class="flex-grow-1 min-width-0">
-                        <div class="d-flex align-center gap-2 mb-1">
-                          <span class="text-body-1 font-weight-medium text-truncate">
-                            {{ notificacion.asunto || 'Sin asunto' }}
-                          </span>
-                          <v-chip
-                            v-if="notificacion.prioridad >= 4 || notificacion.es_urgente"
-                            color="error"
-                            size="x-small"
-                            density="compact"
-                            class="ml-1 priority-chip"
-                          >
-                            Urgente
-                          </v-chip>
-                        </div>
-                        <div class="text-body-2 text-grey text-truncate">
-                          {{ truncateText(notificacion.contenido, 100) }}
-                        </div>
-                      </div>
-                      <!-- Fecha y acciones rápidas -->
-                      <div class="d-flex align-center gap-3">
-                        <div class="text-caption text-grey text-nowrap message-time">
-                          {{ formatTime(notificacion.fecha_envio) }}
-                        </div>
-                        <div class="d-flex align-center gap-1 quick-actions">
-                          <v-btn
-                            v-if="notificacion.estado === 'no_leido' || !notificacion.es_leido"
-                            icon
-                            size="x-small"
-                            variant="text"
-                            @click.stop="marcarComoLeida(notificacion)"
-                            title="Marcar como leída"
-                            class="quick-action"
-                          >
-                            <v-icon size="16">mdi-check</v-icon>
-                          </v-btn>
-                          <v-btn
-                            icon
-                            size="x-small"
-                            variant="text"
-                            @click.stop="toggleArchivar(notificacion)"
-                            :title="
-                              notificacion.estado === 'archivado' ? 'Desarchivar' : 'Archivar'
-                            "
-                            class="quick-action"
-                          >
-                            <v-icon size="16">
-                              {{
-                                notificacion.estado === 'archivado'
-                                  ? 'mdi-archive-arrow-up'
-                                  : 'mdi-archive'
-                              }}
-                            </v-icon>
-                          </v-btn>
-                          <!-- BOTÓN DE ELIMINAR -->
-                          <v-btn
-                            icon
-                            size="x-small"
-                            variant="text"
-                            @click.stop="toggleEliminar(notificacion)"
-                            :title="notificacion.estado === 'eliminado' ? 'Recuperar' : 'Eliminar'"
-                            color="error"
-                            class="quick-action"
-                          >
-                            <v-icon size="16">
-                              {{
-                                notificacion.estado === 'eliminado'
-                                  ? 'mdi-delete-restore'
-                                  : 'mdi-delete'
-                              }}
-                            </v-icon>
-                          </v-btn>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-
-                <!-- Vista detalle -->
-                <template v-else>
-                  <v-card
-                    v-for="notificacion in notificacionesPaginadas"
-                    :key="notificacion.id"
-                    :class="[
-                      'message-detail-card',
-                      'ma-3',
-                      {
-                        unread: notificacion.estado === 'no_leido' || !notificacion.es_leido,
-                        selected: notificacionSeleccionada?.id === notificacion.id,
-                        archived: notificacion.estado === 'archivado',
-                      },
-                    ]"
+                <!-- Indicador de filtros activos -->
+                <div v-if="filtrosActivos" class="d-flex align-center gap-1 ml-2">
+                  <v-chip
+                    v-for="filtro in filtrosActivosLista"
+                    :key="filtro.key"
+                    size="x-small"
+                    color="primary"
                     variant="outlined"
-                    @click="seleccionarNotificacion(notificacion)"
+                    density="compact"
+                    closable
+                    @click:close="removerFiltro(filtro.key)"
+                    class="mr-1"
                   >
-                    <v-card-text class="pa-3">
-                      <div class="d-flex align-start gap-3">
+                    {{ filtro.label }}: {{ filtro.value }}
+                  </v-chip>
+                  <v-btn
+                    size="x-small"
+                    variant="text"
+                    color="error"
+                    @click="limpiarFiltros"
+                    class="text-caption"
+                  >
+                    <v-icon size="14">mdi-close</v-icon>
+                    Limpiar
+                  </v-btn>
+                </div>
+
+                <!-- Espaciador -->
+                <v-spacer></v-spacer>
+
+                <!-- PAGINADOR EN EL ENCABEZADO -->
+                <div
+                  v-if="notificacionesFiltradas.length > 0"
+                  class="d-flex align-center gap-3 header-paginator"
+                >
+                  <!-- Control de items por página -->
+                  <div class="d-flex align-center gap-1 items-per-page-control">
+                    <span class="text-caption text-grey">Mostrar:</span>
+                    <v-select
+                      v-model="itemsPorPagina"
+                      :items="opcionesItemsPorPagina"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      style="width: 80px"
+                      class="items-select elevation-1"
+                      @update:model-value="handleItemsPorPaginaChange"
+                    ></v-select>
+                    <span class="text-caption text-grey">mensajes</span>
+                  </div>
+
+                  <!-- Información de paginación -->
+                  <div class="d-flex flex-column align-center pagination-info">
+                    <div class="text-caption text-grey">
+                      <span class="font-weight-bold text-primary"
+                        >{{ inicioPagina }}-{{ finPagina }}</span
+                      >
+                      de
+                      <span class="font-weight-bold">{{ notificacionesFiltradas.length }}</span>
+                    </div>
+
+                    <!-- Navegación por números de página -->
+                    <div class="d-flex gap-1 page-numbers">
+                      <v-btn
+                        v-for="pagina in paginasNumeros"
+                        :key="pagina"
+                        :color="paginaActual === pagina ? 'primary' : undefined"
+                        variant="tonal"
+                        size="x-small"
+                        :class="{
+                          'active-page': paginaActual === pagina,
+                          'ellipsis-btn': pagina === '...',
+                        }"
+                        :disabled="pagina === '...'"
+                        @click="pagina !== '...' && irAPagina(pagina)"
+                        min-width="32"
+                        height="32"
+                      >
+                        <template v-if="pagina === '...'">
+                          <v-icon size="14">mdi-dots-horizontal</v-icon>
+                        </template>
+                        <template v-else>
+                          {{ pagina }}
+                        </template>
+                      </v-btn>
+                    </div>
+                  </div>
+
+                  <!-- Selector de página -->
+                  <div class="d-flex align-center gap-1 page-selector">
+                    <span class="text-caption text-grey">Ir a:</span>
+                    <v-select
+                      v-model="paginaActual"
+                      :items="paginasDisponibles"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      style="width: 70px"
+                      class="page-select elevation-1"
+                    ></v-select>
+                    <span class="text-caption text-grey">de {{ totalPaginas }}</span>
+                  </div>
+                </div>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <!-- CONTENIDO PRINCIPAL - SOLO MENSAJES -->
+        <v-row class="ma-0 content-row">
+          <!-- Lista de mensajes - Ocupa todo el ancho -->
+          <v-col cols="12" class="pa-4 messages-col-full">
+            <v-card class="messages-card" elevation="2" rounded="lg">
+              <!-- Barra superior de acciones -->
+              <div class="d-flex align-center justify-space-between pa-4 border-bottom action-bar">
+                <div class="d-flex align-center gap-2">
+                  <v-checkbox
+                    v-model="todosSeleccionados"
+                    hide-details
+                    density="compact"
+                    class="mt-0"
+                    @change="toggleSeleccionTodos"
+                  ></v-checkbox>
+
+                  <v-btn
+                    v-if="notificacionesSeleccionadas.length > 0"
+                    icon
+                    size="small"
+                    variant="text"
+                    @click="limpiarSeleccion"
+                    title="Limpiar selección"
+                    class="btn-clear"
+                  >
+                    <v-icon size="20">mdi-close</v-icon>
+                  </v-btn>
+                  <v-divider vertical class="mx-2"></v-divider>
+                  <!-- Acciones para selección múltiple -->
+                  <template v-if="notificacionesSeleccionadas.length > 0">
+                    <v-btn
+                      color="primary"
+                      size="small"
+                      variant="tonal"
+                      prepend-icon="mdi-check"
+                      @click="marcarSeleccionadasComoLeidas"
+                      class="text-capitalize action-btn"
+                    >
+                      Leer
+                    </v-btn>
+                    <v-btn
+                      color="warning"
+                      size="small"
+                      variant="tonal"
+                      prepend-icon="mdi-archive"
+                      @click="archivarSeleccionadas"
+                      class="text-capitalize action-btn"
+                    >
+                      Archivar
+                    </v-btn>
+                    <v-btn
+                      color="error"
+                      size="small"
+                      variant="tonal"
+                      prepend-icon="mdi-delete"
+                      @click="eliminarSeleccionadas"
+                      class="text-capitalize action-btn"
+                    >
+                      {{ carpetaSeleccionada === 'papelera' ? 'Eliminar' : 'Papelera' }}
+                    </v-btn>
+                  </template>
+                  <template v-else>
+                    <v-btn
+                      variant="tonal"
+                      size="small"
+                      prepend-icon="mdi-refresh"
+                      @click="recargar"
+                      :loading="recargando"
+                      class="text-capitalize action-btn"
+                    >
+                      Actualizar
+                    </v-btn>
+                    <v-btn
+                      variant="tonal"
+                      size="small"
+                      prepend-icon="mdi-check-all"
+                      @click="marcarTodasComoLeidas"
+                      :disabled="summary.totalNoLeidas === 0"
+                      class="text-capitalize action-btn"
+                    >
+                      Marcar todas
+                    </v-btn>
+                    <v-btn
+                      variant="tonal"
+                      size="small"
+                      prepend-icon="mdi-email"
+                      @click="abrirEditor('nuevo')"
+                      class="text-capitalize action-btn"
+                    >
+                      Nuevo Mensaje
+                    </v-btn>
+                  </template>
+                </div>
+                <!-- Búsqueda y vista -->
+                <div class="d-flex align-center gap-2">
+                  <v-text-field
+                    v-model="search"
+                    placeholder="Buscar en mensajes..."
+                    prepend-inner-icon="mdi-magnify"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    style="width: 240px"
+                    clearable
+                    class="search-field"
+                    @update:model-value="handleSearch"
+                  >
+                    <template v-slot:append-inner v-if="search">
+                      <v-chip size="x-small" color="info" class="ml-1">
+                        {{ resultadoBusquedaTexto }}
+                      </v-chip>
+                    </template>
+                  </v-text-field>
+
+                  <v-btn-toggle
+                    v-model="vista"
+                    mandatory
+                    density="compact"
+                    variant="outlined"
+                    divided
+                    class="ml-2 view-toggle"
+                  >
+                    <v-btn value="lista" size="small" title="Vista lista">
+                      <v-icon size="18">mdi-format-list-bulleted</v-icon>
+                    </v-btn>
+                    <v-btn value="detalle" size="small" title="Vista detalle">
+                      <v-icon size="18">mdi-card-text</v-icon>
+                    </v-btn>
+                  </v-btn-toggle>
+                </div>
+              </div>
+
+              <!-- Lista de mensajes - SIN ALTURA FIJA -->
+              <div class="messages-list">
+                <!-- Indicador de filtros aplicados -->
+                <div v-if="filtrosActivos || search" class="px-4 pt-3">
+                  <v-alert type="info" density="comfortable" variant="tonal" class="mb-3">
+                    <div class="d-flex align-center justify-space-between">
+                      <div class="d-flex align-center">
+                        <v-icon size="18" color="primary" class="mr-2">mdi-filter</v-icon>
+                        <span class="text-body-2 font-weight-medium">
+                          {{ resultadoFiltroCompletoTexto }}
+                        </span>
+                      </div>
+                      <v-btn
+                        size="x-small"
+                        variant="text"
+                        color="error"
+                        @click="limpiarTodosLosFiltros"
+                        class="text-caption"
+                      >
+                        <v-icon size="14" class="mr-1">mdi-filter-off</v-icon>
+                        Limpiar filtros
+                      </v-btn>
+                    </div>
+                  </v-alert>
+                </div>
+
+                <template v-if="notificacionesPaginadas.length > 0">
+                  <!-- Vista lista (compacta) -->
+                  <template v-if="vista === 'lista'">
+                    <div
+                      v-for="notificacion in notificacionesPaginadas"
+                      :key="notificacion.id"
+                      :class="[
+                        'message-item',
+                        'px-4',
+                        'py-3',
+                        {
+                          unread: notificacion.estado === 'no_leido' || !notificacion.es_leido,
+                          selected: notificacionSeleccionada?.id === notificacion.id,
+                          important: notificacion.prioridad >= 4 || notificacion.es_urgente,
+                          archived: notificacion.estado === 'archivado',
+                        },
+                      ]"
+                      @click="seleccionarNotificacion(notificacion)"
+                    >
+                      <div class="d-flex align-center gap-3">
                         <!-- Checkbox -->
                         <v-checkbox
                           :model-value="notificacionesSeleccionadas.includes(notificacion.id)"
                           @click.stop="toggleSeleccion(notificacion.id)"
                           density="compact"
                           hide-details
-                          class="mt-0"
+                          class="mt-0 message-checkbox"
                         ></v-checkbox>
-
-                        <!-- Avatar del remitente -->
-                        <div class="avatar-container">
-                          <v-avatar
-                            :color="getAvatarColor(notificacion.remitente?.nombre_completo)"
-                            size="48"
-                            class="message-avatar"
+                        <!-- Estado -->
+                        <div class="message-status">
+                          <div class="status-indicator" :class="notificacion.estado"></div>
+                          <v-icon
+                            v-if="notificacion.estado === 'no_leido' || !notificacion.es_leido"
+                            color="primary"
+                            size="16"
+                            class="message-icon"
                           >
-                            <span class="text-white">
+                            mdi-email
+                          </v-icon>
+                          <v-icon v-else color="grey" size="16" class="message-icon">
+                            mdi-email-open
+                          </v-icon>
+
+                          <v-icon
+                            v-if="notificacion.prioridad >= 4 || notificacion.es_urgente"
+                            color="error"
+                            size="14"
+                            class="message-important"
+                          >
+                            mdi-alert-circle
+                          </v-icon>
+                        </div>
+                        <!-- Remitente -->
+                        <div class="message-sender">
+                          <v-avatar
+                            size="32"
+                            :color="getAvatarColor(notificacion.remitente?.nombre_completo)"
+                            class="mr-2"
+                          >
+                            <span class="text-white text-caption">
                               {{ getIniciales(notificacion.remitente?.nombre_completo) }}
                             </span>
                           </v-avatar>
-                          <div
-                            class="status-dot"
-                            :class="
-                              notificacion.estado || (notificacion.es_leido ? 'leido' : 'no_leido')
-                            "
-                          ></div>
+                          <div>
+                            <div class="text-body-2 font-weight-medium text-truncate">
+                              {{ notificacion.remitente?.nombre_completo || 'Sistema' }}
+                            </div>
+                            <div class="text-caption text-grey">
+                              {{ getTipoTexto(notificacion.tipo) }}
+                            </div>
+                          </div>
                         </div>
-
-                        <!-- Contenido -->
+                        <!-- Asunto y vista previa -->
                         <div class="flex-grow-1 min-width-0">
-                          <div class="d-flex justify-space-between align-start mb-2">
-                            <div>
-                              <div class="d-flex align-center gap-2 mb-1">
-                                <span class="text-body-1 font-weight-bold">
-                                  {{ notificacion.remitente?.nombre_completo || 'Sistema' }}
-                                </span>
-                                <v-chip
-                                  :color="getTipoColor(notificacion.tipo)"
-                                  size="x-small"
-                                  density="compact"
-                                  class="type-chip"
-                                >
-                                  {{ getTipoTexto(notificacion.tipo) }}
-                                </v-chip>
-                                <v-chip
-                                  v-if="notificacion.prioridad >= 4 || notificacion.es_urgente"
-                                  color="error"
-                                  size="x-small"
-                                  density="compact"
-                                  class="priority-chip"
-                                >
-                                  Urgente
-                                </v-chip>
-                              </div>
-                              <div
-                                class="text-body-1 font-weight-medium text-primary message-subject"
-                              >
-                                {{ notificacion.asunto || 'Sin asunto' }}
-                              </div>
-                            </div>
-                            <div class="text-caption text-grey text-nowrap message-time">
-                              {{ formatTime(notificacion.fecha_envio) }}
-                            </div>
+                          <div class="d-flex align-center gap-2 mb-1">
+                            <span class="text-body-1 font-weight-medium text-truncate">
+                              {{ notificacion.asunto || 'Sin asunto' }}
+                            </span>
+                            <v-chip
+                              v-if="notificacion.prioridad >= 4 || notificacion.es_urgente"
+                              color="error"
+                              size="x-small"
+                              density="compact"
+                              class="ml-1 priority-chip"
+                            >
+                              Urgente
+                            </v-chip>
                           </div>
-                          <div class="text-body-2 text-grey mb-2 message-preview">
-                            {{ truncateText(notificacion.contenido, 150) }}
-                          </div>
-
-                          <!-- Etiquetas -->
-                          <div class="d-flex gap-1 message-tags">
-                            <v-chip
-                              v-if="notificacion.actividad_id"
-                              size="x-small"
-                              color="blue-lighten-4"
-                              variant="outlined"
-                              density="compact"
-                            >
-                              <v-icon size="12" class="mr-1">mdi-tasks</v-icon>
-                              Actividad
-                            </v-chip>
-                            <v-chip
-                              v-if="notificacion.proyecto_id"
-                              size="x-small"
-                              color="green-lighten-4"
-                              variant="outlined"
-                              density="compact"
-                            >
-                              <v-icon size="12" class="mr-1">mdi-briefcase</v-icon>
-                              Proyecto
-                            </v-chip>
-                            <v-chip
-                              v-if="notificacion.tiene_accion && notificacion.accion_url"
-                              size="x-small"
-                              color="orange-lighten-4"
-                              variant="outlined"
-                              density="compact"
-                            >
-                              <v-icon size="12" class="mr-1">mdi-link</v-icon>
-                              Acción
-                            </v-chip>
-                            <v-chip
-                              v-if="notificacion.estado === 'no_leido' || !notificacion.es_leido"
-                              color="primary"
-                              size="x-small"
-                              density="compact"
-                            >
-                              No leído
-                            </v-chip>
+                          <div class="text-body-2 text-grey text-truncate">
+                            {{ truncateText(notificacion.contenido, 100) }}
                           </div>
                         </div>
-
-                        <!-- Acciones rápidas -->
-                        <div class="d-flex flex-column gap-1 message-actions">
-                          <v-btn
-                            v-if="notificacion.estado === 'no_leido' || !notificacion.es_leido"
-                            icon
-                            size="x-small"
-                            variant="text"
-                            @click.stop="marcarComoLeida(notificacion)"
-                            title="Marcar como leída"
-                          >
-                            <v-icon size="16">mdi-check</v-icon>
-                          </v-btn>
-                          <v-btn
-                            icon
-                            size="x-small"
-                            variant="text"
-                            @click.stop="toggleArchivar(notificacion)"
-                            :title="
-                              notificacion.estado === 'archivado' ? 'Desarchivar' : 'Archivar'
-                            "
-                          >
-                            <v-icon size="16">
-                              {{
-                                notificacion.estado === 'archivado'
-                                  ? 'mdi-archive-arrow-up'
-                                  : 'mdi-archive'
-                              }}
-                            </v-icon>
-                          </v-btn>
-                          <v-btn
-                            icon
-                            size="x-small"
-                            variant="text"
-                            @click.stop="toggleEliminar(notificacion)"
-                            :title="notificacion.estado === 'eliminado' ? 'Recuperar' : 'Eliminar'"
-                            color="error"
-                          >
-                            <v-icon size="16">
-                              {{
-                                notificacion.estado === 'eliminado'
-                                  ? 'mdi-delete-restore'
-                                  : 'mdi-delete'
-                              }}
-                            </v-icon>
-                          </v-btn>
+                        <!-- Fecha y acciones rápidas -->
+                        <div class="d-flex align-center gap-3">
+                          <div class="text-caption text-grey text-nowrap message-time">
+                            {{ formatTime(notificacion.fecha_envio) }}
+                          </div>
+                          <div class="d-flex align-center gap-1 quick-actions">
+                            <v-btn
+                              v-if="notificacion.estado === 'no_leido' || !notificacion.es_leido"
+                              icon
+                              size="x-small"
+                              variant="text"
+                              @click.stop="marcarComoLeida(notificacion)"
+                              title="Marcar como leída"
+                              class="quick-action"
+                            >
+                              <v-icon size="16">mdi-check</v-icon>
+                            </v-btn>
+                            <v-btn
+                              icon
+                              size="x-small"
+                              variant="text"
+                              @click.stop="toggleArchivar(notificacion)"
+                              :title="
+                                notificacion.estado === 'archivado' ? 'Desarchivar' : 'Archivar'
+                              "
+                              class="quick-action"
+                            >
+                              <v-icon size="16">
+                                {{
+                                  notificacion.estado === 'archivado'
+                                    ? 'mdi-archive-arrow-up'
+                                    : 'mdi-archive'
+                                }}
+                              </v-icon>
+                            </v-btn>
+                            <!-- BOTÓN DE ELIMINAR -->
+                            <v-btn
+                              icon
+                              size="x-small"
+                              variant="text"
+                              @click.stop="toggleEliminar(notificacion)"
+                              :title="
+                                notificacion.estado === 'eliminado' ? 'Recuperar' : 'Eliminar'
+                              "
+                              color="error"
+                              class="quick-action"
+                            >
+                              <v-icon size="16">
+                                {{
+                                  notificacion.estado === 'eliminado'
+                                    ? 'mdi-delete-restore'
+                                    : 'mdi-delete'
+                                }}
+                              </v-icon>
+                            </v-btn>
+                          </div>
                         </div>
                       </div>
-                    </v-card-text>
-                  </v-card>
+                    </div>
+                  </template>
+
+                  <!-- Vista detalle -->
+                  <template v-else>
+                    <v-card
+                      v-for="notificacion in notificacionesPaginadas"
+                      :key="notificacion.id"
+                      :class="[
+                        'message-detail-card',
+                        'ma-3',
+                        {
+                          unread: notificacion.estado === 'no_leido' || !notificacion.es_leido,
+                          selected: notificacionSeleccionada?.id === notificacion.id,
+                          archived: notificacion.estado === 'archivado',
+                        },
+                      ]"
+                      variant="outlined"
+                      @click="seleccionarNotificacion(notificacion)"
+                    >
+                      <v-card-text class="pa-3">
+                        <div class="d-flex align-start gap-3">
+                          <!-- Checkbox -->
+                          <v-checkbox
+                            :model-value="notificacionesSeleccionadas.includes(notificacion.id)"
+                            @click.stop="toggleSeleccion(notificacion.id)"
+                            density="compact"
+                            hide-details
+                            class="mt-0"
+                          ></v-checkbox>
+
+                          <!-- Avatar del remitente -->
+                          <div class="avatar-container">
+                            <v-avatar
+                              :color="getAvatarColor(notificacion.remitente?.nombre_completo)"
+                              size="48"
+                              class="message-avatar"
+                            >
+                              <span class="text-white">
+                                {{ getIniciales(notificacion.remitente?.nombre_completo) }}
+                              </span>
+                            </v-avatar>
+                            <div
+                              class="status-dot"
+                              :class="
+                                notificacion.estado ||
+                                (notificacion.es_leido ? 'leido' : 'no_leido')
+                              "
+                            ></div>
+                          </div>
+
+                          <!-- Contenido -->
+                          <div class="flex-grow-1 min-width-0">
+                            <div class="d-flex justify-space-between align-start mb-2">
+                              <div>
+                                <div class="d-flex align-center gap-2 mb-1">
+                                  <span class="text-body-1 font-weight-bold">
+                                    {{ notificacion.remitente?.nombre_completo || 'Sistema' }}
+                                  </span>
+                                  <v-chip
+                                    :color="getTipoColor(notificacion.tipo)"
+                                    size="x-small"
+                                    density="compact"
+                                    class="type-chip"
+                                  >
+                                    {{ getTipoTexto(notificacion.tipo) }}
+                                  </v-chip>
+                                  <v-chip
+                                    v-if="notificacion.prioridad >= 4 || notificacion.es_urgente"
+                                    color="error"
+                                    size="x-small"
+                                    density="compact"
+                                    class="priority-chip"
+                                  >
+                                    Urgente
+                                  </v-chip>
+                                </div>
+                                <div
+                                  class="text-body-1 font-weight-medium text-primary message-subject"
+                                >
+                                  {{ notificacion.asunto || 'Sin asunto' }}
+                                </div>
+                              </div>
+                              <div class="text-caption text-grey text-nowrap message-time">
+                                {{ formatTime(notificacion.fecha_envio) }}
+                              </div>
+                            </div>
+                            <div class="text-body-2 text-grey mb-2 message-preview">
+                              {{ truncateText(notificacion.contenido, 150) }}
+                            </div>
+
+                            <!-- Etiquetas -->
+                            <div class="d-flex gap-1 message-tags">
+                              <v-chip
+                                v-if="notificacion.actividad_id"
+                                size="x-small"
+                                color="blue-lighten-4"
+                                variant="outlined"
+                                density="compact"
+                              >
+                                <v-icon size="12" class="mr-1">mdi-tasks</v-icon>
+                                Actividad
+                              </v-chip>
+                              <v-chip
+                                v-if="notificacion.proyecto_id"
+                                size="x-small"
+                                color="green-lighten-4"
+                                variant="outlined"
+                                density="compact"
+                              >
+                                <v-icon size="12" class="mr-1">mdi-briefcase</v-icon>
+                                Proyecto
+                              </v-chip>
+                              <v-chip
+                                v-if="notificacion.tiene_accion && notificacion.accion_url"
+                                size="x-small"
+                                color="orange-lighten-4"
+                                variant="outlined"
+                                density="compact"
+                              >
+                                <v-icon size="12" class="mr-1">mdi-link</v-icon>
+                                Acción
+                              </v-chip>
+                              <v-chip
+                                v-if="notificacion.estado === 'no_leido' || !notificacion.es_leido"
+                                color="primary"
+                                size="x-small"
+                                density="compact"
+                              >
+                                No leído
+                              </v-chip>
+                            </div>
+                          </div>
+
+                          <!-- Acciones rápidas -->
+                          <div class="d-flex flex-column gap-1 message-actions">
+                            <v-btn
+                              v-if="notificacion.estado === 'no_leido' || !notificacion.es_leido"
+                              icon
+                              size="x-small"
+                              variant="text"
+                              @click.stop="marcarComoLeida(notificacion)"
+                              title="Marcar como leída"
+                            >
+                              <v-icon size="16">mdi-check</v-icon>
+                            </v-btn>
+                            <v-btn
+                              icon
+                              size="x-small"
+                              variant="text"
+                              @click.stop="toggleArchivar(notificacion)"
+                              :title="
+                                notificacion.estado === 'archivado' ? 'Desarchivar' : 'Archivar'
+                              "
+                            >
+                              <v-icon size="16">
+                                {{
+                                  notificacion.estado === 'archivado'
+                                    ? 'mdi-archive-arrow-up'
+                                    : 'mdi-archive'
+                                }}
+                              </v-icon>
+                            </v-btn>
+                            <v-btn
+                              icon
+                              size="x-small"
+                              variant="text"
+                              @click.stop="toggleEliminar(notificacion)"
+                              :title="
+                                notificacion.estado === 'eliminado' ? 'Recuperar' : 'Eliminar'
+                              "
+                              color="error"
+                            >
+                              <v-icon size="16">
+                                {{
+                                  notificacion.estado === 'eliminado'
+                                    ? 'mdi-delete-restore'
+                                    : 'mdi-delete'
+                                }}
+                              </v-icon>
+                            </v-btn>
+                          </div>
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </template>
                 </template>
-              </template>
 
-              <template v-else>
-                <div class="text-center py-12 empty-state">
-                  <v-icon size="96" color="grey-lighten-3" class="empty-icon">
-                    {{ getIconoCarpetaVacia(carpetaSeleccionada) }}
-                  </v-icon>
-                  <p class="text-h6 text-grey mt-4">
-                    {{ getMensajeCarpetaVacia(carpetaSeleccionada, filtrosActivos) }}
-                  </p>
-                  <p class="text-body-1 text-grey mt-2">
-                    {{ getDescripcionCarpetaVacia(carpetaSeleccionada, filtrosActivos) }}
-                  </p>
-                  <v-btn
-                    v-if="carpetaSeleccionada === 'entrada' && !filtrosActivos"
-                    color="primary"
-                    class="mt-4"
-                    prepend-icon="mdi-pencil"
-                    @click="abrirEditor('nuevo')"
-                  >
-                    Escribir tu primer mensaje
-                  </v-btn>
-                  <v-btn
-                    v-else-if="filtrosActivos"
-                    color="primary"
-                    variant="outlined"
-                    class="mt-4"
-                    prepend-icon="mdi-filter-off"
-                    @click="limpiarTodosLosFiltros"
-                  >
-                    Limpiar filtros
-                  </v-btn>
-                </div>
-              </template>
-            </div>
-          </v-card>
-        </v-col>
-      </v-row>
+                <template v-else>
+                  <div class="text-center py-12 empty-state">
+                    <v-icon size="96" color="grey-lighten-3" class="empty-icon">
+                      {{ getIconoCarpetaVacia(carpetaSeleccionada) }}
+                    </v-icon>
+                    <p class="text-h6 text-grey mt-4">
+                      {{ getMensajeCarpetaVacia(carpetaSeleccionada, filtrosActivos) }}
+                    </p>
+                    <p class="text-body-1 text-grey mt-2">
+                      {{ getDescripcionCarpetaVacia(carpetaSeleccionada, filtrosActivos) }}
+                    </p>
+                    <v-btn
+                      v-if="carpetaSeleccionada === 'entrada' && !filtrosActivos"
+                      color="primary"
+                      class="mt-4"
+                      prepend-icon="mdi-pencil"
+                      @click="abrirEditor('nuevo')"
+                    >
+                      Escribir tu primer mensaje
+                    </v-btn>
+                    <v-btn
+                      v-else-if="filtrosActivos"
+                      color="primary"
+                      variant="outlined"
+                      class="mt-4"
+                      prepend-icon="mdi-filter-off"
+                      @click="limpiarTodosLosFiltros"
+                    >
+                      Limpiar filtros
+                    </v-btn>
+                  </div>
+                </template>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+      </template>
+
+      <template v-else>
+        <!-- Componente de mensajes enviados -->
+        <MensajesEnviados :datos-mensajes="mensajesStore.notificacionesEnviadas" />
+      </template>
     </template>
+
+    <!-- Componente para leer mensajes -->
+    <LectorMensajes
+      v-if="notificacionSeleccionada"
+      :message="notificacionSeleccionada"
+      :messages="notificacionesFiltradas"
+      :visible="lectorVisible"
+      @update:visible="lectorVisible = $event"
+      @close="cerrarLector"
+      @mark-read="handleMarkRead"
+      @archive="handleArchive"
+      @delete="handleDelete"
+      @reply="handleReply"
+      @reply-all="handleReplyAll"
+      @forward="handleForward"
+      @previous="handlePrevious"
+      @next="handleNext"
+      @star="handleStar"
+      @action-completed="handleActionCompleted"
+    />
+
+    <!-- Componente Editor de Mensajes -->
+    <!-- <EditorMensajes
+      ref="editorMensajeRef"
+      v-model="editorVisible"
+      :modo="editorModo"
+      :mensaje-original="editorMensajeOriginal"
+      @enviado="handleMensajeEnviado"
+      @guardado="handleMensajeGuardado"
+      @cancelado="handleEditorCancelado"
+    /> -->
+    <EnviarMensajes
+      v-model="editorVisible"
+      @enviado="handleMensajeEnviado"
+      @cancelado="handleEditorCancelado"
+    ></EnviarMensajes>
   </v-container>
-
-  <!-- Componente para leer mensajes -->
-  <LectorMensajes
-    v-if="notificacionSeleccionada"
-    :message="notificacionSeleccionada"
-    :messages="notificacionesFiltradas"
-    :visible="lectorVisible"
-    @update:visible="lectorVisible = $event"
-    @close="cerrarLector"
-    @mark-read="handleMarkRead"
-    @archive="handleArchive"
-    @delete="handleDelete"
-    @reply="handleReply"
-    @reply-all="handleReplyAll"
-    @forward="handleForward"
-    @previous="handlePrevious"
-    @next="handleNext"
-    @star="handleStar"
-    @action-completed="handleActionCompleted"
-  />
-
-  <!-- Componente Editor de Mensajes -->
-  <EditorMensajes
-    ref="editorMensajeRef"
-    v-model="editorVisible"
-    :modo="editorModo"
-    :mensaje-original="editorMensajeOriginal"
-    @enviado="handleMensajeEnviado"
-    @guardado="handleMensajeGuardado"
-    @cancelado="handleEditorCancelado"
-  />
 </template>
 
 <script setup>
@@ -810,9 +866,15 @@ import { useNotificacionesStore } from '@/modules/notificacion/store/useNotifica
 import { useUserStore } from '@/stores/user'
 import { useSnackbar } from '@/composables/useSnackbar'
 import LectorMensajes from '@/modules/notificacion/components/LectorMensajes.vue'
-import EditorMensajes from '@/modules/notificacion/components/EditorMensajes.vue'
+//import EditorMensajes from '@/modules/notificacion/components/EditorMensajes.vue'
+import EnviarMensajes from '@/modules/notificacion/components/EnviarMensajes.vue'
+// Importar el nuevo componente
+import MensajesEnviados from '@/modules/notificacion/components/MensajesEnviados.vue'
 
-// Estado
+// AGREGAR: Variable para controlar la vista
+const vistaSeleccionada = ref('bandeja') // 'bandeja' o 'enviados'
+
+// Estado (mantener todo tu estado actual)
 const loading = ref(true)
 const recargando = ref(false)
 const carpetaSeleccionada = ref('entrada')
@@ -976,13 +1038,6 @@ const carpetas = computed(() => [
     icon: 'mdi-inbox',
     count: summary.value.totalNoLeidas,
     badgeColor: 'primary',
-  },
-  {
-    title: 'Enviados',
-    value: 'enviados',
-    icon: 'mdi-send',
-    count: notificaciones.value.filter((n) => n.remitente?.id === usuarioActual.value.id).length,
-    badgeColor: 'success',
   },
   {
     title: 'Archivados',
@@ -1562,6 +1617,7 @@ const cargar = async () => {
   try {
     await mensajesStore.cargarNotificaciones()
     await usuarioStore.cargarListaUsuarios()
+    await mensajesStore.cargarNotificacionesEnviadas()
     console.log('Carga completada:', mensajesStore.notificaciones.length, 'mensajes')
   } catch (error) {
     console.error('Error al cargar los mensajes', error)
@@ -1601,6 +1657,7 @@ watch(
 </script>
 
 <style scoped>
+/* Mantener todos tus estilos actuales */
 .notificaciones-container {
   background: #f5f5f5;
   min-height: 100vh;
