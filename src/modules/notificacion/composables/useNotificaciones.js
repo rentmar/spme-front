@@ -93,6 +93,7 @@ export function useNotificaciones() {
 
   //Cambiar el estado de una notificacion
   // no_leido, leido, archivado, eliminado
+  //{"estado": "leido"}
   async function cambiarEstadoMensaje(idmensaje, estadoData, accessToken) {
     loading.value = true
     try {
@@ -238,6 +239,20 @@ export function useNotificaciones() {
     }
   }
 
+  //Cargar la bandeja de un usuario
+  async function leerBandejaUsuario(accessToken) {
+    loading.value = true
+    try {
+      const respuesta = await mensajeServicios.obtenerBandeja(accessToken)
+      return respuesta
+    } catch (err) {
+      error.value = err
+      throw new Error('Error al cargar la bandeja de mensajes', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados
     loading,
@@ -251,6 +266,7 @@ export function useNotificaciones() {
     cambiarMensajeALeidos,
     leerMensaje,
     leerMensajesEnviados,
+    leerBandejaUsuario,
     cambiarEstadoMensaje,
     cambiarEstadoMensajes,
     eliminarMensajesHard,

@@ -218,21 +218,21 @@
       <!-- Sección de administración (solo visible para admin) -->
       <template v-if="userIsAdmin">
         <v-divider class="my-1"></v-divider>
-
+        <!--
         <v-list-item
           prepend-icon="mdi-bell-cog"
           title="Administrar Notificaciones"
           value="admin-notifications"
           to="/admin/notificaciones"
           class="admin-item"
-        ></v-list-item>
-        <v-list-item
+        ></v-list-item> -->
+        <!-- <v-list-item
           prepend-icon="mdi-format-list-checks"
           title="Plantillas"
           value="notification-templates"
           to="/admin/notificaciones/plantillas"
           class="admin-item"
-        ></v-list-item>
+        ></v-list-item> -->
 
         <v-list-item
           prepend-icon="mdi-server-security"
