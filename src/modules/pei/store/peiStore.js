@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { indicadorPeiServicios, peiServicios } from '../services/peiService'
 import { objetivoPeiServicios } from '../services/peiService'
 
-export const usePeiStore = defineStore('pei', () => {
+export const usePeiStore = defineStore('pei-store', () => {
   /***** ESTADOS REACTIVOS DEL STORE ******/
   const peis = ref([]) //Almacena la lista completa de PEIs
   const peiActual = ref(null) //Almacena el PEI seleccionado
@@ -42,7 +42,9 @@ export const usePeiStore = defineStore('pei', () => {
   const obtenerPeiEstructuraPorId = async (id) => {
     cargando.value = true
     try {
-      peiEstructura.value = await peiServicios.obtenerEstructuraPorId(id)
+      const respuesta = await peiServicios.getEstructuraPorId(id)
+      peiEstructura.value = respuesta
+      //Actualizar el diagrama
     } catch (err) {
       error.value = err.message
     } finally {
@@ -153,6 +155,7 @@ export const usePeiStore = defineStore('pei', () => {
     peis, //Estado: Lista de PEIs
     peiActual, //Estado: PEI actual
     peiObjIndPorId, //Estado
+    peiEstructura,
     cargando, //Estado: Bandera de carga
     error, //Estado: Error
     obtenerPeis, //Accion
