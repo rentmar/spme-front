@@ -210,7 +210,7 @@
                     required
                   ></v-textarea>
                   <v-text-field
-                    v-model=" textoProcedencia "
+                    v-model="textoProcedencia"
                     label="Fuente de Financiamiento"
                     variant="outlined"
                     density="compact"
@@ -228,6 +228,17 @@
                       bg-color="blue-lighten-5"
                       required
                     ></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-file-input
+                      v-model="formData.medios_archivos"
+                      label="Adjuntar Medios de verificacion"
+                      multiple
+                      chips
+                      show-size
+                      :accept="acceptedFormats.medios"
+                      prepend-icon="mdi-paperclip"
+                    ></v-file-input>
                   </v-col>
                 </div>
 

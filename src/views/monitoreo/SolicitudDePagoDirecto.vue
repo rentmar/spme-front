@@ -183,7 +183,7 @@
                         variant="outlined"
                         density="compact"
                         bg-color="blue-lighten-5"
-                        required
+                        readonly
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="4">
@@ -194,7 +194,7 @@
                         variant="outlined"
                         density="compact"
                         bg-color="blue-lighten-5"
-                        required
+                        readonly
                       ></v-text-field>
                     </v-col>
                   </v-row>
@@ -581,8 +581,8 @@
     {{ '*******************' }} -->
     <!-- <pre>{{ formData.forma_pago }}</pre>
     {{ '*******************' }} -->
-    <!--<pre>{{ datosFormulario }}</pre>
-    {{ '*******************' }}-->
+    <!-- <pre>{{ datosFormulario }}</pre>
+    {{ '*******************' }} -->
     <!-- <pre>{{ coordinadoresList }}</pre> -->
 </template>
 

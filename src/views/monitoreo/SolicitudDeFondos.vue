@@ -1033,7 +1033,7 @@ async function submitForm() {
       fecha_solicitud: formData.value.fecha_solicitud,
       fecha_realizacion_actividad: formData.value.fecha_ejecucion,
       monto_solicitado: totalMontoSolicitado.value,
-      validacion_responsable: formData.value.validacion_responsable,
+      validacion_responsable: formData.value.validacion_contador,
       contador_id: formData.value.idcontador,
       validacion_coordinador: formData.value.validacion_coordinador,
       id_coordinador: formData.value.idcoordinador,
@@ -1046,7 +1046,7 @@ async function submitForm() {
         formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
       datos_forma_pago: formData.value.datos_forma_pago,
       bloquear_icono_sf: true,
-      codigo_actividad: formData.value.codigo_actividad,
+      //codigo_actividad: formData.value.codigo_actividad,
     }
 
     console.log('Payload enviado al servidor:', JSON.stringify(payload,null,2))

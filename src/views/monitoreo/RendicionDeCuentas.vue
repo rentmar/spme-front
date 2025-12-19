@@ -410,8 +410,8 @@
   </div>
      <!-- {{ '*************************' }}
      <pre>{{ datosFormulario1 }}</pre> -->
-     <pre>{{ formData.monto_asignado }}</pre>
-     <pre>{{ route }}</pre>
+     <!--<pre>{{ formData.monto_asignado }}</pre>
+     <pre>{{ route }}</pre> -->
 </template>
 
 <script setup>
@@ -422,11 +422,14 @@ import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vu
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
-
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
 import {useUserStore} from '@/stores/user';
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
+import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+
+//Inicar Composable
+const { enviarMensajeAutomatico } = useNotificaciones()
 
 const router = useRouter()
 const route = useRoute()
@@ -468,6 +471,8 @@ const responsablesList = ref([])
 const coordinadoresList = ref([])
 const contadoresList = ref([])
 const administradoresList = ref([])
+
+const numeroFormulario = ref(null)
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)
@@ -596,6 +601,9 @@ const nombreAdministradorCompleto = computed(() => {
   return administrador ? getNombreCompleto(administrador) : '';
 });
 
+const nombreCompletoSolicitante = computed(() => {
+  return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
+})
 
 // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
 watch(
@@ -1112,9 +1120,7 @@ async function submitForm() {
     // Enviar la solicitud
     const response = await fetch(baseurl+'/api/monitoreo/crear-rendicion-cuentas/', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
@@ -1124,7 +1130,18 @@ async function submitForm() {
     }
 
     const responseData = await response.json();
-    console.log('Rendición enviada con éxito:', responseData);
+    //console.log('Rendición enviada con éxito:', responseData);
+    numeroFormulario.value = responseData.numero_formulario
+
+    const cuerpoMensaje = {
+      destinatario_id: payload.id_coordinador,
+      asunto: 'Solicitud de Fondos - Coordinado',
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormulario.value,
+      tipo: 'sistema',
+      prioridad: 3,
+      accion_url: '',
+      accion_texto: '',
+    }
 
     // GUARDAR EL ID DE LA RENDICIÓN CREADA
     idRendicionCreada.value = responseData.id || responseData.rendicion_id;
@@ -1132,6 +1149,45 @@ async function submitForm() {
     alert('Rendición enviada con éxito');
     exportToExcel();
     resetForm();
+
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    ///////// Enviar notificación por correo al coordinador y al contador//////////
+    try {
+      const emailPayload = {
+        emails: [formData.value.correo_coordinador, formData.value.correo_contador],
+        datos_solicitud: {
+          codigo: numeroFormulario.value || 'SOL-PROV',
+          titulo: 'Formulario Sol. Fondos',
+          solicitante: nombreCompletoSolicitante.value,
+          tipo: 'Solicitud de Actividad',
+          prioridad: 'alta',
+          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
+          url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+        },
+      }
+
+      console.log('emailPayload enviado al servidor:', emailPayload)
+      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(emailPayload),
+        },
+      )
+
+      if (emailResponse.ok) {
+        console.log('Correo de notificación enviado exitosamente')
+      } else {
+        console.warn('No se pudo enviar el correo de notificación')
+      }
+    } catch (emailError) {
+      console.error('Error al enviar correo de notificación:', emailError)
+      // No detenemos el flujo si falla el envío del correo
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+
+    console.log('Respuesta del servidor:', responseData)
 
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=2')
