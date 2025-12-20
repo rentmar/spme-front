@@ -901,7 +901,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1057,7 +1057,7 @@ async function submitForm() {
     }
 
     console.log('Payload enviado al servidor:', JSON.stringify(payload, null, 2))
-    const response = await fetch(baseurl + '/api/monitoreo/crear-solicitud-fondos/', {
+    const response = await fetch(baseurl + 'api/monitoreo/crear-solicitud-fondos/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
