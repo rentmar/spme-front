@@ -226,6 +226,17 @@
                       readonly
                     ></v-text-field>
                   </v-col>
+                  <!-- <v-col cols="12">
+                    <v-file-input
+                      v-model="formData.medios_archivos"
+                      label="Adjuntar Medios de verificacion"
+                      multiple
+                      chips
+                      show-size
+                      :accept="acceptedFormats.medios"
+                      prepend-icon="mdi-paperclip"
+                    ></v-file-input>
+                  </v-col> -->
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -442,14 +453,15 @@
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
                   </h3>
-<!--              <v-row>
+                  <v-row>
                     <v-col cols="12" md="6">
                       <v-select
                         v-model="formData.idresponsable"
+                        bg-color="blue-lighten-5"
                         :items="responsablesList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Responsable del Cargo de Cuenta"
+                        label="Contador"
                         variant="outlined"
                         readonly
                       ></v-select>
@@ -457,7 +469,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formDatSF.validacionResponsablesf"
-                        :label="`Aprobado por Responsable del Cargo de Cuenta ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                        :label="`Aprobado por Contador ${puedeValidarResponsable ? '(Usted)' : ''}`"
                         :disabled="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :readonly="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :color="puedeValidarResponsable ? 'primary' : 'grey'"
@@ -470,7 +482,7 @@
                         }"
                       ></v-checkbox>
                     </v-col>
-                  </v-row>-->
+                  </v-row>
                   <v-row>
                     <v-col cols="12" md="6">
                       <v-select
@@ -553,13 +565,13 @@
     </div>
   </v-container>
   <!-- {{ '***************************************B' }}
-  <pre>{{ datosFormulario }}</pre> -->
+  <pre>{{ datosFormulario1 }}</pre> -->
   <!-- {{ '***************************************B' }}
-  <pre>{{ datosFormulario1 }}</pre>
-  {{ '***************************************C - formData.datos_forma_pago' }}
-  <pre>{{ formData.datos_forma_pago }}</pre>
-  {{ '***************************************D - formaPagoElegido' }}
-  <pre>{{ formaPagoElegido }}</pre> -->
+  <pre>{{ datosFormulario1 }}</pre> -->
+  <!-- {{ '***************************************C - formData.datos_forma_pago' }}
+  <pre>{{ formData.idcoordinador }}</pre> -->
+  <!-- {{ '***************************************D - formaPagoElegido' }}
+  <pre>{{ formData.idresponsable }}</pre> -->
 </template>
 
 <script setup>
@@ -758,7 +770,7 @@ watch(
       // Llenar lista de validadores si existen
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
         //console.log('Cargando validadores:', newVal.validadores)
-        responsablesList.value = newVal.validadores.filter((user) => user && user.cargo === 'responsable') || []
+        responsablesList.value = newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
         coordinadoresList.value = newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
       } else {
         responsablesList.value = []
@@ -1376,7 +1388,7 @@ function actualizarDatosFormulario(solicitud) {
   formDatSF.value.fechaSolicitudsf = solicitud.fechaSolicitud || ''
   formDatSF.value.montoSolicitadosf = solicitud.montoSolicitado || 0
   formDatSF.value.validacionResponsablesf = solicitud.validacionResponsable || false
-  formDatSF.value.responsable_idsf = solicitud.responsable_id || null
+  formDatSF.value.responsable_idsf = solicitud.contador_id || null
   formDatSF.value.validacionCoordinadorsf = solicitud.validacionCoordinador || false
   formDatSF.value.coordinador_idsf = solicitud.coordinador_id || null
   formDatSF.value.usuario_idsf = solicitud.usuario_id || null
@@ -1492,13 +1504,13 @@ function actualizarValidadores() {
     validador => validador.id === formDatSF.value.coordinador_idsf
   )
 
-  // Actualizar formData con los IDs encontrados
-  // if (responsable) {
-  //   formData.value.idresponsable = responsable.id
-  //   //console.log('Responsable encontrado:', getNombreCompleto(responsable))
-  // } else {
-  //   console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
-  // }
+  //Actualizar formData con los IDs encontrados
+  if (responsable) {
+    formData.value.idresponsable = responsable.id
+    //console.log('Responsable encontrado:', getNombreCompleto(responsable))
+  } else {
+    console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
+  }
 
   if (coordinador) {
     formData.value.idcoordinador = coordinador.id
@@ -1517,7 +1529,7 @@ function actualizarListasValidadores() {
 
   // Filtrar responsables (puedes ajustar la lógica según el cargo)
   responsablesList.value = datosFormulario.value.validadores.filter(
-    validador => validador.cargo && validador.cargo.toLowerCase().includes('responsable')
+    validador => validador.cargo && validador.cargo.toLowerCase().includes('contable')
   )
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)

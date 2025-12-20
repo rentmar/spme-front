@@ -13,9 +13,7 @@
       ></ProyectoIdHeader>
 
        <br />
-      <ActividadInformacion
-        v-if="idActividad"
-        :actividad-id="idActividad"
+      <ActividadInformacion v-if="idActividad" :actividad-id="idActividad"
       ></ActividadInformacion>
       <br />
 
@@ -30,6 +28,18 @@
             ></v-text-field>
 
             <v-row>
+
+
+
+
+
+
+
+
+
+
+
+
               <v-col cols="12" sm="6">
                 <v-text-field
                   v-model="formData.fecha_evento"
@@ -174,7 +184,158 @@
 
           <v-divider class="my-4"></v-divider>
 
-          <v-select
+                <!-- Sección 4: Información Adicional -->
+                <div class="form-section mb-6">
+                  <!-- <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-information</v-icon>
+                    Información Adicional
+                  </h3> -->
+
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="formData.lugar_solicitud"
+                        label="Lugar de la Solicitud"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-text-field>
+                      <!-- <v-select
+                        v-model="formData.forma_pago"
+                        :items="formasPagoOptions"
+                        item-title="formaPago"
+                        item-value="id"
+                        label="Forma de Pago"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-select> -->
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="formData.fecha_solicitud"
+                        label="Fecha de la Solicitud"
+                        type="date"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="formData.forma_pago"
+                        :items="formasPagoOptions"
+                        item-title="formaPago"
+                        item-value="id"
+                        label="Forma de Pago"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-select>
+                    </v-col>
+                  </v-row>
+
+                  <div v-if="MostrarCamposOtros">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.otros.nombre_otros"
+                          label="Nombre a quien se realiza el pago"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposOtros"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.otros.ci_otros"
+                          label="Documento de Identidad C.I."
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposOtros"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </div>
+                  <!-- <div v-if="MostrarCamposCheque">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.cheque.nombre_cheque"
+                          label="Nombre a quien se realiza el cheque"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposCheque"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.cheque.ci_cheque"
+                          label="Documento de Identidad C.I."
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposCheque"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </div> -->
+                  <div v-if="MostrarCamposTransferencia">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.nombre_transferencia"
+                          label="Nombre completo a quien se realiza la transferencia"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposTransferencia"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.ci_transferencia"
+                          label="Documento de Identidad C.I."
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposTransferencia"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.entidad_bancaria"
+                          label="Nombre de Entidad Bancaria"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposTransferencia"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-select
+                          v-model="formData.datos_forma_pago.transferencia.tipo_cuenta"
+                          :items="['Ahorro', 'Corriente']"
+                          label="Tipo de Cuenta (Ahorro/ Corriente)"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposTransferencia"
+                        ></v-select>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.numero_cuenta"
+                          label="Número de Cuenta Bancaria"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :required="MostrarCamposTransferencia"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </div>
+                </div>
+
+          <!-- <v-select
             v-model="formData.forma_pago"
             :items="formasPago"
             item-title="formaPago"
@@ -183,9 +344,9 @@
             variant="outlined"
             bg-color="blue-lighten-5"
             required
-          ></v-select>
+          ></v-select> -->
 
-          <div class="form-section">
+          <!-- <div class="form-section">
             <v-text-field
               v-model="formData.lugar_solicitud"
               bg-color="blue-lighten-5"
@@ -199,7 +360,7 @@
               required
               readonly
             ></v-text-field>
-          </div>
+          </div> -->
 
           <v-divider class="my-4"></v-divider>
 
@@ -209,18 +370,18 @@
               <v-col cols="12" md="6">
                 <v-select
                   v-model="formData.id_responsable"
-                  bg-color="blue-lighten-5"
                   :items="responsablesList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Responsable del Cargo de Cuenta"
+                  label="Contador"
+                  bg-color="blue-lighten-5"
                   required
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
                   v-model="formData.validacion_responsable"
-                  label="Aprobado por Responsable del Cargo de Cuenta"
+                  label="Aprobado por Contador"
                   :disabled="isFrozen"
                 ></v-checkbox>
               </v-col>
@@ -269,21 +430,32 @@
       </v-card-text>
     </v-card>
   </v-container>
-  <!-- {{ datosFormulario }}
+    <!-- <pre>{{ correo_contador }}</pre>
     {{ '*********************A' }}
-   <pre>{{ datosFormulario }}</pre> -->
+    <pre>{{ correo_coordinador }}</pre>
+    {{ '*********************A' }}
+   <pre>{{coordinadoresList}}</pre>
+    {{ '*********************A' }}
+    <pre>{{ contadoresList }}</pre>
+    {{ '*********************A' }}
+    <pre>{{ responsablesList }}</pre> -->
 </template>
 
 <script setup>
-import * as XLSX from 'xlsx';
-import { ref, onMounted, computed } from 'vue';
-import axios from 'axios';
-import { useUserStore } from '@/stores/user'
+
+import { ref, onMounted, computed, watch } from 'vue';
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
+import axios from 'axios';
+import { useUserStore } from '@/stores/user'
+import * as XLSX from 'xlsx';
 import { useRoute } from 'vue-router'
+import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+
+//Inicar Composable
+const { enviarMensajeAutomatico } = useNotificaciones()
 
 const route = useRoute()
 const idActividad = route.params.id || null
@@ -291,15 +463,25 @@ const idTarea = route.query.tarea_id || null
 console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
 
+// const userStore = useUserStore()
+// const usuario = computed(() => {
+//   return {
+//     nombre: userStore.usuario,
+//     role: userStore.rol,
+//     id: userStore.userId,
+//   }
+// })
+// console.log('ID Usuario:', usuario.value.id)
+
 const userStore = useUserStore()
 const usuario = computed(() => {
   return {
     nombre: userStore.usuario,
     role: userStore.rol,
-    id: userStore.userId,
+    id: userStore.id,
   }
 })
-console.log('ID Usuario:', usuario.value.id)
+console.log('ID Usuario:', JSON.stringify(usuario.value.id, null, 2))
 
 const baseurl = import.meta.env.VITE_API_BASE
 
@@ -318,6 +500,10 @@ const error = ref(null)
 const isLoading = ref(false)
 const formasPago = ref([])
 
+const contadoresList = ref([])
+const correo_coordinador = ref('')
+const correo_contador = ref('')
+
 const formData = ref({
   evento: '',
   fecha_evento: '',
@@ -328,19 +514,65 @@ const formData = ref({
   fondos_unitas: '',
   justificacion_asistencia: '',
   tareas_previas: '',
-  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
-  forma_pago: undefined,
-  lugar_solicitud: '',
-  fecha_solicitud: getCurrentDate(),
-  id_responsable: null,
-  validacion_responsable: false,
-  id_coordinador: null,
-  validacion_coordinador: false,
-  id_usuario: '',
   id_actividad: '',
   id_tarea: null,
+  id_usuario: '',
+  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
   monto_solicitado: 0,
+  lugar_solicitud: '',
+  fecha_solicitud: getCurrentDate(),
+
+  forma_pago: null,
+  datos_forma_pago: {
+    otros: { nombre_otros: '', ci_otros: '' },
+    transferencia: {
+      nombre_transferencia: '',
+      ci_transferencia: '',
+      entidad_bancaria: '',
+      tipo_cuenta: '',
+      numero_cuenta: '',
+    },
+  },
+  validacion_responsable: false,
+  id_responsable: null,
+  //validacion_contador: false,
+  //id_contador: null,
+  validacion_coordinador: false,
+  id_coordinador: null,
+  //correo_coordinador: '',
+  //correo_contador: '',
+  //codigo_actividad: '',
+  //medios_archivos: [],
+
 });
+
+const numeroFormularioSF = ref(null)
+// // // Logica para formas de pago (solo debe haber tres formas de Pago: otros, Cheque, Transferencia)
+const formasPagoOptions = computed(() => {
+  if (datosFormulario.value && datosFormulario.value.formaPago) {
+    return datosFormulario.value.formaPago
+  }
+  return []
+})
+const formaPagoElegido = computed(() => {
+  if (formData.value.forma_pago && formasPagoOptions.value.length > 0) {
+    const formaPago = formasPagoOptions.value.find((fp) => fp.id === formData.value.forma_pago)
+    const resultado = formaPago ? formaPago.formaPago : ''
+    console.log('Forma de pago seleccionada:', resultado)
+    return resultado
+  }
+  return ''
+})
+const MostrarCamposOtros = computed(() => {
+  const formaPagoTexto = formaPagoElegido.value
+//  return formaPagoElegido.value !== 'Transferaencia Bancaria'
+  return formaPagoTexto === 'Efectivo' || formaPagoTexto === 'Cheque'
+})
+const MostrarCamposTransferencia = computed(() => {
+  const formaPagoTexto = formaPagoElegido.value
+  //return formaPagoElegido.value === 'Transferencia Bancaria'
+  return formaPagoTexto === 'Transferencia Bancaria'
+})
 
 const nombreCoordinadorElegido = computed(() => {
   const coordinador = coordinadoresList.value.find(
@@ -363,12 +595,59 @@ const totalMontoSolicitado = computed(() => {
   );
 });
 
+const nombreCompletoSolicitante = computed(() => {
+  return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
+})
+
 const isFrozen = computed(() => {
   if (!usuario.value || !formData.value.id_coordinador) {
     return true;
   }
   return true;
 });
+
+// WATCH PARA GUARDAR EL CORREO DEL COORDINADOR Y DEL CONTADOR CUANDO SE SELECCIONA
+watch(
+  () => formData.value.id_coordinador,
+  (newIdCoordinador) => {
+    if (newIdCoordinador && coordinadoresList.value.length > 0) {
+      const coordinadorSeleccionado = coordinadoresList.value.find((coordinador) => coordinador.id === newIdCoordinador )
+
+      if (coordinadorSeleccionado && coordinadorSeleccionado.correo) {
+        //formData.value.correo_coordinador = coordinadorSeleccionado.correo
+        correo_coordinador.value = coordinadorSeleccionado.correo
+      } else {
+        //formData.value.correo_coordinador = ''
+        correo_coordinador.value = ''
+      }
+    } else {
+      //formData.value.correo_coordinador = ''
+      correo_coordinador.value = ''
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => formData.value.id_responsable,
+  (newIdResponsable) => {
+    if (newIdResponsable && responsablesList.value.length > 0) {
+      const responsableSeleccionado = responsablesList.value.find((responsable) => responsable.id === newIdResponsable )
+
+      if (responsableSeleccionado && responsableSeleccionado.correo) {
+        //formData.value.correo_contador = contadorSeleccionado.correo
+        correo_contador.value = responsableSeleccionado.correo
+      } else {
+        //formData.value.correo_contador = ''
+        correo_contador.value = ''
+      }
+    } else {
+      //formData.value.correo_contador = ''
+      correo_contador.value = ''
+    }
+  },
+  { immediate: true }
+)
 
 function getNombreCompleto(user) {
   return `${user.nombre} ${user.paterno} ${user.materno}`.trim();
@@ -433,13 +712,28 @@ async function cargarFormasDePago() {
   }
 }
 
+watch(
+  datosFormulario,
+  (newVal) => {
+    if (newVal && newVal.usuario) {
+      datosSolicitante.value = newVal.usuario
+      //console.log('hhhhhhhhhhhh:', JSON.stringify(datosSolicitante.value, null, 2))
+      if(datosSolicitante.value){
+      solicitante.value = getNombreCompleto(datosSolicitante.value)
+      }
+    } else {
+      datosSolicitante.value = [];
+    }
+  },
+  { deep: true } // Si necesitas observar cambios profundos
+);
+
 async function cargarUsuarios() {
   try {
     const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/');
     const allUsers = response.data.usuarios;
-    responsablesList.value = allUsers.filter((user) => user.cargo === 'responsable');
+    responsablesList.value = allUsers.filter((user) => user.cargo === 'contable');
     coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador');
-    datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
     if(datosSolicitante.value){
       solicitante.value = getNombreCompleto(datosSolicitante.value)
     }
@@ -462,7 +756,6 @@ function removeGasto(index) {
 async function submitForm() {
   loading.value = true;
   try {
-
     const requiredFields = [
       'evento',
       'fecha_evento',
@@ -477,8 +770,8 @@ async function submitForm() {
       'forma_pago',
       'lugar_solicitud',
       'fecha_solicitud',
-      'id_responsable',
-      'id_coordinador',
+      //'id_responsable',
+      //'id_coordinador',
     ];
 
     for (const field of requiredFields) {
@@ -509,19 +802,93 @@ async function submitForm() {
         })),
       },
     };
-    //console.log('Payload completo que se enviará:', JSON.stringify(payload,null,2)); // ← Verificar aquí
+    console.log('Payload completo que se enviará:', JSON.stringify(payload,null,2)); // ← Verificar aquí
 
-    const response = await axios.post(baseurl + '/monitoreo_api/crearSolicitudViaje/', payload, {
+    // const response = await axios.post(baseurl + '/monitoreo_api/crearSolicitudViaje/', payload, {
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    // });
+    // numeroFormulario.value = response.numero_formulario;
+    // alert('Solicitud enviada con éxito');
+    // exportToExcel();
+    // resetForm();
+
+    const response = await fetch(baseurl + '/monitoreo_api/crearSolicitudViaje/', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+      body: JSON.stringify(payload),
+    })
 
-    numeroFormulario.value = response.numero_formulario;
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
 
-    alert('Solicitud enviada con éxito');
-    exportToExcel();
-    resetForm();
+    const data = await response.json()
+    //idSolicitudFondos.value = data.id
+    numeroFormularioSF.value = data.numero_formulario
+
+    const cuerpoMensaje = {
+      destinatario_id: payload.id_coordinador,
+      asunto: 'Solicitud de Viaje',
+      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormularioSF.value,
+      tipo: 'sistema',
+      prioridad: 3,
+      accion_url: '',
+      accion_texto: '',
+    }
+
+    exportToExcel()
+    resetForm()
+
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    ///////// Enviar notificación por correo al coordinador y al contador//////////
+    try {
+      const emailPayload = {
+        //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
+        emails: [correo_coordinador.value, correo_contador.value],
+        datos_solicitud: {
+          codigo: numeroFormularioSF.value || 'SOL-PROV',
+          titulo: 'Formulario Sol. Fondos',
+          solicitante: nombreCompletoSolicitante.value,
+          tipo: 'Solicitud de Actividad',
+          prioridad: 'alta',
+          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
+          url_revision: `${window.location.origin}/monitoreo/formulario055/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+        },
+      }
+
+      console.log('emailPayload enviado al servidor:', emailPayload)
+      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(emailPayload),
+        },
+      )
+
+      if (emailResponse.ok) {
+        console.log('Correo de notificación enviado exitosamente')
+      } else {
+        console.warn('No se pudo enviar el correo de notificación')
+      }
+    } catch (emailError) {
+      console.error('Error al enviar correo de notificación:', emailError)
+      // No detenemos el flujo si falla el envío del correo
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+
+    console.log('Respuesta del servidor:', data)
+
+    setTimeout(() => {
+      router.push('/pei/listaactividades?showButton=1')
+    }, 1000)
+
+    return data
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message);
     alert(`Error: ${error.response?.data?.message || error.message}`);
@@ -575,9 +942,30 @@ function exportToExcel() {
     ['Tareas Previas:', formData.value.tareas_previas, '', ''],
     [''],
     ['INFORMACIÓN DE LA SOLICITUD', '', '', ''],
-    ['Forma de Pago:', formData.value.forma_pago, '', ''],
+  //  ['Forma de Pago:', formaPagoElegido.value, '', ''],
     ['Lugar de Solicitud:', formData.value.lugar_solicitud, '', ''],
     ['Fecha de Solicitud:', getCurrentDate(), '', ''],
+    [''],
+
+    ['FORMA DE PAGO', '', '', ''],
+    ['Forma de Pago:', formaPagoElegido.value, '', ''],
+    [''],
+    ['DATOS PARA TRANSFERENCIA BANCARIA', '', '', ''],
+    [
+      'Pago a nombre de:',
+      formData.value.datos_forma_pago.transferencia.nombre_transferencia,
+      '',
+      '',
+    ],
+    ['C.I.:', formData.value.datos_forma_pago.transferencia.ci_transferencia, '', ''],
+    ['Banco:', formData.value.datos_forma_pago.transferencia.entidad_bancaria, '', ''],
+    ['Nro. Cuenta:', formData.value.datos_forma_pago.transferencia.numero_cuenta, '', ''],
+    ['Tipo Cuenta:', formData.value.datos_forma_pago.transferencia.tipo_cuenta, '', ''],
+    [''],
+
+    ['DATOS PARA OTROS PAGOS', '', '', ''],
+    ['Pago a nombre de:', formData.value.datos_forma_pago.otros.nombre_otros, '', ''],
+    ['C.I.:', formData.value.datos_forma_pago.otros.ci_otros, '', ''],
     [''],
     ['FIRMAS Y VALIDACIONES', '', '', ''],
     [
@@ -626,8 +1014,8 @@ function exportToExcel() {
   )
 
   // 8. Agregar hoja al workbook y guardar
-  XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud de Fondos')
-  XLSX.writeFile(wb, `Solicitud_Fondos_F-01_${getCurrentDate()}.xlsx`)
+  XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud de Viaje')
+  XLSX.writeFile(wb, `Solicitud_Viaje_F-05_${getCurrentDate()}.xlsx`)
 }
 
 function applyExcelStyles(

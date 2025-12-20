@@ -92,6 +92,7 @@
                 readonly
                 ></v-text-field>
               </v-col>
+
             </v-row>
 
             <v-divider class="my-4"></v-divider>
@@ -99,18 +100,19 @@
             <v-card-subtitle class="text-h6">Cargo de Cuenta</v-card-subtitle>
 
             <v-row>
-              <v-col cols="12" sm="6" md="4">
+              <!-- <v-col cols="12" sm="6" md="4">
                 <v-text-field
                   v-if="datosRendicionDeCuenta"
                   v-model="datosRendicionDeCuenta.numeroFormulario"
                   label="Formulario Número"
                   readonly
                 ></v-text-field>
-              </v-col>
+              </v-col> -->
+
               <v-col cols="12" sm="6" md="4">
-                <v-text-field
-                  v-model="formDataRC.cpte_diario"
+                <v-text-field v-model="formDataRC.cpte_diario"
                   label="Cpte. Diario"
+                  bg-color="blue-lighten-5"
                   required
                   readonly
                 ></v-text-field>
@@ -119,6 +121,7 @@
                 <v-text-field
                   v-model="formDataRC.fecha_desembolso"
                   label="Fecha de Desembolso"
+                  bg-color="blue-lighten-5"
                   type="date"
                   required
                   readonly
@@ -129,6 +132,7 @@
                 <v-textarea
                   v-model="formDataRC.descripcion_actividadRC"
                   label="Descripción de la Actividad que se realizo"
+                  bg-color="blue-lighten-5"
                   rows="3"
                   required
                   readonly
@@ -146,6 +150,7 @@
                 <v-text-field
                   v-model="formDataRC.lugar_actividadRC"
                   label="Lugar donde se realizo la Actividad"
+                  bg-color="blue-lighten-5"
                   required
                   readonly
                 ></v-text-field>
@@ -154,6 +159,7 @@
                 <v-text-field
                   v-model="formDataRC.fecha_actividadRC"
                   label="Fecha de la realización de Actividad"
+                  bg-color="blue-lighten-5"
                   type="date"
                   required
                   readonly
@@ -163,7 +169,7 @@
             <v-row>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field
-                  v-model="formData.monto_solicitado"
+                  v-model="formData.monto_asignado"
                   label="Monto Asignado (Bs.)"
                   readonly
                 ></v-text-field>
@@ -450,7 +456,14 @@
       </div>
     </div>
   </div>
-  <!-- {{ "**************************************" }}
+  <!-- {{ datosRendicionDeCuenta.lugarRendicion }}
+  {{ "**************************************" }} -->
+<!-- <pre>{{ datosFormulario }}</pre>
+{{ "**************************************" }}
+{{formDatSF.lugarSolicitudsf}}
+{{ "**************************************" }}
+{{ formDataRC.lugar_solicitudRC }}
+  {{ "**************************************" }}
      <pre>{{ datosRendicionDeCuenta }}</pre> -->
 </template>
 
@@ -685,8 +698,8 @@ watch(
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
         responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
         coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
-        contadoresList.value = newVal.validadores.filter((user) => user.cargo === 'contador')
-        administradoresList.value = newVal.validadores.filter((user) => user.cargo === 'administrador')
+        contadoresList.value = newVal.validadores.filter((user) => user.cargo === 'contable')
+        administradoresList.value = newVal.validadores.filter((user) => user.cargo === 'admin')
       }
     }
   },
@@ -817,7 +830,7 @@ async function cargarRendicionesDeCuenta() {
 
     const rawData = await response.json()
     datosRendicionDeCuenta.value = strictSanitizeData(rawData.rendiciones)[0]
-    //console.log('Datos cargados exitosamenteqqqqqqqqqqqqqqqqqqq:', datosRendicionDeCuenta.value)
+    console.log('Datos cargados exitosamenteqqqqqqqqqqqqqqqqqqq:', rawData)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -944,12 +957,14 @@ watch(
       const getSafeValue = (value, defaultValue = '') => {
         return value !== null && value !== undefined ? value : defaultValue
       }
+      formData.value.lugar_solicitud = newVal.lugarRendicion
+      formDataRC.value.idadministrador = newVal.administrador_id
 
       formDataRC.value.cpte_diario = getSafeValue(newVal.cpteDiario)
       formDataRC.value.fecha_desembolso = getSafeValue(newVal.fechaDesembolso)
       formDataRC.value.descripcion_actividadRC = getSafeValue(newVal.descripcionActividad)
       formDataRC.value.lugar_actividadRC = getSafeValue(newVal.lugarActividad)
-      formDataRC.value.fecha_actividadRC = getSafeValue(newVal.fechaActividadRC)
+      formDataRC.value.fecha_actividadRC = getSafeValue(newVal.fechaActividad)
 
       // Asignar detalles de gastos
       if (newVal.detalleDestinoFondos) {

@@ -164,7 +164,7 @@
             <v-row>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field
-                  v-model="formData.monto_solicitado"
+                  v-model="formData.monto_asignado"
                   label="Monto Asignado (Bs.)"
                   readonly
                 ></v-text-field>
@@ -410,6 +410,8 @@
   </div>
      <!-- {{ '*************************' }}
      <pre>{{ datosFormulario1 }}</pre> -->
+     <!--<pre>{{ formData.monto_asignado }}</pre>
+     <pre>{{ route }}</pre> -->
 </template>
 
 <script setup>
@@ -420,11 +422,14 @@ import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vu
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
-
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
 import {useUserStore} from '@/stores/user';
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
+import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+
+//Inicar Composable
+const { enviarMensajeAutomatico } = useNotificaciones()
 
 const router = useRouter()
 const route = useRoute()
@@ -467,6 +472,8 @@ const coordinadoresList = ref([])
 const contadoresList = ref([])
 const administradoresList = ref([])
 
+const numeroFormulario = ref(null)
+
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)
   nombre: '',
@@ -491,12 +498,13 @@ const formData = ref({
   lugar_solicitud: '',
   fecha_actual: getCurrentDate(),
   fecha_solicitud: '',
-  monto_solicitado: 0,
+  //monto_solicitado: 0,
   validacion_responsable: false,
   idresponsable: null,
   validacion_coordinador: false,
   idcoordinador: null,
   monto_asignado: 0,
+  monto_gastado: 0,
   formulario_numero:'',
   validacion_contador: false,
   validacion_administrador: false,
@@ -534,7 +542,7 @@ const formDatSF = ref({
  return {
  	nombre: userStore.usuario,
  	role: userStore.rol,
-  id: userStore.userId,
+  id: userStore.id,
    };
  });
   console.log('ID Usuario:', usuario1.value.id)
@@ -554,7 +562,7 @@ const actividadData = ref({
 
 // Propiedades computadas
 const saldoPorReembolsar = computed(() => {
-  const montoAsignado = Number(formData.value.monto_solicitado) || 0;
+  const montoAsignado = Number(formData.value.monto_asignado) || 0;
   const montoGastado = Number(totalMontoGastado.value) || 0;
   return (montoAsignado - montoGastado).toFixed(2);
 });
@@ -593,6 +601,9 @@ const nombreAdministradorCompleto = computed(() => {
   return administrador ? getNombreCompleto(administrador) : '';
 });
 
+const nombreCompletoSolicitante = computed(() => {
+  return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
+})
 
 // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
 watch(
@@ -959,7 +970,7 @@ watch(solicitudesFondos, (newSolicitudes) => {
       //console.log('Solicitud encontrada, pre-llenando datos:', solicitudEncontrada)
 
       // Pre-llenar campos con los datos de la solicitud
-      formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+      //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
       formData.value.monto_asignado = solicitudEncontrada.montoSolicitado || 0 // Asumiendo que monto asignado = monto solicitado
 
       // También puedes pre-llenar otros campos si es necesario
@@ -997,7 +1008,7 @@ watch(solicitudesFondos, (newSolicitudes) => {
     solicitud.value = solicitudEncontrada
 
     if (solicitudEncontrada) {
-      formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+      //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
       formData.value.monto_asignado = solicitudEncontrada.formaPago || 0
     }
   }
@@ -1071,6 +1082,7 @@ async function submitForm() {
     const payload = {
       numeroFormulario: formDatSF.value.numeroFormulariosf || '',
       //numeroFormulario: formData.value.numeroFormulario || "",
+      montoAsignado: formData.value.monto_asignado,
       montoDescargado: Number(totalMontoGastado.value),
       cpteDiario: formData.value.cpte_diario,
       fechaDesembolso: formData.value.fecha_desembolso,
@@ -1108,9 +1120,7 @@ async function submitForm() {
     // Enviar la solicitud
     const response = await fetch(baseurl+'/api/monitoreo/crear-rendicion-cuentas/', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
@@ -1120,7 +1130,18 @@ async function submitForm() {
     }
 
     const responseData = await response.json();
-    console.log('Rendición enviada con éxito:', responseData);
+    //console.log('Rendición enviada con éxito:', responseData);
+    numeroFormulario.value = responseData.numero_formulario
+
+    const cuerpoMensaje = {
+      destinatario_id: payload.id_coordinador,
+      asunto: 'Solicitud de Fondos - Coordinado',
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormulario.value,
+      tipo: 'sistema',
+      prioridad: 3,
+      accion_url: '',
+      accion_texto: '',
+    }
 
     // GUARDAR EL ID DE LA RENDICIÓN CREADA
     idRendicionCreada.value = responseData.id || responseData.rendicion_id;
@@ -1128,6 +1149,45 @@ async function submitForm() {
     alert('Rendición enviada con éxito');
     exportToExcel();
     resetForm();
+
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    ///////// Enviar notificación por correo al coordinador y al contador//////////
+    try {
+      const emailPayload = {
+        emails: [formData.value.correo_coordinador, formData.value.correo_contador],
+        datos_solicitud: {
+          codigo: numeroFormulario.value || 'SOL-PROV',
+          titulo: 'Formulario Sol. Fondos',
+          solicitante: nombreCompletoSolicitante.value,
+          tipo: 'Solicitud de Actividad',
+          prioridad: 'alta',
+          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
+          url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+        },
+      }
+
+      console.log('emailPayload enviado al servidor:', emailPayload)
+      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(emailPayload),
+        },
+      )
+
+      if (emailResponse.ok) {
+        console.log('Correo de notificación enviado exitosamente')
+      } else {
+        console.warn('No se pudo enviar el correo de notificación')
+      }
+    } catch (emailError) {
+      console.error('Error al enviar correo de notificación:', emailError)
+      // No detenemos el flujo si falla el envío del correo
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+
+    console.log('Respuesta del servidor:', responseData)
 
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=2')
@@ -1169,7 +1229,7 @@ function exportToExcel() {
     [''],
     ['Cpte. Diario:', formData.value.cpte_diario, '', ''],
     ['Fecha de Desembolso:', formData.value.fecha_desembolso, '', ''],
-    ['Monto Asignado (Bs.):', formData.value.monto_solicitado, '', ''],
+    ['Monto Asignado (Bs.):', formData.value.monto_asignado, '', ''],
     ['Monto Gastado (Bs.):', Number(totalMontoGastado.value), '', ''],
     [''],
     ['Saldo por Reembolsar (Bs.):', Number(saldoPorReembolsar.value), '', ''],

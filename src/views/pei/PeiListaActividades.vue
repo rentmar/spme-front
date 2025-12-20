@@ -307,7 +307,7 @@
                     <v-card elevation="0" class="ml-10 mr-4 mb-4 bg-grey-lighten-4">
                       <v-card-text class="pt-4">
                         <div class="d-flex justify-space-between align-center mb-4">
-                          <span class="text-subtitle-1">Tareas para {{ actividad.codigo }}</span>
+                          <span class="text-subtitle-1">Sub Actividades para {{ actividad.codigo }}</span>
                           <div class="d-flex align-center">
                             <v-btn
                               color="primary"
@@ -315,7 +315,7 @@
                               @click="openTareaDialog(actividad.id)"
                             >
                               <v-icon left>mdi-plus</v-icon>
-                              Añadir tarea
+                              Añadir Sub Actividad
                             </v-btn>
                           </div>
                         </div>
@@ -360,46 +360,12 @@
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
                                         v-bind="props"
-                                        icon="mdi-check"
+                                        icon="mdi-thumb-up"
                                         variant="text"
                                         color="primary"
                                         size="x-small"
 
                                         @click.stop="abrirDialogValidar(actividad.id, tarea.id)"
-                                      ></v-btn>
-                                      <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
-                                    </template>
-                                  </v-tooltip>
-                                </div>
-
-                                <!-- Solicitud de Reposición para TAREA -->
-                                <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Reposición" location="top">
-                                    <template v-slot:activator="{ props }">
-                                      <v-btn
-                                        v-if="parseInt($route.query.showButton) === 1"
-                                        v-bind="props"
-                                        icon="mdi-cash-refund"
-                                        variant="text"
-                                        color="warning"
-                                        size="x-small"
-                                        :to="`/monitoreo/formulario03/${actividad.id}?tarea_id=${tarea.id}`"
-                                        @click.stop
-                                      ></v-btn>
-                                    </template>
-                                  </v-tooltip>
-
-                                  <v-tooltip text="Validar Solicitud de Reposición" location="bottom">
-                                    <template v-slot:activator="{ props }">
-                                      <v-btn
-                                        v-if="parseInt($route.query.showButton) === 1"
-                                        v-bind="props"
-                                        icon="mdi-check"
-                                        variant="text"
-                                        color="warning"
-                                        size="x-small"
-
-                                        @click.stop="abrirDialogReposicionValidar(actividad.id, tarea.id)"
                                       ></v-btn>
                                       <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                                     </template>
@@ -428,7 +394,7 @@
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
                                         v-bind="props"
-                                        icon="mdi-check"
+                                        icon="mdi-thumb-up"
                                         variant="text"
                                         color="deep-purple"
                                         size="x-small"
@@ -461,13 +427,47 @@
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
                                         v-bind="props"
-                                        icon="mdi-check"
+                                        icon="mdi-thumb-up"
                                         variant="text"
                                         color="teal-lighten-2"
                                         size="x-small"
                                         :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
                                         @click.stop="abrirDialogPagoDirectoValidar(actividad.id, tarea.id)"
                                       ></v-btn>
+                                    </template>
+                                  </v-tooltip>
+                                </div>
+
+                                <!-- Solicitud de Reposición para TAREA -->
+                                <div class="d-flex flex-column align-center justify-center">
+                                  <v-tooltip text="Solicitud de Reposición" location="top">
+                                    <template v-slot:activator="{ props }">
+                                      <v-btn
+                                        v-if="parseInt($route.query.showButton) === 1"
+                                        v-bind="props"
+                                        icon="mdi-cash-refund"
+                                        variant="text"
+                                        color="warning"
+                                        size="x-small"
+                                        :to="`/monitoreo/formulario03/${actividad.id}?tarea_id=${tarea.id}`"
+                                        @click.stop
+                                      ></v-btn>
+                                    </template>
+                                  </v-tooltip>
+
+                                  <v-tooltip text="Validar Solicitud de Reposición" location="bottom">
+                                    <template v-slot:activator="{ props }">
+                                      <v-btn
+                                        v-if="parseInt($route.query.showButton) === 1"
+                                        v-bind="props"
+                                        icon="mdi-thumb-up"
+                                        variant="text"
+                                        color="warning"
+                                        size="x-small"
+
+                                        @click.stop="abrirDialogReposicionValidar(actividad.id, tarea.id)"
+                                      ></v-btn>
+                                      <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                                     </template>
                                   </v-tooltip>
                                 </div>
@@ -495,7 +495,7 @@
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 2"
                                         v-bind="props"
-                                        icon="mdi-check"
+                                        icon="mdi-thumb-up"
                                         variant="text"
                                         color="error"
                                         size="x-small"
@@ -527,7 +527,7 @@
                                 <v-divider vertical inset class="mx-1 my-1"></v-divider>
 
                                 <!-- Acciones de tarea -->
-                                <v-tooltip text="Editar tarea" location="top">
+                                <v-tooltip text="Editar Sub Actividad" location="top">
                                   <template v-slot:activator="{ props }">
                                     <v-btn
                                       v-bind="props"
@@ -539,7 +539,7 @@
                                     ></v-btn>
                                   </template>
                                 </v-tooltip>
-                                <v-tooltip text="Eliminar tarea" location="top">
+                                <v-tooltip text="Eliminar Sub Actividad" location="top">
                                   <template v-slot:activator="{ props }">
                                     <v-btn
                                       v-bind="props"
@@ -556,7 +556,7 @@
                           </v-list-item>
                           <v-list-item v-if="actividad.tareas.length === 0">
                             <v-list-item-title class="text-grey text-caption">
-                              No hay tareas para esta actividad
+                              No hay Sub Actividades
                             </v-list-item-title>
                           </v-list-item>
                         </v-list>
