@@ -576,8 +576,8 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ datosFormulario }}</pre>
-  {{ '*******************' }} -->
+  <pre>{{ formData }}</pre>
+  {{ '*******************' }}
   <!-- <pre>{{ formasPagoOptions }}</pre>
     {{ '*******************' }} -->
   <!-- <pre>{{ formData.forma_pago }}</pre>
@@ -1026,6 +1026,21 @@ async function submitForm() {
       throw new Error('El monto total solicitado debe ser mayor a cero.')
     }
 
+        // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+    const coordinadorSeleccionado = coordinadoresList.value.find(
+      (coordinador) => coordinador.id === formData.value.idcoordinador
+    )
+    const contadorSeleccionado = contadoresList.value.find(
+      (contador) => contador.id === formData.value.idcontador
+    )
+
+    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+    const correoContadorActual = contadorSeleccionado?.correo || ''
+
+    // Actualizar los valores en formData
+    formData.value.correo_coordinador = correoCoordinadorActual
+    formData.value.correo_contador = correoContadorActual
+
     const payload = {
       // detalle_destino_fondos should be an object, not a stringified JSON
       detalle_destino_fondos: {
@@ -1102,7 +1117,8 @@ async function submitForm() {
     ///////// Enviar notificación por correo al coordinador y al contador//////////
     try {
       const emailPayload = {
-        emails: [formData.value.correo_coordinador, formData.value.correo_contador],
+        emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
+        //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Fondos',
