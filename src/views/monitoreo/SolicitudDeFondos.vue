@@ -1079,14 +1079,25 @@ async function submitForm() {
       contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value,
       tipo: 'sistema',
       prioridad: 3,
-      accion_url: '',
-      accion_texto: '',
+      // accion_url: '',
+      // accion_texto: '',
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    const cuerpoMensaje2 = {
+      destinatario_id: payload.contador_id,
+      asunto: 'Solicitud de Fondos - Contador',
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value,
+      tipo: 'sistema',
+      prioridad: 3,
+      // accion_url: '',
+      // accion_texto: '',
     }
 
     exportToExcel()
     resetForm()
 
-    await enviarMensajeAutomatico(cuerpoMensaje)
+    await enviarMensajeAutomatico(cuerpoMensaje2)
 
     ///////// Enviar notificación por correo al coordinador y al contador//////////
     try {
