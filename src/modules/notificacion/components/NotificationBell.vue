@@ -1,29 +1,32 @@
 <template>
   <div class="notification-container">
-    <!-- Botón de campana con badge mejorado -->
+    <!-- Botón de campana -->
     <v-btn
       icon
       variant="text"
-      @click="abrirNotificaciones"
-      :loading="cargando"
-      :disabled="cargando"
+      @click="toggleDropdown"
+      :loading="loading || bellStore.loading"
+      :disabled="loading || bellStore.loading"
       class="notification-bell-btn"
+      :title="titleText"
     >
-      <!-- Icono de campana con color dinámico -->
+      <!-- Icono dinámico según prioridad -->
       <v-icon
         :class="{
           'notification-bell-icon': true,
-          'has-notifications': notificacionesNoLeidas > 0,
-          'urgent-notifications': notificacionesUrgentes > 0,
+          'has-notifications': tieneNotificaciones,
+          'urgent-notifications': tienePrioridad3,
+          'normal-notifications': tieneNotificaciones && !tienePrioridad3,
+          'pulse-animation': tieneNotificaciones && !dialogoVisible,
         }"
       >
-        {{ notificacionesUrgentes > 0 ? 'mdi-bell-alert' : 'mdi-bell' }}
+        {{ tienePrioridad3 ? 'mdi-bell-alert' : 'mdi-bell' }}
       </v-icon>
 
-      <!-- Badge con contador - posición absoluta -->
-      <div v-if="notificacionesNoLeidas > 0" class="notification-badge">
+      <!-- Badge visible solo si hay notificaciones -->
+      <div v-if="tieneNotificaciones" class="notification-badge" :class="badgeClass">
         <span class="badge-count">
-          {{ notificacionesNoLeidas > 99 ? '99+' : notificacionesNoLeidas }}
+          {{ badgeTexto }}
         </span>
       </div>
     </v-btn>
@@ -31,11 +34,11 @@
     <!-- Diálogo de notificaciones -->
     <v-dialog v-model="dialogoVisible" max-width="600px" scrollable>
       <v-card>
-        <!--Encabezado del cuadro de dialogo-->
+        <!-- Encabezado -->
         <v-card-title class="d-flex align-center justify-space-between bg-primary">
           <div class="d-flex align-center">
-            <v-icon color="white" class="mr-2">mdi-bell-alert</v-icon>
-            <span class="text-h6 text-white">Notificaciones Urgentes</span>
+            <v-icon color="white" class="mr-2">mdi-bell</v-icon>
+            <span class="text-h6 text-white">Notificaciones</span>
           </div>
           <v-btn icon color="white" variant="text" @click="dialogoVisible = false" size="small">
             <v-icon>mdi-close</v-icon>
@@ -46,48 +49,58 @@
           <!-- Contador y acciones -->
           <div class="d-flex align-center justify-space-between pa-4 border-bottom">
             <div class="text-body-1 font-weight-medium">
-              <v-icon color="error" size="small" class="mr-1">mdi-alert</v-icon>
-              Tienes {{ notificacionesNoLeidas }} notificación(es) urgente(s)
-              <span v-if="notificacionesUrgentes > 0" class="text-error ml-2">
-                ({{ notificacionesUrgentes }} alta prioridad)
+              <v-icon :color="tienePrioridad3 ? 'error' : 'primary'" size="small" class="mr-1">
+                {{ tienePrioridad3 ? 'mdi-alert' : 'mdi-bell' }}
+              </v-icon>
+              Tienes {{ contadorNoLeidos }} notificación(es)
+              <span v-if="tienePrioridad3" class="text-error ml-2">
+                ({{ contarMensajesPorPrioridad(3) }} urgente{{
+                  contarMensajesPorPrioridad(3) !== 1 ? 's' : ''
+                }})
               </span>
             </div>
             <v-btn
-              v-if="notificacionesNoLeidas > 0"
+              v-if="tieneNotificaciones"
               size="small"
               variant="outlined"
               @click="marcarTodasComoLeidas"
               :loading="marcarTodas"
+              :disabled="marcarTodas || !tieneNotificaciones"
             >
               <v-icon start size="small">mdi-check-all</v-icon>
-              Marcar todas como leídas
+              Marcar todas como leidas
             </v-btn>
           </div>
 
           <!-- Lista de notificaciones -->
-          <div v-if="notificaciones.length > 0" class="notifications-list">
+          <div v-if="tieneNotificaciones" class="notifications-list">
             <v-list lines="three" density="compact">
-              <template v-for="(notificacion, index) in notificaciones" :key="notificacion.id">
+              <template
+                v-for="(mensaje, index) in bellStore.listaMensajesFiltrada"
+                :key="mensaje.id"
+              >
                 <v-list-item
                   :class="{
-                    'notification-unread': !notificacion.leido,
-                    'notification-urgent': notificacion.prioridad === 3,
+                    'notification-unread': !mensaje.es_leido,
+                    'notification-urgent': mensaje.prioridad === 3,
+                    'notification-medium': mensaje.prioridad === 2,
+                    'notification-low': mensaje.prioridad === 1,
                   }"
-                  @click="verMensaje(notificacion)"
+                  @click="verMensaje(mensaje)"
                 >
                   <template #prepend>
-                    <v-avatar :color="getPrioridadColor(notificacion.prioridad)" size="36">
+                    <v-avatar :color="getPrioridadColor(mensaje.prioridad)" size="36">
                       <v-icon color="white" size="small">
-                        {{ getPrioridadIcono(notificacion.prioridad) }}
+                        {{ getPrioridadIcono(mensaje.prioridad) }}
                       </v-icon>
                     </v-avatar>
                   </template>
 
                   <v-list-item-title class="font-weight-medium d-flex align-center">
-                    <span>{{ notificacion.asunto }}</span>
+                    <span class="text-truncate">{{ mensaje.asunto || 'Sin asunto' }}</span>
                     <div class="ml-2 d-flex align-center">
                       <v-chip
-                        v-if="!notificacion.leido"
+                        v-if="!mensaje.es_leido"
                         size="x-small"
                         color="primary"
                         class="mr-1"
@@ -95,14 +108,18 @@
                       >
                         Nuevo
                       </v-chip>
-                      <v-chip
-                        v-if="notificacion.prioridad === 3"
-                        size="x-small"
-                        color="error"
-                        label
-                      >
+                      <v-chip v-if="mensaje.prioridad === 3" size="x-small" color="error" label>
                         <v-icon start size="x-small">mdi-alert</v-icon>
                         Urgente
+                      </v-chip>
+                      <v-chip
+                        v-else-if="mensaje.prioridad === 2"
+                        size="x-small"
+                        color="warning"
+                        label
+                      >
+                        <v-icon start size="x-small">mdi-exclamation</v-icon>
+                        Media
                       </v-chip>
                     </div>
                   </v-list-item-title>
@@ -110,11 +127,13 @@
                   <v-list-item-subtitle class="text-caption">
                     <div class="d-flex align-center">
                       <v-icon size="x-small" class="mr-1">mdi-account</v-icon>
-                      {{ notificacion.remitente_nombre || 'Sistema' }}
+                      <span class="text-truncate">
+                        {{ mensaje.remitente?.nombre_completo || 'Sistema' }}
+                      </span>
                     </div>
                     <div class="d-flex align-center mt-1">
                       <v-icon size="x-small" class="mr-1">mdi-clock</v-icon>
-                      {{ formatFecha(notificacion.fecha_creacion) }}
+                      {{ formatFecha(mensaje.fecha_envio) }}
                     </div>
                   </v-list-item-subtitle>
 
@@ -123,17 +142,18 @@
                       icon
                       size="small"
                       variant="text"
-                      @click.stop="marcarComoLeida(notificacion)"
-                      :loading="notificacion.id === notificacionMarcando"
+                      @click.stop="marcarComoLeida(mensaje)"
+                      :loading="marcandoNotificacionId === mensaje.id"
+                      :disabled="marcandoNotificacionId === mensaje.id || mensaje.es_leido"
                     >
-                      <v-icon :color="notificacion.leido ? 'success' : 'grey'">
-                        {{ notificacion.leido ? 'mdi-check-circle' : 'mdi-circle-outline' }}
+                      <v-icon :color="mensaje.es_leido ? 'success' : 'grey'">
+                        {{ mensaje.es_leido ? 'mdi-check-circle' : 'mdi-circle-outline' }}
                       </v-icon>
                     </v-btn>
                   </template>
                 </v-list-item>
 
-                <v-divider v-if="index < notificaciones.length - 1"></v-divider>
+                <v-divider v-if="index < bellStore.listaMensajesFiltrada.length - 1"></v-divider>
               </template>
             </v-list>
           </div>
@@ -141,232 +161,192 @@
           <!-- Sin notificaciones -->
           <div v-else class="pa-8 text-center">
             <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-bell-off</v-icon>
-            <div class="text-h6 text-grey mb-2">No hay notificaciones</div>
-            <div class="text-body-2 text-grey">No tienes notificaciones urgentes pendientes</div>
+            <div class="text-h6 text-grey mb-2">No hay notificaciones nuevas</div>
+            <div class="text-body-2 text-grey">Todos los mensajes están leídos</div>
           </div>
         </v-card-text>
 
         <v-card-actions class="pa-4 border-top">
           <v-spacer></v-spacer>
           <v-btn variant="outlined" @click="dialogoVisible = false">Cerrar</v-btn>
-          <v-btn
-            v-if="notificaciones.length > 0"
-            color="primary"
-            @click="irABandeja"
-            variant="flat"
-          >
-            <v-icon start>mdi-inbox</v-icon>
-            Ver todos los mensajes
-          </v-btn>
+          <v-btn variant="outlined" :to="'/notificaciones'">Ir a la Bandeja</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- Diálogo para ver mensaje completo - AGRAANDADO -->
-    <v-dialog v-model="dialogoMensajeVisible" max-width="1200px" fullscreen>
-      <v-card class="fullscreen-message-dialog">
-        <!-- Header fijo -->
-        <v-card-title
-          class="d-flex align-center justify-space-between bg-primary pa-4 sticky-header"
-        >
+    <!-- Diálogo para ver mensaje completo -->
+    <v-dialog v-model="dialogoMensajeVisible" max-width="800px">
+      <v-card>
+        <v-card-title class="d-flex align-center justify-space-between bg-primary">
           <div class="d-flex align-center">
-            <v-avatar
-              :color="getPrioridadColor(mensajeSeleccionado.prioridad)"
-              size="40"
-              class="mr-3"
-            >
-              <v-icon color="white" size="small">
-                {{ getPrioridadIcono(mensajeSeleccionado.prioridad) }}
-              </v-icon>
-            </v-avatar>
-            <div>
-              <div class="text-h5 text-white font-weight-bold">
-                {{ mensajeSeleccionado.asunto }}
-              </div>
-              <div class="text-caption text-white mt-1">
-                <v-icon size="small" class="mr-1">mdi-account</v-icon>
-                {{ mensajeSeleccionado.remitente_nombre || 'Sistema' }}
-                <span class="mx-2">•</span>
-                <v-icon size="small" class="mr-1">mdi-clock</v-icon>
-                {{ formatFechaCompleta(mensajeSeleccionado.fecha_creacion) }}
-              </div>
-            </div>
+            <v-icon color="white" class="mr-2">
+              {{ getTipoIcono(mensajeSeleccionado?.tipo) }}
+            </v-icon>
+            <span class="text-h6 text-white">Mensaje: {{ mensajeSeleccionado?.asunto }}</span>
           </div>
-          <v-btn
-            icon
-            color="white"
-            variant="text"
-            @click="dialogoMensajeVisible = false"
-            size="large"
-            class="close-btn"
-          >
-            <v-icon size="28">mdi-close</v-icon>
+          <v-btn icon color="white" variant="text" @click="dialogoMensajeVisible = false">
+            <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
 
-        <!-- Contenido principal -->
-        <v-card-text class="pa-0 message-content-container">
-          <!-- Panel de información lateral -->
-          <div class="d-flex message-layout">
-            <!-- Panel lateral con información -->
-            <div class="message-sidebar pa-4">
-              <div class="mb-6">
-                <div class="text-subtitle-1 font-weight-bold mb-2">Detalles del mensaje</div>
-                <v-divider class="mb-3"></v-divider>
-
-                <div class="mb-3">
-                  <div class="text-caption text-grey mb-1">Prioridad:</div>
+        <v-card-text class="pa-4">
+          <!-- Información del mensaje -->
+          <div v-if="mensajeSeleccionado" class="message-details">
+            <!-- Asunto destacado -->
+            <div class="asunto-section mb-6">
+              <div class="text-subtitle-1 text-grey mb-1">ASUNTO</div>
+              <div class="asunto-content pa-3 bg-blue-lighten-5 rounded">
+                <h2 class="text-h5 font-weight-bold text-primary">
+                  {{ mensajeSeleccionado.asunto || 'Sin asunto' }}
+                </h2>
+                <div class="d-flex align-center mt-2">
                   <v-chip
-                    :color="getPrioridadColor(mensajeSeleccionado.prioridad)"
-                    size="large"
-                    class="w-100 justify-start"
-                    :class="`priority-${mensajeSeleccionado.prioridad}`"
+                    v-if="!mensajeSeleccionado.es_leido"
+                    color="primary"
+                    size="small"
+                    class="mr-2"
                   >
-                    <v-icon start size="medium">{{
-                      getPrioridadIcono(mensajeSeleccionado.prioridad)
-                    }}</v-icon>
-                    <span class="font-weight-bold">{{
-                      getPrioridadTexto(mensajeSeleccionado.prioridad)
-                    }}</span>
+                    <v-icon start size="small">mdi-email</v-icon>
+                    Nuevo
+                  </v-chip>
+                  <v-chip
+                    v-if="mensajeSeleccionado.prioridad === 3"
+                    color="error"
+                    size="small"
+                    class="mr-2"
+                  >
+                    <v-icon start size="small">mdi-alert</v-icon>
+                    Urgente
+                  </v-chip>
+                  <v-chip v-if="mensajeSeleccionado.prioridad === 2" color="warning" size="small">
+                    <v-icon start size="small">mdi-exclamation</v-icon>
+                    Media
                   </v-chip>
                 </div>
+              </div>
+            </div>
 
-                <div class="mb-3">
-                  <div class="text-caption text-grey mb-1">Tipo:</div>
-                  <div class="text-body-1 font-weight-medium d-flex align-center">
-                    <v-icon
-                      :color="getTipoColor(mensajeSeleccionado.tipo)"
-                      size="small"
-                      class="mr-2"
-                    >
-                      {{ getTipoIcono(mensajeSeleccionado.tipo) }}
-                    </v-icon>
-                    {{ getTipoTexto(mensajeSeleccionado.tipo) }}
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <div class="text-caption text-grey mb-1">Fecha de envío:</div>
-                  <div class="text-body-1">
-                    {{ formatFechaCompleta(mensajeSeleccionado.fecha_creacion) }}
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <div class="text-caption text-grey mb-1">Remitente:</div>
+            <!-- Información del remitente y fecha -->
+            <div class="d-flex align-center justify-space-between mb-6">
+              <div class="d-flex align-center">
+                <v-avatar
+                  :color="getAvatarColor(mensajeSeleccionado.remitente?.nombre_completo)"
+                  size="50"
+                  class="mr-3 shadow-sm"
+                >
+                  <span class="text-white text-subtitle-1 font-weight-bold">
+                    {{ getIniciales(mensajeSeleccionado.remitente?.nombre_completo) }}
+                  </span>
+                </v-avatar>
+                <div>
                   <div class="text-body-1 font-weight-medium">
-                    {{ mensajeSeleccionado.remitente_nombre || 'Sistema' }}
+                    {{ mensajeSeleccionado.remitente?.nombre_completo || 'Sistema' }}
                   </div>
-                  <div v-if="mensajeSeleccionado.remitente_email" class="text-caption text-grey">
-                    {{ mensajeSeleccionado.remitente_email }}
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <div class="text-caption text-grey mb-1">ID del mensaje:</div>
-                  <div class="text-body-2 font-weight-regular font-monospace">
-                    {{ mensajeSeleccionado.id || 'N/A' }}
+                  <div class="text-caption text-grey">
+                    <v-icon size="small" class="mr-1">mdi-email-outline</v-icon>
+                    Remitente
                   </div>
                 </div>
               </div>
 
-              <!-- Acciones rápidas -->
-              <div class="mt-6">
-                <div class="text-subtitle-1 font-weight-bold mb-3">Acciones</div>
-                <v-divider class="mb-3"></v-divider>
-
-                <div class="d-flex flex-column gap-2">
-                  <v-btn
-                    color="primary"
-                    variant="flat"
-                    @click="responderMensaje"
-                    :disabled="!mensajeSeleccionado.remitente_id"
-                    block
-                    size="large"
-                    class="mb-2"
+              <div class="d-flex flex-column align-end">
+                <div class="text-body-2 font-weight-medium mb-1">
+                  <v-icon size="small" class="mr-1">mdi-calendar-clock</v-icon>
+                  {{ formatFechaCompleta(mensajeSeleccionado.fecha_envio) }}
+                </div>
+                <div class="d-flex gap-1">
+                  <v-chip
+                    :color="getPrioridadColor(mensajeSeleccionado.prioridad)"
+                    size="small"
+                    class="text-white"
                   >
-                    <v-icon start>mdi-reply</v-icon>
-                    Responder
-                  </v-btn>
-
-                  <v-btn
-                    color="secondary"
-                    variant="outlined"
-                    @click="reenviarMensaje"
-                    block
-                    size="large"
-                    class="mb-2"
+                    <v-icon start size="small">{{
+                      getPrioridadIcono(mensajeSeleccionado.prioridad)
+                    }}</v-icon>
+                    {{ getPrioridadTexto(mensajeSeleccionado.prioridad) }}
+                  </v-chip>
+                  <v-chip
+                    :color="getTipoColor(mensajeSeleccionado.tipo)"
+                    size="small"
+                    class="text-white"
                   >
-                    <v-icon start>mdi-share-variant</v-icon>
-                    Reenviar
-                  </v-btn>
-
-                  <v-btn
-                    color="warning"
-                    variant="outlined"
-                    @click="archivarMensaje"
-                    block
-                    size="large"
-                  >
-                    <v-icon start>mdi-archive</v-icon>
-                    Archivar
-                  </v-btn>
+                    <v-icon start size="small">{{ getTipoIcono(mensajeSeleccionado.tipo) }}</v-icon>
+                    {{ mensajeSeleccionado.tipo_display }}
+                  </v-chip>
                 </div>
               </div>
             </div>
 
             <!-- Contenido del mensaje -->
-            <div class="message-main-content pa-6">
-              <!-- Encabezado del contenido -->
-              <div class="mb-4">
-                <div class="text-h6 font-weight-bold mb-2">Contenido del mensaje</div>
-                <v-divider></v-divider>
-              </div>
-
-              <!-- Área de texto del mensaje -->
-              <div class="message-text-container pa-5 bg-grey-lighten-5 rounded-lg">
-                <div
-                  class="text-body-1 message-text"
-                  style="white-space: pre-wrap; line-height: 1.8"
-                >
+            <div class="message-content-section mb-6">
+              <div class="text-subtitle-1 font-weight-medium text-grey mb-2">CONTENIDO</div>
+              <div class="message-content pa-4 border rounded bg-grey-lighten-5">
+                <div class="text-body-1" style="white-space: pre-wrap; line-height: 1.6">
                   {{ mensajeSeleccionado.contenido }}
                 </div>
-
-                <!-- Información adicional si existe -->
-                <div v-if="mensajeSeleccionado.metadata" class="mt-6 pt-4 border-top">
-                  <div class="text-subtitle-2 font-weight-bold mb-2">Información adicional:</div>
-                  <div class="text-body-2">
-                    <pre class="metadata-content">{{
-                      JSON.stringify(mensajeSeleccionado.metadata, null, 2)
-                    }}</pre>
-                  </div>
-                </div>
               </div>
+            </div>
 
-              <!-- Acciones del contenido -->
-              <div class="mt-6 pt-4 border-top d-flex justify-end gap-2">
-                <v-btn
-                  variant="outlined"
-                  @click="dialogoMensajeVisible = false"
-                  size="large"
+            <!-- Metadata si existe -->
+            <div
+              v-if="
+                mensajeSeleccionado.metadata && Object.keys(mensajeSeleccionado.metadata).length > 0
+              "
+              class="metadata-section"
+            >
+              <div class="text-subtitle-1 font-weight-medium text-grey mb-2">
+                <v-icon size="small" class="mr-1">mdi-information-outline</v-icon>
+                INFORMACIÓN ADICIONAL
+              </div>
+              <div class="metadata-content pa-3 bg-grey-lighten-4 rounded">
+                <pre class="text-caption ma-0" style="font-family: 'Roboto Mono', monospace"
+                  >{{ formatMetadata(mensajeSeleccionado.metadata) }}
+                </pre>
+              </div>
+            </div>
+
+            <!-- Información del estado -->
+            <div class="estado-section mt-6 pt-4 border-top">
+              <div class="text-subtitle-1 font-weight-medium text-grey mb-2">
+                ESTADO DEL MENSAJE
+              </div>
+              <div class="d-flex align-center">
+                <v-chip
+                  :color="mensajeSeleccionado.es_leido ? 'success' : 'primary'"
+                  size="small"
                   class="mr-2"
                 >
-                  <v-icon start>mdi-close</v-icon>
-                  Cerrar
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  @click="responderMensaje"
-                  :disabled="!mensajeSeleccionado.remitente_id"
-                  size="large"
-                >
-                  <v-icon start>mdi-reply</v-icon>
-                  Responder
-                </v-btn>
+                  <v-icon start size="small">
+                    {{ mensajeSeleccionado.es_leido ? 'mdi-check-circle' : 'mdi-clock-outline' }}
+                  </v-icon>
+                  {{ mensajeSeleccionado.es_leido ? 'Leído' : 'No leído' }}
+                </v-chip>
+                <span class="text-caption text-grey">
+                  {{
+                    mensajeSeleccionado.es_leido
+                      ? 'Leído el ' + formatFecha(mensajeSeleccionado.fecha_leido)
+                      : 'Pendiente de lectura'
+                  }}
+                </span>
               </div>
             </div>
           </div>
         </v-card-text>
+
+        <v-card-actions class="pa-4 border-top">
+          <v-spacer></v-spacer>
+          <v-btn
+            v-if="mensajeSeleccionado && !mensajeSeleccionado.es_leido"
+            color="primary"
+            @click="marcarComoLeida(mensajeSeleccionado)"
+            :loading="marcandoNotificacionId === mensajeSeleccionado?.id"
+            :disabled="marcandoNotificacionId === mensajeSeleccionado?.id"
+          >
+            <v-icon start>mdi-check</v-icon>
+            Marcar como leído
+          </v-btn>
+          <v-btn variant="outlined" @click="dialogoMensajeVisible = false">Cerrar</v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </div>
@@ -374,253 +354,122 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useUserStore } from '@/stores/user'
-import { useNotificacionesStore } from '../store/useNotificacionesStore'
+import { useNotificacionesBellStore } from '../store/useNotificacionesBellStore'
 
-// Props
-const props = defineProps({
-  // Opcional: puedes pasar configuraciones específicas
-})
-
-// Emits
-const emit = defineEmits(['ver-mensaje', 'responder-mensaje', 'ir-bandeja', 'reenviar-mensaje'])
-
-// Stores
-const usuarioStore = useUserStore()
-const notificacionesStore = useNotificacionesStore()
+// Store
+const bellStore = useNotificacionesBellStore()
 
 // Estados
+const loading = ref(true)
 const dialogoVisible = ref(false)
 const dialogoMensajeVisible = ref(false)
-const cargando = ref(false)
 const marcarTodas = ref(false)
-const notificacionMarcando = ref(null)
-const notificaciones = ref([])
+const marcandoNotificacionId = ref(null)
 const mensajeSeleccionado = ref(null)
 
-// Computed
-const notificacionesNoLeidas = computed(() => {
-  return notificaciones.value.filter((n) => !n.leido && n.prioridad === 3).length
+// Computed properties
+const tieneNotificaciones = computed(() => {
+  return bellStore.listaMensajesFiltrada.length > 0
 })
 
-const notificacionesUrgentes = computed(() => {
-  return notificaciones.value.filter((n) => n.prioridad === 3).length
+const tienePrioridad3 = computed(() => {
+  return bellStore.listaMensajesFiltrada.some((m) => m.prioridad === 3)
 })
 
-// Ciclo de vida
-onMounted(() => {
-  cargarNotificaciones()
-  // Configurar polling cada 60 segundos
-  const intervalo = setInterval(cargarNotificaciones, 60000)
-
-  onUnmounted(() => {
-    clearInterval(intervalo)
-  })
+const tienePrioridad2 = computed(() => {
+  return bellStore.listaMensajesFiltrada.some((m) => m.prioridad === 2)
 })
 
-// Métodos
-const cargarNotificaciones = async () => {
-  if (cargando.value) return
+const contadorNoLeidos = computed(() => {
+  return bellStore.obtenerConteoNoLeidos()
+})
 
-  cargando.value = true
-  try {
-    await notificacionesStore.cargarNotificaciones()
-    notificaciones.value = notificacionesStore.notificaciones
-  } catch (error) {
-    console.error('Error cargando notificaciones:', error)
-  } finally {
-    cargando.value = false
+const titleText = computed(() => {
+  if (!tieneNotificaciones.value) return 'No hay notificaciones'
+  return `${contadorNoLeidos.value} notificación${contadorNoLeidos.value !== 1 ? 'es' : ''} no leída${contadorNoLeidos.value !== 1 ? 's' : ''}`
+})
+
+const badgeTexto = computed(() => {
+  const count = contadorNoLeidos.value
+  return count > 99 ? '99+' : count.toString()
+})
+
+const badgeClass = computed(() => ({
+  'badge-urgent': tienePrioridad3.value,
+  'badge-medium': tienePrioridad2.value && !tienePrioridad3.value,
+  'badge-low': !tienePrioridad3.value && !tienePrioridad2.value,
+}))
+
+// Métodos de ayuda
+const contarMensajesPorPrioridad = (prioridad) => {
+  return bellStore.listaMensajesFiltrada.filter((m) => m.prioridad === prioridad).length
+}
+
+const toggleDropdown = async () => {
+  dialogoVisible.value = !dialogoVisible.value
+  if (dialogoVisible.value) {
+    await cargarDatos()
   }
 }
 
-const abrirNotificaciones = () => {
-  dialogoVisible.value = true
-  cargarNotificaciones()
+const cargarDatos = async () => {
+  loading.value = true
+  try {
+    await bellStore.cargarBandejaMensajes()
+  } catch (error) {
+    console.error('Error al cargar la información de la bandeja', error)
+  } finally {
+    loading.value = false
+  }
 }
 
-const verMensaje = async (notificacion) => {
-  mensajeSeleccionado.value = notificacion
+const verMensaje = (mensaje) => {
+  mensajeSeleccionado.value = mensaje
   dialogoMensajeVisible.value = true
-
-  // Si no está leído, marcarlo como leído automáticamente
-  if (!notificacion.leido) {
-    await marcarComoLeida(notificacion)
-  }
-
-  emit('ver-mensaje', notificacion)
 }
 
-const marcarComoLeida = async (notificacion) => {
-  notificacionMarcando.value = notificacion.id
+const marcarComoLeida = async (mensaje) => {
+  if (mensaje.es_leido) return // No hacer nada si ya está leído
 
+  marcandoNotificacionId.value = mensaje.id
   try {
-    const token = usuarioStore.accessToken
-    const response = await fetch(`/api/mensajes/${notificacion.id}/leer/`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (response.ok) {
-      notificacion.leido = true
+    await bellStore.mensajeAEstadoLeido(mensaje.id)
+    await cargarDatos()
+    // Cerrar el diálogo del mensaje si está abierto
+    if (dialogoMensajeVisible.value && mensajeSeleccionado.value?.id === mensaje.id) {
+      dialogoMensajeVisible.value = false
     }
   } catch (error) {
-    console.error('Error marcando como leído:', error)
+    console.error('Error al marcar como leído:', error)
+    // Podrías mostrar un mensaje de error al usuario aquí
   } finally {
-    notificacionMarcando.value = null
+    marcandoNotificacionId.value = null
   }
 }
 
-//Funcion para marcar todas como leidas
 const marcarTodasComoLeidas = async () => {
+  if (!tieneNotificaciones.value) return
+
   marcarTodas.value = true
-
+  const mensajes = bellStore.listaMensajesFiltrada
+  console.log('Mensajes a marcar: ', mensajes)
+  const ids = bellStore.listaMensajesFiltrada.map((mensaje) => mensaje.id)
+  console.log('IDs: ', ids)
   try {
-    const token = usuarioStore.accessToken
-    const response = await fetch('/api/mensajes/marcar-todos-leidos/', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (response.ok) {
-      notificaciones.value.forEach((n) => (n.leido = true))
-    }
+    //await bellStore.marcarTodosComoLeidos()
+    await bellStore.marcarTodosALeidos(ids)
+    await cargarDatos()
+    dialogoVisible.value = false
   } catch (error) {
-    console.error('Error marcando todas como leídas:', error)
+    console.error('Error al marcar todas como leídas:', error)
   } finally {
     marcarTodas.value = false
   }
 }
 
-const responderMensaje = () => {
-  if (mensajeSeleccionado.value) {
-    dialogoMensajeVisible.value = false
-    emit('responder-mensaje', mensajeSeleccionado.value)
-  }
-}
-
-const reenviarMensaje = () => {
-  if (mensajeSeleccionado.value) {
-    dialogoMensajeVisible.value = false
-    emit('reenviar-mensaje', mensajeSeleccionado.value)
-  }
-}
-
-const archivarMensaje = async () => {
-  if (!mensajeSeleccionado.value) return
-
-  try {
-    const token = usuarioStore.accessToken
-    const response = await fetch(`/api/mensajes/${mensajeSeleccionado.value.id}/archivar/`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (response.ok) {
-      // Actualizar la notificación en la lista
-      const index = notificaciones.value.findIndex((n) => n.id === mensajeSeleccionado.value.id)
-      if (index !== -1) {
-        notificaciones.value.splice(index, 1)
-      }
-      dialogoMensajeVisible.value = false
-    }
-  } catch (error) {
-    console.error('Error archivando mensaje:', error)
-  }
-}
-
-const irABandeja = () => {
-  dialogoVisible.value = false
-  emit('ir-bandeja')
-}
-
-// Funciones de utilidad
-const getPrioridadColor = (prioridad) => {
-  switch (prioridad) {
-    case 1:
-      return 'success'
-    case 2:
-      return 'warning'
-    case 3:
-      return 'error'
-    default:
-      return 'grey'
-  }
-}
-
-const getPrioridadIcono = (prioridad) => {
-  switch (prioridad) {
-    case 1:
-      return 'mdi-arrow-down'
-    case 2:
-      return 'mdi-minus'
-    case 3:
-      return 'mdi-alert'
-    default:
-      return 'mdi-help'
-  }
-}
-
-const getPrioridadTexto = (prioridad) => {
-  switch (prioridad) {
-    case 1:
-      return 'Baja'
-    case 2:
-      return 'Media'
-    case 3:
-      return 'Alta'
-    default:
-      return 'Sin prioridad'
-  }
-}
-
-const getTipoColor = (tipo) => {
-  const colores = {
-    privado: 'primary',
-    sistema: 'info',
-    alerta: 'error',
-    recordatorio: 'warning',
-    reprogramacion: 'secondary',
-    retraso: 'deep-orange',
-  }
-  return colores[tipo] || 'grey'
-}
-
-const getTipoIcono = (tipo) => {
-  const iconos = {
-    privado: 'mdi-email',
-    sistema: 'mdi-cog',
-    alerta: 'mdi-alert-circle',
-    recordatorio: 'mdi-bell-ring',
-    reprogramacion: 'mdi-calendar-sync',
-    retraso: 'mdi-clock-alert',
-  }
-  return iconos[tipo] || 'mdi-help-circle'
-}
-
-const getTipoTexto = (tipo) => {
-  const tipos = {
-    privado: 'Mensaje Privado',
-    sistema: 'Sistema',
-    alerta: 'Alerta',
-    recordatorio: 'Recordatorio',
-    reprogramacion: 'Reprogramación',
-    retraso: 'Retraso',
-  }
-  return tipos[tipo] || tipo
-}
-
+// Funciones de formato y utilidad
 const formatFecha = (fechaString) => {
   if (!fechaString) return ''
-
   const fecha = new Date(fechaString)
   const ahora = new Date()
   const diferencia = ahora - fecha
@@ -641,7 +490,6 @@ const formatFecha = (fechaString) => {
 
 const formatFechaCompleta = (fechaString) => {
   if (!fechaString) return ''
-
   const fecha = new Date(fechaString)
   return fecha.toLocaleDateString('es-ES', {
     weekday: 'long',
@@ -650,9 +498,111 @@ const formatFechaCompleta = (fechaString) => {
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
   })
 }
+
+const formatMetadata = (metadata) => {
+  return JSON.stringify(metadata, null, 2)
+}
+
+const getPrioridadColor = (prioridad) => {
+  switch (prioridad) {
+    case 3:
+      return 'error'
+    case 2:
+      return 'warning'
+    case 1:
+      return 'success'
+    default:
+      return 'grey'
+  }
+}
+
+const getPrioridadIcono = (prioridad) => {
+  switch (prioridad) {
+    case 3:
+      return 'mdi-alert'
+    case 2:
+      return 'mdi-exclamation'
+    case 1:
+      return 'mdi-arrow-down'
+    default:
+      return 'mdi-help'
+  }
+}
+
+const getPrioridadTexto = (prioridad) => {
+  switch (prioridad) {
+    case 3:
+      return 'Alta'
+    case 2:
+      return 'Media'
+    case 1:
+      return 'Baja'
+    default:
+      return 'Sin prioridad'
+  }
+}
+
+const getTipoColor = (tipo) => {
+  const colores = {
+    privado: 'primary',
+    sistema: 'info',
+    alerta: 'error',
+    recordatorio: 'warning',
+    reprogramacion: 'secondary',
+  }
+  return colores[tipo] || 'grey'
+}
+
+const getTipoIcono = (tipo) => {
+  const iconos = {
+    privado: 'mdi-email',
+    sistema: 'mdi-cog',
+    alerta: 'mdi-alert-circle',
+    recordatorio: 'mdi-bell-ring',
+    reprogramacion: 'mdi-calendar-sync',
+  }
+  return iconos[tipo] || 'mdi-help-circle'
+}
+
+const getAvatarColor = (nombre) => {
+  if (!nombre) return 'grey'
+  const colores = ['primary', 'secondary', 'error', 'warning', 'info', 'success']
+  const indice = nombre.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return colores[indice % colores.length]
+}
+
+const getIniciales = (nombre) => {
+  if (!nombre) return '?'
+  return nombre
+    .split(' ')
+    .map((palabra) => palabra[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2)
+}
+
+// Cargar datos al montar
+onMounted(() => {
+  cargarDatos()
+})
+
+// Recargar periódicamente
+let intervaloRecarga
+onMounted(() => {
+  intervaloRecarga = setInterval(() => {
+    if (!dialogoVisible.value) {
+      cargarDatos()
+    }
+  }, 30000) // Recargar cada 30 segundos
+})
+
+onUnmounted(() => {
+  if (intervaloRecarga) {
+    clearInterval(intervaloRecarga)
+  }
+})
 </script>
 
 <style scoped>
@@ -670,34 +620,51 @@ const formatFechaCompleta = (fechaString) => {
 
 .notification-bell-icon {
   font-size: 24px;
-  color: white;
+  color: rgba(255, 255, 255, 0.9);
   transition: all 0.3s ease;
 }
 
 .notification-bell-icon.has-notifications {
-  color: #ff9800;
-  animation: pulse 2s infinite;
+  color: #2196f3;
 }
 
 .notification-bell-icon.urgent-notifications {
   color: #f44336;
-  animation: shake 0.5s ease-in-out infinite alternate;
+}
+
+.notification-bell-icon.normal-notifications {
+  color: #ff9800;
+}
+
+.notification-bell-icon.pulse-animation {
+  animation: pulse 2s infinite;
 }
 
 .notification-badge {
   position: absolute;
   top: 0;
   right: 0;
-  background-color: #f44336;
   border-radius: 50%;
-  min-width: 18px;
-  height: 18px;
+  min-width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   transform: translate(25%, -25%);
-  border: 2px solid #1976d2;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.badge-urgent {
+  background-color: #f44336 !important;
+}
+
+.badge-medium {
+  background-color: #ff9800 !important;
+}
+
+.badge-low {
+  background-color: #2196f3 !important;
 }
 
 .badge-count {
@@ -706,139 +673,72 @@ const formatFechaCompleta = (fechaString) => {
   font-weight: bold;
   line-height: 1;
   text-align: center;
+  padding: 0 2px;
 }
 
-/* Diálogo de mensaje agrandado */
-.fullscreen-message-dialog {
-  height: 90vh;
-  max-height: 90vh;
-  overflow: hidden;
+.notification-urgent {
+  border-left: 4px solid #f44336;
 }
 
-.sticky-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.notification-medium {
+  border-left: 4px solid #ff9800;
 }
 
-.close-btn:hover {
-  transform: scale(1.1);
+.notification-low {
+  border-left: 4px solid #2196f3;
 }
 
-.message-content-container {
-  height: calc(90vh - 80px);
+.notification-unread {
+  background-color: rgba(33, 150, 243, 0.05);
+}
+
+.notifications-list {
+  max-height: 400px;
   overflow-y: auto;
 }
 
-.message-layout {
-  height: 100%;
-  min-height: 600px;
+/* Estilos específicos para el modal de mensaje */
+.asunto-section .asunto-content {
+  border-left: 4px solid #1976d2;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
 }
 
-.message-sidebar {
-  width: 320px;
-  min-width: 320px;
-  border-right: 1px solid #e0e0e0;
-  background-color: #f8f9fa;
+.message-content {
+  min-height: 150px;
+  max-height: 400px;
   overflow-y: auto;
-  height: calc(90vh - 80px);
-}
-
-.message-main-content {
-  flex: 1;
-  overflow-y: auto;
-  height: calc(90vh - 80px);
-}
-
-.message-text-container {
-  min-height: 400px;
-  max-height: 600px;
-  overflow-y: auto;
-  border: 1px solid #e0e0e0;
-}
-
-.message-text {
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1.8;
 }
 
 .metadata-content {
-  font-family: 'Courier New', monospace;
-  font-size: 0.9rem;
-  background-color: #f5f5f5;
-  padding: 12px;
-  border-radius: 4px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.85rem;
   overflow-x: auto;
-  max-height: 200px;
+  max-height: 250px;
   overflow-y: auto;
-}
-
-/* Estilos para prioridades */
-.priority-1 {
-  background-color: #e8f5e9 !important;
-  color: #2e7d32 !important;
-}
-
-.priority-2 {
-  background-color: #fff3e0 !important;
-  color: #ef6c00 !important;
-}
-
-.priority-3 {
-  background-color: #ffebee !important;
-  color: #c62828 !important;
-}
-
-/* Scrollbars personalizados */
-.message-sidebar::-webkit-scrollbar,
-.message-main-content::-webkit-scrollbar,
-.message-text-container::-webkit-scrollbar,
-.metadata-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.message-sidebar::-webkit-scrollbar-track,
-.message-main-content::-webkit-scrollbar-track,
-.message-text-container::-webkit-scrollbar-track,
-.metadata-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
 }
 
-.message-sidebar::-webkit-scrollbar-thumb,
-.message-main-content::-webkit-scrollbar-thumb,
-.message-text-container::-webkit-scrollbar-thumb,
-.metadata-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+.estado-section {
+  border-top: 2px dashed #e0e0e0;
 }
 
-.message-sidebar::-webkit-scrollbar-thumb:hover,
-.message-main-content::-webkit-scrollbar-thumb:hover,
-.message-text-container::-webkit-scrollbar-thumb:hover,
-.metadata-content::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+.border-top {
+  border-top: 1px solid #e0e0e0 !important;
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
-  .message-layout {
-    flex-direction: column;
-  }
+.border-bottom {
+  border-bottom: 1px solid #e0e0e0 !important;
+}
 
-  .message-sidebar {
-    width: 100%;
-    min-width: 100%;
-    height: auto;
-    max-height: 300px;
-    border-right: none;
-    border-bottom: 1px solid #e0e0e0;
-  }
-
-  .message-main-content {
-    height: auto;
-  }
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 /* Animaciones */
@@ -854,35 +754,75 @@ const formatFechaCompleta = (fechaString) => {
   }
 }
 
-@keyframes shake {
-  0% {
-    transform: translateX(0) rotate(0);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
-  25% {
-    transform: translateX(-2px) rotate(-5deg);
-  }
-  75% {
-    transform: translateX(2px) rotate(5deg);
-  }
-  100% {
-    transform: translateX(0) rotate(0);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Utilidades */
-.border-top {
-  border-top: 1px solid #e0e0e0 !important;
+.message-details {
+  animation: fadeIn 0.3s ease-out;
 }
 
-.border-bottom {
-  border-bottom: 1px solid #e0e0e0 !important;
+/* Responsive */
+@media (max-width: 600px) {
+  .notification-bell-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .notification-bell-icon {
+    font-size: 20px;
+  }
+
+  .notification-badge {
+    min-width: 16px;
+    height: 16px;
+  }
+
+  .badge-count {
+    font-size: 9px;
+  }
+
+  .text-truncate {
+    max-width: 150px;
+  }
+
+  .asunto-content h2 {
+    font-size: 1.25rem;
+  }
+
+  .message-content {
+    font-size: 0.9rem;
+    max-height: 300px;
+  }
 }
 
-.font-monospace {
-  font-family: 'Courier New', monospace;
+/* Scrollbars personalizados */
+.message-content::-webkit-scrollbar,
+.metadata-content::-webkit-scrollbar {
+  width: 8px;
 }
 
-.w-100 {
-  width: 100%;
+.message-content::-webkit-scrollbar-track,
+.metadata-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.message-content::-webkit-scrollbar-thumb,
+.metadata-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.message-content::-webkit-scrollbar-thumb:hover,
+.metadata-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style>

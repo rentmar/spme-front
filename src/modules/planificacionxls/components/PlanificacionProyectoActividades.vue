@@ -639,7 +639,10 @@ const cerrarDialogo = () => {
 
 const crearNuevaTarea = async (payload) => {
   try {
-    await crearUnaTarea(payload)
+    // console.log('Crear una subactividad: ')
+    // console.log('Datos del componente:', payload)
+    const respuesta = await crearUnaTarea(payload)
+    // console.log('RESPUESTA: ', respuesta)
     mostrarDialogo.value = false
     infoMsg('Subactividad creada')
   } catch (error) {

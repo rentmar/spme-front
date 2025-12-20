@@ -10,6 +10,7 @@ export const useNotificacionesStore = defineStore('notificaciones', () => {
   const notificaciones = ref([])
   const loading = ref(false)
   const error = ref(null)
+  const notificacionesEnviadas = ref(null)
 
   // Computed properties para estadísticas
   const noLeidosCuenta = computed(
@@ -33,6 +34,7 @@ export const useNotificacionesStore = defineStore('notificaciones', () => {
     cambiarEstadoMensajesArchivado,
     eliminaMensajeSoft,
     cambiarEstadoMensajes,
+    leerMensajesEnviados,
   } = useNotificaciones()
 
   /************ Acciones **************/
@@ -50,6 +52,25 @@ export const useNotificacionesStore = defineStore('notificaciones', () => {
     } catch (error) {
       console.error('No se pudo cargar la información del usuario', error)
       error.value = error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Cargar las notificaciones enviadas de un usuario
+  const cargarNotificacionesEnviadas = async () => {
+    if (!usuarioStore.isAuthenticated) {
+      console.warn('Usuario no auntenticado')
+      return
+    }
+
+    loading.value = true
+    try {
+      const respuesta = await leerMensajesEnviados(usuarioStore.accessToken)
+      notificacionesEnviadas.value = respuesta.data
+    } catch (err) {
+      console.error('Error al cargar las notificaciones al store Notificaciones', err)
+      error.value = err
     } finally {
       loading.value = false
     }
@@ -205,6 +226,7 @@ export const useNotificacionesStore = defineStore('notificaciones', () => {
   return {
     // Estado
     notificaciones,
+    notificacionesEnviadas,
     loading,
     error,
 
@@ -215,6 +237,7 @@ export const useNotificacionesStore = defineStore('notificaciones', () => {
 
     // Acciones
     cargarNotificaciones,
+    cargarNotificacionesEnviadas,
     actualizarEstadoLocal,
     archivarMensajes,
     marcarComoLeidos,

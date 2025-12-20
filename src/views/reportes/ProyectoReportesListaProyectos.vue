@@ -1,9 +1,18 @@
 <template>
-  <div class="proyectos-layout">
+  <div class="reportes-proyectos-layout">
     <!-- Encabezado -->
     <PaginaTituloIcono :titulo="'Reportes por Proyecto'" :icon="'mdi-briefcase-check'" />
 
     <v-breadcrumbs :items="['Reportes', 'Proyectos']" class="px-0 mb-2"></v-breadcrumbs>
+
+    <!-- Indicador de carga lineal -->
+    <v-progress-linear
+      v-if="loading"
+      indeterminate
+      color="primary"
+      height="4"
+      class="mb-4"
+    ></v-progress-linear>
 
     <!-- Filtros en la parte superior -->
     <v-card elevation="1" rounded="lg" class="mb-3">
@@ -13,7 +22,7 @@
           <v-col cols="12" md="4">
             <v-text-field
               v-model="search"
-              label="Buscar proyectos..."
+              label="Buscar proyectos (por código o título)..."
               prepend-inner-icon="mdi-magnify"
               variant="outlined"
               density="compact"
@@ -77,149 +86,255 @@
       </v-card-text>
     </v-card>
 
-    <!-- Contenido principal - Lista de proyectos -->
-    <v-card elevation="1" rounded="lg">
+    <!-- Mensaje cuando no hay proyectos -->
+    <v-card v-if="emptyResponse && !loading" class="mb-4">
+      <v-card-text class="text-center py-8">
+        <v-icon size="64" color="grey lighten-1">mdi-briefcase-off</v-icon>
+        <h3 class="text-h5 mt-4">No hay proyectos registrados</h3>
+        <p class="text-grey mt-2">No se encontraron proyectos para mostrar reportes</p>
+        <v-btn color="primary" @click="limpiarFiltros" class="mt-4">
+          <v-icon left>mdi-refresh</v-icon>
+          Recargar
+        </v-btn>
+      </v-card-text>
+    </v-card>
+
+    <!-- Contenido principal -->
+    <v-card v-else elevation="1" rounded="lg">
       <v-card-title class="d-flex justify-space-between align-center py-3">
         <div>
-          <span class="text-h6">Proyectos</span>
+          <span class="text-h6">Proyectos para Reportes</span>
           <span class="text-caption text-medium-emphasis ml-2">
             ({{ proyectosFiltrados.length }} resultados)
           </span>
         </div>
+
+        <!-- Acciones globales -->
+        <div class="d-flex gap-2">
+          <!-- <v-btn
+            color="primary"
+            variant="outlined"
+            size="small"
+            prepend-icon="mdi-file-export"
+            @click="exportarTodosReportes"
+          >
+            Exportar Todos
+          </v-btn>
+          <v-btn
+            color="secondary"
+            variant="outlined"
+            size="small"
+            prepend-icon="mdi-chart-box"
+            :to="'/reporte/consolidado'"
+          >
+            Reporte Consolidado
+          </v-btn> -->
+        </div>
       </v-card-title>
 
       <v-card-text class="pt-0">
-        <!-- Grid de proyectos compactos -->
-        <v-row v-if="proyectosFiltrados.length" dense>
-          <v-col
-            v-for="proyecto in proyectosFiltradosPagados"
-            :key="proyecto.id"
-            cols="12"
-            sm="6"
-            md="4"
-            lg="3"
-          >
-            <v-card class="project-card compact" elevation="1" hover>
-              <!-- Header de la card -->
-              <div class="card-header" :class="getStatusClass(proyecto.estado)">
-                <div class="status-badge">
-                  {{ getStatusText(proyecto.estado) }}
-                </div>
-                <h3 class="project-title">{{ proyecto.titulo }}</h3>
-                <span class="project-code">{{ proyecto.codigo }}</span>
-              </div>
+        <!-- Filtros por estado con chips -->
+        <div class="mb-4">
+          <v-chip-group v-model="filtrosEstadoChips" multiple column>
+            <v-chip
+              v-for="status in estadosOptions"
+              :key="status.value"
+              :value="status.value"
+              filter
+              :color="getStatusColor(status.value)"
+              variant="outlined"
+              size="small"
+            >
+              {{ status.title }}
+            </v-chip>
+          </v-chip-group>
+        </div>
 
-              <!-- Body de la card -->
-              <v-card-text class="card-body">
-                <p class="project-description">{{ truncateText(proyecto.descripcion, 80) }}</p>
+        <!-- Lista de proyectos -->
+        <v-list v-if="!loading" class="py-0">
+          <template v-for="proyecto in proyectosFiltradosPagados" :key="proyecto.id">
+            <v-list-item class="mb-2 project-list-item">
+              <template v-slot:prepend>
+                <v-avatar :color="getStatusColor(proyecto.estado)" class="mr-4" size="48">
+                  <v-icon dark>mdi-briefcase-check</v-icon>
+                </v-avatar>
+              </template>
 
-                <div class="project-details">
-                  <div class="detail-item">
+              <v-list-item-title class="font-weight-bold text-h6">
+                {{ proyecto.titulo }}
+              </v-list-item-title>
+
+              <v-list-item-subtitle class="mt-2">
+                <div class="d-flex align-center flex-wrap gap-2 mb-2">
+                  <v-chip small :color="getStatusColor(proyecto.estado)" text-color="white">
+                    {{ getStatusText(proyecto.estado) }}
+                  </v-chip>
+                  <span class="text-caption">
+                    <v-icon x-small>mdi-identifier</v-icon>
+                    {{ proyecto.codigo }}
+                  </span>
+                  <span class="text-caption">
                     <v-icon x-small>mdi-cash</v-icon>
-                    <span>${{ formatCurrency(proyecto.presupuesto) }}</span>
-                  </div>
-                  <div class="detail-item">
+                    ${{ formatCurrency(proyecto.presupuesto) }}
+                  </span>
+                  <span class="text-caption">
+                    <v-icon x-small>mdi-calendar</v-icon>
+                    {{ formatDateShort(proyecto.fecha_creacion) }}
+                  </span>
+                  <span class="text-caption">
                     <v-icon x-small>mdi-account</v-icon>
-                    <span>{{ proyecto.creado_por }}</span>
-                  </div>
+                    {{ proyecto.creado_por }}
+                  </span>
                 </div>
+
+                <p class="text-body-2 mb-2">{{ proyecto.descripcion }}</p>
 
                 <!-- Instancias gestoras -->
                 <div
-                  class="instancias-section"
                   v-if="proyecto.instanciasNombres && proyecto.instanciasNombres.length"
+                  class="mb-2"
                 >
-                  <div class="instancias-tags">
-                    <v-chip
-                      v-for="(instancia, index) in proyecto.instanciasNombres.slice(0, 2)"
-                      :key="index"
+                  <v-chip
+                    v-for="(instancia, index) in proyecto.instanciasNombres"
+                    :key="index"
+                    size="x-small"
+                    color="info"
+                    variant="outlined"
+                    class="mr-1 mb-1"
+                  >
+                    {{ truncateText(instancia, 25) }}
+                  </v-chip>
+                </div>
+              </v-list-item-subtitle>
+
+              <template v-slot:append>
+                <div class="d-flex flex-column align-end gap-2">
+                  <!-- Acciones principales -->
+                  <div class="d-flex gap-1">
+                    <v-tooltip text="Reportes principales" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          icon="mdi-chart-bar"
+                          variant="flat"
+                          color="primary"
+                          :to="`/reporte/proyectos/${proyecto.id}`"
+                          size="small"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
+                    <!-- <v-tooltip text="Reportes guardados" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          icon="mdi-bookmark-multiple"
+                          variant="outlined"
+                          color="secondary"
+                          :to="`/reporte/proyectos/${proyecto.id}/guardados`"
+                          size="small"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+
+                    <v-tooltip text="Exportar reporte" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          icon="mdi-export"
+                          variant="outlined"
+                          color="success"
+                          @click="exportarReporte(proyecto)"
+                          size="small"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip> -->
+                  </div>
+
+                  <!-- Reportes rápidos -->
+                  <div class="d-flex flex-wrap gap-1 justify-end">
+                    <!-- <v-btn
+                      size="x-small"
+                      color="primary"
+                      variant="text"
+                      :to="`/reporte/proyectos/${proyecto.id}/avance`"
+                    >
+                      Avance
+                    </v-btn>
+                    <v-btn
+                      size="x-small"
+                      color="success"
+                      variant="text"
+                      :to="`/reporte/proyectos/${proyecto.id}/financiero`"
+                    >
+                      Financiero
+                    </v-btn>
+                    <v-btn
                       size="x-small"
                       color="info"
-                      variant="outlined"
-                      class="mr-1 mb-1"
+                      variant="text"
+                      :to="`/reporte/proyectos/${proyecto.id}/indicadores`"
                     >
-                      {{ truncateText(instancia, 15) }}
-                    </v-chip>
-                    <v-chip
-                      v-if="proyecto.instanciasNombres.length > 2"
-                      size="x-small"
-                      color="secondary"
-                      variant="outlined"
-                    >
-                      +{{ proyecto.instanciasNombres.length - 2 }}
-                    </v-chip>
+                      Indicadores
+                    </v-btn> -->
                   </div>
                 </div>
-              </v-card-text>
+              </template>
+            </v-list-item>
 
-              <!-- Footer de la card -->
-              <v-card-actions class="card-actions">
-                <v-tooltip location="top">
-                  <template v-slot:activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      size="x-small"
-                      color="primary"
-                      variant="text"
-                      icon="mdi-eye"
-                      :to="`/reporte/proyectos/${proyecto.id}`"
-                    ></v-btn>
-                  </template>
-                  <span>Reportes</span>
-                </v-tooltip>
-                <v-tooltip location="top">
-                  <template v-slot:activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      size="x-small"
-                      color="primary"
-                      variant="text"
-                      icon="mdi-bookmark-multiple"
-                      :to="`/reporte/proyectos/${proyecto.id}`"
-                    ></v-btn>
-                  </template>
-                  <span>Reportes guardados</span>
-                </v-tooltip>
+            <v-divider
+              v-if="
+                proyecto.id !== proyectosFiltradosPagados[proyectosFiltradosPagados.length - 1]?.id
+              "
+            ></v-divider>
+          </template>
 
-                <v-spacer></v-spacer>
-
-                <span class="text-caption text-medium-emphasis">
-                  {{ formatDateShort(proyecto.fecha_creacion) }}
-                </span>
-              </v-card-actions>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- Estado vacío -->
-        <div v-else class="empty-state text-center py-8">
-          <v-icon color="grey-lighten-1" size="48">mdi-briefcase-off</v-icon>
-          <p class="text-grey mt-2">No se encontraron proyectos</p>
-          <v-btn
-            color="primary"
-            variant="outlined"
-            @click="limpiarFiltros"
-            size="small"
-            class="mt-2"
-          >
-            Limpiar filtros
-          </v-btn>
-        </div>
+          <v-list-item v-if="proyectosFiltrados.length === 0 && !loading">
+            <v-list-item-title class="text-grey text-center py-4">
+              No se encontraron proyectos con los filtros aplicados
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
 
         <!-- Paginación -->
         <div v-if="proyectosFiltrados.length" class="pagination-section mt-4">
-          <div class="text-center">
-            <v-pagination
-              v-model="paginaActual"
-              :length="totalPaginas"
-              :total-visible="5"
-              rounded
-              size="small"
-            ></v-pagination>
+          <div class="d-flex align-center justify-space-between">
+            <span class="text-caption text-medium-emphasis">
+              Mostrando {{ startItem }}-{{ endItem }} de {{ proyectosFiltrados.length }} proyectos
+            </span>
+
+            <div class="d-flex align-center gap-2">
+              <span class="text-caption text-medium-emphasis">Items por página:</span>
+              <v-select
+                v-model="itemsPorPagina"
+                :items="[5, 10, 20, 50]"
+                density="compact"
+                hide-details
+                style="max-width: 100px"
+                variant="outlined"
+              ></v-select>
+
+              <v-pagination
+                v-model="paginaActual"
+                :length="totalPaginas"
+                :total-visible="5"
+                rounded
+                size="small"
+              ></v-pagination>
+            </div>
           </div>
         </div>
       </v-card-text>
     </v-card>
+
+    <!-- Snackbar para notificaciones -->
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
+      {{ snackbar.text }}
+
+      <template v-slot:actions>
+        <v-btn variant="text" @click="snackbar.show = false"> Cerrar </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -238,13 +353,22 @@ const instanciasGestoras = ref([])
 const proyectos = ref([])
 const loading = ref(true)
 const error = ref(null)
+const emptyResponse = ref(false)
 
 // Estados y filtros
 const search = ref('')
 const filtroEstado = ref(null)
 const filtroInstancia = ref([])
+const filtrosEstadoChips = ref([])
 const paginaActual = ref(1)
-const itemsPorPagina = ref(12)
+const itemsPorPagina = ref(10)
+
+// Snackbar
+const snackbar = ref({
+  show: false,
+  text: '',
+  color: 'success',
+})
 
 // Opciones de estado
 const estadosOptions = [
@@ -264,7 +388,12 @@ const filtrosInstanciaSeleccionados = computed(() => {
 })
 
 const filtrosActivos = computed(() => {
-  return search.value || filtroEstado.value || filtrosInstanciaSeleccionados.value.length > 0
+  return (
+    search.value ||
+    filtroEstado.value ||
+    filtrosInstanciaSeleccionados.value.length > 0 ||
+    filtrosEstadoChips.value.length > 0
+  )
 })
 
 const proyectosFiltrados = computed(() => {
@@ -284,8 +413,16 @@ const proyectosFiltrados = computed(() => {
       }
     }
 
-    // Filtro por estado
+    // Filtro por estado (select)
     if (filtroEstado.value && proyecto.estado !== filtroEstado.value) {
+      return false
+    }
+
+    // Filtro por estado (chips)
+    if (
+      filtrosEstadoChips.value.length > 0 &&
+      !filtrosEstadoChips.value.includes(proyecto.estado)
+    ) {
       return false
     }
 
@@ -312,6 +449,12 @@ const proyectosFiltradosPagados = computed(() => {
   return proyectosFiltrados.value.slice(start, end)
 })
 
+const startItem = computed(() => (paginaActual.value - 1) * itemsPorPagina.value + 1)
+const endItem = computed(() => {
+  const end = paginaActual.value * itemsPorPagina.value
+  return end > proyectosFiltrados.value.length ? proyectosFiltrados.value.length : end
+})
+
 // ==============================================
 // MÉTODOS DE UTILIDAD
 // ==============================================
@@ -327,15 +470,15 @@ const getStatusText = (estado) => {
   return estados[estado] || estado
 }
 
-const getStatusClass = (estado) => {
-  const clases = {
-    PL: 'status-planning',
-    EJ: 'status-executing',
-    EP: 'status-pending',
-    CO: 'status-completed',
-    CA: 'status-cancelled',
+const getStatusColor = (estado) => {
+  const colores = {
+    PL: 'warning',
+    EJ: 'success',
+    EP: 'info',
+    CO: 'primary',
+    CA: 'error',
   }
-  return clases[estado] || 'status-unknown'
+  return colores[estado] || 'grey'
 }
 
 const formatDateShort = (dateString) => {
@@ -374,6 +517,7 @@ const limpiarFiltros = () => {
   search.value = ''
   filtroEstado.value = null
   filtroInstancia.value = []
+  filtrosEstadoChips.value = []
   paginaActual.value = 1
 }
 
@@ -381,58 +525,55 @@ const limpiarFiltros = () => {
 // ACCIONES DE PROYECTOS
 // ==============================================
 
-const nuevoProyecto = () => {
-  console.log('Nuevo proyecto')
+const exportarReporte = (proyecto) => {
+  console.log('Exportar reporte:', proyecto)
+  mostrarSnackbar(`Exportando reporte de ${proyecto.titulo}`, 'info')
+  // Lógica de exportación
 }
 
-const verDetalles = (proyecto) => {
-  console.log('Ver detalles:', proyecto)
+const exportarTodosReportes = () => {
+  console.log('Exportar todos los reportes')
+  mostrarSnackbar('Preparando exportación de todos los reportes', 'info')
+  // Lógica de exportación masiva
 }
 
-const editarProyecto = (proyecto) => {
-  console.log('Editar proyecto:', proyecto)
+const mostrarSnackbar = (texto, color = 'success') => {
+  snackbar.value = {
+    show: true,
+    text: texto,
+    color: color,
+  }
 }
 
 // ==============================================
 // LLAMADA AL ENDPOINT ÚNICO
 // ==============================================
-//Inicializar los composables
+
+// Inicializar los composables
 const { instancias, cargarInstancias } = useInstanciaGestora()
 const { proyectos: listaProyectos, obtenerProyectos } = useProyectoCrud()
 
 const cargarDatos = async () => {
   loading.value = true
   error.value = null
+  emptyResponse.value = false
   try {
     await obtenerProyectos()
     await cargarInstancias()
     console.log(listaProyectos)
     proyectos.value = listaProyectos.value
     instanciasGestoras.value = instancias.value
+
+    if (proyectos.value.length === 0) {
+      emptyResponse.value = true
+    }
   } catch (er) {
     console.error(er)
-    throw error
+    error.value = er.message
+    mostrarSnackbar('Error al cargar los proyectos', 'error')
   } finally {
     loading.value = false
   }
-  // try {
-  //   loading.value = true
-  //   error.value = null
-  //   // ✅ ESTA ES LA LLAMADA AL ENDPOINT ÚNICO
-  //   const response = await fetch('/api/proyectos-con-instancias')
-  //   if (!response.ok) {
-  //     throw new Error(`Error ${response.status}: ${response.statusText}`)
-  //   }
-  //   const data = await response.json()
-  //   // ✅ INSERTAR LOS DATOS DEL ENDPOINT AQUÍ
-  //   proyectos.value = data.proyectos || []
-  //   instanciasGestoras.value = data.instancias_gestoras || []
-  // } catch (err) {
-  //   error.value = err.message
-  //   console.error('Error cargando datos:', err)
-  // } finally {
-  //   loading.value = false
-  // }
 }
 
 // ==============================================
@@ -440,123 +581,115 @@ const cargarDatos = async () => {
 // ==============================================
 
 onMounted(() => {
-  // ✅ CARGAR DATOS AL INICIAR EL COMPONENTE
+  // CARGAR DATOS AL INICIAR EL COMPONENTE
   cargarDatos()
 })
 </script>
 
 <style scoped>
-.proyectos-layout {
+.reportes-proyectos-layout {
   max-width: 1400px;
   margin: 0 auto;
   padding: 16px;
 }
 
-/* Tarjetas compactas */
-.project-card.compact {
-  height: 220px;
-  display: flex;
-  flex-direction: column;
+.project-list-item {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  padding: 16px;
 }
 
-.project-card.compact .card-header {
-  padding: 12px;
-  min-height: 60px;
+.project-list-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.project-card.compact .status-badge {
-  top: 8px;
-  right: 8px;
-  font-size: 9px;
-  padding: 1px 6px;
+.v-list-item-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
-.project-card.compact .project-title {
-  font-size: 0.9rem;
-  line-height: 1.2;
-  margin-bottom: 2px;
+.v-list-item-subtitle {
+  opacity: 1;
 }
 
-.project-card.compact .project-code {
-  font-size: 0.7rem;
-}
-
-.project-card.compact .card-body {
-  padding: 12px;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.project-card.compact .project-description {
-  font-size: 0.8rem;
-  line-height: 1.3;
-  margin-bottom: 8px;
-  flex-grow: 1;
-}
-
-.project-card.compact .project-details {
-  margin-bottom: 8px;
-}
-
-.project-card.compact .detail-item {
+.text-caption {
   font-size: 0.75rem;
+}
+
+.gap-1 {
   gap: 4px;
 }
 
-.project-card.compact .instancias-section {
-  margin-top: auto;
-  padding-top: 8px;
+.gap-2 {
+  gap: 8px;
 }
 
-.project-card.compact .card-actions {
-  padding: 6px 12px;
-  min-height: auto;
-}
-
-/* Estados de tarjetas */
-.card-header.status-planning {
-  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-}
-.card-header.status-executing {
-  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
-}
-.card-header.status-pending {
-  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-}
-.card-header.status-completed {
-  background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
-}
-.card-header.status-cancelled {
-  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-}
-.card-header.status-unknown {
-  background: linear-gradient(135deg, #607d8b 0%, #455a64 100%);
+.pagination-section {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 16px;
 }
 
 /* Responsive */
 @media (max-width: 960px) {
-  .proyectos-layout {
+  .reportes-proyectos-layout {
     padding: 12px;
   }
 
-  .project-card.compact {
-    height: 200px;
+  .project-list-item {
+    padding: 12px;
   }
 }
 
 @media (max-width: 600px) {
-  .project-card.compact {
-    height: 180px;
+  .project-list-item {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .project-card.compact .card-header {
-    padding: 8px;
-    min-height: 50px;
+  .project-list-item :deep(.v-list-item__prepend) {
+    align-self: center;
+    margin-bottom: 12px;
   }
 
-  .project-card.compact .project-title {
-    font-size: 0.8rem;
+  .project-list-item :deep(.v-list-item__append) {
+    align-self: stretch;
+    margin-top: 12px;
+  }
+
+  .d-flex.gap-2 {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pagination-section .d-flex {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+}
+
+/* Animaciones */
+.project-list-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mejoras de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .project-list-item {
+    animation: none;
   }
 }
 </style>

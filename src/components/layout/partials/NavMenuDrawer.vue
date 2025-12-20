@@ -104,13 +104,20 @@
         to="/pei/listaactividades?showButton=2"
       ></v-list-item>
 
-      <v-list-item
+      <!-- <v-list-item
         @click="goToPageWithButton(3)"
         prepend-icon="mdi-file-document-outline"
         title="Informe de Actividad"
         value="informe-actividad"
         to="/pei/listaactividades?showButton=3"
-      ></v-list-item>
+      ></v-list-item> -->
+      <v-list-item
+        prepend-icon="mdi-file-document-outline"
+        title="Informe de Actividad nuevo"
+        value="informes-actividad"
+        to="/actividades/informe/"
+      >
+      </v-list-item>
     </v-list-group>
 
     <!-- Reportes -->
@@ -211,21 +218,21 @@
       <!-- Sección de administración (solo visible para admin) -->
       <template v-if="userIsAdmin">
         <v-divider class="my-1"></v-divider>
-
+        <!--
         <v-list-item
           prepend-icon="mdi-bell-cog"
           title="Administrar Notificaciones"
           value="admin-notifications"
           to="/admin/notificaciones"
           class="admin-item"
-        ></v-list-item>
-        <v-list-item
+        ></v-list-item> -->
+        <!-- <v-list-item
           prepend-icon="mdi-format-list-checks"
           title="Plantillas"
           value="notification-templates"
           to="/admin/notificaciones/plantillas"
           class="admin-item"
-        ></v-list-item>
+        ></v-list-item> -->
 
         <v-list-item
           prepend-icon="mdi-server-security"

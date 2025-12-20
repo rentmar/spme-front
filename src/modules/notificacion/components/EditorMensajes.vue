@@ -774,10 +774,10 @@ const enviarMensaje = async () => {
       'info',
     )
 
-    // console.log(datosMensaje)
+    console.log(datosMensaje)
 
     //Enviar mensaje
-    const response = await enviarMensajeMultiple(datosMensaje, usuarioStore.accessToken)
+    //const response = await enviarMensajeMultiple(datosMensaje, usuarioStore.accessToken)
     // console.log('Respuesta enviar mensaje multiple:', response)
 
     if (response.success) {
