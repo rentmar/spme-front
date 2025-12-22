@@ -25,11 +25,11 @@
       </div>
     </div>
 
-    <!-- Barra de Herramientas de Tareas -->
+    <!-- Barra de Herramientas de Tareas - LAYOUT AJUSTADO -->
     <div class="toolbar-tareas">
       <div class="toolbar-main">
         <!-- Búsqueda -->
-        <div class="search-row">
+        <div class="search-container">
           <v-text-field
             v-model="busqueda"
             placeholder="Buscar tareas..."
@@ -42,8 +42,21 @@
           ></v-text-field>
         </div>
 
-        <!-- Botón Crear Tarea -->
-        <div class="crear-row">
+        <!-- Botones en línea -->
+        <div class="botones-container">
+          <!-- Botón Refrescar -->
+          <v-btn
+            color="grey-darken-1"
+            variant="outlined"
+            size="small"
+            @click="refrescarDialogo"
+            class="btn-refrescar"
+          >
+            <v-icon left size="16">mdi-refresh</v-icon>
+            Refrescar
+          </v-btn>
+
+          <!-- Botón Crear Tarea -->
           <v-btn
             color="primary"
             variant="flat"
@@ -183,6 +196,70 @@
       @cancelar="cerrarDialogo"
     />
 
+    <!-- 🔥 DIALOG PARA CAMBIAR ESTADO -->
+    <v-dialog v-model="mostrarDialogoEstado" max-width="350">
+      <v-card>
+        <v-card-text class="pa-4">
+          <!-- Título -->
+          <div class="text-h6 text-center mb-3">Cambiar Estado</div>
+
+          <!-- Tarea -->
+          <div class="text-body-1 text-center mb-4">
+            <strong>"{{ tareaParaCambioEstado?.titulo }}"</strong>
+          </div>
+
+          <!-- Estado actual -->
+          <div class="text-center mb-3">
+            <div class="text-caption text-grey mb-1">Estado actual</div>
+            <v-chip :color="getTareaEstadoColor(tareaParaCambioEstado?.estado)" size="large">
+              <v-icon start>{{ getTareaEstadoIcon(tareaParaCambioEstado?.estado) }}</v-icon>
+              {{ getTareaEstadoTexto(tareaParaCambioEstado?.estado) }}
+            </v-chip>
+          </div>
+
+          <!-- Selector de nuevo estado -->
+          <div class="text-center mb-4">
+            <div class="text-caption text-grey mb-2">Seleccionar nuevo estado</div>
+            <v-select
+              v-model="estadoSeleccionado"
+              :items="estadosTarea"
+              item-title="text"
+              item-value="value"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="estado-selector"
+            >
+              <template v-slot:selection="{ item }">
+                <v-chip :color="getTareaEstadoColor(item.value)" size="small">
+                  <v-icon start size="14">{{ getTareaEstadoIcon(item.value) }}</v-icon>
+                  {{ item.title }}
+                </v-chip>
+              </template>
+            </v-select>
+          </div>
+
+          <!-- Botones -->
+          <div class="d-flex justify-space-between">
+            <v-btn variant="text" @click="cancelarCambioEstado" :disabled="cambiandoEstado">
+              Cancelar
+            </v-btn>
+            <v-btn
+              :color="getTareaEstadoColor(estadoSeleccionado)"
+              @click="confirmarCambioEstado"
+              :loading="cambiandoEstado"
+              :disabled="
+                !estadoSeleccionado || estadoSeleccionado === tareaParaCambioEstado?.estado
+              "
+            >
+              <v-icon start>{{ getTareaEstadoIcon(estadoSeleccionado) }}</v-icon>
+              Cambiar
+            </v-btn>
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
     <!-- Snackbar para mensajes -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.message }}
@@ -190,6 +267,8 @@
         <v-btn variant="text" @click="snackbar.show = false">Cerrar</v-btn>
       </template>
     </v-snackbar>
+
+    <ConfirmDialog></ConfirmDialog>
   </div>
 </template>
 
@@ -197,6 +276,9 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 import { useInformeActividadStore } from '@/modules/formularios/store/useInformeActividadStore'
+import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
+import { useConfirmDialog } from '@/composables/useConfirmDialog'
+import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
 
 const props = defineProps({
   actividad: {
@@ -208,10 +290,27 @@ const props = defineProps({
 // Iniciar el store
 const storeInfActividad = useInformeActividadStore()
 
+// Iniciar el composable
+const { crearUnaTarea, actualizarUnaTarea, eliminarUnaTarea } = useTareaSubactividad()
+const { openConfirmDialog } = useConfirmDialog()
+
 // Estados locales
 const busqueda = ref('')
 const mostrarDialogo = ref(false)
 const tareaSeleccionada = ref(null)
+
+// 🔥 ESTADOS PARA DIALOG DE CAMBIO DE ESTADO
+const mostrarDialogoEstado = ref(false)
+const tareaParaCambioEstado = ref(null)
+const estadoSeleccionado = ref('')
+const cambiandoEstado = ref(false)
+
+// 🔥 DEFINIR ESTADOS DE TAREA
+const estadosTarea = [
+  { text: 'Pendiente', value: 'PEN' },
+  { text: 'En Progreso', value: 'EPROG' },
+  { text: 'Completada', value: 'COMPL' },
+]
 
 // Snackbar
 const snackbar = ref({
@@ -219,6 +318,81 @@ const snackbar = ref({
   message: '',
   color: 'success',
 })
+
+// 🔥 FUNCIÓN PARA ABRIR DIALOG DE CAMBIO DE ESTADO
+const cambiarEstadoTarea = (tarea) => {
+  console.log('🔄 Abriendo cambio de estado para:', tarea.titulo)
+
+  tareaParaCambioEstado.value = tarea
+  estadoSeleccionado.value = tarea.estado // Inicializar con estado actual
+  mostrarDialogoEstado.value = true
+}
+
+// 🔥 FUNCIÓN PARA CONFIRMAR CAMBIO DE ESTADO
+const confirmarCambioEstado = async () => {
+  if (!tareaParaCambioEstado.value || !estadoSeleccionado.value) {
+    mostrarDialogoEstado.value = false
+    return
+  }
+
+  // Verificar si el estado cambió
+  if (estadoSeleccionado.value === tareaParaCambioEstado.value.estado) {
+    mostrarMensaje('El estado seleccionado es el mismo', 'info')
+    mostrarDialogoEstado.value = false
+    return
+  }
+
+  cambiandoEstado.value = true
+
+  try {
+    // Mostrar mensaje de proceso
+    mostrarMensaje('Cambiando estado...', 'info')
+
+    // Preparar datos para actualizar
+    const datosActualizacion = {
+      ...tareaParaCambioEstado.value,
+      estado: estadoSeleccionado.value,
+      fecha_actualizacion: new Date().toISOString(),
+    }
+
+    console.log('🔄 Actualizando estado:', {
+      tareaId: tareaParaCambioEstado.value.id,
+      titulo: tareaParaCambioEstado.value.titulo,
+      estadoAnterior: tareaParaCambioEstado.value.estado,
+      estadoNuevo: estadoSeleccionado.value,
+    })
+
+    // Actualizar en la API
+    await actualizarUnaTarea(tareaParaCambioEstado.value.id, datosActualizacion)
+
+    // Recargar información
+    await cargarInformacion()
+
+    // Mostrar mensaje final
+    const estadoNuevo = estadosTarea.find((e) => e.value === estadoSeleccionado.value)
+    mostrarMensaje(
+      `✅ Estado cambiado a ${estadoNuevo?.text || estadoSeleccionado.value}`,
+      'success',
+    )
+  } catch (error) {
+    console.error('❌ Error al cambiar estado:', error)
+    mostrarMensaje('Error al cambiar estado', 'error')
+  } finally {
+    // Limpiar estados
+    cambiandoEstado.value = false
+    mostrarDialogoEstado.value = false
+    tareaParaCambioEstado.value = null
+    estadoSeleccionado.value = ''
+  }
+}
+
+// 🔥 FUNCIÓN PARA CANCELAR CAMBIO DE ESTADO
+const cancelarCambioEstado = () => {
+  console.log('⏹️ Cambio de estado cancelado')
+  mostrarDialogoEstado.value = false
+  tareaParaCambioEstado.value = null
+  estadoSeleccionado.value = ''
+}
 
 // Método de carga mejorado
 const cargarInformacion = async () => {
@@ -243,11 +417,7 @@ const cargarInformacion = async () => {
   }
 }
 
-// Computed properties CORREGIDAS
-const actividad = computed(() => {
-  return storeInfActividad.actividad
-})
-
+// Computed properties
 const tareas = computed(() => {
   const tareasStore = storeInfActividad.tareas || []
   return tareasStore
@@ -311,10 +481,15 @@ const cerrarDialogo = () => {
 }
 
 const manejarGuardarTarea = async (payload) => {
+  console.log('Subactividad: ', payload)
   try {
     if (tareaSeleccionada.value) {
+      console.log('Id de actividad: ', payload.id)
+      await actualizarUnaTarea(payload.id, payload)
       mostrarMensaje('Subactividad actualizada correctamente', 'success')
+      await cargarInformacion()
     } else {
+      await crearUnaTarea(payload)
       mostrarMensaje('Subactividad creada correctamente', 'success')
       await cargarInformacion()
     }
@@ -325,30 +500,37 @@ const manejarGuardarTarea = async (payload) => {
   }
 }
 
-const cambiarEstadoTarea = async (tarea) => {
+const refrescarDialogo = async () => {
   try {
-    const nuevosEstados = {
-      PEN: 'EPROG',
-      EPROG: 'COMPL',
-      COMPL: 'PEN',
-    }
-    const nuevoEstado = nuevosEstados[tarea.estado]
-    mostrarMensaje(`Estado cambiado a ${getTareaEstadoTexto(nuevoEstado)}`, 'success')
     await cargarInformacion()
-  } catch (error) {
-    console.error('Error al cambiar estado:', error)
-    mostrarMensaje('Error al cambiar estado', 'error')
+    mostrarMensaje('Tareas Actualizadas')
+  } catch (err) {
+    console.error('Lista refrescada', err)
   }
 }
 
 const eliminarTarea = async (tarea) => {
-  if (!confirm(`¿Estás seguro de eliminar la subactividad "${tarea.titulo}"?`)) {
-    return
-  }
-
+  console.log('TAREA: ', tarea)
   try {
-    mostrarMensaje('Subactividad eliminada correctamente', 'success')
+    console.log('Iniciar')
+    const confirmado = await openConfirmDialog({
+      title: 'Eliminar subactividad',
+      message: `¿Estás seguro de eliminar "${tarea.titulo}"?`,
+      confirmLabel: 'Sí, eliminar',
+      cancelLabel: 'Cancelar',
+      type: 'delete',
+    })
+
+    if (!confirmado) {
+      console.log('Eliminación cancelada')
+      return
+    }
+
+    mostrarMensaje('Eliminando subactividad ...', 'info')
+    await eliminarUnaTarea(tarea.id)
+
     await cargarInformacion()
+    mostrarMensaje('Subactividad eliminada correctamente', 'success')
   } catch (error) {
     console.error('Error al eliminar subactividad:', error)
     mostrarMensaje('Error al eliminar la subactividad', 'error')
@@ -467,7 +649,7 @@ const mostrarMensaje = (mensaje, color = 'success') => {
   color: #666;
 }
 
-/* Barra de herramientas */
+/* 🔥 BARRA DE HERRAMIENTAS - LAYOUT AJUSTADO */
 .toolbar-tareas {
   padding: 16px;
   border-bottom: 1px solid #e0e0e0;
@@ -481,8 +663,8 @@ const mostrarMensaje = (mensaje, color = 'success') => {
   gap: 12px;
 }
 
-/* Fila de búsqueda */
-.search-row {
+/* Contenedor de búsqueda */
+.search-container {
   display: flex;
   align-items: center;
 }
@@ -492,16 +674,28 @@ const mostrarMensaje = (mensaje, color = 'success') => {
   min-width: 0;
 }
 
-/* Fila de crear */
-.crear-row {
+/* 🔥 CONTENEDOR DE BOTONES EN LÍNEA */
+.botones-container {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 12px;
 }
 
+.btn-refrescar,
 .btn-crear {
   white-space: nowrap;
   min-width: auto;
+}
+
+.btn-refrescar {
+  border-color: #e0e0e0;
+  color: #666;
+}
+
+.btn-crear {
+  background-color: #1976d2;
+  color: white;
 }
 
 /* Estado de carga */
@@ -716,6 +910,12 @@ const mostrarMensaje = (mensaje, color = 'success') => {
   margin-top: 8px;
 }
 
+/* 🔥 ESTILOS PARA EL DIALOG DE ESTADO */
+.estado-selector {
+  max-width: 200px;
+  margin: 0 auto;
+}
+
 /* Scrollbar personalizado */
 .tareas-container::-webkit-scrollbar {
   width: 8px;
@@ -735,7 +935,7 @@ const mostrarMensaje = (mensaje, color = 'success') => {
   background: #a8a8a8;
 }
 
-/* Responsive */
+/* 🔥 RESPONSIVE - LAYOUT AJUSTADO */
 @media (max-width: 768px) {
   .contenido-principal {
     height: 50vh; /* Menor altura en móviles */
@@ -744,6 +944,18 @@ const mostrarMensaje = (mensaje, color = 'success') => {
 
   .search-field {
     width: 100%;
+  }
+
+  .botones-container {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .btn-refrescar,
+  .btn-crear {
+    width: 100%;
+    justify-content: center;
   }
 
   .actividad-meta {
@@ -765,6 +977,17 @@ const mostrarMensaje = (mensaje, color = 'success') => {
   .tarea-item {
     padding: 12px;
     min-height: 100px; /* Más altura en móvil para mejor legibilidad */
+  }
+
+  .estado-selector {
+    max-width: 180px;
+  }
+}
+
+/* Para pantallas más grandes (tablets) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .botones-container {
+    gap: 8px;
   }
 }
 
