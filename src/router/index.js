@@ -299,6 +299,25 @@ const router = createRouter({
     },
     //Link al nuevo formulario de actividad
 
+    //INFORMES DE ACTIVIDAD
+    {
+      path: '/monitoreo/informe-actividad/:id',
+      name: 'informeActividades',
+      component: () => import('@/views/monitoreo/InformeActividadView.vue'),
+    },
+    //INFORME DE SUBACTIVIDAD
+    {
+      path: '/monitoreo/informe-subactividad/:id',
+      name: 'InformeSubActividad',
+      component: () => import('@/views/monitoreo/InformeSubActividad.vue'),
+    },
+    //LISTA de informes de actividad y subactividad
+    {
+      path: '/monitoreo/informes-actividad-subactividad/:id',
+      name: 'ListaInformesActividadSubActividad',
+      component: () => import('@/views/monitoreo/InformesActividadSubactividadView.vue'),
+    },
+
     //Lista de actividades para informes
     {
       path: '/actividades/informe/',
