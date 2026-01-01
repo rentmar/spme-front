@@ -1,9 +1,22 @@
 <template>
   <div class="informacion-cuantitativa">
-    <h3 class="text-h6 mb-4">
-      <v-icon icon="mdi-chart-bar" class="mr-2"></v-icon>
-      Información Cuantitativa
-    </h3>
+    <!-- Cabecera con botón de registrar -->
+    <div class="header-section">
+      <h3 class="text-h6 mb-4">
+        <v-icon icon="mdi-chart-bar" class="mr-2"></v-icon>
+        Información Cuantitativa
+      </h3>
+
+      <v-btn
+        color="primary"
+        @click="registrarInformacion"
+        :loading="registrando"
+        class="registrar-btn"
+      >
+        <v-icon icon="mdi-content-save" class="mr-2"></v-icon>
+        {{ registrando ? 'Registrando...' : 'Registrar Información' }}
+      </v-btn>
+    </div>
 
     <!-- Número de Participantes -->
     <div class="mb-6">
@@ -27,7 +40,6 @@
     <div class="mb-6">
       <h4 class="text-subtitle-1 mb-3">
         <v-icon icon="mdi-gender-male-female" class="mr-2"></v-icon>
-
         Identidad de Genero
       </h4>
       <v-row>
@@ -750,6 +762,174 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 
+// ============================
+// DEFINICIÓN DEL EVENTO PARA REGISTRAR EN EL PADRE
+// ============================
+const emit = defineEmits(['registrar-informacion'])
+
+// ============================
+// NUEVAS VARIABLES AGREGADAS
+// ============================
+const registrando = ref(false)
+
+// ============================
+// MÉTODO PARA REGISTRAR INFORMACIÓN EN EL PADRE
+// ============================
+const registrarInformacion = async () => {
+  registrando.value = true
+
+  try {
+    // Preparar los datos para registrar
+    const datosParaRegistrar = {
+      // Metadatos
+      timestamp: new Date().toISOString(),
+      estado: 'registrado',
+
+      // Datos principales
+      totalParticipantes: parseInt(totalParticipantes.value) || 0,
+
+      // Género (si está completado)
+      genero: {
+        varones: parseInt(varones.value) || 0,
+        mujeres: parseInt(mujeres.value) || 0,
+        otro: parseInt(otro.value) || 0,
+        pnd: parseInt(pnd.value) || 0,
+        suma: sumaGenero.value,
+        error: errorGenero.value,
+        completado: Boolean(varones.value || mujeres.value || otro.value || pnd.value),
+      },
+
+      // Edades (si está completado)
+      edades: {
+        ...grupoEdadValues,
+        suma: sumaEdades.value,
+        error: errorEdades.value,
+        completado: Object.values(grupoEdadValues).some((val) => val > 0),
+      },
+
+      // Discapacidad (si está completado)
+      discapacidad: {
+        total: parseInt(totalConDiscapacidad.value) || 0,
+        porcentaje: porcentajeDiscapacidad.value,
+        tipos: tiposDiscapacidad.value.map((d) => ({
+          tipo: d.tipo,
+          cantidad: parseInt(d.cantidad) || 0,
+        })),
+        necesidades: necesidadesAccesibilidad.value,
+        suma: sumaDiscapacidades.value,
+        error: errorDiscapacidad.value || errorTotalDiscapacidad.value,
+        completado: Boolean(totalConDiscapacidad.value || necesidadesAccesibilidad.value),
+      },
+
+      // Ocupaciones (si está completado)
+      ocupaciones: {
+        datos: ocupaciones.value.map((o) => ({
+          nombre: o.nombre,
+          cantidad: parseInt(o.cantidad) || 0,
+        })),
+        suma: sumaOcupaciones.value,
+        error: errorOcupaciones.value,
+        completado: ocupaciones.value.some((o) => o.nombre || o.cantidad > 0),
+      },
+
+      // Localidades (si está completado)
+      localidades: {
+        datos: localidades.value.map((l) => ({
+          departamento: l.departamento,
+          municipio: l.municipio,
+          localidad: l.localidad,
+          cantidad: parseInt(l.cantidad) || 0,
+        })),
+        suma: sumaLocalidades.value,
+        error: errorLocalidades.value,
+        completado: localidades.value.some(
+          (l) => l.departamento || l.municipio || l.localidad || l.cantidad > 0,
+        ),
+      },
+
+      // Organizaciones (si está completado)
+      organizaciones: {
+        datos: organizacionesConCantidad.value,
+        suma: sumaOrganizaciones.value,
+        error: errorOrganizaciones.value,
+        completado: organizacionesConCantidad.value.some((org) => org.nombre || org.cantidad > 0),
+      },
+
+      // Archivos
+      archivos: {
+        total: archivos.value.length,
+        lista: archivos.value.map((a, index) => ({
+          id: index,
+          nombre: a.name,
+          tamaño: a.size,
+          tipo: a.type,
+          fechaModificacion: a.lastModified,
+        })),
+        tamañoTotal: tamañoTotalArchivos.value,
+      },
+
+      // Validaciones (informativas, no bloqueantes)
+      validaciones: {
+        genero: !errorGenero.value,
+        edades: !errorEdades.value,
+        discapacidad: !errorDiscapacidad.value,
+        ocupaciones: !errorOcupaciones.value,
+        localidades: !errorLocalidades.value,
+        organizaciones: !errorOrganizaciones.value,
+        totalDiscapacidad: !errorTotalDiscapacidad.value,
+        totalesCoinciden: totalesCoinciden.value,
+        tieneErrores:
+          errorGenero.value ||
+          errorEdades.value ||
+          errorDiscapacidad.value ||
+          errorOcupaciones.value ||
+          errorLocalidades.value ||
+          errorOrganizaciones.value ||
+          errorTotalDiscapacidad.value,
+      },
+
+      // Estadísticas
+      estadisticas: {
+        sumaTotal: sumaGenero.value,
+        archivosTotal: archivos.value.length,
+        tamañoTotalArchivos: tamañoTotalArchivos.value,
+        organizacionesTotal: organizacionesConCantidad.value.length,
+        promedioPorOrganizacion: promedioPorOrganizacion.value,
+        seccionesCompletadas: calcularSeccionesCompletadas(),
+      },
+    }
+
+    // Emitir el evento al componente padre
+    emit('registrar-informacion', datosParaRegistrar)
+
+    // Simular un pequeño delay para mostrar el estado de carga
+    await new Promise((resolve) => setTimeout(resolve, 800))
+  } catch (error) {
+    console.error('Error al registrar información:', error)
+  } finally {
+    registrando.value = false
+  }
+}
+
+// Función auxiliar para calcular secciones completadas
+const calcularSeccionesCompletadas = () => {
+  const secciones = [
+    Boolean(totalParticipantes.value > 0),
+    Boolean(varones.value || mujeres.value || otro.value || pnd.value),
+    Object.values(grupoEdadValues).some((val) => val > 0),
+    Boolean(totalConDiscapacidad.value || necesidadesAccesibilidad.value),
+    ocupaciones.value.some((o) => o.nombre || o.cantidad > 0),
+    localidades.value.some((l) => l.departamento || l.municipio || l.localidad || l.cantidad > 0),
+    organizacionesConCantidad.value.some((org) => org.nombre || org.cantidad > 0),
+    archivos.value.length > 0,
+  ]
+
+  return secciones.filter(Boolean).length
+}
+
+// ============================
+// CÓDIGO ORIGINAL (NO MODIFICADO)
+// ============================
 // Datos reactivos
 const totalParticipantes = ref(0)
 const varones = ref(0)
@@ -1086,7 +1266,48 @@ watch(totalParticipantes, (newVal) => {
 
 <style scoped>
 .informacion-cuantitativa {
-  max-width: 1000px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.registrar-btn {
+  min-width: 180px;
+}
+
+/* Asegurar que todo ocupe el ancho disponible */
+:deep(.v-text-field),
+:deep(.v-card),
+:deep(.v-alert),
+:deep(.v-list) {
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .informacion-cuantitativa {
+    padding: 12px;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .registrar-btn {
+    width: 100%;
+  }
 }
 
 .border {

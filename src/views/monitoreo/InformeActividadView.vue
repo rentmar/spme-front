@@ -1,195 +1,286 @@
 <template>
-  <div v-if="!cargandoGeneral && storeInfActividad.actividad" class="v-container v-locale--is-ltr">
-    <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
-      <!-- Encabezado diferenciado -->
-      <div class="header-gradient">
-        <PaginaTituloIcono
-          :titulo="'Informe de Actividades'"
-          :icon="'mdi-file-document-multiple'"
-        ></PaginaTituloIcono>
-        <br />
-        <ProyectoIdHeader
-          v-if="storeInfActividad.actividad"
-          :proyecto-id="storeInfActividad.actividad?.proyecto"
-        ></ProyectoIdHeader>
-        <br />
-        <ActividadInformacion
-          v-if="storeInfActividad.actividad"
-          :actividad-id="storeInfActividad.actividad.id"
-        ></ActividadInformacion>
-
-        <div class="header-decoration">
-          <div class="decoration-circle decoration-circle-1"></div>
-          <div class="decoration-circle decoration-circle-2"></div>
-          <div class="decoration-circle decoration-circle-3"></div>
-        </div>
+  <v-container class="informe-actividad-container">
+    <!-- Overlay de carga -->
+    <v-overlay
+      :model-value="cargandoGeneral"
+      class="align-center justify-center"
+      persistent
+      opacity="0.8"
+    >
+      <div class="text-center">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="64"
+          width="6"
+        ></v-progress-circular>
+        <p class="mt-4 text-h6">Cargando formulario de informe...</p>
       </div>
+    </v-overlay>
 
-      <EncabezadoContribucion
-        :datos-estructura="storeInfActividad.actividad.estructuraProcedencia"
-        @payload-actualizado="recibirdatos"
-      >
-      </EncabezadoContribucion>
+    <div v-if="!cargandoGeneral && storeInfActividad.actividad">
+      <!--Titulo de la pagina-->
+      <PaginaTituloIcono
+        :titulo="'Informe de Actividad'"
+        :icon="'mdi-file-document-multiple'"
+      ></PaginaTituloIcono>
 
-      <div class="v-card-text">
-        <form class="v-form" novalidate @submit.prevent="submitForm">
-          <v-col cols="12">
-            <v-text-field
-              v-model="formData.objetivo_de_actividad"
-              label="Objetivo de la Actividad"
-              required
-              readonly
-            ></v-text-field>
-          </v-col>
+      <!--Encabezado del Proyecto-->
+      <ProyectoIdHeader
+        v-if="storeInfActividad.actividad"
+        :proyecto-id="storeInfActividad.actividad?.proyecto"
+      ></ProyectoIdHeader>
 
-          <v-col cols="12">
-            <v-textarea
-              v-model="formData.informe_de_objetivo_de_actividad"
-              label="Informe de objetivo de la actividad"
-              bg-color="blue-lighten-5"
-              required
-              rows="3"
-            ></v-textarea>
-          </v-col>
+      <!--Encabezado de la Actividad-->
+      <ActividadInformacion v-if="storeInfActividad.actividad" :actividad-id="idactividad" />
 
-          <v-col cols="12">
-            <v-text-field
-              v-model="formData.tipo_de_actividad"
-              label="Tipo de actividad"
-              required
-              readonly
-            ></v-text-field>
-          </v-col>
+      <v-row>
+        <!-- Formulario principal -->
+        <v-col cols="12">
+          <v-card elevation="2" rounded="lg">
+            <v-toolbar color="primary" density="compact">
+              <v-toolbar-title class="text-white">
+                <v-icon class="mr-2">mdi-clipboard-text-outline</v-icon>
+                Formulario de Informe de Actividad
+              </v-toolbar-title>
+            </v-toolbar>
 
-          <v-col cols="12">
-            <v-textarea
-              v-model="formData.reporte_tipo"
-              label="Reporte por Tipo"
-              bg-color="blue-lighten-5"
-              required
-              rows="3"
-            ></v-textarea>
-          </v-col>
+            <v-card-text class="pa-4">
+              <v-form ref="form" @submit.prevent="submitForm">
+                <!-- Sección 1: Fecha de Ejecucion -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-calendar</v-icon>
+                    Fecha de Ejecución
+                  </h3>
+                  <v-row>
+                    <v-col cols="12" md="12">
+                      <v-text-field
+                        v-model="formData.fechaEjecucion"
+                        label="Fecha de Ejecución"
+                        type="date"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </div>
 
-          <RegistroAvanceIndicadores
-            :idactividad="1"
-            @todos-los-registros-enviados="manejarRegistrosIndicadores"
-          ></RegistroAvanceIndicadores>
+                <v-divider class="my-4"></v-divider>
 
-          <v-divider class="my-4"></v-divider>
+                <!-- Sección 2: Contribución al Proyecto -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-chart-bar</v-icon>
+                    Contribución al Proyecto
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <EncabezadoContribucion
+                        v-if="storeInfActividad.actividad?.estructuraProcedencia"
+                        :datos-estructura="storeInfActividad.actividad?.estructuraProcedencia"
+                        @payload-actualizado="recibirDatosContribucion"
+                      ></EncabezadoContribucion>
+                      <v-alert v-else type="warning" variant="tonal">
+                        No hay estructura de procedencia disponible para esta actividad.
+                      </v-alert>
+                    </v-col>
+                  </v-row>
+                </div>
 
-          <div class="form-section">
-            <v-card-subtitle class="text-h6">Informacion Cuantitativa</v-card-subtitle>
-            <br />
-            <v-row>
-              <v-col cols="12">
-                <InformacionCuantitativa></InformacionCuantitativa>
-              </v-col>
-            </v-row>
-          </div>
+                <v-divider class="my-4"></v-divider>
 
-          <v-divider class="my-4"></v-divider>
+                <!-- Sección 3: Objetivo de la Actividad -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-target</v-icon>
+                    Objetivo de la Actividad
+                  </h3>
+                  <v-row>
+                    <v-col cols="12" md="12">
+                      <v-textarea
+                        v-model="formData.objetivoActividad"
+                        label="Objetivo de la Actividad"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-textarea>
+                    </v-col>
+                    <v-col cols="12" md="12">
+                      <v-textarea
+                        v-model="formData.informeObjetivoActividad"
+                        label="Informe Objetivo de Actividad"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="blue-lighten-5"
+                        required
+                      ></v-textarea>
+                    </v-col>
+                  </v-row>
+                </div>
 
-          <!-- Sección 2: Herramientas Aplicadas y Resultados -->
-          <div class="form-section">
-            <v-card-subtitle class="text-h6"
-              >Herramientas Aplicadas y Resultados (Opcional)</v-card-subtitle
-            >
-            <br />
-            <v-row>
-              <v-col cols="12">
-                <HerramientasAplicadasResultados></HerramientasAplicadasResultados>
-              </v-col>
-            </v-row>
-          </div>
+                <v-divider class="my-4"></v-divider>
 
-          <v-divider class="my-4"></v-divider>
+                <!-- Sección 4: Reporte de la Actividad -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-clipboard-text</v-icon>
+                    Reporte de Actividad
+                  </h3>
+                  <v-row>
+                    <v-col cols="12" md="12">
+                      <v-text-field
+                        v-model="formData.tipoActividad"
+                        label="Tipo de Actividad"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                      <v-textarea
+                        v-model="formData.reporteTipo"
+                        label="Reporte"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="blue-lighten-5"
+                      ></v-textarea>
+                    </v-col>
+                  </v-row>
+                </div>
 
-          <!-- Sección 3: Medios de Verificación -->
-          <div class="form-section">
-            <v-card-subtitle class="text-h6">Medios de Verificación</v-card-subtitle>
-            <br />
-            <v-row>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="formData.medios_verificacion"
-                  label="Descripción de medios de verificación"
-                  bg-color="blue-lighten-5"
-                  rows="3"
-                ></v-textarea>
-              </v-col>
-              <v-col cols="12">
-                <v-file-input
-                  v-model="formData.medios_archivos"
-                  label="Adjuntar archivos"
-                  multiple
-                  chips
-                  show-size
-                  :accept="acceptedFormats.medios"
-                  prepend-icon="mdi-paperclip"
-                ></v-file-input>
-              </v-col>
-            </v-row>
-          </div>
+                <v-divider class="my-4"></v-divider>
 
-          <v-divider class="my-4"></v-divider>
+                <!-- Sección 5: Registro de Indicadores -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-chart-line</v-icon>
+                    Registro de Indicadores
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <RegistroAvanceIndicadores
+                        v-if="storeInfActividad.actividad"
+                        :idactividad="storeInfActividad.actividad?.id"
+                        @todos-los-registros-enviados="manejarRegistrosIndicadores"
+                      ></RegistroAvanceIndicadores>
+                    </v-col>
+                  </v-row>
+                </div>
 
-          <!-- Sección 4: Comentarios y Recomendaciones -->
-          <div class="form-section">
-            <v-card-subtitle class="text-h6">Comentarios y Recomendaciones</v-card-subtitle>
-            <br />
-            <v-row>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="formData.comentarios_recomendaciones"
-                  label="Comentarios y recomendaciones adicionales"
-                  bg-color="blue-lighten-5"
-                  rows="3"
-                  required
-                ></v-textarea>
-              </v-col>
-            </v-row>
-          </div>
+                <v-divider class="my-4"></v-divider>
 
-          <div class="d-flex justify-end mt-4">
-            <v-btn color="error" prepend-icon="mdi-backspace-outline" @click="resetForm">
-              Limpiar
-            </v-btn>
-            <v-btn color="primary" prepend-icon="mdi-send" @click="submitForm" :loading="loading">
-              Enviar Informe
-            </v-btn>
-          </div>
-        </form>
-      </div>
+                <!-- Sección 6: Información Cuantitativa -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-numeric</v-icon>
+                    Información Cuantitativa
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <InformacionCuantitativa
+                        @registrar-informacion="manejarRegistro"
+                      ></InformacionCuantitativa>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <!-- Sección 7: Herramientas aplicadas y resultados -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-tools</v-icon>
+                    Herramientas Aplicadas y Resultados (Opcional)
+                  </h3>
+                  <v-row>
+                    <v-col cols="12" md="12">
+                      <HerramientasAplicadasResultados></HerramientasAplicadasResultados>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <!-- Sección 8: Medios de Verificación -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-file-check</v-icon>
+                    Medios de Verificación
+                  </h3>
+                  <v-row>
+                    <v-col cols="12" md="12">
+                      <v-row>
+                        <v-col cols="12">
+                          <v-textarea
+                            v-model="formData.mediosVerificacion"
+                            label="Descripción de medios de verificación"
+                            bg-color="blue-lighten-5"
+                            variant="outlined"
+                          ></v-textarea>
+                        </v-col>
+                        <v-col cols="12">
+                          <v-file-input
+                            v-model="formData.mediosArchivos"
+                            label="Adjuntar archivos"
+                            multiple
+                            chips
+                            show-size
+                            variant="outlined"
+                            prepend-icon="mdi-paperclip"
+                          ></v-file-input>
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="d-flex justify-end gap-3 mt-8">
+                  <v-btn
+                    color="error"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-cancel"
+                    @click="cancelar"
+                  >
+                    Cancelar
+                  </v-btn>
+                  <v-btn
+                    color="secondary"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-backspace-outline"
+                    @click="resetForm"
+                  >
+                    Limpiar
+                  </v-btn>
+                  <v-btn
+                    color="primary"
+                    variant="flat"
+                    size="large"
+                    prepend-icon="mdi-send"
+                    type="submit"
+                    :loading="loading"
+                  >
+                    Enviar Informe
+                  </v-btn>
+                </div>
+              </v-form>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
     </div>
-
-    <!-- Diálogo para selección de indicadores -->
-    <v-dialog v-model="indicatorDialog" max-width="600px">
-      <v-card>
-        <v-card-title class="text-h5">Seleccionar Indicador de Proyecto</v-card-title>
-        <v-card-text>
-          <v-list>
-            <v-list-item
-              v-for="(indicador, index) in indicadores"
-              :key="index"
-              @click="seleccionarIndicador(indicador)"
-            >
-              <v-list-item-title>{{ indicador.nombre }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" @click="indicatorDialog = false">Cerrar</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </div>
+  </v-container>
+  {{ formData }}
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useInformeActividadStore } from '@/modules/formularios/store/useInformeActividadStore'
+//Cabecera - Componentes
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
@@ -197,128 +288,143 @@ import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoC
 import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAvanceIndicadores.vue'
 import InformacionCuantitativa from '@/modules/formularios/components/InformacionCuantitativa.vue'
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
-import axios from 'axios'
-import { useRoute } from 'vue-router'
+//Auxiliares
+import { useSnackbar } from '@/composables/useSnackbar'
 
-//idactividad
+// Router
+const router = useRouter()
 const route = useRoute()
 const idactividad = route.params.id
 
-//Inicializar el store
+// Store
 const storeInfActividad = useInformeActividadStore()
-const indicatorDialog = ref(false)
-/************** Formulario datos *****************/
-const formData = reactive({
-  contribucion_actividad: '',
-  objetivo_de_actividad: '',
-  informe_de_objetivo_de_actividad: '',
-  tipo_de_actividad: '',
-  reporte_tipo: '',
-  avance_en_indicador: '',
-  informacion_cuantitativa: '',
-  descripcion_herramientas: '',
-  medios_verificacion: '',
-  comentarios_recomendaciones: '',
+
+// Composables
+const { successMsg } = useSnackbar()
+
+// Estados reactivos
+const cargandoGeneral = ref(false)
+const loading = ref(false)
+const form = ref(null)
+
+// Datos del formulario
+const formData = ref({
+  fechaEjecucion: null,
+  contribucionProyecto: null,
+  avanceIndicadores: null,
+  informacionCuantitativa: null,
+  mediosVerificacion: '',
+  mediosArchivos: null,
+  objetivoActividad: '',
+  informeObjetivoActividad: '',
+  tipoActividad: '',
+  reporteTipo: '',
 })
 
-/************** Encabezado de Contribucion *********************/
-const recibirdatos = (payload) => {
-  console.log('Datos recibidos del componente hijo:', payload)
-  console.log('formData actualizado:', formData)
+/***************** METODOS *******************************/
+//Contribucion al proyecto
+const recibirDatosContribucion = (payload) => {
+  console.log('Datos contribucion recibidos: ', payload)
+  formData.value.contribucionProyecto = payload
 }
 
-/*************** Indicadores *******************/
-const manejarRegistrosIndicadores = async () => {
-  console.log('Registro de indicadores')
+//Registro de indicadores
+const manejarRegistrosIndicadores = (payload) => {
+  console.log('Avance de indicadores recibido: ', payload)
+  formData.value.avanceIndicadores = payload
+  successMsg('Avance Indicadores registrados')
 }
 
-function resetForm() {
-  Object.assign(formData, {
-    contribucion_proyecto: '',
-    contribucion_actividad: '',
-    informe_objetivo: '',
-    reporte_tipo: '',
-    avance_en_indicador: '',
-    informacion_cuantitativa: '',
-    herramientas_de_evaluacion_y_resultados: '',
-    descripcion_de_medios_de_verificacion: '',
-    comentarios_recomendaciones: '',
-  })
+//Informacion cualitativa
+const manejarRegistro = async (datos) => {
+  console.log('informacion registrada: ', datos)
+  formData.value.informacionCuantitativa = datos
 }
 
-/***************** Indicadores ******************/
-const loading = ref()
-async function submitForm() {
+//Reset FORM
+const resetForm = () => {
+  formData.value = {
+    fechaEjecucion: null,
+    contribucionProyecto: null,
+    avanceIndicadores: null,
+    informacionCuantitativa: null,
+    mediosVerificacion: '',
+    mediosArchivos: null,
+    objetivoActividad: '',
+    informeObjetivoActividad: '',
+    tipoActividad: '',
+    reporteTipo: '',
+  }
+}
+
+//Cancelar
+const cancelar = () => {
+  router.push('/actividades/informe/')
+}
+
+//Enviar Formulario
+const submitForm = async () => {
   loading.value = true
   try {
-    // Validación de campos requeridos
-    if (
-      !formData.objetivo_de_actividad ||
-      !formData.informe_de_objetivo_de_actividad ||
-      !formData.tipo_de_actividad ||
-      !formData.reporte_tipo ||
-      !formData.informacion_cuantitativa ||
-      !formData.descripcion_herramientas ||
-      !formData.medios_verificacion ||
-      !formData.comentarios_recomendaciones
-    ) {
-      throw new Error('Por favor complete todos los campos requeridos del Informe de Actividades.')
+    // Validaciones básicas
+    if (!formData.value.objetivoActividad || !formData.value.informeObjetivoActividad) {
+      throw new Error('Por favor, complete los campos obligatorios del formulario.')
     }
 
-    const payload = {
-      numeroInforme: 1,
-      contribucionesProyecto: formData.informe_de_objetivo_de_actividad,
-      contribucionesActividad: formData.contribucion_actividad,
-      informaObjetivoActividad: formData.objetivo_de_actividad,
-      reporteTipo: formData.reporte_tipo,
-      indicador: formData.informacion_cuantitativa,
-      herramientaEvaluacion: formData.descripcion_herramientas,
-      descripcionMediosVerificacion: formData.medios_verificacion,
-      comentariosRecomendacion: formData.comentarios_recomendaciones,
-      actividad: 1,
-    }
+    // Aquí iría la lógica para enviar al backend
+    console.log('Enviando informe:', formData.value)
 
-    const response = await axios.post('http://127.0.0.1:8000/api/informe-actividad/', payload)
+    // Simular envío
+    await new Promise((resolve) => setTimeout(resolve, 1500))
 
-    alert('Informe de Actividades y archivos enviados con éxito')
-    resetForm()
+    alert('Informe enviado exitosamente')
+    router.push('/pei/listaactividades?showButton=1')
   } catch (error) {
-    console.error('Error completo al enviar el informe:', error.response?.data || error.message)
-    const errorMessage =
-      error.response?.data?.message ||
-      error.message ||
-      'Ocurrió un error inesperado al enviar el informe.'
-    alert(`Error: ${errorMessage}`)
+    console.error('Error al enviar el informe:', error)
+    alert(`Error: ${error.message}`)
   } finally {
     loading.value = false
   }
 }
 
-const acceptedFormats = {
-  medios: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png',
-  cuantitativos: '.pdf,.xls,.xlsx,.csv',
-  herramientas: '.pdf,.doc,.docx,.ppt,.pptx',
-}
-/********* Cargar datos ***********/
-onMounted(async () => {
-  cargarDatos()
-})
-
-const cargandoGeneral = ref(false)
+// Carga de datos
 const cargarDatos = async () => {
   cargandoGeneral.value = true
   try {
     await storeInfActividad.cargarActividadPorId(idactividad)
-  } catch (error) {
-    console.error('Error cargando actividad:', error)
+
+    if (storeInfActividad.actividad) {
+      // Rellenar datos con la información de la actividad
+      formData.value.objetivoActividad = storeInfActividad.actividad.objetivo || ''
+      formData.value.tipoActividad = storeInfActividad.actividad.tipo_actividad || ''
+
+      // Si la actividad tiene fecha de ejecución, usarla como valor por defecto
+      if (storeInfActividad.actividad.tipo_info) {
+        //Cargar la informacion en el formulario
+        const tipoActividadInf =
+          storeInfActividad.actividad.tipo_info.sigla +
+          ' - ' +
+          storeInfActividad.actividad.tipo_info.tipo_actividad
+
+        formData.value.tipoActividad = tipoActividadInf
+      }
+    }
+  } catch (err) {
+    console.error('Error al cargar la información de la Actividad:', err)
+    alert('Error al cargar los datos de la actividad')
   } finally {
     cargandoGeneral.value = false
   }
 }
+
+// Hook de ciclo de vida
+onMounted(() => {
+  cargarDatos()
+})
 </script>
 
 <style scoped>
-.solicitud-fondos-container {
+.informe-actividad-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px 16px;
@@ -354,28 +460,12 @@ const cargarDatos = async () => {
   align-items: center;
 }
 
-.info-item {
-  padding: 8px 0;
-}
-
 .gap-3 {
   gap: 12px;
 }
 
-.users-table {
-  width: 100%;
-}
-
-.users-table th {
-  background-color: #f5f5f5;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
-/* Ajustes responsivos */
 @media (max-width: 960px) {
-  .solicitud-fondos-container {
+  .informe-actividad-container {
     padding: 16px 12px;
   }
 
@@ -402,41 +492,5 @@ const cargarDatos = async () => {
   .form-section {
     padding: 16px;
   }
-}
-
-/* Mejora el aspecto de la tabla */
-:deep(.v-table) {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-:deep(.v-table th) {
-  background-color: #1976d2 !important;
-  color: white !important;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 16px 12px;
-}
-
-:deep(.v-table td) {
-  padding: 12px;
-  background-color: #fafafa;
-}
-
-.narrow-column {
-  width: 15%;
-}
-
-.wide-column {
-  width: 50%;
-}
-
-.action-column {
-  width: 15%;
-}
-
-.compact-field {
-  font-size: 14px;
-  max-width: 100px;
 }
 </style>

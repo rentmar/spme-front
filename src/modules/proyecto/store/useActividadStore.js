@@ -8,7 +8,7 @@ export const useActividadStore = defineStore('actividades-tareas', () => {
   const loading = ref(false)
   const error = ref(null)
   //Estados de actividad - Tarea
-  const actividad = ref() //Una actividad
+  const actividad = ref(null) //Una actividad
   const actividadesSubactividadesLista = ref() //Lista de Actividades mas tareas
 
   //Iniciar los composables
@@ -35,7 +35,7 @@ export const useActividadStore = defineStore('actividades-tareas', () => {
     if (!actividadesSubactividadesLista.value?.actividades) return []
 
     const usuario = userStore.userData
-    const esAdmin = usuario?.rol === 'admin'
+    const esAdmin = userStore.rol === 'admin'
 
     return actividadesSubactividadesLista.value.actividades.filter((actividad) => {
       // Siempre excluir inactivas y creadas
@@ -50,9 +50,14 @@ export const useActividadStore = defineStore('actividades-tareas', () => {
 
       // Si no es admin, solo ve sus actividades
       const esResponsable =
-        actividad.responsable_info?.username === usuario?.usuario ||
-        actividad.responsable === usuario?.id
+        actividad.responsable_info?.username === usuario?.user?.username ||
+        actividad.responsable === usuario?.user?.id
 
+      // console.log('esResponsable', esResponsable)
+      // console.log('Actividad responsable info USERName: ', actividad.responsable_info?.username)
+      // console.log('Usuario: ', usuario?.user?.username)
+      // console.log('Actividad responsable: ', actividad.responsable)
+      // console.log('USUARIO ID: ', usuario?.user?.id)
       return esResponsable
     })
   })
