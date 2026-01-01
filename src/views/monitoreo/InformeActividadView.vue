@@ -195,7 +195,9 @@
                   </h3>
                   <v-row>
                     <v-col cols="12" md="12">
-                      <HerramientasAplicadasResultados></HerramientasAplicadasResultados>
+                      <HerramientasAplicadasResultados
+                        @informacion-registrada="registrarHerramientas"
+                      ></HerramientasAplicadasResultados>
                     </v-col>
                   </v-row>
                 </div>
@@ -231,6 +233,24 @@
                           ></v-file-input>
                         </v-col>
                       </v-row>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <!-- Seccio 9: Comentarios y recomendaciones-->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-file-check</v-icon>
+                    Comentarios y recomendaciones
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <v-textarea
+                        v-model="formData.comentariosRecomendaciones"
+                        label="Comentarios y recomendaciones"
+                        bg-color="blue-lighten-5"
+                        variant="outlined"
+                      ></v-textarea>
                     </v-col>
                   </v-row>
                 </div>
@@ -319,6 +339,8 @@ const formData = ref({
   informeObjetivoActividad: '',
   tipoActividad: '',
   reporteTipo: '',
+  comentariosRecomendaciones: '',
+  herramientasEvaluacion: '',
 })
 
 /***************** METODOS *******************************/
@@ -341,6 +363,12 @@ const manejarRegistro = async (datos) => {
   formData.value.informacionCuantitativa = datos
 }
 
+//Registrar herramientas aplicadas y resultados
+const registrarHerramientas = async (info) => {
+  console.log('Herramientas registradas: ', info)
+  formData.value.herramientasEvaluacion = info
+}
+
 //Reset FORM
 const resetForm = () => {
   formData.value = {
@@ -354,6 +382,8 @@ const resetForm = () => {
     informeObjetivoActividad: '',
     tipoActividad: '',
     reporteTipo: '',
+    comentariosRecomendaciones: '',
+    herramientasEvaluacion: '',
   }
 }
 

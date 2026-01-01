@@ -173,6 +173,19 @@
           • Tipos: {{ Object.keys(estadisticasArchivos.tipos).join(', ') }}
         </div>
       </v-alert>
+
+      <!-- BOTÓN PARA REGISTRAR INFORMACIÓN -->
+      <div class="d-flex justify-end mt-6">
+        <v-btn
+          color="success"
+          @click="registrarInformacion"
+          prepend-icon="mdi-content-save"
+          size="large"
+          :disabled="!hayDatosParaRegistrar"
+        >
+          Registrar Información
+        </v-btn>
+      </div>
     </v-card-text>
   </v-card>
 </template>
@@ -180,7 +193,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 
-// Props y emits
+// Props y emits - AÑADIR EL NUEVO EVENTO
 const props = defineProps({
   modelValue: {
     type: Array,
@@ -192,7 +205,13 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:modelValue', 'update:archivos', 'cambio'])
+// AÑADIR EL EVENTO 'informacion-registrada'
+const emit = defineEmits([
+  'update:modelValue',
+  'update:archivos',
+  'cambio',
+  'informacion-registrada', // Añadido aquí
+])
 
 // Estado reactivo
 const herramientas = ref([])
@@ -222,6 +241,17 @@ const estadisticasArchivos = computed(() => {
     tamañoTotal,
     tipos,
   }
+})
+
+// Nuevo computed para verificar si hay datos
+const hayDatosParaRegistrar = computed(() => {
+  // Verificar si hay al menos una herramienta con datos
+  return herramientas.value.some(
+    (herramienta) =>
+      herramienta.descripcion.trim() !== '' ||
+      herramienta.resultado.trim() !== '' ||
+      (archivosLocales.value[herramienta.id]?.length || 0) > 0,
+  )
 })
 
 // Utilidades
@@ -438,6 +468,52 @@ const descargarTodosArchivos = (herramientaIndex) => {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
   })
+}
+
+// NUEVO MÉTODO: Registrar Información
+const registrarInformacion = () => {
+  if (!hayDatosParaRegistrar.value) {
+    alert(
+      'No hay datos para registrar. Por favor, agregue al menos una herramienta con información.',
+    )
+    return
+  }
+
+  // Llamar al método existente que ya envía los datos
+  emitirDatosCompletos()
+
+  // Mostrar mensaje de confirmación
+  alert('Información registrada exitosamente y enviada al sistema.')
+
+  // Emitir el evento específico para el registro
+  emit('informacion-registrada', {
+    herramientas: herramientas.value.length,
+    evidencias: totalEvidencias.value,
+    fecha: new Date().toISOString(),
+    datosCompletos: obtenerDatosParaRegistro(), // Método auxiliar
+  })
+}
+
+// Método auxiliar para obtener datos estructurados
+const obtenerDatosParaRegistro = () => {
+  return {
+    herramientas: herramientas.value.map((herramienta) => ({
+      id: herramienta.id,
+      descripcion: herramienta.descripcion,
+      resultado: herramienta.resultado,
+      archivos:
+        archivosLocales.value[herramienta.id]?.map((archivo) => ({
+          nombre: archivo.name,
+          tamaño: archivo.size,
+          tipo: archivo.type,
+        })) || [],
+    })),
+    resumen: {
+      totalHerramientas: herramientas.value.length,
+      totalEvidencias: totalEvidencias.value,
+      estadisticasArchivos: estadisticasArchivos.value,
+    },
+  }
 }
 
 // Emisión de datos
