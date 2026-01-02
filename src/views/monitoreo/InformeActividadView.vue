@@ -50,7 +50,7 @@
                 <!-- Sección 1: Fecha de Ejecucion -->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-calendar</v-icon>
+                    <v-icon color="primary" class="mr-2">mdi-calendar-check</v-icon>
                     Fecha de Ejecución
                   </h3>
                   <v-row>
@@ -72,7 +72,7 @@
                 <!-- Sección 2: Contribución al Proyecto -->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-chart-bar</v-icon>
+                    <v-icon color="primary" class="mr-2">mdi-chart-timeline-variant</v-icon>
                     Contribución al Proyecto
                   </h3>
                   <v-row>
@@ -94,7 +94,7 @@
                 <!-- Sección 3: Objetivo de la Actividad -->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-target</v-icon>
+                    <v-icon color="primary" class="mr-2">mdi-bullseye-arrow</v-icon>
                     Objetivo de la Actividad
                   </h3>
                   <v-row>
@@ -153,7 +153,7 @@
                 <!--Seccion: Procedencia de Fondos y validacion-->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-chart-line</v-icon>
+                    <v-icon color="primary" class="mr-2">mdi-cash-multiple</v-icon>
                     Procedencia de Fondos
                   </h3>
                   <v-row>
@@ -192,7 +192,7 @@
                 <!-- Sección 6: Información Cuantitativa -->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-numeric</v-icon>
+                    <v-icon color="primary" class="mr-2">mdi-chart-bar</v-icon>
                     Información Cuantitativa
                   </h3>
                   <v-row>
@@ -209,7 +209,7 @@
                 <!-- Sección 7: Herramientas aplicadas y resultados -->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-tools</v-icon>
+                    <v-icon color="primary" class="mr-2">mdi-toolbox</v-icon>
                     Herramientas Aplicadas y Resultados (Opcional)
                   </h3>
                   <v-row>
@@ -226,7 +226,7 @@
                 <!-- Sección 8: Medios de Verificación -->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-file-check</v-icon>
+                    <v-icon color="primary" class="mr-2">mdi-file-document-check</v-icon>
                     Medios de Verificación
                   </h3>
                   <v-row>
@@ -259,7 +259,7 @@
                 <!-- Seccio 9: Comentarios y recomendaciones-->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-file-check</v-icon>
+                    <v-icon color="primary" class="mr-2">mdi-comment-text-multiple</v-icon>
                     Comentarios y recomendaciones
                   </h3>
                   <v-row>
@@ -312,8 +312,6 @@
       </v-row>
     </div>
   </v-container>
-  {{ formData }}<br /><br /><br />
-  {{}}
 </template>
 
 <script setup>

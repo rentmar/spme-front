@@ -69,7 +69,7 @@
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-text-field
-                        :model-value="storeInfTarea.tarea.estado || 'No disponible'"
+                        :model-value="estadoFormateado"
                         label="Estado"
                         variant="outlined"
                         density="compact"
@@ -100,7 +100,7 @@
                     </v-col>
                     <v-col cols="12" md="4">
                       <v-text-field
-                        :model-value="storeInfTarea.tarea?.fecha_creacion || 'Sin Fecha'"
+                        :model-value="formatearFecha(storeInfTarea.tarea?.fecha_creacion)"
                         type="date"
                         label="Fecha Inicio"
                         variant="outlined"
@@ -111,7 +111,7 @@
                     </v-col>
                     <v-col cols="12" md="4">
                       <v-text-field
-                        :model-value="storeInfTarea.tarea?.fecha_limite || 'Sin Fecha'"
+                        :model-value="formatearFecha(storeInfTarea.tarea?.fecha_limite)"
                         type="date"
                         label="Fecha Limite"
                         variant="outlined"
@@ -122,8 +122,7 @@
                     </v-col>
                     <v-col cols="12" md="4">
                       <v-text-field
-                        :model-value="storeInfTarea.tarea?.presupuesto || 'No definido'"
-                        type="number"
+                        :model-value="formatearPresupuesto(storeInfTarea.tarea?.presupuesto)"
                         label="Presupuesto"
                         variant="outlined"
                         density="compact"
@@ -163,17 +162,17 @@
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-chart-bar</v-icon>
-                    Contribución a la Actividad Principal
+                    Contribución a la Actividad: {{ storeInfTarea.tarea?.actividad?.codigo }} -
+                    {{ storeInfTarea.tarea?.actividad?.nombreCorto }}
                   </h3>
                   <v-row>
-                    <v-col cols="12" md="12">
+                    <v-col cols="12">
                       <v-textarea
                         v-model="formData.contribucionProyecto"
-                        label="¿Cómo contribuye esta subactividad a la actividad principal?"
+                        label="Contribucion a la Actividad"
                         variant="outlined"
-                        density="compact"
                         bg-color="blue-lighten-5"
-                        rows="3"
+                        :rules="[(v) => !!v || 'El objetivo es requerido']"
                       ></v-textarea>
                     </v-col>
                   </v-row>
@@ -222,7 +221,7 @@
                     <v-col cols="12" md="12">
                       <v-text-field
                         v-model="formData.tipoActividad"
-                        label="Tipo de SubActividad"
+                        label="Tipo de la Actividad"
                         variant="outlined"
                         density="compact"
                         bg-color="grey-lighten-4"
@@ -230,11 +229,10 @@
                       ></v-text-field>
                       <v-textarea
                         v-model="formData.reporteTipo"
-                        label="Reporte de la ejecución"
+                        label="Escriba el Reporte de la ejecución"
                         variant="outlined"
                         density="compact"
                         bg-color="grey-lighten-4"
-                        rows="5"
                         :rules="[(v) => !!v || 'El reporte de ejecución es requerido']"
                       ></v-textarea>
                     </v-col>
@@ -250,15 +248,7 @@
                     Avance de Indicadores
                   </h3>
                   <v-row>
-                    <v-col cols="12" md="12">
-                      <v-textarea
-                        v-model="formData.avanceIndicadores"
-                        label="Avance en los indicadores asociados"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        rows="4"
-                      ></v-textarea>
-                    </v-col>
+                    <v-col cols="12"> </v-col>
                   </v-row>
                 </div>
 
@@ -271,16 +261,19 @@
                     Información Cuantitativa
                   </h3>
                   <v-row>
-                    <v-col cols="12" md="12">
-                      <v-textarea
-                        v-model="formData.informacionCuantitativa"
-                        label="Datos cuantitativos y métricas obtenidas"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        rows="4"
-                      ></v-textarea>
-                    </v-col>
+                    <v-col cols="12"> </v-col>
                   </v-row>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <!--Seccion 8: Presupuesto-->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-file-check</v-icon>
+                    Presupuesto
+                  </h3>
+                  <v-row></v-row>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -292,26 +285,8 @@
                     Herramientas Aplicadas y Resultados
                   </h3>
                   <v-row>
-                    <v-col cols="12" md="12">
-                      <v-textarea
-                        v-model="formData.herramientasEvaluacion"
-                        label="Herramientas Aplicadas y Resultados"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        rows="3"
-                      ></v-textarea>
-                    </v-col>
+                    <v-col cols="12"> </v-col>
                   </v-row>
-                </div>
-
-                <v-divider class="my-4"></v-divider>
-                <!--Seccion 8: Presupuesto-->
-                <div class="form-section mb-6">
-                  <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-file-check</v-icon>
-                    Presupuesto
-                  </h3>
-                  <v-rom></v-rom>
                 </div>
 
                 <!-- Sección 8: Medios de verificacion -->
@@ -418,16 +393,19 @@
       <v-btn color="primary" class="mt-4" @click="cancelar">Volver a la lista</v-btn>
     </div>
   </v-container>
+  {{ formData }}
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useInformeTareaStore } from '@/modules/formularios/store/useInformeTareaStore'
 //Encabezados
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+//Utilidades
+import { formatearEstadoTarea } from '@/modules/formularios/utils/estadoTareaUtils'
 
 // Router
 const router = useRouter()
@@ -461,7 +439,41 @@ const formData = ref({
   desglosePresupuesto: null,
 })
 
-// Métodos
+// Computed properties
+const estadoFormateado = computed(() => {
+  if (!storeInfTarea.tarea?.estado) return 'SIN_ESTADO - No especificado'
+  return formatearEstadoTarea(storeInfTarea.tarea.estado)
+})
+
+// Métodos auxiliares de formato
+const formatearFecha = (fechaString) => {
+  if (!fechaString) return 'Sin Fecha'
+
+  try {
+    const fecha = new Date(fechaString)
+    if (isNaN(fecha.getTime())) return fechaString
+
+    // Formato YYYY-MM-DD para campos type="date"
+    const año = fecha.getFullYear()
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0')
+    const dia = String(fecha.getDate()).padStart(2, '0')
+
+    return `${año}-${mes}-${dia}`
+  } catch (error) {
+    return fechaString
+  }
+}
+
+const formatearPresupuesto = (monto) => {
+  if (!monto && monto !== 0) return 'No definido'
+
+  const numValue = Number(monto)
+  if (isNaN(numValue)) return monto
+
+  return `Bs. ${numValue.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+// Métodos principales
 const cancelar = () => {
   router.push('/actividades/informe/')
 }
@@ -479,7 +491,7 @@ const resetForm = () => {
       comentariosRecomendaciones: '',
       objetivoTarea: '',
       informeObjetivoTarea: '',
-      tipoActividad: storeInfTarea.tarea?.tipo || '',
+      tipoActividad: '',
       reporteTipo: '',
       presupuestoPlanificado: null,
       presupuestoEjecutado: null,
@@ -540,8 +552,16 @@ const cargarInformacion = async () => {
 
       // Rellenar datos automáticamente si hay información de la tarea
       if (storeInfTarea.tarea) {
-        formData.value.tipoActividad = storeInfTarea.tarea.tipo || ''
+        const tipoActividadLiteral =
+          storeInfTarea.tarea.actividad.tipo_info.sigla +
+          ' - ' +
+          storeInfTarea.tarea.actividad.tipo_info.tipo_actividad
+        formData.value.tipoActividad = tipoActividadLiteral || ''
         formData.value.objetivoTarea = storeInfTarea.tarea.objetivo || ''
+
+        // También podemos mostrar un mensaje de depuración
+        console.log('Estado de la tarea:', storeInfTarea.tarea.estado)
+        console.log('Estado formateado:', estadoFormateado.value)
       }
     }
   } catch (err) {
