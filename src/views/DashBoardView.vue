@@ -143,7 +143,7 @@ export default {
 
   methods: {
     async fetchDashboardData() {
-      const API_URL = baseUrl + '/actividades_api/obtenerDashboardActividad/'
+      const API_URL = baseUrl + 'actividades_api/obtenerDashboardActividad/'
 
       this.loading = true
 

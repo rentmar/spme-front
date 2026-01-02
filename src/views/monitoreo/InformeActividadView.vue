@@ -150,6 +150,25 @@
                 </div>
 
                 <v-divider class="my-4"></v-divider>
+                <!--Seccion: Procedencia de Fondos y validacion-->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-chart-line</v-icon>
+                    Procedencia de Fondos
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <ProcedenciaFondosPresupuesto
+                        v-if="storeInfActividad.actividad"
+                        :fondos="storeInfActividad.actividad?.procedencia_fondos"
+                        :presupuesto-total="storeInfActividad.actividad?.presupuesto"
+                        @registrar-informacion="registrarProcedenciaFondos"
+                      ></ProcedenciaFondosPresupuesto>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 5: Registro de Indicadores -->
                 <div class="form-section mb-6">
@@ -293,7 +312,8 @@
       </v-row>
     </div>
   </v-container>
-  {{ formData }}
+  {{ formData }}<br /><br /><br />
+  {{}}
 </template>
 
 <script setup>
@@ -308,6 +328,7 @@ import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoC
 import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAvanceIndicadores.vue'
 import InformacionCuantitativa from '@/modules/formularios/components/InformacionCuantitativa.vue'
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
+import ProcedenciaFondosPresupuesto from '@/modules/procedenciaFondos/components/ProcedenciaFondosPresupuesto.vue'
 //Auxiliares
 import { useSnackbar } from '@/composables/useSnackbar'
 
@@ -341,6 +362,8 @@ const formData = ref({
   reporteTipo: '',
   comentariosRecomendaciones: '',
   herramientasEvaluacion: '',
+  procedenciaFondos: '',
+  observacionesPresupuesto: '',
 })
 
 /***************** METODOS *******************************/
@@ -369,6 +392,13 @@ const registrarHerramientas = async (info) => {
   formData.value.herramientasEvaluacion = info
 }
 
+//Registrar procedencia de fondos
+const registrarProcedenciaFondos = async (datos) => {
+  console.log('Procedencia Fondos: ', datos)
+  formData.value.procedenciaFondos = datos
+  formData.value.observacionesPresupuesto = datos?.observaciones
+}
+
 //Reset FORM
 const resetForm = () => {
   formData.value = {
@@ -384,6 +414,8 @@ const resetForm = () => {
     reporteTipo: '',
     comentariosRecomendaciones: '',
     herramientasEvaluacion: '',
+    procedenciaFondos: '',
+    observacionesPresupuesto: '',
   }
 }
 

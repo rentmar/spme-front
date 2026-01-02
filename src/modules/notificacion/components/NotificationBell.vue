@@ -367,6 +367,9 @@ const marcarTodas = ref(false)
 const marcandoNotificacionId = ref(null)
 const mensajeSeleccionado = ref(null)
 
+//Constantes
+const tiempoRecarga = 10 * 60 * 100
+
 // Computed properties
 const tieneNotificaciones = computed(() => {
   return bellStore.listaMensajesFiltrada.length > 0
@@ -595,13 +598,14 @@ onMounted(() => {
     if (!dialogoVisible.value) {
       cargarDatos()
     }
-  }, 30000) // Recargar cada 30 segundos
+  }, tiempoRecarga) // Recargar cada 30 segundos
 })
 
 onUnmounted(() => {
   if (intervaloRecarga) {
     clearInterval(intervaloRecarga)
   }
+  document.removeEventListener('visibilitychange', cargarDatos)
 })
 </script>
 

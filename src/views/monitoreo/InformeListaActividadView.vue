@@ -197,17 +197,46 @@
                               </v-badge>
                             </template>
 
+                            <!-- SOLUCIÓN 5 IMPLEMENTADA AQUÍ -->
                             <v-list-item-title class="font-weight-medium mb-1">
-                              {{ tarea.titulo || tarea.descripcion || 'Subactividad sin título' }}
-                              <v-chip
-                                v-if="tarea.codigo"
-                                small
-                                color="primary"
-                                variant="outlined"
-                                class="ml-2"
-                              >
-                                {{ tarea.codigo }}
-                              </v-chip>
+                              <div class="d-flex align-center flex-wrap gap-2">
+                                <!-- Título principal -->
+                                <v-tooltip
+                                  location="top"
+                                  :disabled="!esTextoLargo(tarea.titulo || tarea.descripcion)"
+                                >
+                                  <template v-slot:activator="{ props }">
+                                    <div
+                                      v-bind="props"
+                                      class="text-truncate"
+                                      style="max-width: min(70%, 300px)"
+                                    >
+                                      {{
+                                        tarea.titulo ||
+                                        tarea.descripcion ||
+                                        'Subactividad sin título'
+                                      }}
+                                    </div>
+                                  </template>
+                                  <span>{{
+                                    tarea.titulo || tarea.descripcion || 'Subactividad sin título'
+                                  }}</span>
+                                </v-tooltip>
+
+                                <!-- Código -->
+                                <div class="d-flex align-center flex-shrink-0">
+                                  <v-chip
+                                    v-if="tieneCodigoValido(tarea.codigo)"
+                                    small
+                                    color="primary"
+                                    variant="outlined"
+                                    class="text-no-wrap chip-codigo"
+                                    density="comfortable"
+                                  >
+                                    {{ formatearCodigo(tarea.codigo) }}
+                                  </v-chip>
+                                </div>
+                              </div>
                             </v-list-item-title>
 
                             <v-list-item-subtitle>
@@ -646,6 +675,19 @@ const toggleExpanded = (id) => {
   expandedActividadId.value = expandedActividadId.value === id ? null : id
 }
 
+// --- MÉTODOS AUXILIARES PARA LA SOLUCIÓN 5 ---
+const esTextoLargo = (texto) => {
+  return texto && texto.length > 40
+}
+
+const tieneCodigoValido = (codigo) => {
+  return codigo && typeof codigo === 'string' && codigo.trim().length > 0
+}
+
+const formatearCodigo = (codigo) => {
+  return tieneCodigoValido(codigo) ? codigo.trim().toUpperCase() : ''
+}
+
 // --- CRUD TAREAS ---
 const openTareaDialog = (actividadId, tarea = null) => {
   actividadSeleccionada.value = actividades.value.find((a) => a.id === actividadId)
@@ -835,6 +877,33 @@ const mostrarSnackbar = (texto, color = 'success') => {
 </script>
 
 <style scoped>
+/* Para asegurar que el chip no se rompa */
+.text-no-wrap {
+  white-space: nowrap;
+}
+
+/* Para el texto truncado */
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 100px; /* Ancho mínimo */
+}
+
+/* Estilo específico para el chip de código */
+.chip-codigo {
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+/* Para pantallas pequeñas */
+@media (max-width: 600px) {
+  .text-truncate {
+    max-width: 50% !important;
+  }
+}
+
+/* Estilos generales */
 .rotate-180 {
   transform: rotate(180deg);
   transition: transform 0.3s ease;
