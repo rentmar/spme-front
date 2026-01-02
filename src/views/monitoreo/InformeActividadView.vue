@@ -378,16 +378,18 @@ const manejarRegistrosIndicadores = (payload) => {
   successMsg('Avance Indicadores registrados')
 }
 
-//Informacion cualitativa
+//Informacion cuantitativa
 const manejarRegistro = async (datos) => {
   console.log('informacion registrada: ', datos)
   formData.value.informacionCuantitativa = datos
+  successMsg('Informacion cuantitativa registrada')
 }
 
 //Registrar herramientas aplicadas y resultados
 const registrarHerramientas = async (info) => {
   console.log('Herramientas registradas: ', info)
   formData.value.herramientasEvaluacion = info
+  successMsg('Herramientas registradas')
 }
 
 //Registrar procedencia de fondos

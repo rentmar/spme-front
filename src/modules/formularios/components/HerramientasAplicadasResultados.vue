@@ -483,7 +483,7 @@ const registrarInformacion = () => {
   emitirDatosCompletos()
 
   // Mostrar mensaje de confirmación
-  alert('Información registrada exitosamente y enviada al sistema.')
+  //alert('Información registrada exitosamente y enviada al sistema.')
 
   // Emitir el evento específico para el registro
   emit('informacion-registrada', {

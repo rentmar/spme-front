@@ -98,6 +98,16 @@
                         readonly
                       ></v-textarea>
                     </v-col>
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="formData.tipoActividad"
+                        label="Tipo de la Actividad"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
                     <v-col cols="12" md="4">
                       <v-text-field
                         :model-value="formatearFecha(storeInfTarea.tarea?.fecha_creacion)"
@@ -157,23 +167,22 @@
                 </div>
 
                 <v-divider class="my-4"></v-divider>
-
-                <!-- Sección 2: Contribución a la Actividad -->
+                <!-- Seccion: Contribucion al proyecto-->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-chart-bar</v-icon>
-                    Contribución a la Actividad: {{ storeInfTarea.tarea?.actividad?.codigo }} -
-                    {{ storeInfTarea.tarea?.actividad?.nombreCorto }}
+                    Contribución al Proyecto
                   </h3>
                   <v-row>
                     <v-col cols="12">
-                      <v-textarea
-                        v-model="formData.contribucionProyecto"
-                        label="Contribucion a la Actividad"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        :rules="[(v) => !!v || 'El objetivo es requerido']"
-                      ></v-textarea>
+                      <EncabezadoContribucion
+                        v-if="storeInfTarea.actividad?.estructuraProcedencia"
+                        :datos-estructura="storeInfTarea.actividad?.estructuraProcedencia"
+                        @payload-actualizado="recibirDatosContribucion"
+                      ></EncabezadoContribucion>
+                      <v-alert v-else type="warning" variant="tonal">
+                        No hay estructura de procedencia disponible para esta actividad.
+                      </v-alert>
                     </v-col>
                   </v-row>
                 </div>
@@ -218,15 +227,7 @@
                     Reporte de la Subactividad
                   </h3>
                   <v-row>
-                    <v-col cols="12" md="12">
-                      <v-text-field
-                        v-model="formData.tipoActividad"
-                        label="Tipo de la Actividad"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
+                    <v-col cols="12">
                       <v-textarea
                         v-model="formData.reporteTipo"
                         label="Escriba el Reporte de la ejecución"
@@ -248,7 +249,13 @@
                     Avance de Indicadores
                   </h3>
                   <v-row>
-                    <v-col cols="12"> </v-col>
+                    <v-col cols="12">
+                      <RegistroAvanceIndicadores
+                        v-if="storeInfTarea.actividad"
+                        :idactividad="storeInfTarea.actividad?.id"
+                        @todos-los-registros-enviados="manejarRegistrosIndicadores"
+                      ></RegistroAvanceIndicadores>
+                    </v-col>
                   </v-row>
                 </div>
 
@@ -261,7 +268,11 @@
                     Información Cuantitativa
                   </h3>
                   <v-row>
-                    <v-col cols="12"> </v-col>
+                    <v-col cols="12">
+                      <InformacionCuantitativa
+                        @registrar-informacion="manejarRegistro"
+                      ></InformacionCuantitativa>
+                    </v-col>
                   </v-row>
                 </div>
 
@@ -273,7 +284,14 @@
                     <v-icon color="primary" class="mr-2">mdi-file-check</v-icon>
                     Presupuesto
                   </h3>
-                  <v-row></v-row>
+                  <v-row>
+                    <PresupuestoSubactividad
+                      v-if="storeInfTarea.tarea"
+                      :presupuesto="storeInfTarea.tarea?.presupuesto"
+                      :presupuesto-desglose="storeInfTarea.tarea?.presupuestoDesglose"
+                      @registrar-informacion="registrarPresupuestos"
+                    ></PresupuestoSubactividad>
+                  </v-row>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -285,7 +303,11 @@
                     Herramientas Aplicadas y Resultados
                   </h3>
                   <v-row>
-                    <v-col cols="12"> </v-col>
+                    <v-col cols="12">
+                      <HerramientasAplicadasResultados
+                        @informacion-registrada="registrarHerramientas"
+                      ></HerramientasAplicadasResultados>
+                    </v-col>
                   </v-row>
                 </div>
 
@@ -404,8 +426,14 @@ import { useInformeTareaStore } from '@/modules/formularios/store/useInformeTare
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
+import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAvanceIndicadores.vue'
+import InformacionCuantitativa from '@/modules/formularios/components/InformacionCuantitativa.vue'
+import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
+import PresupuestoSubactividad from '@/modules/formularios/components/PresupuestoSubactividad.vue'
 //Utilidades
 import { formatearEstadoTarea } from '@/modules/formularios/utils/estadoTareaUtils'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 // Router
 const router = useRouter()
@@ -414,6 +442,9 @@ const idtarea = ref(route.params.id)
 
 // Stores
 const storeInfTarea = useInformeTareaStore()
+
+// Composables
+const { successMsg } = useSnackbar()
 
 // Estados reactivos
 const cargandoGeneral = ref(false)
@@ -439,6 +470,44 @@ const formData = ref({
   desglosePresupuesto: null,
 })
 
+/***************** Metodos de captura informacion **********************/
+//Contribucion al proyecto
+const recibirDatosContribucion = (payload) => {
+  console.log('Datos contribucion recibidos: ', payload)
+  formData.value.contribucionProyecto = payload
+}
+
+//Registrar indicadores
+const manejarRegistrosIndicadores = (payload) => {
+  console.log('Avance de indicadores recibido: ', payload)
+  formData.value.avanceIndicadores = payload
+  successMsg('Avance Indicadores registrados')
+}
+
+//Informacion cuantitativa
+const manejarRegistro = async (datos) => {
+  console.log('informacion registrada: ', datos)
+  formData.value.informacionCuantitativa = datos
+  successMsg('Informacion cuantitativa registrada')
+}
+
+//Registrar herramientas aplicadas y resultados
+const registrarHerramientas = async (info) => {
+  console.log('Herramientas registradas: ', info)
+  formData.value.herramientasEvaluacion = info
+  successMsg('Herramientas Aplicadas Registradas')
+}
+
+//Registrar presupuestos
+const registrarPresupuestos = async (datos) => {
+  console.log('Procedencia Fondos: ', datos)
+  formData.value.presupuestoPlanificado = datos.presupuestoFinal
+  formData.value.presupuestoEjecutado = datos.totalEjecutado
+  formData.value.desglosePresupuesto = datos
+  successMsg('Presupuesto registrado')
+}
+
+/***********************************************************************/
 // Computed properties
 const estadoFormateado = computed(() => {
   if (!storeInfTarea.tarea?.estado) return 'SIN_ESTADO - No especificado'
@@ -460,6 +529,7 @@ const formatearFecha = (fechaString) => {
 
     return `${año}-${mes}-${dia}`
   } catch (error) {
+    console.log('Error al formatear la fecha', error)
     return fechaString
   }
 }
