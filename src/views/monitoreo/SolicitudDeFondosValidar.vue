@@ -564,14 +564,11 @@
       </v-row>
     </div>
   </v-container>
+  <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
+<!-- {{ '***************************************B' }}
+  <pre>{{ formData.datos_forma_pago }}</pre> -->
   <!-- {{ '***************************************B' }}
   <pre>{{ datosFormulario1 }}</pre> -->
-  <!-- {{ '***************************************B' }}
-  <pre>{{ datosFormulario1 }}</pre> -->
-  <!-- {{ '***************************************C - formData.datos_forma_pago' }}
-  <pre>{{ formData.idcoordinador }}</pre> -->
-  <!-- {{ '***************************************D - formaPagoElegido' }}
-  <pre>{{ formData.idresponsable }}</pre> -->
 </template>
 
 <script setup>
@@ -840,11 +837,62 @@ function getCurrentDate() {
   return `${year}-${month}-${day}`
 }
 
+// async function cargarDatos() {
+//   isLoading.value = true
+//   error.value = null
+//   try {
+//     const response = await fetch(baseurl+'/api/monitoreo/obtener-datos-formulario/', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({
+//         id_actividad: idActividad,
+//         usuario: usuario.value.nombre,
+//       }),
+//     })
+
+//     if (!response.ok) {
+//       const errorData = await response.json()
+//       throw new Error(
+//         `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+//       )
+//     }
+
+//     const rawData = await response.json()
+//     datosFormulario.value = strictSanitizeData(rawData)
+//     console.log('Datos cargados exitosamente:', rawData)
+//   } catch (err) {
+//     error.value = err.message
+//     console.error('Ha ocurrido un error:', err)
+//   } finally {
+//     isLoading.value = false
+//     cargandoGeneral.value = false
+//   }
+// }
+
 async function cargarDatos() {
+  console.log('Iniciando cargarDatos...')
+
   isLoading.value = true
   error.value = null
+
   try {
-    const response = await fetch(baseurl+'/api/monitoreo/obtener-datos-formulario/', {
+    // Verificar que tengamos los datos necesarios
+    if (!idActividad || !usuario.value?.nombre) {
+      throw new Error('Faltan datos requeridos para cargar el formulario')
+    }
+
+    console.log('Enviando solicitud con:', {
+      id_actividad: idActividad,
+      usuario: usuario.value.nombre
+    })
+
+    // Usar URL completa para debugging
+    const url = baseurl + 'api/monitoreo/obtener-datos-formulario/'
+    console.log('URL completa:', url)
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -855,22 +903,33 @@ async function cargarDatos() {
       }),
     })
 
+    console.log('Respuesta cargarDatos:', response.status, response.statusText)
+
     if (!response.ok) {
-      const errorData = await response.json()
+      if (response.status === 404) {
+        throw new Error('Endpoint no encontrado (404). Verifica la URL del API.')
+      }
+      const errorData = await response.json().catch(() => ({}))
       throw new Error(
         `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
       )
     }
 
     const rawData = await response.json()
-    datosFormulario.value = strictSanitizeData(rawData)
-    //console.log('Datos cargados exitosamente:', datosFormulario.value)
+    console.log('Datos recibidos en cargarDatos:', rawData)
+
+    datosFormulario.value = rawData
+    console.log('DatosFormulario asignado exitosamente')
+
   } catch (err) {
+    console.error('Error en cargarDatos:', err)
     error.value = err.message
-    console.error('Ha ocurrido un error:', err)
+    // Mostrar mensaje al usuario
+    alert(`Error: ${err.message}\n\nPor favor, contacta al administrador del sistema.`)
+    throw err
   } finally {
     isLoading.value = false
-    cargandoGeneral.value = false
+    console.log('cargarDatos - isLoading establecido en:', isLoading.value)
   }
 }
 
@@ -932,9 +991,54 @@ function strictSanitizeData(data) {
   return sanitized;
 }
 
+// async function cargarSolicitudFondos() {
+//   isLoading.value = true
+//   error.value = null
+//   try {
+//     const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudFondos/', {
+//       method: 'GET',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//     })
+
+//     if (!response.ok) {
+//       throw new Error(`Error en la solicitud: ${response.status}`)
+//     }
+
+//     const data = await response.json()
+
+//     // Filtrar las solicitudes por actividad_id y tarea_id
+//     const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
+
+//       // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
+//       const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
+//       const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
+//       const coincideSolicitud = solicitud.id?.toString() === idSolicitud?.toString()
+
+//       //console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
+
+//       return coincideActividad && coincideTarea && coincideSolicitud
+//     })
+
+//     datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
+//     actualizarDatosFormulario(solicitudesFiltradas[0])
+
+//   } catch (err) {
+//     error.value = err.message
+//     console.error('Error al cargar solicitudes:', err)
+//   } finally {
+//     isLoading.value = false
+//     cargandoGeneral.value = false
+//   }
+// }
+
 async function cargarSolicitudFondos() {
+  console.log('Iniciando cargarSolicitudFondos...')
+
   isLoading.value = true
   error.value = null
+
   try {
     const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudFondos/', {
       method: 'GET',
@@ -943,34 +1047,43 @@ async function cargarSolicitudFondos() {
       },
     })
 
+    console.log('Respuesta recibida:', response.status, response.ok)
+
     if (!response.ok) {
-      throw new Error(`Error en la solicitud: ${response.status}`)
+      throw new Error(`Error HTTP ${response.status}`)
     }
 
     const data = await response.json()
+    console.log('Datos recibidos del API:', data)
 
-    // Filtrar las solicitudes por actividad_id y tarea_id
-    const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
+    // Validar que la respuesta tenga el formato correcto
+    if (!data || !data.solicitudes || !Array.isArray(data.solicitudes)) {
+      throw new Error('Formato de respuesta inválido del servidor')
+    }
 
-      // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
-      const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
-      const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
-      const coincideSolicitud = solicitud.id?.toString() === idSolicitud?.toString()
+    // Buscar la solicitud por ID (parámetro de URL)
+    const solicitudEncontrada = data.solicitudes.find(solicitud =>
+      solicitud.id?.toString() === idSolicitud?.toString()
+    )
 
-      //console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
+    console.log('Solicitud encontrada:', solicitudEncontrada)
 
-      return coincideActividad && coincideTarea && coincideSolicitud
-    })
+    if (!solicitudEncontrada) {
+      throw new Error(`No se encontró la solicitud con ID: ${idSolicitud}`)
+    }
 
-    datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
-    actualizarDatosFormulario(solicitudesFiltradas[0])
+    datosFormulario1.value = solicitudEncontrada
+    actualizarDatosFormulario(solicitudEncontrada)
+
+    console.log('cargarSolicitudFondos completado exitosamente')
 
   } catch (err) {
+    console.error('Error en cargarSolicitudFondos:', err)
     error.value = err.message
-    console.error('Error al cargar solicitudes:', err)
+    throw err // Re-lanzar el error para que onMounted lo capture
   } finally {
     isLoading.value = false
-    cargandoGeneral.value = false
+    console.log('cargarSolicitudFondos - isLoading establecido en:', isLoading.value)
   }
 }
 
@@ -1543,33 +1656,72 @@ function actualizarListasValidadores() {
 const puedeValidarResponsable = computed(() => {
   const usuarioActualId = datosFormulario.value?.usuario?.id
   const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
-  const responsableAsignadoId = formData.value.idresponsable
-
+  const responsableAsignadoId = datosFormulario1.value?.contador_id //se cambio esta seccion para habilitar validadores
   // El usuario puede validar si:
   // 1. Es el responsable asignado
   // 2. Tiene el cargo correspondiente
   return usuarioActualId === responsableAsignadoId &&
-         usuarioActualCargo?.includes('responsable')
+         usuarioActualCargo?.includes('contable')
 })
 
 const puedeValidarCoordinador = computed(() => {
   const usuarioActualId = datosFormulario.value?.usuario?.id
   const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
   const coordinadorAsignadoId = formData.value.idcoordinador
-
   // El usuario puede validar si:
   // 1. Es el coordinador asignado
-  // 2. Tiene el cargo correspondiente
+  //  2. Tiene el cargo correspondiente
   return usuarioActualId === coordinadorAsignadoId &&
          usuarioActualCargo?.includes('coordinador')
 })
 
 // Ciclo de vida
+// onMounted(async () => {
+//   await cargarDatos()
+//   await cargarSolicitudFondos()
+//   await textoProcedencia.value
+// })
+
+// Ciclo de vida
 onMounted(async () => {
-  await cargarDatos()
-  await cargarSolicitudFondos()
-  await textoProcedencia.value
+  console.log('Iniciando carga del formulario...', { idActividad, idSolicitud, idTarea })
+
+  // Verificar parámetros mínimos
+  if (!idActividad || !idSolicitud) {
+    alert('Error: Faltan parámetros necesarios en la URL')
+    router.push('/pei/listaactividades?showButton=1')
+    return
+  }
+
+  try {
+    console.log('1. Cargando datos del formulario...')
+    await cargarDatos()
+
+    // Si cargarDatos falla, no continuar
+    if (error.value) {
+      throw new Error(error.value)
+    }
+
+    await nextTick()
+    console.log('2. Datos del formulario cargados:', datosFormulario.value ? 'OK' : 'ERROR')
+
+    console.log('3. Cargando solicitud de fondos...')
+    await cargarSolicitudFondos()
+
+    console.log('4. Carga completa. Mostrando formulario...')
+
+  } catch (error) {
+    console.error('Error durante la carga:', error)
+    // Redirigir si hay error
+    router.push('/pei/listaactividades?showButton=1')
+  } finally {
+    // Siempre ocultar el overlay de carga después de 3 segundos máximo
+    cargandoGeneral.value = false
+    loading.value = false
+    console.log('5. Estado final - cargandoGeneral:', cargandoGeneral.value)
+  }
 })
+
 </script>
 
 <style scoped>

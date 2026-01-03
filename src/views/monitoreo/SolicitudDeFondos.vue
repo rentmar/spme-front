@@ -350,16 +350,6 @@
                         bg-color="blue-lighten-5"
                         required
                       ></v-text-field>
-                      <!-- <v-select
-                        v-model="formData.forma_pago"
-                        :items="formasPagoOptions"
-                        item-title="formaPago"
-                        item-value="id"
-                        label="Forma de Pago"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-select> -->
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-text-field
@@ -373,7 +363,6 @@
                       ></v-text-field>
                     </v-col>
                   </v-row>
-
                   <v-row>
                     <v-col cols="12" md="6">
                       <v-select
@@ -411,28 +400,7 @@
                       </v-col>
                     </v-row>
                   </div>
-                  <!-- <div v-if="MostrarCamposCheque">
-                    <v-row>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.cheque.nombre_cheque"
-                          label="Nombre a quien se realiza el cheque"
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          :required="MostrarCamposCheque"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.cheque.ci_cheque"
-                          label="Documento de Identidad C.I."
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          :required="MostrarCamposCheque"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                  </div> -->
+
                   <div v-if="MostrarCamposTransferencia">
                     <v-row>
                       <v-col cols="12" md="6">
@@ -578,13 +546,6 @@
   </v-container>
   <pre>{{ formData }}</pre>
   {{ '*******************' }}
-  <!-- <pre>{{ formasPagoOptions }}</pre>
-    {{ '*******************' }} -->
-  <!-- <pre>{{ formData.forma_pago }}</pre>
-    {{ '*******************' }} -->
-  <!-- <pre>{{ formData.correo_coordinador }}</pre>
-    {{ '*******************' }}
-   <pre>{{ formData.correo_contador }}</pre> -->
 </template>
 
 <script setup>
@@ -730,9 +691,6 @@ const MostrarCamposTransferencia = computed(() => {
   //return formaPagoElegido.value.includes('Transferencia Bancaria')
   return formaPagoElegido.value === 'Transferencia Bancaria'
 })
-// const MostrarCamposCheque = computed(() => {
-//   return formaPagoElegido.value.includes('cheque')
-// })
 
 // Propiedades computadas
 const nombreCoordinadorElegido = computed(() => {
@@ -741,13 +699,6 @@ const nombreCoordinadorElegido = computed(() => {
   )
   return coordinador ? getNombreCompleto(coordinador) : ''
 })
-
-// const nombreResponsableElegido = computed(() => {
-//   const responsable = responsablesList.value.find(
-//     (user) => user.id === formData.value.idresponsable,
-//   )
-//   return responsable ? getNombreCompleto(responsable) : ''
-// })
 
 const nombreContadorElegido = computed(() => {
   const contador = contadoresList.value.find((user) => user.id === formData.value.idcontador)
@@ -894,8 +845,6 @@ function getCurrentDate() {
   const day = String(today.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
-//**********************************
-// *********************************
 // ********************************* */
 async function cargarDatos() {
   isLoading.value = true
@@ -1094,8 +1043,6 @@ async function submitForm() {
       contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value,
       tipo: 'sistema',
       prioridad: 3,
-      // accion_url: '',
-      // accion_texto: '',
     }
     await enviarMensajeAutomatico(cuerpoMensaje)
 
@@ -1105,8 +1052,6 @@ async function submitForm() {
       contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value,
       tipo: 'sistema',
       prioridad: 3,
-      // accion_url: '',
-      // accion_texto: '',
     }
 
     exportToExcel()
@@ -1118,7 +1063,6 @@ async function submitForm() {
     try {
       const emailPayload = {
         emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
-        //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Fondos',
@@ -1129,7 +1073,6 @@ async function submitForm() {
           url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
-
       console.log('emailPayload enviado al servidor:', emailPayload)
       const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
@@ -1144,9 +1087,7 @@ async function submitForm() {
       }
     } catch (emailError) {
       console.error('Error al enviar correo de notificación:', emailError)
-      // No detenemos el flujo si falla el envío del correo
     }
-
     ///////////////////////////////////////////////////////////////////////////////
 
     console.log('Respuesta del servidor:', data)
@@ -1177,8 +1118,6 @@ function resetForm() {
     idcontador: null,
     validacion_coordinador: false,
     idcoordinador: null,
-    //id_usuario: 0,
-    //id_actividad: 0,
   })
 }
 

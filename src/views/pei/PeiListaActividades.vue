@@ -748,7 +748,7 @@
                 </v-list-item-subtitle>
                 <template v-slot:append>
                   <v-list-item-title
-                    v-if="solicitudF.validacionCoordinador === true"
+                    v-if="solicitudF.validacionCoordinador === true && solicitudF.validacionResponsable === true"
                     class="font-weight-bold text-success text-right"
                   >
                     <v-icon color="success" end>mdi-check</v-icon>
@@ -804,7 +804,7 @@
 
     <v-dialog v-model="dialogRendicionCuentasValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Rendicion de Cuentas a Solicitud de Fondos"></v-toolbar>
+        <v-toolbar color="primary" title="Validar Rendicion de Cuentas"></v-toolbar>
         <v-card-text>
 
             <template
@@ -907,7 +907,7 @@
 
                 <template v-slot:append>
                   <v-list-item-title
-                    v-if="solicitudF.validacionCoordinador === true"
+                    v-if="solicitudF.validacionCoordinador === true && solicitudF.validacionResponsable === true"
                     class="font-weight-bold text-success text-right"
                   >
                     <v-icon color="success" end>mdi-check</v-icon>
@@ -954,7 +954,7 @@
 
                 <template v-slot:append>
                   <v-list-item-title
-                    v-if="solicitudF.validacionCoordinador === true"
+                    v-if="solicitudF.validacionCoordinador === true && solicitudF.validacionResponsable === true"
                     class="font-weight-bold text-success text-right"
                   >
                     <v-icon color="success" end>mdi-check</v-icon>
@@ -978,7 +978,7 @@
 
       <v-dialog v-model="dialogPagoDirectoValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Viaje"></v-toolbar>
+        <v-toolbar color="primary" title="Validar Solicitud de Pago Directo"></v-toolbar>
         <v-card-text>
 
             <template
@@ -1000,7 +1000,7 @@
 
                 <template v-slot:append>
                   <v-list-item-title
-                    v-if="solicitudF.validacionCoordinador === true"
+                    v-if="solicitudF.validacionCoordinador === true && solicitudF.validacionResponsable === true"
                     class="font-weight-bold text-success text-right"
                   >
                     <v-icon color="success" end>mdi-check</v-icon>

@@ -264,28 +264,6 @@
                       </v-col>
                     </v-row>
                   </div>
-                  <!-- <div v-if="MostrarCamposCheque">
-                    <v-row>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.cheque.nombre_cheque"
-                          label="Nombre a quien se realiza el cheque"
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          :required="MostrarCamposCheque"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.cheque.ci_cheque"
-                          label="Documento de Identidad C.I."
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          :required="MostrarCamposCheque"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                  </div> -->
                   <div v-if="MostrarCamposTransferencia">
                     <v-row>
                       <v-col cols="12" md="6">
@@ -337,34 +315,6 @@
                     </v-row>
                   </div>
                 </div>
-          <!-- <v-select
-            v-model="formData.forma_pago"
-            :items="formasPago"
-            item-title="formaPago"
-            item-value="id"
-            label="Forma de Pago"
-            variant="outlined"
-            bg-color="blue-lighten-5"
-            required
-            readonly
-          ></v-select> -->
-
-          <!-- <div class="form-section">
-            <v-text-field
-              v-model="solicitudDeViaje.lugarSolicitud"
-              bg-color="blue-lighten-5"
-              label="Lugar de la Solicitud"
-              reqsuired
-              readonly
-            ></v-text-field>
-            <v-text-field
-              v-model="solicitudDeViaje.fechaSolicitud"
-              label="Fecha de la Solicitud"
-              type="date"
-              required
-              readonly
-            ></v-text-field>
-          </div> -->
 
           <v-divider class="my-4"></v-divider>
 
@@ -454,10 +404,11 @@
       </v-card-text>
     </v-card>
   </v-container>
-   <!-- <pre>{{ MostrarCamposOtros }}</pre>
-    {{ '*********************B' }}
-   <pre>{{ MostrarCamposTransferencia}}</pre>
-    {{ '*********************B' }} -->
+   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
+    <!-- {{ '*********************B' }}
+    <pre>{{ formData.datos_forma_pago }}</pre> -->
+    <!-- {{ '*********************B' }}
+    {{ formData.id_coordinador }} -->
 </template>
 
 <script setup>
@@ -855,21 +806,19 @@ async function cargarSolicitudesDeViaje() {
     formData.value.id_responsable = solicitudDeViaje.value.responsable_id
     formData.value.id_coordinador = solicitudDeViaje.value.coordinador_id
 
-    //console.log('Datos cargados exitosamente:', JSON.stringify(solicitudDeViaje.value,null,2))
+    //console.log('Datos cargados exitosamente:', JSON.stringify(formData.value.detalle_destino_fondos,null,2))
 
     // Filtrar las solicitudes por actividad_id y tarea_id
     const solicitudesFiltradas = rawData.solicitudes.filter(solicitud => {
-
       // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
       const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
       const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
       const coincideSolicitud = solicitud.id?.toString() === idSolicitud?.toString()
-
       //console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
-
       return coincideActividad && coincideTarea && coincideSolicitud
     })
 
+    //console.log('Solicitudes filtradas:', JSON.stringify(solicitudesFiltradas,null,2))
     datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
     actualizarDatosFormulario(solicitudesFiltradas[0])
   } catch (err) {
@@ -1233,7 +1182,7 @@ function actualizarDatosFormulario(solicitud) {
 
   //console.log('datosFormulario actualizado con los valores de la solicitud:', datosFormulario.value)
 
-  actualizarDetalleDestinoFondos(formDatSF.value.detalleDestinoFondossf)
+  //actualizarDetalleDestinoFondos(formDatSF.value.detalleDestinoFondossf)
 
   // Actualizar los campos de Información Adicional - pasar solicitud directamente
   actualizarInformacionAdicional(solicitud)

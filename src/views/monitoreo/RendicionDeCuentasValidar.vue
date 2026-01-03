@@ -456,14 +456,15 @@
       </div>
     </div>
   </div>
-  <!-- {{ datosRendicionDeCuenta.lugarRendicion }}
+
+  <!-- {{ saldoPorReembolsar }}
   {{ "**************************************" }} -->
-<!-- <pre>{{ datosFormulario }}</pre>
+<!-- <pre>{{ formData.monto_asignado }}</pre>
 {{ "**************************************" }}
-{{formDatSF.lugarSolicitudsf}}
-{{ "**************************************" }}
-{{ formDataRC.lugar_solicitudRC }}
-  {{ "**************************************" }}
+{{formData.monto_gastado}} -->
+<!-- {{ "**************************************" }}
+{{ formDataRC.lugar_solicitudRC }} -->
+  <!-- {{ "**************************************" }}
      <pre>{{ datosRendicionDeCuenta }}</pre> -->
 </template>
 
@@ -627,8 +628,12 @@ const actividadData = ref({
 
 // Propiedades computadas
 const saldoPorReembolsar = computed(() => {
-  const montoAsignado = Number(formData.value.monto_solicitado) || 0;
-  const montoGastado = Number(totalMontoGastado.value) || 0;
+  //const montoAsignado = Number(formData.value.monto_solicitado) || 0;
+  //const montoGastado = Number(totalMontoGastado.value) || 0;
+  const montoAsignado = Number(formData.value.monto_asignado) || 0;
+  const montoGastado = Number(formData.value.monto_gastado) || 0;
+  console.log('montoAsignado', montoAsignado);
+  console.log('montoGastado', montoGastado);
   return (montoAsignado - montoGastado).toFixed(2);
 });
 
@@ -1705,7 +1710,7 @@ const puedeValidarAdministrador = computed(() => {
   const administradorAsignadoId = formDataRC.value.idadministrador || formData.value.idadministrador
 
   return usuarioActualId === administradorAsignadoId &&
-         usuarioActualCargo?.includes('administrador')
+         usuarioActualCargo?.includes('admin')
 })
 
 function getCurrentDate1() {
