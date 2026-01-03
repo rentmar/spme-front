@@ -99,7 +99,7 @@ export const peiServicios = {
   /* Estructura del pei */
   obtenerEstructuraPeiPorId: async (idpei) => {
     try {
-      const respuesta = await api.get('/pei/' + idpei + '/estructura/')
+      const respuesta = await api.get('/pei/estructura/' + idpei + '/')
       return respuesta.data
     } catch (err) {
       console.error('Axios: no se pudo obtener la estructura del pei: ' + idpei, err)
