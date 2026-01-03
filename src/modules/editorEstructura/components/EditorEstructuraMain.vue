@@ -55,6 +55,7 @@
         @addResultadoOE="(payload) => ejecutarAccion('addResultadoOE', payload)"
         @addProductoOE="(payload) => ejecutarAccion('addProductoOE', payload)"
         @addProducto="(payload) => ejecutarAccion('addProducto', payload)"
+        @addProcesoOE="(payload) => ejecutarAccion('addProcesoOE', payload)"
       ></ObjetivoespecificoOGNodo>
     </template>
     <!--Nodo KPI-->
@@ -138,6 +139,9 @@
         v-bind="nodeProps"
         @addActividadProcProdOE="(payload) => ejecutarAccion('addActividadProcProdOE', payload)"
       ></ProcesoProductoObjEspec>
+    </template>
+    <template #node-procesooe="nodeProps">
+      <ProcesoObjetivoEspecifico v-bind="nodeProps"></ProcesoObjetivoEspecifico>
     </template>
     <!--Nodo Actividad Resultado OG-->
     <template #node-actividadrog="nodeProps">
@@ -305,6 +309,7 @@ import IndicadorResultadoObjEspecifico from './nodos/IndicadorResultadoObjEspeci
 import ProcesoResultadoObjGeneral from './nodos/ProcesoResultadoObjGeneral.vue'
 import ProcesoResultadoObjEspec from './nodos/ProcesoResultadoObjEspec.vue'
 import ProcesoProductoObjEspec from './nodos/ProcesoProductoObjEspec.vue'
+import ProcesoObjetivoEspecifico from './nodos/ProcesoObjetivoEspecifico.vue'
 import ActividadNodo from './nodos/ActividadNodo.vue'
 import ActividadRogNodo from './nodos/ActividadRogNodo.vue'
 import ActividadPoeNodo from './nodos/ActividadPoeNodo.vue'

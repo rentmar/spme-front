@@ -34,8 +34,15 @@
         </template>
       </v-list-item>
       <!--Agregar Producto General-->
-      <v-list-item class="custom-menu-item" @click="agregarProductoGeneral">
+      <!-- <v-list-item class="custom-menu-item" @click="agregarProductoGeneral">
         <v-list-item-title>Agregar Producto</v-list-item-title>
+        <template v-slot:prepend>
+          <v-icon :icon="'mdi-flag-checkered'"></v-icon>
+        </template>
+      </v-list-item> -->
+      <!--Agregar Proceso-->
+      <v-list-item class="custom-menu-item" @click="agregarProcesoObjEsp">
+        <v-list-item-title>Agregar Proceso Objetivo Especifico</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-flag-checkered'"></v-icon>
         </template>
@@ -55,6 +62,7 @@ import { reactive, inject } from 'vue'
 import { useIndicadores } from '@/modules/proyecto/composables/useIndicadores'
 import { useResultados } from '@/modules/proyecto/composables/useResultados'
 import { useProductos } from '@/modules/proyecto/composables/useProductos'
+import { useProcesos } from '@/modules/proyecto/composables/useProcesos'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -68,6 +76,7 @@ const datosNodoProyecto = reactive(props.data.datosNodo || {})
 const { indicadorObjetivoEspecifico, crearIndicadorObjEspecifico } = useIndicadores()
 const { crearResultadoOe, resultadoOe, error } = useResultados()
 const { crearProductoOe, productoOe, productoGral, crearProductoGeneral } = useProductos()
+const { procesos, crearProceso } = useProcesos()
 
 //Id mapa de estructura
 const proyectoEstructura = inject('proyectoEstructura')
@@ -77,7 +86,6 @@ const mapaNodoId = proyectoEstructura.value.mapa_nodo.id
 const { findNode } = useVueFlow()
 const currentNode = findNode(props.id)
 const idCurrenNode = currentNode.data.nodoProyecto.id
-// console.log(idCurrenNode)
 
 const handleStyle = {
   width: '12px',
@@ -86,7 +94,13 @@ const handleStyle = {
   borderRadius: '50%',
 }
 
-const emit = defineEmits(['addIndicadorOE', 'addResultadoOE', 'addProductoOE', 'addProducto'])
+const emit = defineEmits([
+  'addIndicadorOE',
+  'addResultadoOE',
+  'addProductoOE',
+  'addProducto',
+  'addProcesoOE',
+])
 
 /* Funciones */
 const agregarIndicadorOE = async () => {
@@ -282,6 +296,45 @@ const agregarProductoGeneral = async () => {
     emit('addProducto', payload)
   } catch (err) {
     console.log('ERROR: ', err)
+  }
+}
+
+//Agregar nodo de Procedo OE
+const agregarProcesoObjEsp = async () => {
+  const procesoObjEsp = {
+    codigo: 'PROC-OE',
+    titulo: 'Proceso Objetivo Especifico',
+    descripcion: 'Descripcion del Proceso OE',
+    resultado_og: null,
+    resultado_oe: null,
+    producto_oe: null,
+    objetivo_especifico: idCurrenNode,
+  }
+  try {
+    console.log(procesoObjEsp)
+    await crearProceso(procesoObjEsp)
+    console.log('Proceso creado: ', procesos)
+    const payload = {
+      sourceId: currentNode.id.toString(),
+      meta: {
+        label: 'Procesos OE',
+        type: 'procesooe',
+        mapaNodoId: mapaNodoId.toString(),
+        nodoProyecto: {
+          id: procesos.value.id,
+          codigo: procesos.value.codigo,
+          titulo: procesos.value.titulo,
+          descripcion: procesos.value.descripcion,
+          resultado_og: procesos.value.resultado_og,
+          resultado_oe: procesos.value.resultado_oe,
+          producto_oe: procesos.value.producto_oe,
+          objetivo_especifico: procesos.value.objetivo_especifico,
+        },
+      },
+    }
+    emit('addProcesoOE', payload)
+  } catch (err) {
+    console.error('ERROR AL Crear el NODO: procesooe ', err)
   }
 }
 </script>

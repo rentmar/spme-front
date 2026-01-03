@@ -209,6 +209,12 @@ export default function useNodeEvents() {
       mensaje.value = 'Procesos para Producto OE creado'
       return result
     },
+    /* Agregar Proceso Objetivo Especifico */
+    addProcesoOE: (payload) => {
+      const result = handleNodeCreation('procesooe', 'Proceso OE', payload.sourceId, payload.meta)
+      mensaje.value = 'Procesos para Objetivo Especifico creado'
+      return result
+    },
     /* Agregar Actividd Resultado OG  */
     addActividadResOG: (payload) => {
       const result = handleNodeCreation(

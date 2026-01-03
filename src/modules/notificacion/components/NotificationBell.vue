@@ -598,7 +598,7 @@ onMounted(() => {
     if (!dialogoVisible.value) {
       cargarDatos()
     }
-  }, tiempoRecarga) // Recargar cada 30 segundos
+  }, tiempoRecarga) // Recargar
 })
 
 onUnmounted(() => {

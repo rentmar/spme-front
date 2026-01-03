@@ -155,6 +155,7 @@ const colorNodo = computed(() => {
       procesorog: '#FF5722',
       procesoroe: '#FF5722',
       procesopoe: '#FF5722',
+      procesooe: '#FF5722',
       actividad: '#9C27B0',
       actividadrog: '#9C27B0',
       actividadpoe: '#9C27B0',
