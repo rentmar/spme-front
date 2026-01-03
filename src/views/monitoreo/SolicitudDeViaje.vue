@@ -430,14 +430,14 @@
       </v-card-text>
     </v-card>
   </v-container>
-    <!-- <pre>{{ correo_contador }}</pre>
-    {{ '*********************A' }}
-    <pre>{{ correo_coordinador }}</pre>
-    {{ '*********************A' }}
-   <pre>{{coordinadoresList}}</pre>
-    {{ '*********************A' }}
-    <pre>{{ contadoresList }}</pre>
-    {{ '*********************A' }}
+    <!-- <pre>{{ formData.id_responsable }}</pre> -->
+    <!-- {{ '*********************A' }}
+    <pre>{{ formData.id_coordinador }}</pre> -->
+    <!-- {{ '*********************A' }}
+   <pre>{{coordinadoresList}}</pre> -->
+    <!-- {{ '*********************A' }}
+    <pre>{{ contadoresList }}</pre> -->
+    <!-- {{ '*********************A' }}
     <pre>{{ responsablesList }}</pre> -->
 </template>
 
@@ -451,12 +451,14 @@ import ActividadInformacion from '@/modules/proyecto/components/partials/Activid
 import axios from 'axios';
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx';
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
 
+//Routes
+const router = useRouter()
 const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
@@ -788,6 +790,21 @@ async function submitForm() {
       throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.');
     }
 
+            // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+    const coordinadorSeleccionado = coordinadoresList.value.find(
+      (coordinador) => coordinador.id === formData.value.idcoordinador
+    )
+    const contadorSeleccionado = contadoresList.value.find(
+      (contador) => contador.id === formData.value.idcontador
+    )
+
+    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+    const correoContadorActual = contadorSeleccionado?.correo || ''
+
+    // Actualizar los valores en formData
+    formData.value.correo_coordinador = correoCoordinadorActual
+    formData.value.correo_contador = correoContadorActual
+
     const payload = {
       ...formData.value,    //esta linea incluye todas las propiedades de formData
       id_usuario: usuario.value.id || 0,
@@ -836,23 +853,35 @@ async function submitForm() {
       contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormularioSF.value,
       tipo: 'sistema',
       prioridad: 3,
-      accion_url: '',
-      accion_texto: '',
+      // accion_url: '',
+      // accion_texto: '',
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    const cuerpoMensaje2 = {
+      destinatario_id: payload.contador_id,
+      asunto: 'Solicitud de Viaje',
+      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormularioSF.value,
+      tipo: 'sistema',
+      prioridad: 3,
+      // accion_url: '',
+      // accion_texto: '',
     }
 
     exportToExcel()
     resetForm()
 
-    await enviarMensajeAutomatico(cuerpoMensaje)
+    await enviarMensajeAutomatico(cuerpoMensaje2)
 
     ///////// Enviar notificación por correo al coordinador y al contador//////////
     try {
       const emailPayload = {
+        emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
         //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
-        emails: [correo_coordinador.value, correo_contador.value],
+
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
-          titulo: 'Formulario Sol. Fondos',
+          titulo: 'Formulario Sol. Viaje',
           solicitante: nombreCompletoSolicitante.value,
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
@@ -862,13 +891,11 @@ async function submitForm() {
       }
 
       console.log('emailPayload enviado al servidor:', emailPayload)
-      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
-        {
+      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(emailPayload),
-        },
-      )
+        })
 
       if (emailResponse.ok) {
         console.log('Correo de notificación enviado exitosamente')

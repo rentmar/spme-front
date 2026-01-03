@@ -1094,7 +1094,7 @@ async function validarSolicitud() {
   loading.value = true
   try {
     const response = await fetch(
-      baseurl+'/monitoreo_api/actualizar-validacion-solicitud-fondos/',
+      baseurl+'/monitoreo_api/actualizar-validacion-solicitud-pago-directo/',
       {
         method: 'PATCH',
         headers: {
@@ -1530,13 +1530,14 @@ function actualizarListasValidadores() {
 const puedeValidarResponsable = computed(() => {
   const usuarioActualId = datosFormulario.value?.usuario?.id
   const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
-  const responsableAsignadoId = formData.value.idresponsable
+  //const responsableAsignadoId = formData.value.idresponsable
+  const responsableAsignadoId = datosFormulario1.value?.contador_id
 
   // El usuario puede validar si:
   // 1. Es el responsable asignado
   // 2. Tiene el cargo correspondiente
   return usuarioActualId === responsableAsignadoId &&
-         usuarioActualCargo?.includes('responsable')
+         usuarioActualCargo?.includes('contable')
 })
 
 const puedeValidarCoordinador = computed(() => {

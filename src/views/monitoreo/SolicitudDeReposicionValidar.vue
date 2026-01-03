@@ -398,9 +398,7 @@
                       <v-text-field
                         v-model="formData.datos_forma_pago.otros.ci_otros"
                         label="Documento de Identidad C.I."
-                        type="date"
                         variant="outlined"
-                        density="compact"
                         bg-color="grey-lighten-4"
                         readonly
                       ></v-text-field>
@@ -563,7 +561,7 @@
       </v-row>
     </div>
   </v-container>
-
+<!-- <pre>{{ formData }}</pre> -->
   <!-- {{ '***************************************B' }}
   <pre>{{ datosFormulario1 }}</pre> -->
   <!-- <pre>{{ datosSolicitudDeReposicion }}</pre>
@@ -803,6 +801,7 @@ watch(
     if (newVal && newVal.detalleDestinoFondos) {
       actualizarDetalleDestinoFondos(newVal.detalleDestinoFondos)
     }
+    formData.value.idresponsable = newVal.responsable_id
   },
   { deep: true }
 )
@@ -1013,7 +1012,7 @@ async function cargarSolicitudDeReposicion() {
     }
 
     const data = await response.json()
-    //console.log('SoicitudDeReposicion Recibido:', JSON.stringify(data,null,2))
+    console.log('SoicitudDeReposicion Recibido:', JSON.stringify(data,null,2))
 
     // Filtrar las solicitudes por actividad_id y tarea_id
     const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
@@ -1027,6 +1026,7 @@ async function cargarSolicitudDeReposicion() {
 
     datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
     actualizarDatosFormulario(solicitudesFiltradas[0])
+    console.log('datos de formulario:', JSON.stringify(datosFormulario1.value,null,2))
 
   } catch (err) {
     error.value = err.message
@@ -1170,7 +1170,7 @@ async function validarSolicitud() {
   loading.value = true
   try {
     const response = await fetch(
-      baseurl+'/monitoreo_api/actualizar-validacion-solicitud-fondos/',
+      baseurl+'/monitoreo_api/actualizar-validacion-solicitud-reembolso/',
       {
         method: 'PATCH',
         headers: {
@@ -1566,7 +1566,7 @@ function actualizarValidadores() {
     validador => validador.id === formDatSF.value.coordinador_idsf
   )
 
-  // Actualizar formData con los IDs encontrados
+  //Actualizar formData con los IDs encontrados
   if (responsable) {
     formData.value.idresponsable = responsable.id
     //console.log('Responsable encontrado:', getNombreCompleto(responsable))
@@ -1605,13 +1605,14 @@ function actualizarListasValidadores() {
 const puedeValidarResponsable = computed(() => {
   const usuarioActualId = datosFormulario.value?.usuario?.id
   const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
-  const responsableAsignadoId = formData.value.idresponsable
+  //const responsableAsignadoId = formData.value.idresponsable
+  const responsableAsignadoId = datosFormulario1.value?.responsable_id
 
   // El usuario puede validar si:
   // 1. Es el responsable asignado
   // 2. Tiene el cargo correspondiente
   return usuarioActualId === responsableAsignadoId &&
-         usuarioActualCargo?.includes('responsable')
+         usuarioActualCargo?.includes('contable')
 })
 
 const puedeValidarCoordinador = computed(() => {
