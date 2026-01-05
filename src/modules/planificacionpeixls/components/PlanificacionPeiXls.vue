@@ -36,23 +36,19 @@
             </template>
           </v-tooltip>
           <v-dialog v-model="mostrarModalActividad" fullscreen>
-            <v-card>
+            <v-card class="d-flex flex-column">
               <v-toolbar>
                 <v-btn icon="mdi-close" @click="cerrarNuevaActividad"></v-btn>
-
                 <v-toolbar-title>Agregar Nueva Actividad/Proceso </v-toolbar-title>
-
                 <v-toolbar-items>
                   <!-- <v-btn text="Guardar" variant="text"></v-btn> -->
                 </v-toolbar-items>
               </v-toolbar>
-              <v-card-text>
-                <v-card-text>
-                  <SeleccionEstructuraActividadPei
-                    :pei-data="storePeiPlanificacion.estructuraPeiSeleccionado"
-                    @crear-actividad="onActividadCreada"
-                  ></SeleccionEstructuraActividadPei>
-                </v-card-text>
+              <v-card-text class="flex-grow-1 pa-0">
+                <SeleccionEstructuraActividadPei
+                  :pei-data="storePeiPlanificacion.estructuraPeiSeleccionado"
+                  @crear-actividad="onActividadCreada"
+                ></SeleccionEstructuraActividadPei>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -199,8 +195,10 @@
       </div>
     </div>
   </div>
+  {{ tableData }}
+  <br /><br /><br />
+  {{ storePeiPlanificacion.actividadesPeiSeleccionado }}
 </template>
-
 <script setup>
 //Tabla
 import HotTable from '@handsontable/vue3'
@@ -266,7 +264,7 @@ const listaUsuarios = computed(() => {
 const listaTipos = computed(() => {
   return (
     storePlanificacion.listaTiposAct
-      ?.map((t) => t.sigla + ' - ' + t.tipo_actividad)
+      ?.map((t) => `${t.sigla} - ${t.tipo_actividad}`)
       .filter((item) => item) || []
   )
 })
@@ -275,43 +273,74 @@ const listaTipos = computed(() => {
 const columns = computed(() => [
   { data: 'id', title: 'ID', type: 'numeric', width: 50, readOnly: true },
   { data: 'codigo', title: 'Código', width: 120 },
-  { data: 'nombreCorto', title: 'Nombre Corto', width: 200 },
-  { data: 'descripcion', title: 'Descripción', width: 300 },
-  { data: 'supuestos', title: 'Supuestos', width: 300 },
-  { data: 'riesgos', title: 'Riesgos', width: 300 },
-  { data: 'estado', title: 'Estado', width: 100 },
+  { data: 'nombreCorto', title: 'Nombre Corto', width: 150 },
   {
     data: 'tipo',
     title: 'Tipo de Actividad',
     type: 'dropdown',
     width: 250,
-    source: listaTipos.value, // Usar el computed directamente
+    source: listaTipos.value,
   },
-  { data: 'fecha_inicio', title: 'Fecha Inicio', width: 110, type: 'date' },
-  { data: 'fecha_cierre', title: 'Fecha Cierre', width: 110, type: 'date' },
-  { data: 'procedencia_fondos', title: 'Procedencia Fondos', width: 110 },
-  { data: 'presupuesto', title: 'Presupuesto', width: 120, type: 'numeric' },
   {
-    data: 'responsable', // Cambiar a username para el dropdown
+    data: 'responsable',
     title: 'Responsable',
     type: 'dropdown',
+    width: 100,
+    source: listaUsuarios.value,
+  },
+  { data: 'fecha_inicio', title: 'Fecha Inicio', width: 120, type: 'date' },
+  { data: 'fecha_cierre', title: 'Fecha Cierre', width: 120, type: 'date' },
+  { data: 'supuestos', title: 'Supuestos', width: 150 },
+  { data: 'riesgos', title: 'Riesgos', width: 150 },
+  { data: 'presupuesto', title: 'Presupuesto', width: 120, type: 'numeric' },
+  {
+    data: 'procedencia_fondos',
+    title: 'Procedencia Fondos',
     width: 150,
-    source: listaUsuarios.value, // Usar el computed directamente
+    renderer: function (instance, td, row, col, prop, value) {
+      if (value && Array.isArray(value)) {
+        const total = value.reduce((sum, item) => sum + (parseFloat(item.monto) || 0), 0)
+        td.innerHTML = formatCurrency(total)
+      } else if (typeof value === 'string') {
+        td.innerHTML = value
+      } else if (value) {
+        td.innerHTML = JSON.stringify(value)
+      } else {
+        td.innerHTML = ''
+      }
+      return td
+    },
+  },
+  {
+    data: 'presupuestoGlobal',
+    title: 'Presup. Global',
+    type: 'numeric',
+    width: 120,
+  },
+  {
+    data: 'totalReportado',
+    title: 'Total Reportado',
+    type: 'numeric',
+    width: 120,
+  },
+  {
+    data: 'totalEjecutado',
+    title: 'Total Ejecutado',
+    type: 'numeric',
+    width: 120,
+  },
+  { data: 'saldo', title: 'Saldo', type: 'numeric', width: 120, readOnly: true },
+  {
+    data: 'estado',
+    title: 'Estado',
+    width: 100,
+    type: 'dropdown',
+    source: ['CRD', 'PLAN', 'RETR', 'REPROG', 'EJEC', 'REP', 'FIN'],
   },
   {
     data: 'gradoEjecucion',
-    title: 'Grado de Ejecucion',
-    type: 'dropdown',
+    title: 'Grado Ejecución',
     width: 150,
-    source: [
-      'CRD-Creada',
-      'PLAN-Planificada',
-      'RETR-Retraso',
-      'REPROG-Reprogramacion',
-      'EJEC-En Ejecucion',
-      'REP-En Reporte',
-      'FIN-Finalizado',
-    ],
   },
 ])
 
@@ -321,15 +350,35 @@ const handleChange = (changes, source) => {
     changes.forEach(([row, prop, oldValue, newValue]) => {
       console.log(`Cambio en fila ${row}, columna ${prop}: ${oldValue} -> ${newValue}`)
 
-      // Si cambia el responsable (username), actualizar el ID correspondiente
-      if (prop === 'responsable_username' && newValue !== oldValue) {
+      const rowData = tableData.value[row]
+
+      // Actualizar el responsable
+      if (prop === 'responsable') {
         const usuario = storePlanificacion.listaUsuariosCompleta?.find(
           (user) => user.username === newValue,
         )
         if (usuario) {
-          tableData.value[row].responsable_id = usuario.id
+          rowData.responsable_id = usuario.id
           console.log(`Responsable actualizado: ID ${usuario.id}, Username: ${newValue}`)
         }
+      }
+
+      // Actualizar el tipo de actividad
+      if (prop === 'tipo') {
+        // Extraer solo la sigla del dropdown (ej: "NODEF - No definido" -> "NODEF")
+        const sigla = newValue.split(' - ')[0]
+        const tipoObj = storePlanificacion.listaTiposAct?.find((t) => t.sigla === sigla)
+        if (tipoObj) {
+          rowData.tipo_id = tipoObj.id
+          console.log(`Tipo actualizado: ID ${tipoObj.id}, Sigla: ${sigla}`)
+        }
+      }
+
+      // Actualizar la tabla inmediatamente
+      if (hotTable.value?.hotInstance) {
+        setTimeout(() => {
+          hotTable.value.hotInstance.render()
+        }, 50)
       }
     })
   }
@@ -338,7 +387,7 @@ const handleChange = (changes, source) => {
 //Esconder columnas
 const hiddenColumnsConfig = computed(() => {
   return {
-    columns: [10],
+    columns: [],
   }
 })
 
@@ -347,14 +396,7 @@ const hiddenColumnsConfig = computed(() => {
 const selectedRowData = ref(null)
 const handleSelection = (startRow, startCol, endRow, endCol, selectionLayer) => {
   if (startRow === endRow) {
-    const rowData = hotTable.value.hotInstance.getDataAtRow(startRow)
-    const rowObject = {}
-    columns.value.forEach((col, index) => {
-      if (col.data) {
-        rowObject[col.data] = rowData[index]
-      }
-    })
-    selectedRowData.value = rowObject
+    selectedRowData.value = tableData.value[startRow]
   } else {
     selectedRowData.value = null
   }
@@ -370,39 +412,52 @@ const guardarPlanificacion = async () => {
     warningMsg('No hay actividades para guardar', 3000)
     return
   }
+
   try {
-    await peiServicios.guardarActividadesPeiBulk(tableData.value)
+    // Preparar datos para guardar
+    const actividadesActualizadas = tableData.value.map((actividad) => {
+      const usuario = storePlanificacion.listaUsuariosCompleta?.find(
+        (user) => user.username === actividad.responsable,
+      )
+
+      // Extraer sigla del tipo (ej: "NODEF - No definido" -> "NODEF")
+      let tipoSigla = 'NODEF'
+      if (actividad.tipo && actividad.tipo.includes(' - ')) {
+        tipoSigla = actividad.tipo.split(' - ')[0]
+      }
+
+      const tipoObj = storePlanificacion.listaTiposAct?.find((t) => t.sigla === tipoSigla)
+
+      return {
+        id: actividad.id,
+        codigo: actividad.codigo,
+        nombreCorto: actividad.nombreCorto,
+        descripcion: actividad.descripcion,
+        supuestos: actividad.supuestos,
+        riesgos: actividad.riesgos,
+        estado: actividad.estado,
+        tipo_id: tipoObj?.id || 1,
+        fecha_inicio: actividad.fecha_inicio,
+        fecha_cierre: actividad.fecha_cierre,
+        presupuesto: actividad.presupuesto,
+        responsable_id: usuario?.id || null,
+        gradoEjecucion: actividad.gradoEjecucion,
+        procedencia_fondos: actividad.procedencia_fondos,
+        presupuestoGlobal: actividad.presupuestoGlobal,
+        totalReportado: actividad.totalReportado,
+        totalEjecutado: actividad.totalEjecutado,
+        saldo: actividad.saldo,
+      }
+    })
+
+    console.log('Actividades a guardar:', actividadesActualizadas)
+
+    await peiServicios.guardarActividadesPeiBulk(actividadesActualizadas)
     successMsg('Planificación guardada exitosamente', 3000)
   } catch (err) {
     console.error('No se actualizo la planificacion', err)
+    errorMsg('Error al guardar: ' + err.message, 5000)
   }
-
-  // Preparar datos para guardar
-  // const actividadesActualizadas = tableData.value.map((actividad) => {
-  //   const usuario = storePlanificacion.listaUsuariosCompleta?.find(
-  //     (user) => user.username === actividad.responsable_username,
-  //   )
-
-  //   return {
-  //     id: actividad.id,
-  //     codigo: actividad.codigo,
-  //     nombreCorto: actividad.nombreCorto,
-  //     descripcion: actividad.descripcion,
-  //     supuestos: actividad.supuestos,
-  //     riesgos: actividad.riesgos,
-  //     estado: actividad.estado,
-  //     tipo_actividad: actividad.tipo,
-  //     fecha_inicio: actividad.fecha_inicio,
-  //     fecha_cierre: actividad.fecha_cierre,
-  //     presupuesto: actividad.presupuesto,
-  //     responsable_id: usuario?.id || null,
-  //     gradoEjecucion: actividad.gradoEjecucion,
-  //   }
-  // })
-
-  // console.log('Actividades a guardar:', actividadesActualizadas)
-  // confirmacionModal.value = true
-  // successMsg('Planificación guardada exitosamente', 3000)
 }
 
 //Agregar nueva actividad
@@ -417,15 +472,40 @@ const cerrarNuevaActividad = () => {
 // Cuando se crea una nueva actividad desde el componente hijo
 const onActividadCreada = (nuevaActividad) => {
   // Agregar la nueva actividad a la tabla
+  //const actividadFormateada = formatearActividadParaTabla(nuevaActividad)
+  //tableData.value.push(actividadFormateada)
+  console.log('Actividad creada Rx: ', nuevaActividad)
   const actividadFormateada = formatearActividadParaTabla(nuevaActividad)
   tableData.value.push(actividadFormateada)
   mostrarModalActividad.value = false
+
   successMsg('Actividad agregada a la planificación', 3000)
+
+  // Actualizar la tabla
+  if (hotTable.value?.hotInstance) {
+    setTimeout(() => {
+      hotTable.value.hotInstance.render()
+    }, 100)
+  }
 }
 
 //Exportar a Excel
 const exportarExcel = () => {
-  // Implementar exportación a Excel
+  if (hotTable.value?.hotInstance) {
+    hotTable.value.hotInstance.getPlugin('exportFile').downloadFile('csv', {
+      filename: `planificacion-pei-${peiIdNumerico.value}`,
+      bom: false,
+      columnDelimiter: ',',
+      columnHeaders: true,
+      rowHeaders: true,
+      exportHiddenColumns: true,
+      exportHiddenRows: true,
+      fileExtension: 'csv',
+      mimeType: 'text/csv',
+      rtl: false,
+      sheetName: 'Planificación',
+    })
+  }
   successMsg('Exportando a Excel...', 3000)
 }
 
@@ -451,34 +531,110 @@ const formatDate = (dateString) => {
 
 // Función para obtener el username por ID
 const obtenerUsernamePorId = (id) => {
-  if (!id) return 'No asignado'
+  if (!id) return null
   const usuario = storePlanificacion.listaUsuariosCompleta?.find((user) => user.id === id)
-  return usuario?.username || 'No asignado'
+  return usuario?.username || null
+}
+
+//Funcion para formatear el tipo de actividad
+
+const formatearTipoPorId = (tipoId) => {
+  // Valor por defecto
+  const tipoPorDefecto = 'NODEF - No definido'
+
+  // Si no hay tipoId válido, devolver valor por defecto
+  if (tipoId === null || tipoId === undefined || tipoId === '') {
+    return tipoPorDefecto
+  }
+
+  // Convertir a número si es string
+  const id = typeof tipoId === 'string' ? parseInt(tipoId, 10) : tipoId
+
+  // Verificar que sea un número válido
+  if (isNaN(id)) {
+    return tipoPorDefecto
+  }
+
+  // Acceder a la lista de tipos del store
+  const listaTiposAct = storePlanificacion?.listaTiposAct
+
+  // Si no existe la lista, devolver valor por defecto
+  if (!listaTiposAct || !Array.isArray(listaTiposAct)) {
+    return tipoPorDefecto
+  }
+
+  // Buscar el tipo por ID en la lista
+  // Nota: El store tiene estructura especial de Vue DevTools, accedemos al valor real
+  const tipoEncontrado = listaTiposAct.find((tipoItem) => {
+    // Manejar la estructura especial del store (con _custom para Vue DevTools)
+    if (tipoItem._custom) {
+      return tipoItem._custom.value.id === id
+    }
+    // Si no tiene estructura _custom, es el objeto directo
+    return tipoItem.id === id
+  })
+
+  // Si se encontró, formatear
+  if (tipoEncontrado) {
+    // Extraer el objeto real de la estructura
+    const tipoObj = tipoEncontrado._custom ? tipoEncontrado._custom.value : tipoEncontrado
+
+    if (tipoObj.sigla && tipoObj.tipo_actividad) {
+      return `${tipoObj.sigla} - ${tipoObj.tipo_actividad}`
+    }
+  }
+
+  // Si no se encuentra, devolver con el ID
+  return `TIPO-${id} - Desconocido`
 }
 
 /***************** FUNCIONES PARA FORMATEAR DATOS ***********************/
 const formatearActividadParaTabla = (actividad) => {
   // Obtener el username del responsable
-  const responsableUsername = obtenerUsernamePorId(actividad.responsable?.id)
+  const responsableUsername = obtenerUsernamePorId(
+    actividad.responsable?.id || actividad.responsable_id,
+  )
+
+  // Formatear el tipo para el dropdown
+  let tipoFormateado = 'NODEF - No definido'
+  if (actividad.tipo) {
+    if (typeof actividad.tipo === 'object') {
+      tipoFormateado = `${actividad.tipo.sigla} - ${actividad.tipo.tipo_actividad}`
+    } else if (typeof actividad.tipo === 'string' && actividad.tipo.includes(' - ')) {
+      tipoFormateado = actividad.tipo
+    } else {
+      // Usar la nueva función
+      tipoFormateado = formatearTipoPorId(actividad.tipo)
+    }
+  } else if (actividad.tipo_id) {
+    // Si viene tipo_id en lugar de tipo
+    tipoFormateado = formatearTipoPorId(actividad.tipo_id)
+  }
+
+  // Procesar procedencia_fondos
+  let procedenciaFondos = actividad.procedencia_fondos || ''
 
   return {
-    id: actividad.id,
+    id: actividad.id || 0,
     codigo: actividad.codigo || '',
     nombreCorto: actividad.nombreCorto || '',
     descripcion: actividad.descripcion || '',
     supuestos: actividad.supuestos || '',
     riesgos: actividad.riesgos || '',
-    estado: actividad.estado || 'PLAN',
-    tipo: actividad.tipo?.tipo_actividad || actividad.tipo?.sigla || 'No definido',
-    fecha_inicio: actividad.fecha_inicio || '',
+    estado: actividad.estado || 'CRD',
+    tipo: tipoFormateado,
+    fecha_inicio: actividad.fecha_inicio || actividad.fecha_programada || '',
     fecha_cierre: actividad.fecha_cierre || '',
-    procedencia_fondos: actividad.procedencia_fondos || '',
+    procedencia_fondos: procedenciaFondos || [],
     presupuesto: actividad.presupuesto || '0.00',
+    presupuestoGlobal: actividad.presupuestoGlobal || '0.00',
+    totalReportado: actividad.totalReportado || '0.00',
+    totalEjecutado: actividad.totalEjecutado || '0.00',
+    saldo: actividad.saldo || '0.00',
     responsable: responsableUsername || null,
     gradoEjecucion: actividad.gradoEjecucion || '',
   }
 }
-
 const cargarActividadesEnTabla = () => {
   if (
     storePeiPlanificacion.actividadesPeiSeleccionado &&
@@ -487,6 +643,7 @@ const cargarActividadesEnTabla = () => {
     tableData.value = storePeiPlanificacion.actividadesPeiSeleccionado.map((actividad) =>
       formatearActividadParaTabla(actividad),
     )
+    console.log('Actividades cargadas en tabla:', tableData.value)
     successMsg(`${tableData.value.length} actividades cargadas`, 3000)
   } else {
     tableData.value = []
@@ -513,6 +670,24 @@ watch(
             columns: columns.value,
           })
         }, 100)
+      }
+    }
+  },
+  { deep: true },
+)
+
+// Watch para recargar actividades cuando cambien
+watch(
+  () => storePeiPlanificacion.actividadesPeiSeleccionado,
+  (nuevasActividades) => {
+    if (nuevasActividades?.length > 0) {
+      console.log('Actividades actualizadas, recargando tabla...')
+      cargarActividadesEnTabla()
+
+      if (hotTable.value?.hotInstance) {
+        setTimeout(() => {
+          hotTable.value.hotInstance.render()
+        }, 200)
       }
     }
   },
@@ -572,7 +747,6 @@ const cerrarDialogo = () => {
 
 const crearNuevaTarea = async (payload) => {
   try {
-    //await crearUnaTarea(payload)
     await peiServicios.crearTareaPei(payload)
     console.log('SUBACTIVIDAD: ', payload)
     mostrarDialogoSubactividad.value = false

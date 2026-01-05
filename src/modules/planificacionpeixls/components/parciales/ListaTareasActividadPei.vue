@@ -29,7 +29,7 @@
     <div class="toolbar-tareas">
       <div class="toolbar-main">
         <!-- Búsqueda -->
-        <div class="search-row">
+        <div class="search-container">
           <v-text-field
             v-model="busqueda"
             placeholder="Buscar tareas..."
@@ -42,8 +42,21 @@
           ></v-text-field>
         </div>
 
-        <!-- Botón Crear Tarea -->
-        <div class="crear-row">
+        <!-- Botones alineados horizontalmente -->
+        <div class="buttons-container">
+          <!-- Botón Refrescar -->
+          <v-btn
+            color="primary"
+            variant="outlined"
+            size="small"
+            @click="cargarInformacion"
+            class="btn-refrescar"
+          >
+            <v-icon left size="16">mdi-refresh</v-icon>
+            Refrescar
+          </v-btn>
+
+          <!-- Botón Crear Tarea -->
           <v-btn
             color="primary"
             variant="flat"
@@ -338,33 +351,6 @@ const manejarGuardarTarea = async (payload) => {
   }
 }
 
-// const cambiarEstadoTarea = async (tarea) => {
-//   try {
-//     const nuevosEstados = {
-//       PEN: 'EPROG',
-//       EPROG: 'COMPL',
-//       COMPL: 'PEN',
-//     }
-//     const nuevoEstado = nuevosEstados[tarea.estado]
-
-//     // Actualizar estado localmente inmediatamente
-//     const index = tareasLocales.value.findIndex((t) => t.id === tarea.id)
-//     if (index !== -1) {
-//       tareasLocales.value[index].estado = nuevoEstado
-//     }
-
-//     // Actualizar en el servidor
-//     await peiServicios.updateTareaPei(tarea.id, { estado: nuevoEstado })
-
-//     mostrarMensaje(`Estado cambiado a ${getTareaEstadoTexto(nuevoEstado)}`, 'success')
-//   } catch (error) {
-//     console.error('Error al cambiar estado:', error)
-//     mostrarMensaje('Error al cambiar estado', 'error')
-//     // Revertir cambio local si falla
-//     cargarInformacion()
-//   }
-// }
-
 const eliminarTarea = async (tarea) => {
   if (!confirm(`¿Estás seguro de eliminar la subactividad "${tarea.titulo}"?`)) {
     return
@@ -381,21 +367,6 @@ const eliminarTarea = async (tarea) => {
     mostrarMensaje('Error al eliminar la subactividad', 'error')
     cargarInformacion()
   }
-
-  // try {
-  //   // Eliminar localmente inmediatamente
-  //   tareasLocales.value = tareasLocales.value.filter((t) => t.id !== tarea.id)
-
-  //   // Eliminar en el servidor
-  //   await peiServicios.eliminarTareaPei(tarea.id)
-
-  //   mostrarMensaje('Subactividad eliminada correctamente', 'success')
-  // } catch (error) {
-  //   console.error('Error al eliminar subactividad:', error)
-  //   mostrarMensaje('Error al eliminar la subactividad', 'error')
-  //   // Revertir eliminación local si falla
-  //   cargarInformacion()
-  // }
 }
 
 // Helper methods para tareas
@@ -416,15 +387,6 @@ const getTareaEstadoIcon = (estado) => {
   }
   return iconos[estado] || 'mdi-help-circle-outline'
 }
-
-// const getTareaEstadoTexto = (estado) => {
-//   const textos = {
-//     PEN: 'Pendiente',
-//     EPROG: 'En Progreso',
-//     COMPL: 'Completada',
-//   }
-//   return textos[estado] || estado
-// }
 
 const formatCurrency = (value) => {
   if (!value) return '$0.00'
@@ -469,8 +431,6 @@ defineExpose({
   tareas: tareasLocales,
 })
 </script>
-
-<!-- El template se mantiene igual -->
 
 <style scoped>
 .panel-info {
@@ -534,27 +494,28 @@ defineExpose({
 .toolbar-main {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
-/* Fila de búsqueda */
-.search-row {
-  display: flex;
-  align-items: center;
+/* Búsqueda */
+.search-container {
+  width: 100%;
 }
 
 .search-field {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
 }
 
-/* Fila de crear */
-.crear-row {
+/* Contenedor de botones - alineados horizontalmente */
+.buttons-container {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
 }
 
+.btn-refrescar,
 .btn-crear {
   white-space: nowrap;
   min-width: auto;
@@ -793,13 +754,13 @@ defineExpose({
 
 /* Responsive */
 @media (max-width: 768px) {
+  .buttons-container {
+    justify-content: space-between;
+  }
+
   .contenido-principal {
     height: 50vh; /* Menor altura en móviles */
     max-height: 500px;
-  }
-
-  .search-field {
-    width: 100%;
   }
 
   .actividad-meta {

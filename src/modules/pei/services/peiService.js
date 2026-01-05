@@ -117,7 +117,7 @@ export const peiServicios = {
   /* Crear Actividades PEI */
   crearActividadesPei: async (actividadData) => {
     try {
-      const respuesta = await api.post('/pei/actividades/crear/', actividadData)
+      const respuesta = await api.post('/actividades-pei-principal/', actividadData)
       return respuesta.data
     } catch (err) {
       console.error('Axios: No se pudo crear la actividad', err)

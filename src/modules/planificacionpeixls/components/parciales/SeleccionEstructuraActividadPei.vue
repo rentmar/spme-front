@@ -8,17 +8,7 @@
 
       <v-card-text class="bg-blue-lighten-5 py-5">
         <v-row dense>
-          <v-col cols="12" md="4">
-            <v-text-field
-              v-model="pei.codigo"
-              label="Código del PEI"
-              variant="outlined"
-              density="comfortable"
-              readonly
-              bg-color="white"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="8">
+          <v-col cols="12">
             <v-text-field
               v-model="pei.titulo"
               label="Nombre del PEI"
@@ -27,6 +17,16 @@
               readonly
               bg-color="white"
             ></v-text-field>
+          </v-col>
+          <v-col cols="12">
+            <v-textarea
+              v-model="pei.descripcion"
+              label="Descripcion del PEI"
+              variant="outlined"
+              density="comfortable"
+              readonly
+              bg-color="white"
+            ></v-textarea>
           </v-col>
         </v-row>
 
@@ -368,6 +368,7 @@ const selectedIndicadoresCuantitativos = ref([])
 const selectedIndicadoresCualitativos = ref([])
 
 // Nueva actividad con los campos requeridos
+// SeleccionEstructuraActividadPei.vue - Objeto nuevaActividad inicial
 const nuevaActividad = ref({
   codigo: '',
   nombreCorto: '',
@@ -381,20 +382,21 @@ const nuevaActividad = ref({
   fecha_programada: null,
   fecha_inicio: null,
   fecha_cierre: null,
-  presupuesto: '0',
-  presupuestoGlobal: '0',
+  presupuesto: '0.00',
+  presupuestoGlobal: '0.00',
   totalReportado: '0.00',
   totalEjecutado: '0.00',
-  saldo: '0',
+  saldo: '0.00',
   gradoEjecucion: '',
   procedencia_fondos: null,
   estado: 'CRD',
   pei: null,
   responsable: null,
-  objetivos_pei_ids: [],
-  factores_criticos_ids: [],
-  indicadores_cuantitativos_ids: [],
-  indicadores_cualitativos_ids: [],
+  // CORREGIDO: usar nombres en singular como espera el backend
+  objetivos_pei: [],
+  factores_criticos: [],
+  indicadores_cuantitativos: [],
+  indicadores_cualitativos: [],
 })
 
 //Inicializar el store
@@ -414,16 +416,116 @@ const esFormularioValido = computed(() => {
 })
 
 // Función para inicializar datos del PEI
+// const inicializarDatos = () => {
+//   if (props.peiData.pei) {
+//     pei.value = { ...props.peiData }
+//     objetivos.value = pei.value.objetivos || []
+//     nuevaActividad.value.pei = pei.value.id
+//   } else {
+//     // Si viene directamente el objeto PEI
+//     pei.value = { ...props.peiData }
+//     objetivos.value = props.peiData.objetivos || []
+//     nuevaActividad.value.pei = props.peiData.id
+//   }
+// }
+
+// Función para inicializar datos del PEI
+// const inicializarDatos = () => {
+//   // Acceder al objeto PEI anidado
+//   const peiData = props.peiData.PEI || props.peiData
+
+//   if (peiData) {
+//     pei.value = {
+//       ...peiData,
+//       // Agregar resumen si no existe
+//       resumen: peiData.resumen || {
+//         total_objetivos: peiData.objetivos?.length || 0,
+//         total_factores_criticos:
+//           peiData.objetivos?.reduce(
+//             (total, obj) => total + (obj.factores_criticos?.length || 0),
+//             0,
+//           ) || 0,
+//         total_indicadores_cuantitativos:
+//           peiData.objetivos?.reduce(
+//             (total, obj) =>
+//               total + (obj.indicadores?.filter((i) => i.tipo === 'CUANTITATIVO')?.length || 0),
+//             0,
+//           ) || 0,
+//         total_indicadores_cualitativos:
+//           peiData.objetivos?.reduce(
+//             (total, obj) =>
+//               total + (obj.indicadores?.filter((i) => i.tipo === 'CUALITATIVO')?.length || 0),
+//             0,
+//           ) || 0,
+//       },
+//     }
+
+//     // Transformar los objetivos para separar indicadores por tipo
+//     objetivos.value = (peiData.objetivos || []).map((objetivo) => ({
+//       ...objetivo,
+//       // Mantener factores críticos tal cual
+//       factores_criticos: objetivo.factores_criticos || [],
+//       // Separar indicadores por tipo
+//       indicadores_cuantitativos:
+//         objetivo.indicadores?.filter((i) => i.tipo === 'CUANTITATIVO') || [],
+//       indicadores_cualitativos: objetivo.indicadores?.filter((i) => i.tipo === 'CUALITATIVO') || [],
+//     }))
+
+//     nuevaActividad.value.pei = peiData.id
+//     // Inicializar arrays vacíos (singular como espera el backend)
+//     nuevaActividad.value.objetivos_pei = []
+//     nuevaActividad.value.factores_criticos = []
+//     nuevaActividad.value.indicadores_cuantitativos = []
+//     nuevaActividad.value.indicadores_cualitativos = []
+//   }
+// }
+// SeleccionEstructuraActividadPei.vue - Método inicializarDatos
 const inicializarDatos = () => {
-  if (props.peiData.pei) {
-    pei.value = { ...props.peiData.pei }
-    objetivos.value = pei.value.objetivos || []
-    nuevaActividad.value.pei = pei.value.id
-  } else {
-    // Si viene directamente el objeto PEI
-    pei.value = { ...props.peiData }
-    objetivos.value = props.peiData.objetivos || []
-    nuevaActividad.value.pei = props.peiData.id
+  // Acceder al objeto PEI anidado
+  const peiData = props.peiData.PEI || props.peiData
+
+  if (peiData) {
+    pei.value = {
+      ...peiData,
+      resumen: peiData.resumen || {
+        total_objetivos: peiData.objetivos?.length || 0,
+        total_factores_criticos:
+          peiData.objetivos?.reduce(
+            (total, obj) => total + (obj.factores_criticos?.length || 0),
+            0,
+          ) || 0,
+        total_indicadores_cuantitativos:
+          peiData.objetivos?.reduce(
+            (total, obj) =>
+              total + (obj.indicadores?.filter((i) => i.tipo === 'CUANTITATIVO')?.length || 0),
+            0,
+          ) || 0,
+        total_indicadores_cualitativos:
+          peiData.objetivos?.reduce(
+            (total, obj) =>
+              total + (obj.indicadores?.filter((i) => i.tipo === 'CUALITATIVO')?.length || 0),
+            0,
+          ) || 0,
+      },
+    }
+
+    // Transformar objetivos
+    objetivos.value = (peiData.objetivos || []).map((objetivo) => ({
+      ...objetivo,
+      factores_criticos: objetivo.factores_criticos || [],
+      indicadores_cuantitativos:
+        objetivo.indicadores?.filter((i) => i.tipo === 'CUANTITATIVO') || [],
+      indicadores_cualitativos: objetivo.indicadores?.filter((i) => i.tipo === 'CUALITATIVO') || [],
+    }))
+
+    // Asignar el ID del PEI a la nueva actividad
+    nuevaActividad.value.pei = peiData.id
+
+    // Inicializar arrays vacíos (singular como espera el backend)
+    nuevaActividad.value.objetivos_pei = []
+    nuevaActividad.value.factores_criticos = []
+    nuevaActividad.value.indicadores_cuantitativos = []
+    nuevaActividad.value.indicadores_cualitativos = []
   }
 }
 
@@ -466,32 +568,74 @@ const mostrarDialogoConfirmacion = () => {
 }
 
 // Confirmar creación de actividad
+// SeleccionEstructuraActividadPei.vue - Método confirmarCreacion
 const confirmarCreacion = async () => {
   dialogVisible.value = false
 
   const seleccionesSimples = obtenerSeleccionesSimples()
 
-  // Preparar los datos según el formato requerido
+  // Preparar los datos EXACTAMENTE como los espera el backend
   const datosActividad = {
-    ...nuevaActividad.value,
-    objetivos_pei_ids: seleccionesSimples.objetivoId ? [seleccionesSimples.objetivoId] : [],
-    factores_criticos_ids: seleccionesSimples.factoresCriticosIds || [],
-    indicadores_cuantitativos_ids: seleccionesSimples.indicadoresCuantitativosIds || [],
-    indicadores_cualitativos_ids: seleccionesSimples.indicadoresCualitativosIds || [],
+    codigo: nuevaActividad.value.codigo,
+    nombreCorto: nuevaActividad.value.nombreCorto,
+    descripcion: nuevaActividad.value.descripcion || '',
+    supuestos: nuevaActividad.value.supuestos || '',
+    riesgos: nuevaActividad.value.riesgos || '',
+    objetivo_de_actividad: nuevaActividad.value.objetivo_de_actividad || '',
+    descripcion_evaluacion: nuevaActividad.value.descripcion_evaluacion || '',
+    descripcion_tipo_actividad: nuevaActividad.value.descripcion_tipo_actividad || '',
+    fecha_programada: nuevaActividad.value.fecha_programada || null,
+    fecha_inicio: nuevaActividad.value.fecha_inicio || null,
+    fecha_cierre: nuevaActividad.value.fecha_cierre || null,
+    presupuesto: nuevaActividad.value.presupuesto || '0.00',
+    presupuestoGlobal: nuevaActividad.value.presupuestoGlobal || '0.00',
+    totalReportado: nuevaActividad.value.totalReportado || '0.00',
+    totalEjecutado: nuevaActividad.value.totalEjecutado || '0.00',
+    saldo: nuevaActividad.value.saldo || '0.00',
+    gradoEjecucion: nuevaActividad.value.gradoEjecucion || '',
+    procedencia_fondos: nuevaActividad.value.procedencia_fondos || null,
+    estado: nuevaActividad.value.estado || 'CRD',
+    tipo: parseInt(nuevaActividad.value.tipo) || 1,
+    pei: nuevaActividad.value.pei || pei.value.id,
+    responsable: nuevaActividad.value.responsable || null,
+
+    // ¡IMPORTANTE! Usar los nombres en singular como espera el backend
+    objetivos_pei: seleccionesSimples.objetivoId ? [seleccionesSimples.objetivoId] : [],
+    factores_criticos: seleccionesSimples.factoresCriticosIds || [],
+    indicadores_cuantitativos: seleccionesSimples.indicadoresCuantitativosIds || [],
+    indicadores_cualitativos: seleccionesSimples.indicadoresCualitativosIds || [],
   }
 
   try {
-    //Crear la actividad
-    await peiServicios.crearActividadesPei(datosActividad)
-    console.log('Datos actividad: ', datosActividad)
-    emit('crear-actividad', datosActividad)
+    // console.log('Enviando datos al backend:', JSON.stringify(datosActividad, null, 2))
+
+    // Crear la actividad
+    const actividadCreada = await peiServicios.crearActividadesPei(datosActividad)
+    // console.log('Actividad creada exitosamente:', actividadCreada)
+
+    // Emitir la actividad creada
+    emit('crear-actividad', actividadCreada)
+
+    // Resetear formulario
     resetSeleccion()
   } catch (error) {
     console.error('Error al crear actividad:', error)
+    console.error('Respuesta del servidor:', error.response?.data)
+
+    // Mostrar mensaje de error detallado
+    let mensajeError = 'Error al crear actividad'
+    if (error.response?.data) {
+      if (typeof error.response.data === 'object') {
+        mensajeError = JSON.stringify(error.response.data, null, 2)
+      } else {
+        mensajeError = error.response.data
+      }
+    }
+    console.error(`Error: ${mensajeError}`)
   }
 }
-
 // Resetear selección
+// SeleccionEstructuraActividadPei.vue - Método resetSeleccion
 const resetSeleccion = () => {
   selectedObjetivo.value = null
   selectedFactoresCriticos.value = []
@@ -503,11 +647,20 @@ const resetSeleccion = () => {
   nuevaActividad.value.nombreCorto = ''
   nuevaActividad.value.descripcion = ''
 
-  // Mantener los valores por defecto de los otros campos
-  nuevaActividad.value.objetivos_pei_ids = []
-  nuevaActividad.value.factores_criticos_ids = []
-  nuevaActividad.value.indicadores_cuantitativos_ids = []
-  nuevaActividad.value.indicadores_cualitativos_ids = []
+  // Mantener valores por defecto
+  nuevaActividad.value.objetivos_pei = []
+  nuevaActividad.value.factores_criticos = []
+  nuevaActividad.value.indicadores_cuantitativos = []
+  nuevaActividad.value.indicadores_cualitativos = []
+
+  // Mantener otros valores por defecto
+  nuevaActividad.value.tipo = 1
+  nuevaActividad.value.estado = 'CRD'
+  nuevaActividad.value.presupuesto = '0.00'
+  nuevaActividad.value.presupuestoGlobal = '0.00'
+  nuevaActividad.value.totalReportado = '0.00'
+  nuevaActividad.value.totalEjecutado = '0.00'
+  nuevaActividad.value.saldo = '0.00'
 
   // Mantener el ID del PEI
   nuevaActividad.value.pei = pei.value.id
