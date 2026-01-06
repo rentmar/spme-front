@@ -1242,7 +1242,7 @@ const calcularSaldo = (rowIndex) => {
 const verificarFechas = (rowIndex) => {
   //Fila seleccionada
   const fila = tableData.value[rowIndex]
-  //Si nohay fila seleccionada, se anula la ejecucion
+  //Si no hay fila seleccionada, se anula la ejecucion
   if (!fila) return
 
   // console.log('Fila Seleccionada')

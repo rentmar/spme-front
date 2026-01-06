@@ -224,6 +224,7 @@ import { usePlanificacionPeiStore } from '../store/usePlanificacionPeiStore'
 import { usePlanificacionStore } from '@/modules/planificacionxls/store/usePlanificacionStore'
 import { peiServicios } from '@/modules/pei/services/peiService'
 //Libreria para fechas
+import { parse } from 'date-fns'
 
 // Registros
 registerAllModules()
@@ -375,6 +376,7 @@ const handleChange = (changes, source) => {
         if (usuario) {
           rowData.responsable_id = usuario.id
           console.log(`Responsable actualizado: ID ${usuario.id}, Username: ${newValue}`)
+          infoMsg('Responsable actualizado')
         }
       }
 
