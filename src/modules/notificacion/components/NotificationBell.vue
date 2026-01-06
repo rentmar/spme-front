@@ -368,7 +368,7 @@ const marcandoNotificacionId = ref(null)
 const mensajeSeleccionado = ref(null)
 
 //Constantes
-const tiempoRecarga = 10 * 60 * 100
+const tiempoRecarga = 30 * 60 * 100
 
 // Computed properties
 const tieneNotificaciones = computed(() => {

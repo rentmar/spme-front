@@ -13,14 +13,20 @@
               </v-btn>
             </template>
           </v-tooltip>
+
           <!--Guardar-->
-          <v-tooltip text="Guardar Planificacion" location="bottom">
+          <v-tooltip
+            :text="hayCambios ? 'Guardar cambios' : 'No hay cambios para guardar'"
+            location="bottom"
+          >
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
                 variant="text"
                 class="toolbar-btn"
                 @click="guardarPlanificacion"
+                :disabled="!hayCambios"
+                :color="hayCambios ? 'primary' : 'grey'"
               >
                 <v-icon size="18">mdi-content-save</v-icon>
               </v-btn>
@@ -217,6 +223,8 @@ import ListaTareasActividadPei from './parciales/ListaTareasActividadPei.vue'
 import { usePlanificacionPeiStore } from '../store/usePlanificacionPeiStore'
 import { usePlanificacionStore } from '@/modules/planificacionxls/store/usePlanificacionStore'
 import { peiServicios } from '@/modules/pei/services/peiService'
+//Libreria para fechas
+
 // Registros
 registerAllModules()
 registerLanguageDictionary(esMX)
@@ -246,6 +254,10 @@ const storePlanificacion = usePlanificacionStore()
 const tableData = ref([])
 const inicializado = ref(false)
 const hotTable = ref(null)
+
+//Control de estado inicial
+const hayCambios = ref(false) //Bandera de cambios
+const datosOriginales = ref([]) //Guardar estado inicial
 
 //headers
 const headers = ref(true)
@@ -347,6 +359,9 @@ const columns = computed(() => [
 //Manejo de cambios
 const handleChange = (changes, source) => {
   if (source === 'edit') {
+    //Activar el estado de cambio
+    hayCambios.value = true
+
     changes.forEach(([row, prop, oldValue, newValue]) => {
       console.log(`Cambio en fila ${row}, columna ${prop}: ${oldValue} -> ${newValue}`)
 
@@ -470,17 +485,16 @@ const cerrarNuevaActividad = () => {
 }
 
 // Cuando se crea una nueva actividad desde el componente hijo
-const onActividadCreada = (nuevaActividad) => {
+const onActividadCreada = async (nuevaActividad) => {
   // Agregar la nueva actividad a la tabla
   //const actividadFormateada = formatearActividadParaTabla(nuevaActividad)
   //tableData.value.push(actividadFormateada)
-  console.log('Actividad creada Rx: ', nuevaActividad)
-  const actividadFormateada = formatearActividadParaTabla(nuevaActividad)
-  tableData.value.push(actividadFormateada)
+  // console.log('Actividad creada Rx: ', nuevaActividad)
   mostrarModalActividad.value = false
-
   successMsg('Actividad agregada a la planificación', 3000)
 
+  const actividadFormateada = formatearActividadParaTabla(nuevaActividad)
+  tableData.value.push(actividadFormateada)
   // Actualizar la tabla
   if (hotTable.value?.hotInstance) {
     setTimeout(() => {
@@ -527,6 +541,10 @@ const formatCurrency = (value) => {
 const formatDate = (dateString) => {
   if (!dateString) return 'No definida'
   return new Date(dateString).toLocaleDateString('es-BO')
+}
+const formatearFechaExcel = (fecha) => {
+  if (!fecha) return ''
+  return new Date(fecha).toLocaleDateString('es-ES')
 }
 
 // Función para obtener el username por ID
@@ -643,10 +661,13 @@ const cargarActividadesEnTabla = () => {
     tableData.value = storePeiPlanificacion.actividadesPeiSeleccionado.map((actividad) =>
       formatearActividadParaTabla(actividad),
     )
+    //Guardar una copia de los datos originales
+    datosOriginales.value = tableData.value
     console.log('Actividades cargadas en tabla:', tableData.value)
     successMsg(`${tableData.value.length} actividades cargadas`, 3000)
   } else {
     tableData.value = []
+    datosOriginales.value = []
     warningMsg('No hay actividades para mostrar', 3000)
   }
 }
@@ -781,6 +802,9 @@ const guardarDesglosePresupuesto = (nuevoDesglose) => {
 
       // Asignar el nuevo array reactivo
       tableData.value = updatedTableData
+
+      //Marcar que hay cambio
+      hayCambios.value = true
 
       // Forzar actualización de Handsontable
       if (hotTable.value?.hotInstance) {
