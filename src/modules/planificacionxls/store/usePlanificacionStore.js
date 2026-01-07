@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { useActividad } from '@/modules/proyecto/composables/useActividad'
 import { useTipoActividad } from '@/modules/proyecto/composables/useTipoActividad'
-import { usePlanificacion } from '../composables/usePlanificacion'
+//import { usePlanificacion } from '../composables/usePlanificacion'
 
 export const usePlanificacionStore = defineStore('planificacion', () => {
   // Estados del store
@@ -12,16 +12,17 @@ export const usePlanificacionStore = defineStore('planificacion', () => {
   const listaActividades = ref([])
   const listaUsuariosCompleta = ref([])
   const listaTiposAct = ref([])
-  const planificacionProyecto = ref()
-  const listaPlanificacionProyecto = ref([])
+  //const planificacionProyecto = ref()
+  //const listaPlanificacionProyecto = ref([])
+  const tableData = ref([]) //Datos de la tabla
+  const datosOriginales = ref([]) //Respaldo de los datos originales para comparacion
+  const tieneCambiosSinGuardar = ref(false) //Bandera de cambios
 
   // Iniciar el composable
   const { usuarios, obtenerUsuarios } = useUsuario()
   const { actividades, cargarActividadesPorIdProyecto } = useActividad()
   const { tipoDeActividades, cargarListaTiposActividades } = useTipoActividad()
-  const { plan, planPorIdProyecto } = usePlanificacion()
-
-  const tableData = ref([])
+  //const { plan, planPorIdProyecto } = usePlanificacion()
 
   // Computed para obtener usernames para el dropdown
   const usernamesParaDropdown = computed(() => {
@@ -35,6 +36,58 @@ export const usePlanificacionStore = defineStore('planificacion', () => {
       .filter((username) => username) // Filtrar valores nulos o vacíos
       .sort() // Ordenar alfabéticamente
   })
+
+  //Accion: Inicializar los datos Orginales
+  function inicializarDatosOriginales(tableData) {
+    datosOriginales.value = tableData
+    tieneCambiosSinGuardar.value = false
+  }
+
+  //Cambiar el estado de la bandera de cambios
+  function setTieneCambiosSinGuardar(valor) {
+    tieneCambiosSinGuardar.value = valor
+  }
+
+  //Actualizar los datos originales
+  function actualizarDatosOriginales(datos) {
+    datosOriginales.value = datos
+    tieneCambiosSinGuardar.value = false
+  }
+
+  //Verificar los cambios entre el original y el actual
+  function verificarCambios(datosActuales) {
+    if (!datosOriginales.value.length || !datosActuales.length) {
+      tieneCambiosSinGuardar.value = false
+      return false
+    }
+
+    const actualStr = JSON.stringify(datosActuales)
+    const originalStr = JSON.stringify(datosOriginales.value)
+
+    const hayCambios = actualStr !== originalStr
+    tieneCambiosSinGuardar.value = hayCambios
+    return hayCambios
+  }
+
+  //Reset bandera de  cambios
+  function resetearCambios() {
+    tieneCambiosSinGuardar.value = false
+  }
+
+  //Filtrar actividades activas
+  function filtrarActividadesActivas(listaActividades) {
+    if (!listaActividades || !Array.isArray(listaActividades)) {
+      return []
+    }
+
+    return listaActividades
+      .map((item) => item.value || item)
+      .filter((actividad) => actividad && !actividad.estaInactiva)
+  }
+
+  //GETTERS
+  //Verificacion de los cambios
+  const hayCambiosPendientes = computed(() => tieneCambiosSinGuardar.value)
 
   // Obtener la lista completa de usuarios
   async function obtenerListaUsuarios() {
@@ -58,7 +111,8 @@ export const usePlanificacionStore = defineStore('planificacion', () => {
       loading.value = true
       await cargarActividadesPorIdProyecto(idproyecto)
       listaActividades.value = actividades.value
-      tableData.value = actividades.value
+      //Solo cargar actividades activas a la grilla
+      tableData.value = filtrarActividadesActivas(actividades.value)
     } catch (error) {
       console.error('Error al cargar actividades', error)
       error.value = true
@@ -124,6 +178,8 @@ export const usePlanificacionStore = defineStore('planificacion', () => {
     listaActividades,
     listaUsuariosCompleta,
     siglasTiposActividad,
+    tieneCambiosSinGuardar,
+    datosOriginales,
     obtenerNombreCompletoPorSiglas,
     listaTiposAct,
     usernamesParaDropdown, // Exportar por si se necesita acceder directamente
@@ -131,5 +187,13 @@ export const usePlanificacionStore = defineStore('planificacion', () => {
     actualizarDropdownUsuarios,
     listaActividadesProyecto,
     listaTiposDeActividad,
+    //Acciones
+    inicializarDatosOriginales,
+    setTieneCambiosSinGuardar,
+    actualizarDatosOriginales,
+    verificarCambios,
+    resetearCambios,
+    //Getter
+    hayCambiosPendientes,
   }
 })

@@ -38,11 +38,18 @@
                 :proyecto-estructura="proyectoEstructura"
                 :cargando="!cargaCompleta"
               ></PlanificacionActividadXls> -->
-              <PlanificacionProyectoActividades
+              <!--Planificacion funcional-->
+              <!-- <PlanificacionProyectoActividades
                 :proyecto="proyecto"
                 :proyecto-estructura="proyectoEstructura"
                 :cargando="!cargaCompleta"
-              ></PlanificacionProyectoActividades>
+              ></PlanificacionProyectoActividades> -->
+              <!--Version 2 de la Planificacion funcional-->
+              <PlanificacionProyectoActividadesV2
+                :proyecto="proyecto"
+                :proyecto-estructura="proyectoEstructura"
+                :cargando="!cargaCompleta"
+              ></PlanificacionProyectoActividadesV2>
             </v-card-text>
           </v-card>
         </v-col>
@@ -60,7 +67,7 @@ import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vu
 import ProyectoHeader from '@/modules/proyecto/components/partials/ProyectoHeader.vue'
 import PlanificacionActividadXls from '@/modules/planificacionxls/components/PlanificacionActividadXls.vue'
 import PlanificacionProyectoActividades from '@/modules/planificacionxls/components/PlanificacionProyectoActividades.vue'
-
+import PlanificacionProyectoActividadesV2 from '@/modules/planificacionxls/components/PlanificacionProyectoActividadesV2.vue'
 //Estado de carga
 const cargaCompleta = ref(false) //Cambiar a false en produccion
 const errorCarga = ref(null)
