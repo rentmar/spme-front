@@ -162,4 +162,16 @@ export const actividadServicios = {
       throw error
     }
   },
+  /****************************************************************************************/
+  /**************************ACTIVIDADDES/TAREAS PEI **************************************/
+  /****************************************************************************************/
+  allPorIdPei: async (idpei) => {
+    try {
+      const respuesta = await api.get('pei/' + idpei + '/con-actividades/')
+      //console.log(respuesta)
+      return respuesta.data
+    } catch (err) {
+      console.log('Axios: fetch error actividades del PEI con id:' + idpei, err)
+    }
+  },
 }

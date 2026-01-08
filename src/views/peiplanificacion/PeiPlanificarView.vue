@@ -29,7 +29,12 @@
             </v-toolbar>
 
             <v-card-text class="contenedor-planificacion">
-              <PlanificacionPeiXls :pei-id="idpei"></PlanificacionPeiXls>
+              <!-- <PlanificacionPeiXls :pei-id="idpei"></PlanificacionPeiXls> -->
+              <PlanificacionPeiActividades
+                v-if="storePeiPlan.peiSeleccionado && storePeiPlan.estructuraPeiSeleccionado"
+                :pei="storePeiPlan.peiSeleccionado"
+                :pei-estructura="storePeiPlan.estructuraPeiSeleccionado"
+              ></PlanificacionPeiActividades>
               <!-- <PlanificacionActividadXls
                 :proyecto="proyecto"
                 :proyecto-estructura="proyectoEstructura"
@@ -49,8 +54,8 @@ import { useRoute } from 'vue-router'
 import { usePlanificacionPeiStore } from '@/modules/planificacionpeixls/store/usePlanificacionPeiStore'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import PeiHeader from '@/modules/pei/components/partials/PeiHeader.vue'
-import PlanificacionPeiXls from '@/modules/planificacionpeixls/components/PlanificacionPeiXls.vue'
-
+// import PlanificacionPeiXls from '@/modules/planificacionpeixls/components/PlanificacionPeiXls.vue'
+import PlanificacionPeiActividades from '@/modules/planificacionpeixls/components/PlanificacionPeiActividades.vue'
 //Estado de carga
 const cargaCompleta = ref(true)
 const errorCarga = ref(false)
@@ -68,15 +73,20 @@ onMounted(async () => {
 })
 
 //Funcion de carga de datos
+const loadingDatos = ref(false)
+const error = ref(null)
 const cargarDatos = async () => {
+  cargaCompleta.value = true
   try {
     storePeiPlan.obtenerPeiPorId(idpei)
   } catch (err) {
     console.log('Error al cargar la informacion del PEI', err)
+    error.value = err
+  } finally {
+    loadingDatos.value = false
   }
 }
 </script>
-
 <style scoped>
 /* Estilos generales para las tarjetas */
 .v-card {

@@ -15,10 +15,13 @@ const mensaje = ref(null)
 const actividadTarea = ref([])
 const actividadesTareasListas = ref()
 const actividadInfo = ref(null)
-
 // Estados específicos para tareas
 const tareasActividad = ref([])
 const tareaActual = ref(null)
+//Estados del PEI
+const actividadesPei = ref([])
+const actividadPei = ref(null)
+const peiDatos = ref(null)
 
 export function useActividad() {
   //fetch actividades
@@ -201,6 +204,22 @@ export function useActividad() {
     }
   }
 
+  /*************************** ACTIVIDADES/TAREAS  PEI ******************************************/
+  //Fecth de actividades de un proyecto por id
+  async function cargarActividadesPorIdPei(idpei) {
+    loading.value = false
+    try {
+      const respuesta = await actividadServicios.allPorIdPei(idpei)
+      actividadesPei.value = respuesta.actividades
+      peiDatos.value = respuesta.pei
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading, //ref
     error, //ref
@@ -211,6 +230,10 @@ export function useActividad() {
     tareaActual,
     actividadesTareasListas, //Actividades con tareas sin filtrado
     actividadInfo, //Una actividad especifica mas Tareas y proyecto
+    //Estado PEI
+    actividadesPei,
+    peiDatos,
+    //func proyecto
     cargarActividades,
     cargarActividadPorId,
     cargarActividadesPorIdProyecto, //
@@ -223,5 +246,7 @@ export function useActividad() {
     actividadesTareas,
     obtenerListaActividadesConTareas,
     obtenerActidadPorId,
+    //Func PEI
+    cargarActividadesPorIdPei,
   }
 }

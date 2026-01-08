@@ -448,10 +448,9 @@ import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
 import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
 import SeleccionEstructuraActividad from './parciales/SeleccionEstructuraActividad.vue'
 import DiagramaPlanificacion from './DiagramaJerarquiaPlanificacion.vue'
-//Actividades Test
+//Stores
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { usePlanificacionStore } from '../store/usePlanificacionStore'
-import { storeToRefs } from 'pinia'
 //Encabezados
 import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
 import ActividadRelacionEstructura from './parciales/ActividadRelacionEstructura.vue'
@@ -1099,7 +1098,7 @@ const contextMenuConfig = computed(() => {
       callback: () => {
         const selected = hotTable.value?.hotInstance?.getSelected()
         if (selected && selected.length > 0) {
-          const startRow = selected[0][0]
+          //const startRow = selected[0][0]
           //mostrarModalAgregarTareaDesdeMenu(startRow)
           mostrarModalAgregarTarea()
         }

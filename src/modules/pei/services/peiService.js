@@ -168,6 +168,15 @@ export const peiServicios = {
       console.error('Axios: No se pudo actualizar las actividades', err)
     }
   },
+  /* Pei con actividades */
+  peiListaActividades: async (idpei) => {
+    try {
+      const respuesta = await api.get('/pei/' + idpei + '/con-actividades/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al obtener la lista del pei con id: ', error)
+    }
+  },
 }
 
 export const objetivoPeiServicios = {
