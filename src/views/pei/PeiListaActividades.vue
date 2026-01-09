@@ -64,9 +64,14 @@
           <v-list v-if="!loading" class="py-0">
             <template
               v-for="(actividad, index) in actividadesPaginadasOrdenadas"
-              :key="`actividad-${actividad.id}-${index}`"
+              :key="getActividadKey(actividad)"
             >
-              <v-list-item :value="actividad.id" @click="toggleExpanded(actividad.id)" class="mb-2">
+              <!-- Actividad de Proyecto o PEI - Usando el mismo template con condicionales -->
+              <v-list-item
+                :value="getActividadKey(actividad)"
+                @click="toggleExpanded(getActividadKey(actividad))"
+                class="mb-2"
+              >
                 <template v-slot:prepend>
                   <v-avatar :color="getStatusColor(actividad.estado)" class="mr-4">
                     <v-icon dark>{{ getTipoIcon(actividad.estado) }}</v-icon>
@@ -75,7 +80,17 @@
 
                 <v-list-item-title class="font-weight-bold">
                   Código: {{ actividad.codigo }}
+                  <!-- Chip para distinguir tipo de actividad -->
+                  <v-chip
+                    small
+                    :color="actividad.proyecto_id ? 'primary' : 'teal'"
+                    text-color="white"
+                    class="ml-2"
+                  >
+                    {{ actividad.proyecto_id ? 'PROYECTO' : 'PEI' }}
+                  </v-chip>
                 </v-list-item-title>
+
                 <v-list-item-subtitle class="mt-1">
                   <div class="d-flex align-center flex-wrap">
                     <v-chip
@@ -121,9 +136,13 @@
                             color="primary"
                             size="small"
                             :disabled="
-                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
+                              getSolicitudFondosInfo(
+                                actividad.id,
+                                null,
+                                getActividadTipo(actividad),
+                              )?.bloquearIconosSolFondos && false
                             "
-                            :to="`/monitoreo/formulario01/${actividad.id}`"
+                            :to="getFormularioUrl('formulario01', actividad)"
                             @click.stop
                           ></v-btn>
                         </template>
@@ -139,15 +158,19 @@
                             color="primary"
                             size="small"
                             :disabled="
-                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
+                              getSolicitudFondosInfo(
+                                actividad.id,
+                                null,
+                                getActividadTipo(actividad),
+                              )?.bloquearIconosSolFondos && false
                             "
-                            @click.stop="abrirDialogValidar(actividad.id, null)"
+                            @click.stop="
+                              abrirDialogValidar(actividad.id, null, getActividadTipo(actividad))
+                            "
                           ></v-btn>
                         </template>
                       </v-tooltip>
                     </div>
-
-                    <!-- <v-divider vertical inset class="mx-1 my-1"></v-divider> -->
 
                     <div class="d-flex flex-column align-center justify-center">
                       <v-tooltip text="Solicitud de Viaje" location="top">
@@ -159,7 +182,7 @@
                             variant="text"
                             color="deep-purple"
                             size="small"
-                            :to="`/monitoreo/formulario05/${actividad.id}`"
+                            :to="getFormularioUrl('formulario05', actividad)"
                             @click.stop
                           ></v-btn>
                         </template>
@@ -175,15 +198,25 @@
                             color="deep-purple"
                             size="small"
                             :disabled="
-                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
+                              getSolicitudFondosInfo(
+                                actividad.id,
+                                null,
+                                getActividadTipo(actividad),
+                              )?.bloquearIconosSolFondos && false
                             "
-                            @click.stop="abrirDialogViajeValidar(actividad.id)"
+                            @click.stop="
+                              abrirDialogViajeValidar(
+                                actividad.id,
+                                null,
+                                getActividadTipo(actividad),
+                              )
+                            "
                           ></v-btn>
                         </template>
                       </v-tooltip>
                     </div>
 
-                    <!-- Solicitud de Pago Directo cambiado de 1 a 5-->
+                    <!-- Solicitud de Pago Directo -->
                     <div class="d-flex flex-column align-center justify-center">
                       <v-tooltip text="Solicitud de Pago Directo" location="top">
                         <template v-slot:activator="{ props }">
@@ -194,7 +227,7 @@
                             variant="text"
                             color="teal-lighten-2"
                             size="small"
-                            :to="`/monitoreo/formulario08/${actividad.id}`"
+                            :to="getFormularioUrl('formulario08', actividad)"
                             @click.stop
                           ></v-btn>
                         </template>
@@ -210,9 +243,19 @@
                             color="teal-lighten-2"
                             size="small"
                             :disabled="
-                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
+                              getSolicitudFondosInfo(
+                                actividad.id,
+                                null,
+                                getActividadTipo(actividad),
+                              )?.bloquearIconosSolFondos && false
                             "
-                            @click.stop="abrirDialogPagoDirectoValidar(actividad.id)"
+                            @click.stop="
+                              abrirDialogPagoDirectoValidar(
+                                actividad.id,
+                                null,
+                                getActividadTipo(actividad),
+                              )
+                            "
                           ></v-btn>
                         </template>
                       </v-tooltip>
@@ -229,7 +272,7 @@
                             variant="text"
                             color="warning"
                             size="small"
-                            :to="`/monitoreo/formulario03/${actividad.id}`"
+                            :to="getFormularioUrl('formulario03', actividad)"
                             @click.stop
                           ></v-btn>
                         </template>
@@ -245,9 +288,19 @@
                             color="warning"
                             size="small"
                             :disabled="
-                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
+                              getSolicitudFondosInfo(
+                                actividad.id,
+                                null,
+                                getActividadTipo(actividad),
+                              )?.bloquearIconosSolFondos && false
                             "
-                            @click.stop="abrirDialogReposicionValidar(actividad.id)"
+                            @click.stop="
+                              abrirDialogReposicionValidar(
+                                actividad.id,
+                                null,
+                                getActividadTipo(actividad),
+                              )
+                            "
                           ></v-btn>
                         </template>
                       </v-tooltip>
@@ -264,11 +317,9 @@
                             variant="text"
                             color="error"
                             size="small"
-                            :to="`/monitoreo/formulario02/${actividad.id}`"
+                            :to="getFormularioUrl('formulario02', actividad)"
                             @click.stop
                           ></v-btn>
-                          <!-- :disabled="!getSolicitudFondosInfo(actividad.id, 0)?.bloquearIconosSolFondos" -->
-                          <!-- @click.stop="abrirDialogRendicion(actividad.id)" -->
                         </template>
                       </v-tooltip>
 
@@ -281,9 +332,14 @@
                             variant="text"
                             color="error"
                             size="small"
-                            @click.stop="abrirDialogRendicionValidar(actividad.id)"
+                            @click.stop="
+                              abrirDialogRendicionValidar(
+                                actividad.id,
+                                null,
+                                getActividadTipo(actividad),
+                              )
+                            "
                           ></v-btn>
-                          <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                         </template>
                       </v-tooltip>
                     </div>
@@ -298,7 +354,7 @@
                           variant="text"
                           color="info"
                           size="small"
-                          :to="`/monitoreo/formularioinf/${actividad.id}`"
+                          :to="getFormularioUrl('formularioinf', actividad)"
                           @click.stop
                         ></v-btn>
                       </template>
@@ -307,10 +363,10 @@
                 </template>
               </v-list-item>
 
-              <!-- Tarjeta de detalles desplegable -->
+              <!-- Tarjeta de detalles desplegable para SUBACTIVIDADES (tareas) -->
               <v-expand-transition>
-                <div v-if="expandedActividadId === actividad.id">
-                  <v-list-item :value="`detalle-${actividad.id}`" class="mb-2">
+                <div v-if="expandedActividadKey === getActividadKey(actividad)">
+                  <v-list-item :value="`detalle-${getActividadKey(actividad)}`" class="mb-2">
                     <v-card elevation="0" class="ml-10 mr-4 mb-4 bg-grey-lighten-4">
                       <v-card-text class="pt-4">
                         <div class="d-flex justify-space-between align-center mb-4">
@@ -321,7 +377,7 @@
                             <v-btn
                               color="primary"
                               variant="text"
-                              @click="openTareaDialog(actividad.id)"
+                              @click="openTareaDialog(actividad.id, getActividadTipo(actividad))"
                             >
                               <v-icon left>mdi-plus</v-icon>
                               Añadir Sub Actividad
@@ -331,11 +387,11 @@
                         <v-list density="compact" class="py-0">
                           <v-list-item
                             v-for="tarea in actividad.tareas"
-                            :key="`tarea-${actividad.id}-${tarea.id}`"
+                            :key="getTareaKey(actividad, tarea)"
                             class="mb-1"
                           >
                             <v-list-item-title>
-                              {{ tarea.titulo || tarea.descripcion || 'Tarea sin título' }}
+                              {{ tarea.titulo || tarea.descripcion || 'Sub Actividad sin título' }}
                             </v-list-item-title>
                             <template v-slot:prepend>
                               <v-icon :color="getStatusColorTarea(tarea.estado)">
@@ -344,7 +400,7 @@
                             </template>
                             <template v-slot:append>
                               <div class="d-flex">
-                                <!-- Solicitud de Fondos para TAREA -->
+                                <!-- Solicitud de Fondos para SUBACTIVIDAD -->
                                 <div class="d-flex flex-column align-center justify-center">
                                   <v-tooltip text="Solicitud de Fondos" location="top">
                                     <template v-slot:activator="{ props }">
@@ -355,10 +411,9 @@
                                         variant="text"
                                         color="primary"
                                         size="x-small"
-                                        :to="`/monitoreo/formulario01/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="getFormularioUrl('formulario01', actividad, tarea.id)"
                                         @click.stop
                                       ></v-btn>
-                                      <!-- :disabled="getSolicitudFondosInfo(actividad.id, tarea.id)?.bloquearIconosSolFondos || pruebaBloqueo" -->
                                     </template>
                                   </v-tooltip>
 
@@ -371,14 +426,19 @@
                                         variant="text"
                                         color="primary"
                                         size="x-small"
-                                        @click.stop="abrirDialogValidar(actividad.id, tarea.id)"
+                                        @click.stop="
+                                          abrirDialogValidar(
+                                            actividad.id,
+                                            tarea.id,
+                                            getActividadTipo(actividad),
+                                          )
+                                        "
                                       ></v-btn>
-                                      <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                                     </template>
                                   </v-tooltip>
                                 </div>
 
-                                <!-- Solicitud de Viaje para TAREA se cambio de 1 a 5-->
+                                <!-- Solicitud de Viaje para SUBACTIVIDAD -->
                                 <div class="d-flex flex-column align-center justify-center">
                                   <v-tooltip text="Solicitud de Viaje" location="top">
                                     <template v-slot:activator="{ props }">
@@ -389,7 +449,7 @@
                                         variant="text"
                                         color="deep-purple"
                                         size="x-small"
-                                        :to="`/monitoreo/formulario05/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="getFormularioUrl('formulario05', actividad, tarea.id)"
                                         @click.stop
                                       ></v-btn>
                                     </template>
@@ -405,18 +465,25 @@
                                         color="deep-purple"
                                         size="x-small"
                                         :disabled="
-                                          getSolicitudFondosInfo(actividad.id)
-                                            ?.bloquearIconosSolFondos && false
+                                          getSolicitudFondosInfo(
+                                            actividad.id,
+                                            tarea.id,
+                                            getActividadTipo(actividad),
+                                          )?.bloquearIconosSolFondos && false
                                         "
                                         @click.stop="
-                                          abrirDialogViajeValidar(actividad.id, tarea.id)
+                                          abrirDialogViajeValidar(
+                                            actividad.id,
+                                            tarea.id,
+                                            getActividadTipo(actividad),
+                                          )
                                         "
                                       ></v-btn>
                                     </template>
                                   </v-tooltip>
                                 </div>
 
-                                <!-- Solicitud de Pago Directo para TAREA se cambio de 1 a 5-->
+                                <!-- Solicitud de Pago Directo para SUBACTIVIDAD -->
                                 <div class="d-flex flex-column align-center justify-center">
                                   <v-tooltip text="Solicitud de Pago Directo" location="top">
                                     <template v-slot:activator="{ props }">
@@ -427,7 +494,7 @@
                                         variant="text"
                                         color="teal-lighten-2"
                                         size="x-small"
-                                        :to="`/monitoreo/formulario08/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="getFormularioUrl('formulario08', actividad, tarea.id)"
                                         @click.stop
                                       ></v-btn>
                                     </template>
@@ -446,18 +513,25 @@
                                         color="teal-lighten-2"
                                         size="x-small"
                                         :disabled="
-                                          getSolicitudFondosInfo(actividad.id)
-                                            ?.bloquearIconosSolFondos && false
+                                          getSolicitudFondosInfo(
+                                            actividad.id,
+                                            tarea.id,
+                                            getActividadTipo(actividad),
+                                          )?.bloquearIconosSolFondos && false
                                         "
                                         @click.stop="
-                                          abrirDialogPagoDirectoValidar(actividad.id, tarea.id)
+                                          abrirDialogPagoDirectoValidar(
+                                            actividad.id,
+                                            tarea.id,
+                                            getActividadTipo(actividad),
+                                          )
                                         "
                                       ></v-btn>
                                     </template>
                                   </v-tooltip>
                                 </div>
 
-                                <!-- Solicitud de Reposición para TAREA -->
+                                <!-- Solicitud de Reposición para SUBACTIVIDAD -->
                                 <div class="d-flex flex-column align-center justify-center">
                                   <v-tooltip text="Solicitud de Reposición" location="top">
                                     <template v-slot:activator="{ props }">
@@ -468,7 +542,7 @@
                                         variant="text"
                                         color="warning"
                                         size="x-small"
-                                        :to="`/monitoreo/formulario03/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="getFormularioUrl('formulario03', actividad, tarea.id)"
                                         @click.stop
                                       ></v-btn>
                                     </template>
@@ -487,18 +561,27 @@
                                         color="warning"
                                         size="x-small"
                                         @click.stop="
-                                          abrirDialogReposicionValidar(actividad.id, tarea.id)
+                                          abrirDialogReposicionValidar(
+                                            actividad.id,
+                                            tarea.id,
+                                            getActividadTipo(actividad),
+                                          )
                                         "
                                       ></v-btn>
-                                      <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                                     </template>
                                   </v-tooltip>
                                 </div>
 
-                                <!-- Rendición de cuentas para TAREAS-->
+                                <!-- Rendición de cuentas para SUBACTIVIDADES-->
                                 <div class="d-flex flex-column align-center justify-center">
                                   <v-tooltip
-                                    :text="getRendicionText(actividad.id, tarea.id)"
+                                    :text="
+                                      getRendicionText(
+                                        actividad.id,
+                                        tarea.id,
+                                        getActividadTipo(actividad),
+                                      )
+                                    "
                                     location="top"
                                   >
                                     <template v-slot:activator="{ props }">
@@ -510,7 +593,7 @@
                                         color="error"
                                         size="x-small"
                                         :disabled="false"
-                                        :to="`/monitoreo/formulario02/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="getFormularioUrl('formulario02', actividad, tarea.id)"
                                         @click.stop
                                       ></v-btn>
                                     </template>
@@ -526,15 +609,18 @@
                                         color="error"
                                         size="x-small"
                                         @click.stop="
-                                          abrirDialogRendicionValidar(actividad.id, tarea.id)
+                                          abrirDialogRendicionValidar(
+                                            actividad.id,
+                                            tarea.id,
+                                            getActividadTipo(actividad),
+                                          )
                                         "
                                       ></v-btn>
-                                      <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                                     </template>
                                   </v-tooltip>
                                 </div>
 
-                                <!-- Informe de Actividad para TAREA -->
+                                <!-- Informe de Actividad para SUBACTIVIDAD -->
                                 <v-tooltip text="Informe de Actividad" location="top">
                                   <template v-slot:activator="{ props }">
                                     <v-btn
@@ -544,7 +630,7 @@
                                       variant="text"
                                       color="info"
                                       size="small"
-                                      :to="`/monitoreo/formularioinf/${actividad.id}?tarea_id=${tarea.id}`"
+                                      :to="getFormularioUrl('formularioinf', actividad, tarea.id)"
                                       @click.stop
                                     ></v-btn>
                                   </template>
@@ -553,7 +639,7 @@
                                 <!-- Separador visual -->
                                 <v-divider vertical inset class="mx-1 my-1"></v-divider>
 
-                                <!-- Acciones de tarea -->
+                                <!-- Acciones de SUBACTIVIDAD -->
                                 <v-tooltip text="Editar Sub Actividad" location="top">
                                   <template v-slot:activator="{ props }">
                                     <v-btn
@@ -562,7 +648,13 @@
                                       variant="text"
                                       color="warning"
                                       size="small"
-                                      @click.stop="openTareaDialog(actividad.id, tarea)"
+                                      @click.stop="
+                                        openTareaDialog(
+                                          actividad.id,
+                                          getActividadTipo(actividad),
+                                          tarea,
+                                        )
+                                      "
                                     ></v-btn>
                                   </template>
                                 </v-tooltip>
@@ -574,7 +666,13 @@
                                       variant="text"
                                       color="error"
                                       size="small"
-                                      @click.stop="confirmDeleteTarea(actividad.id, tarea)"
+                                      @click.stop="
+                                        confirmDeleteTarea(
+                                          actividad.id,
+                                          getActividadTipo(actividad),
+                                          tarea,
+                                        )
+                                      "
                                     ></v-btn>
                                   </template>
                                 </v-tooltip>
@@ -695,13 +793,13 @@
       <v-card>
         <v-toolbar
           color="secondary"
-          :title="isEditandoTarea ? 'Editar Tarea' : 'Nueva Tarea'"
+          :title="isEditandoTarea ? 'Editar Sub Actividad' : 'Nueva Sub Actividad'"
         ></v-toolbar>
         <v-card-text>
           <v-form ref="tareaFormRef" @submit.prevent="saveTarea">
             <v-text-field
               v-model="tareaForm.titulo"
-              label="Título de la tarea"
+              label="Título de la sub actividad"
               :rules="[(v) => !!v || 'El título es requerido']"
               variant="outlined"
               class="mt-4"
@@ -732,9 +830,9 @@
 
     <v-dialog v-model="deleteTareaDialog" max-width="400">
       <v-card>
-        <v-card-title class="text-h5">Confirmar eliminación de tarea</v-card-title>
+        <v-card-title class="text-h5">Confirmar eliminación de sub actividad</v-card-title>
         <v-card-text>
-          ¿Estás seguro de que deseas eliminar la tarea "{{
+          ¿Estás seguro de que deseas eliminar la sub actividad "{{
             tareaToDelete?.titulo || tareaToDelete?.descripcion || 'Sin título'
           }}"?
         </v-card-text>
@@ -795,7 +893,6 @@
               >No tienes validacion de solicitudes pendientes</v-list-item-title
             >
           </v-list-item>
-          <!-- <pre>{{ datosFormulario1.solicitudes }}</pre> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -835,7 +932,6 @@
               >No tienes validacion de solicitudes pendientes</v-list-item-title
             >
           </v-list-item>
-          <!-- <pre>{{ datosFormularioParaDialogRC }}</pre> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -888,8 +984,6 @@
               >No tienes validacion de solicitudes pendientes</v-list-item-title
             >
           </v-list-item>
-          <!-- {{ '****************************************' }}
-            <pre>{{ datosFormularioValidarRC.rendiciones }}</pre> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -982,8 +1076,6 @@
               >No tienes validacion de solicitudes pendientes</v-list-item-title
             >
           </v-list-item>
-          <!-- <pre>{{ datosFormularioValidarSR }}</pre> -->
-          <!-- <pre>{{ datosFormularioValidarSR.solicitudes }}</pre> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -1036,7 +1128,6 @@
               >No tienes validacion de solicitudes pendientes</v-list-item-title
             >
           </v-list-item>
-          <!-- <pre>{{ listaSolicitudesDeViaje }}</pre> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -1089,7 +1180,6 @@
               >No tienes validacion de solicitudes pendientes</v-list-item-title
             >
           </v-list-item>
-          <!-- <pre>{{ listaSolicitudesDeViaje }}</pre> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -1098,9 +1188,6 @@
       </v-card>
     </v-dialog>
   </v-container>
-  <!-- {{ '********************************' }}
-     <pre>{{ datosFormulario2 }}</pre> -->
-  <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
 </template>
 
 <script setup>
@@ -1113,13 +1200,8 @@ import { useRouter } from 'vue-router'
 import { useListaActividadesTareasStore } from '@/modules/formularios/store/useListaActividadesTaresStore'
 
 const router = useRouter()
-//const route = useRoute()
-// const idActividad = route.params.id || null
-// const idTarea = route.query.tarea_id || null
-// console.log('ID de Actividad:', idActividad)
-// console.log('ID de Tarea:', idTarea)
-
 const userStore = useUserStore()
+
 const usuario = computed(() => {
   return {
     nombre: userStore.usuario,
@@ -1127,17 +1209,17 @@ const usuario = computed(() => {
   }
 })
 
-//Inicializar el store
+// Inicializar el store
 const storeActividades = useListaActividadesTareasStore()
 
-//variables para carga de datos
+// Variables para carga de datos
 const datosFormulario = ref(null)
 const datosFormulario1 = ref(null)
 const datosFormularioRC = ref(null)
-const datosFormularioValidarRC = ref(null) //viene de funcion cargarRendicionesDeCuenta
-const datosFormularioValidarSR = ref(null) //viene de funcion cargarSolicitudDeReposicion
-const listaSolicitudesDeViaje = ref(null) //viene de funcion cargarSolicitudDeViaje
-const listaSolicitudesDePagoDirecto = ref(null) //viene defuncion cargarSolicitudDePagoDirecto
+const datosFormularioValidarRC = ref(null)
+const datosFormularioValidarSR = ref(null)
+const listaSolicitudesDeViaje = ref(null)
+const listaSolicitudesDePagoDirecto = ref(null)
 const error = ref(null)
 const isLoading = ref(false)
 
@@ -1153,11 +1235,10 @@ const loading = ref(true)
 const emptyResponse = ref(false)
 const searchQuery = ref('')
 const statusFilters = ref([])
-const expandedActividadId = ref(null)
+const expandedActividadKey = ref(null) // Cambiado para usar clave única
 
+// Variables para diálogos
 const dialogValidarSolicitud = ref(false)
-const solicitudSeleccionada = ref(null)
-
 const dialogRendicionCuentas = ref(false)
 const dialogRendicionCuentasValidar = ref(false)
 const dialogReposicion = ref(false)
@@ -1173,6 +1254,7 @@ const itemsPerPage = ref(10)
 const tareaDialog = ref(false)
 const tareaForm = ref({ id: null, titulo: '', descripcion: '', estado: 'PEN' })
 const actividadIdParaTarea = ref(null)
+const actividadTipoParaTarea = ref(null) // 'proyecto' o 'pei'
 const isEditandoTarea = ref(false)
 const tareaFormRef = ref(null)
 
@@ -1180,11 +1262,12 @@ const tareaFormRef = ref(null)
 const deleteTareaDialog = ref(false)
 const tareaToDelete = ref(null)
 const actividadIdParaEliminarTarea = ref(null)
-const procedenciaFilter = ref(null)
+const actividadTipoParaEliminarTarea = ref(null)
 
 // Variables para almacenar los IDs temporalmente
 const actividadIdParaValidar = ref(null)
 const tareaIdParaValidar = ref(null)
+const actividadTipoParaValidar = ref(null) // Nuevo: tipo de actividad
 
 // Notificaciones
 const snackbar = ref({ show: false, text: '', color: 'success' })
@@ -1212,9 +1295,195 @@ const availableStatusesTarea = [
   { text: 'Completada', value: 'COMPL' },
 ]
 
-// --- MÉTODOS Y COMPUTADAS ---
+// --- FUNCIONES AUXILIARES PARA MANEJAR CLAVES ÚNICAS ---
 
-// Mapeo de estados del backend al frontend
+// Generar clave única para actividad (evita conflictos de IDs)
+const getActividadKey = (actividad) => {
+  // Usar prefijo para distinguir entre proyecto y PEI
+  const prefix = actividad.proyecto_id ? 'proyecto' : 'pei'
+  return `${prefix}-${actividad.id}`
+}
+
+// Generar clave única para tarea
+const getTareaKey = (actividad, tarea) => {
+  const actividadKey = getActividadKey(actividad)
+  return `${actividadKey}-tarea-${tarea.id}`
+}
+
+// Determinar tipo de actividad
+const getActividadTipo = (actividad) => {
+  return actividad.proyecto_id ? 'proyecto' : 'pei'
+}
+
+// --- FUNCIONES PARA GENERAR URLs DINÁMICAS ---
+
+// Función para obtener la URL correcta según el tipo de actividad
+const getFormularioUrl = (formulario, actividad, tareaId = null) => {
+  const basePath = actividad.proyecto_id ? '/monitoreo' : '/monitoreo/pei'
+  let url = `${basePath}/${formulario}/${actividad.id}`
+
+  if (tareaId) {
+    url += `?tarea_id=${tareaId}`
+  }
+
+  return url
+}
+
+// --- FUNCIONES PARA ABRIR DIÁLOGOS ---
+
+const abrirDialogValidar = async (actividadId, tareaId = null, actividadTipo = null) => {
+  actividadIdParaValidar.value = actividadId
+  tareaIdParaValidar.value = tareaId
+  actividadTipoParaValidar.value = actividadTipo
+
+  try {
+    await cargarDatos()
+    if (datosFormulario.value) {
+      await cargarSolicitudFondos()
+    }
+  } catch (error) {
+    console.error('Error al cargar datos iniciales:', error)
+    mostrarSnackbar('Error al cargar datos iniciales', 'error')
+  }
+
+  dialogValidarSolicitud.value = true
+}
+
+const abrirDialogRendicionValidar = async (actividadId, tareaId = null, actividadTipo = null) => {
+  actividadIdParaValidar.value = actividadId
+  tareaIdParaValidar.value = tareaId
+  actividadTipoParaValidar.value = actividadTipo
+
+  try {
+    await cargarDatos()
+    if (datosFormulario.value) {
+      await cargarRendicionesDeCuenta()
+    }
+  } catch (error) {
+    console.error('Error al cargar datos iniciales:', error)
+    mostrarSnackbar('Error al cargar datos iniciales', 'error')
+  }
+
+  dialogRendicionCuentasValidar.value = true
+}
+
+const abrirDialogReposicionValidar = async (actividadId, tareaId = null, actividadTipo = null) => {
+  actividadIdParaValidar.value = actividadId
+  tareaIdParaValidar.value = tareaId
+  actividadTipoParaValidar.value = actividadTipo
+
+  try {
+    await cargarDatos()
+    if (datosFormulario.value) {
+      await cargarSolicitudFondos()
+      await cargarSolicitudDeReposicion()
+    }
+  } catch (error) {
+    console.error('Error al cargar datos iniciales:', error)
+    mostrarSnackbar('Error al cargar datos iniciales', 'error')
+  }
+
+  dialogReposicionValidar.value = true
+}
+
+const abrirDialogViajeValidar = async (actividadId, tareaId = null, actividadTipo = null) => {
+  actividadIdParaValidar.value = actividadId
+  tareaIdParaValidar.value = tareaId
+  actividadTipoParaValidar.value = actividadTipo
+
+  await cargarSolicitudDeViaje()
+  dialogViajeValidar.value = true
+}
+
+const abrirDialogPagoDirectoValidar = async (actividadId, tareaId = null, actividadTipo = null) => {
+  actividadIdParaValidar.value = actividadId
+  tareaIdParaValidar.value = tareaId
+  actividadTipoParaValidar.value = actividadTipo
+
+  await cargarSolicitudDePagoDirecto()
+  dialogPagoDirectoValidar.value = true
+}
+
+// --- FUNCIONES PARA ABRIR FORMULARIOS ESPECÍFICOS ---
+
+const abrirFormulario011 = (idSolicitudF) => {
+  const basePath = actividadTipoParaValidar.value === 'proyecto' ? '/monitoreo' : '/monitoreo/pei'
+  const routeConfig = {
+    path: `${basePath}/formulario011/${actividadIdParaValidar.value}`,
+    query: {
+      solicitud_id: idSolicitudF,
+    },
+  }
+
+  if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
+    routeConfig.query.tarea_id = tareaIdParaValidar.value
+  }
+
+  router.push(routeConfig)
+}
+
+const abrirFormularioRendicionC = (idSolicitudF) => {
+  const basePath = actividadTipoParaValidar.value === 'proyecto' ? '/monitoreo' : '/monitoreo/pei'
+  router.push({
+    path: `${basePath}/formulario02/${actividadIdParaValidar.value}`,
+    query: {
+      solicitud_id: idSolicitudF,
+    },
+  })
+}
+
+const abrirFormularioRendicionCuentasValidar = (idSolicitudF) => {
+  const basePath = actividadTipoParaValidar.value === 'proyecto' ? '/monitoreo' : '/monitoreo/pei'
+  router.push({
+    path: `${basePath}/formulario022/${actividadIdParaValidar.value}`,
+    query: {
+      solicitud_id: idSolicitudF,
+    },
+  })
+}
+
+const abrirFormulario03 = (idSolicitudF) => {
+  const basePath = actividadTipoParaValidar.value === 'proyecto' ? '/monitoreo' : '/monitoreo/pei'
+  router.push({
+    path: `${basePath}/formulario03/${actividadIdParaValidar.value}`,
+    query: {
+      solicitud_id: idSolicitudF,
+    },
+  })
+}
+
+const abrirFormularioReposicion = (idSolicitudR) => {
+  const basePath = actividadTipoParaValidar.value === 'proyecto' ? '/monitoreo' : '/monitoreo/pei'
+  router.push({
+    path: `${basePath}/formulario033/${actividadIdParaValidar.value}`,
+    query: {
+      solicitud_id: idSolicitudR,
+    },
+  })
+}
+
+const abrirFormularioSolicitudDeViajeParaValidar = (idSolicitudDeViaje) => {
+  const basePath = actividadTipoParaValidar.value === 'proyecto' ? '/monitoreo' : '/monitoreo/pei'
+  router.push({
+    path: `${basePath}/formulario055/${actividadIdParaValidar.value}`,
+    query: {
+      solicitud_id: idSolicitudDeViaje,
+    },
+  })
+}
+
+const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudDePagoDirecto) => {
+  const basePath = actividadTipoParaValidar.value === 'proyecto' ? '/monitoreo' : '/monitoreo/pei'
+  router.push({
+    path: `${basePath}/formulario088/${actividadIdParaValidar.value}`,
+    query: {
+      solicitud_id: idSolicitudDePagoDirecto,
+    },
+  })
+}
+
+// --- MÉTODOS Y COMPUTADAS EXISTENTES MODIFICADAS ---
+
 const mapEstadoBackendToFrontend = (estadoBackend) => {
   const estadoMap = {
     CRD: 'PE',
@@ -1226,7 +1495,6 @@ const mapEstadoBackendToFrontend = (estadoBackend) => {
     FIN: 'CO',
   }
 
-  // Si es un estado de tarea, devolverlo sin cambios
   if (['PEN', 'EPROG', 'COMPL'].includes(estadoBackend)) {
     return estadoBackend
   }
@@ -1253,164 +1521,6 @@ const getStatusColor = (status) => {
   }
 }
 
-const abrirFormulario011 = (idSolicitudF) => {
-  const routeConfig = {
-    path: `/monitoreo/formulario011/${actividadIdParaValidar.value}`,
-    query: {
-      solicitud_id: idSolicitudF,
-    },
-  }
-
-  // Add tarea_id to query if it exists
-  if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
-    routeConfig.query.tarea_id = tareaIdParaValidar.value
-  }
-
-  router.push(routeConfig)
-}
-
-const abrirFormularioRendicionC = (idSolicitudF) => {
-  router.push({
-    path: `/monitoreo/formulario02/${actividadIdParaValidar.value}`,
-    query: {
-      solicitud_id: idSolicitudF,
-    },
-  })
-}
-
-const abrirFormularioRendicionCuentasValidar = (idSolicitudF) => {
-  router.push({
-    path: `/monitoreo/formulario022/${actividadIdParaValidar.value}`,
-    query: {
-      solicitud_id: idSolicitudF,
-    },
-  })
-}
-
-const abrirFormulario03 = (idSolicitudF) => {
-  router.push({
-    path: `/monitoreo/formulario03/${actividadIdParaValidar.value}`,
-    query: {
-      solicitud_id: idSolicitudF,
-    },
-  })
-}
-
-const abrirFormularioReposicion = (idSolicitudR) => {
-  router.push({
-    path: `/monitoreo/formulario033/${actividadIdParaValidar.value}`,
-    query: {
-      solicitud_id: idSolicitudR,
-    },
-  })
-}
-
-const abrirFormularioSolicitudDeViajeParaValidar = (idSolicitudDeViaje) => {
-  router.push({
-    path: `/monitoreo/formulario055/${actividadIdParaValidar.value}`,
-    query: {
-      solicitud_id: idSolicitudDeViaje,
-    },
-  })
-}
-
-const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudDePagoDirecto) => {
-  router.push({
-    path: `/monitoreo/formulario088/${actividadIdParaValidar.value}`,
-    query: {
-      solicitud_id: idSolicitudDePagoDirecto,
-    },
-  })
-}
-
-const abrirDialogValidar = async (actividadId, tareaId) => {
-  //tareaId = null
-  // Guardar los IDs para usarlos en las funciones
-  actividadIdParaValidar.value = actividadId
-  tareaIdParaValidar.value = tareaId
-  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId) //es usado para habilitar iconos
-  // console.log('55555555555555555', JSON.stringify(actividadIdParaValidar,null,2))
-
-  // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
-  try {
-    await cargarDatos()
-    if (datosFormulario.value) {
-      await cargarSolicitudFondos()
-    }
-  } catch (error) {
-    console.error('Error al cargar datos iniciales:', error)
-    mostrarSnackbar('Error al cargar datos iniciales', 'error')
-  }
-
-  dialogValidarSolicitud.value = true
-}
-
-const abrirDialogRendicionValidar = async (actividadId, tareaId = null) => {
-  // Guardar los IDs para usarlos en las funciones
-  actividadIdParaValidar.value = actividadId
-  tareaIdParaValidar.value = tareaId
-  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId) //habilita iconos
-
-  // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
-  try {
-    await cargarDatos()
-    if (datosFormulario.value) {
-      //await cargarSolicitudFondos();
-      await cargarRendicionesDeCuenta()
-    }
-  } catch (error) {
-    console.error('Error al cargar datos iniciales:', error)
-    mostrarSnackbar('Error al cargar datos iniciales', 'error')
-  }
-
-  dialogRendicionCuentasValidar.value = true
-}
-
-const abrirDialogReposicionValidar = async (actividadId, tareaId = null) => {
-  // Guardar los IDs para usarlos en las funciones
-  actividadIdParaValidar.value = actividadId
-  tareaIdParaValidar.value = tareaId
-  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)
-
-  // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
-  try {
-    await cargarDatos()
-    if (datosFormulario.value) {
-      await cargarSolicitudFondos()
-      await cargarSolicitudDeReposicion()
-    }
-  } catch (error) {
-    console.error('Error al cargar datos iniciales:', error)
-    mostrarSnackbar('Error al cargar datos iniciales', 'error')
-  }
-
-  dialogReposicionValidar.value = true
-}
-
-const abrirDialogViajeValidar = async (actividadId, tareaId = null) => {
-  // Guardar los IDs para usarlos en las funciones
-  actividadIdParaValidar.value = actividadId
-  tareaIdParaValidar.value = tareaId
-  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)
-
-  // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
-  await cargarSolicitudDeViaje()
-
-  dialogViajeValidar.value = true
-}
-
-const abrirDialogPagoDirectoValidar = async (actividadId, tareaId = null) => {
-  // Guardar los IDs para usarlos en las funciones
-  actividadIdParaValidar.value = actividadId
-  tareaIdParaValidar.value = tareaId
-  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)
-
-  // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
-  await cargarSolicitudDePagoDirecto()
-
-  dialogPagoDirectoValidar.value = true
-}
-
 const getEstadoTexto = (status) => {
   const estado = availableStatuses.find((s) => s.value === status)
   return estado ? estado.text : 'Desconocido'
@@ -1421,20 +1531,20 @@ onMounted(async () => {
   await cargar()
 })
 
-// Modificar la función cargar para que también cargue las solicitudes de fondos
+// Modificar la función cargar para agregar tipo a las actividades
 const cargar = async () => {
   loading.value = true
   try {
     await Promise.all([
       actividadesTareas(),
-      cargarSolicitudesFondos(), // Cargar solicitudes de fondos en paralelo
+      cargarSolicitudesFondos(),
       storeActividades.cargarActividadesConTareas(),
     ])
 
-    // [Procesamiento existente de actividades]
     if (Array.isArray(storeActividades.actividadesFromApi)) {
       actividades.value = storeActividades.actividadesFromApi.map((actividad) => ({
         ...actividad,
+        tipo: getActividadTipo(actividad), // Agregar tipo
         estadoFrontend: mapEstadoBackendToFrontend(actividad.estado),
         tareas: Array.isArray(actividad.tareas)
           ? actividad.tareas.map((tarea) => ({
@@ -1458,40 +1568,10 @@ const cargar = async () => {
   }
 }
 
-// Alternativa usando fetch en lugar de axios
-const cargarSolicitudesFondos = async () => {
-  loadingSolicitudes.value = true
-  try {
-    //console.log('Cargando solicitudes de fondos con fetch...')
-
-    const response = await fetch('http://127.0.0.1:8000/api/solicitud-fondos/', {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`)
-    }
-
-    const data = await response.json()
-    //console.log('Datos recibidos con fetch:', data)
-    solicitudesFondos.value = data
-  } catch (error) {
-    console.error('Error con fetch:', error)
-    mostrarSnackbar(`Error al cargar solicitudes: ${error.message}`, 'error')
-  } finally {
-    loadingSolicitudes.value = false
-  }
-}
-
-// Obtener información de solicitud de fondos para una actividad (y opcionalmente una tarea)
-const getSolicitudFondosInfo = (actividadId, tareaId = null) => {
+// Modificar getSolicitudFondosInfo para incluir tipo
+const getSolicitudFondosInfo = (actividadId, tareaId = null, actividadTipo = null) => {
   if (!solicitudesFondos.value.length) return null
 
-  // Buscar solicitud que coincida con actividad y tarea (si se proporciona)
   const solicitud = solicitudesFondos.value.find((sf) => {
     const matchActividad = sf.actividad === actividadId
     const matchTarea = tareaId ? sf.tarea === tareaId : true
@@ -1501,389 +1581,27 @@ const getSolicitudFondosInfo = (actividadId, tareaId = null) => {
   return solicitud || null
 }
 
-// Obtener texto para el tooltip de rendición de cuentas
-const getRendicionText = (actividadId, tareaId = null) => {
-  const solicitud = getSolicitudFondosInfo(actividadId, tareaId)
+// Modificar getRendicionText para incluir tipo
+const getRendicionText = (actividadId, tareaId = null, actividadTipo = null) => {
+  const solicitud = getSolicitudFondosInfo(actividadId, tareaId, actividadTipo)
   if (solicitud && solicitud.numeroFormulario) {
     return `Rendición de Cuentas (${solicitud.numeroFormulario})`
   }
   return 'Rendición de Cuentas - Pendiente solicitud'
 }
 
-async function cargarDatos() {
-  isLoading.value = true
-  error.value = null
-  try {
-    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/obtener-datos-formulario/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id_actividad: actividadIdParaValidar.value,
-        usuario: usuario.value.nombre,
-      }),
-    })
-    //console.log('00000000000000000000000000000', actividadIdParaValidar.value, usuario.value.nombre)
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(
-        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
-      )
-    }
-
-    const rawData = await response.json()
-    datosFormulario.value = strictSanitizeData(rawData)
-    //console.log('Datos cargados exitosamente:', datosFormulario.value)
-  } catch (err) {
-    error.value = err.message
-    console.error('Ha ocurrido un error:', err)
-  } finally {
-    isLoading.value = false
-    cargandoGeneral.value = false
-  }
+// Modificar toggleExpanded para usar clave única
+const toggleExpanded = (key) => {
+  expandedActividadKey.value = expandedActividadKey.value === key ? null : key
 }
 
-async function cargarSolicitudFondos() {
-  isLoading.value = true
-  error.value = null
-  try {
-    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudFondos/', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+// --- CRUD TAREAS MODIFICADO ---
 
-    if (!response.ok) {
-      throw new Error(`Error en la solicitud: ${response.status}`)
-    }
-
-    const data = await response.json()
-    //console.log('Datos recibidoswwwwwwwwwwwwwwwww:', data)
-
-    // Filtrar las solicitudes por actividad_id y tarea_id
-    const solicitudesFiltradas = data.solicitudes.filter((solicitud) => {
-      const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value
-      const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
-      return coincideActividad && coincideTarea //&& coincideValidacionResp && coincideValidacionCoord
-    })
-    datosFormulario1.value = {
-      estado: 'exito',
-      solicitudes: solicitudesFiltradas,
-    }
-
-    const solicitudesFiltradasParaRC = data.solicitudes.filter((solicitud) => {
-      const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value
-      const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
-      const coincideValidacionResp = solicitud.validacionResponsable === true
-      const coincideValidacionCoord = solicitud.validacionCoordinador === true
-      return coincideActividad && coincideTarea && coincideValidacionResp && coincideValidacionCoord
-    })
-    datosFormularioRC.value = {
-      estado: 'exito',
-      solicitudes: solicitudesFiltradasParaRC,
-    }
-
-    //console.log('Solicitudes filtradas:', JSON.stringify(datosFormulario1.value,null,2), actividadIdParaValidar.value, tareaIdParaValidar.value)
-  } catch (err) {
-    error.value = err.message
-    console.error('Error al cargar solicitudes:', err)
-  } finally {
-    isLoading.value = false
-    cargandoGeneral.value = false
-  }
-}
-
-function sanitizeData(data) {
-  if (data === null || data === undefined) {
-    return ''
-  }
-
-  if (typeof data === 'string') {
-    // Limpiar strings: trim y convertir empty strings a ''
-    const trimmed = data.trim()
-    return trimmed === '' ? '' : trimmed
-  }
-
-  if (typeof data === 'number') {
-    // Validar que sea un número finito
-    return isFinite(data) ? data : 0
-  }
-
-  if (typeof data === 'boolean') {
-    return data
-  }
-
-  if (Array.isArray(data)) {
-    // Sanitizar cada elemento del array
-    return data
-      .map((item) => sanitizeData(item))
-      .filter((item) => item !== null && item !== undefined && item !== '')
-  }
-
-  if (typeof data === 'object') {
-    const sanitized = {}
-    for (const key in data) {
-      if (Object.prototype.hasOwnProperty.call(data, key)) {
-        //if (data.hasOwnProperty(key)) {
-        const value = data[key]
-        // Solo incluir propiedades con valores válidos
-        if (value !== null && value !== undefined && value !== '') {
-          sanitized[key] = sanitizeData(value)
-        }
-      }
-    }
-    return sanitized
-  }
-
-  // Para cualquier otro tipo de dato, retornar string vacío
-  return ''
-}
-
-function strictSanitizeData(data) {
-  const sanitized = sanitizeData(data)
-
-  // Si el resultado es un objeto vacío, retornar string vacío
-  if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
-    if (Object.keys(sanitized).length === 0) {
-      return ''
-    }
-  }
-
-  return sanitized
-}
-
-async function cargarRendicionesDeCuenta() {
-  isLoading.value = true
-  error.value = null
-  try {
-    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerRendicionDeCuentas/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id_actividad: actividadIdParaValidar.value,
-        id_tarea: tareaIdParaValidar.value,
-        //usuario: usuario.value.nombre,
-      }),
-    })
-    //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(
-        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
-      )
-    }
-
-    const rawData = await response.json()
-    //console.log('Datos recibidos para RC:', JSON.stringify(rawData,null,2))
-
-    datosFormularioValidarRC.value = strictSanitizeData(rawData)
-    //console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarRC.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
-  } catch (err) {
-    error.value = err.message
-    console.error('Ha ocurrido un error:', err)
-  } finally {
-    isLoading.value = false
-    cargandoGeneral.value = false
-  }
-}
-
-async function cargarSolicitudDeReposicion() {
-  isLoading.value = true
-  error.value = null
-  try {
-    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudReembolso/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id_actividad: actividadIdParaValidar.value,
-        id_tarea: tareaIdParaValidar.value,
-        //usuario: usuario.value.nombre,
-      }),
-    })
-    //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(
-        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
-      )
-    }
-
-    const rawData = await response.json()
-    //console.log('SoicitudDeReposicion Recibido:', JSON.stringify(rawData,null,2))
-
-    datosFormularioValidarSR.value = strictSanitizeData(rawData)
-    //console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarSR.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
-  } catch (err) {
-    error.value = err.message
-    console.error('Ha ocurrido un error:', err)
-  } finally {
-    isLoading.value = false
-    cargandoGeneral.value = false
-  }
-}
-
-async function cargarSolicitudDeViaje() {
-  isLoading.value = true
-  error.value = null
-  try {
-    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudesViaje/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id_actividad: actividadIdParaValidar.value,
-        id_tarea: tareaIdParaValidar.value,
-        //usuario: usuario.value.nombre,
-      }),
-    })
-    //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(
-        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
-      )
-    }
-
-    const rawData = await response.json()
-    //console.log('SoicitudDeViaje Recibido:', JSON.stringify(rawData,null,2))
-
-    listaSolicitudesDeViaje.value = strictSanitizeData(rawData.solicitudes)
-    //console.log('Datos cargados exitosamente:', JSON.stringify(listaSolicitudesDeViaje.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
-  } catch (err) {
-    error.value = err.message
-    console.error('Ha ocurrido un error:', err)
-  } finally {
-    isLoading.value = false
-    cargandoGeneral.value = false
-  }
-}
-
-async function cargarSolicitudDePagoDirecto() {
-  isLoading.value = true
-  error.value = null
-  try {
-    const response = await fetch(
-      'http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudesPagoDirecto/',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id_actividad: actividadIdParaValidar.value,
-          id_tarea: tareaIdParaValidar.value,
-          //usuario: usuario.value.nombre,
-        }),
-      },
-    )
-    //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(
-        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
-      )
-    }
-
-    const rawData = await response.json()
-    console.log('SoicitudDePagoDirecto Recibido:', JSON.stringify(rawData, null, 2))
-
-    listaSolicitudesDePagoDirecto.value = strictSanitizeData(rawData.solicitudes)
-    console.log(
-      'Datos cargados exitosamente:',
-      JSON.stringify(listaSolicitudesDePagoDirecto.value, null, 2),
-      actividadIdParaValidar.value,
-      tareaIdParaValidar.value,
-    )
-  } catch (err) {
-    error.value = err.message
-    console.error('Ha ocurrido un error:', err)
-  } finally {
-    isLoading.value = false
-    cargandoGeneral.value = false
-  }
-}
-
-// Función helper para mostrar notificaciones
-const mostrarSnackbar = (texto, color = 'success') => {
-  snackbar.value = {
-    show: true,
-    text: texto,
-    color: color,
-  }
-}
-
-// Lógica de filtros y paginación
-const filteredActividades = computed(() => {
-  if (!Array.isArray(actividades.value)) return []
-
-  let filtered = [...actividades.value]
-
-  // Filtrar por búsqueda
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(
-      (actividad) =>
-        (actividad.codigo && actividad.codigo.toLowerCase().includes(query)) ||
-        (actividad.descripcion && actividad.descripcion.toLowerCase().includes(query)),
-    )
-  }
-  // Filtrar por estado
-  if (statusFilters.value.length > 0) {
-    filtered = filtered.filter((actividad) => statusFilters.value.includes(actividad.estado))
-  }
-  // Filtrar por procedencia de fondos
-  if (procedenciaFilter.value) {
-    filtered = filtered.filter(
-      (actividad) => actividad.procedencia_fondos === procedenciaFilter.value,
-    )
-  }
-  return filtered
-})
-
-const actividadesPaginadas = computed(() => {
-  if (!Array.isArray(filteredActividades.value)) return []
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredActividades.value.slice(start, end)
-})
-
-const totalPages = computed(() => {
-  if (!Array.isArray(filteredActividades.value)) return 0
-  return Math.ceil(filteredActividades.value.length / itemsPerPage.value)
-})
-
-const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
-const endItem = computed(() => {
-  if (!Array.isArray(filteredActividades.value)) return 0
-  const end = currentPage.value * itemsPerPage.value
-  return end > filteredActividades.value.length ? filteredActividades.value.length : end
-})
-
-const countByStatus = (status) => {
-  if (!Array.isArray(filteredActividades.value)) return 0
-  return filteredActividades.value.filter((a) => a.estado === status).length
-}
-
-const toggleExpanded = (id) => {
-  expandedActividadId.value = expandedActividadId.value === id ? null : id
-}
-
-// --- CRUD TAREAS ---
-const openTareaDialog = (actividadId, tarea = null) => {
+const openTareaDialog = (actividadId, actividadTipo, tarea = null) => {
   isEditandoTarea.value = !!tarea
   actividadIdParaTarea.value = actividadId
+  actividadTipoParaTarea.value = actividadTipo
+
   if (isEditandoTarea.value) {
     Object.assign(tareaForm.value, {
       id: tarea.id,
@@ -1897,105 +1615,15 @@ const openTareaDialog = (actividadId, tarea = null) => {
   tareaDialog.value = true
 }
 
-const saveTarea = async () => {
-  const { valid } = await tareaFormRef.value.validate()
-  if (!valid) return
-
-  loading.value = true
-  try {
-    const tareaData = {
-      titulo: tareaForm.value.titulo,
-      descripcion: tareaForm.value.descripcion,
-      estado: tareaForm.value.estado,
-      actividad: actividadIdParaTarea.value,
-    }
-    console.log('Datos de tarea a guardar:', tareaData)
-
-    let resultado
-
-    if (isEditandoTarea.value) {
-      resultado = await tareasServicios.update(tareaForm.value.id, tareaData)
-
-      const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
-      if (actividad && actividad.tareas) {
-        const tareaIndex = actividad.tareas.findIndex((t) => t.id === tareaForm.value.id)
-        if (tareaIndex !== -1) {
-          const tareaActualizada = {
-            ...resultado,
-            estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
-          }
-          actividad.tareas[tareaIndex] = tareaActualizada
-        }
-      }
-
-      mostrarSnackbar('Tarea actualizada con éxito', 'success')
-    } else {
-      console.log('Tarea creada:', actividadIdParaTarea)
-      //resultado = await crearTareaEnActividad(tareaData)
-      resultado = await tareasServicios.crear(tareaData)
-      const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
-      if (actividad) {
-        if (!actividad.tareas) {
-          actividad.tareas = []
-        }
-        const nuevaTarea = {
-          ...resultado,
-          estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
-        }
-        actividad.tareas.push(nuevaTarea)
-      }
-
-      mostrarSnackbar('Tarea creada con éxito', 'success')
-    }
-  } catch (error) {
-    console.error('Error al guardar tarea:', error)
-    mostrarSnackbar(
-      'Error al guardar tarea: ' +
-        (error.response?.data?.message || error.message || 'Error desconocido'),
-      'error',
-    )
-  } finally {
-    loading.value = false
-    tareaDialog.value = false
-    await nextTick()
-    if (tareaFormRef.value) {
-      tareaFormRef.value.reset()
-    }
-  }
-}
-
-const confirmDeleteTarea = (actividadId, tarea) => {
+// Modificar confirmDeleteTarea para incluir tipo
+const confirmDeleteTarea = (actividadId, actividadTipo, tarea) => {
   actividadIdParaEliminarTarea.value = actividadId
+  actividadTipoParaEliminarTarea.value = actividadTipo
   tareaToDelete.value = tarea
   deleteTareaDialog.value = true
 }
 
-const deleteTarea = async () => {
-  loading.value = true
-  try {
-    //await eliminarTareaDeActividad(actividadIdParaEliminarTarea.value, tareaToDelete.value.id)
-
-    await tareasServicios.del(tareaToDelete.value.id)
-    const actividad = actividades.value.find((a) => a.id === actividadIdParaEliminarTarea.value)
-    if (actividad && actividad.tareas) {
-      actividad.tareas = actividad.tareas.filter((t) => t.id !== tareaToDelete.value.id)
-    }
-
-    mostrarSnackbar('Tarea eliminada con éxito', 'success')
-  } catch (error) {
-    console.error('Error al eliminar tarea:', error)
-    mostrarSnackbar(
-      'Error al eliminar tarea: ' +
-        (error.response?.data?.message || error.message || 'Error desconocido'),
-      'error',
-    )
-  } finally {
-    loading.value = false
-    deleteTareaDialog.value = false
-  }
-}
-
-// Funciones auxiliares
+// Funciones auxiliares (sin cambios)
 const getTipoIcon = (status) => {
   switch (status) {
     case 'PLAN':
@@ -2044,18 +1672,462 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('es-ES')
 }
 
+// Modificar actividadesPaginadasOrdenadas para incluir la clave
 const actividadesPaginadasOrdenadas = computed(() => {
   if (!Array.isArray(actividadesPaginadas.value)) return []
 
-  // Ordenar por ID (o fecha de creación si está disponible) de forma descendente
   return [...actividadesPaginadas.value].sort((a, b) => {
-    // Si tienes un campo de fecha de creación, úsalo:
-    // return new Date(b.fecha_creacion) - new Date(a.fecha_creacion);
+    // Primero ordenar por tipo (proyecto primero, luego PEI)
+    if (a.proyecto_id && !b.proyecto_id) return -1
+    if (!a.proyecto_id && b.proyecto_id) return 1
 
-    // Si no, ordenar por ID (asumiendo que IDs más altos son más recientes)
+    // Luego por ID descendente
     return b.id - a.id
   })
 })
+
+// --- FUNCIONES DE CARGA DE DATOS ---
+
+async function cargarDatos() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/obtener-datos-formulario/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_actividad: actividadIdParaValidar.value,
+        usuario: usuario.value.nombre,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+      )
+    }
+
+    const rawData = await response.json()
+    datosFormulario.value = strictSanitizeData(rawData)
+  } catch (err) {
+    error.value = err.message
+    console.error('Ha ocurrido un error:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
+  }
+}
+
+async function cargarSolicitudFondos() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudFondos/', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error en la solicitud: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    // Filtrar las solicitudes por actividad_id y tarea_id
+    const solicitudesFiltradas = data.solicitudes.filter((solicitud) => {
+      const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
+      return coincideActividad && coincideTarea
+    })
+    datosFormulario1.value = {
+      estado: 'exito',
+      solicitudes: solicitudesFiltradas,
+    }
+
+    const solicitudesFiltradasParaRC = data.solicitudes.filter((solicitud) => {
+      const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
+      const coincideValidacionResp = solicitud.validacionResponsable === true
+      const coincideValidacionCoord = solicitud.validacionCoordinador === true
+      return coincideActividad && coincideTarea && coincideValidacionResp && coincideValidacionCoord
+    })
+    datosFormularioRC.value = {
+      estado: 'exito',
+      solicitudes: solicitudesFiltradasParaRC,
+    }
+  } catch (err) {
+    error.value = err.message
+    console.error('Error al cargar solicitudes:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
+  }
+}
+
+async function cargarRendicionesDeCuenta() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerRendicionDeCuentas/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_actividad: actividadIdParaValidar.value,
+        id_tarea: tareaIdParaValidar.value,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+      )
+    }
+
+    const rawData = await response.json()
+    datosFormularioValidarRC.value = strictSanitizeData(rawData)
+  } catch (err) {
+    error.value = err.message
+    console.error('Ha ocurrido un error:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
+  }
+}
+
+async function cargarSolicitudDeReposicion() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudReembolso/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_actividad: actividadIdParaValidar.value,
+        id_tarea: tareaIdParaValidar.value,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+      )
+    }
+
+    const rawData = await response.json()
+    datosFormularioValidarSR.value = strictSanitizeData(rawData)
+  } catch (err) {
+    error.value = err.message
+    console.error('Ha ocurrido un error:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
+  }
+}
+
+async function cargarSolicitudDeViaje() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudesViaje/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_actividad: actividadIdParaValidar.value,
+        id_tarea: tareaIdParaValidar.value,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+      )
+    }
+
+    const rawData = await response.json()
+    listaSolicitudesDeViaje.value = strictSanitizeData(rawData.solicitudes)
+  } catch (err) {
+    error.value = err.message
+    console.error('Ha ocurrido un error:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
+  }
+}
+
+async function cargarSolicitudDePagoDirecto() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const response = await fetch(
+      'http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudesPagoDirecto/',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id_actividad: actividadIdParaValidar.value,
+          id_tarea: tareaIdParaValidar.value,
+        }),
+      },
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
+      )
+    }
+
+    const rawData = await response.json()
+    listaSolicitudesDePagoDirecto.value = strictSanitizeData(rawData.solicitudes)
+  } catch (err) {
+    error.value = err.message
+    console.error('Ha ocurrido un error:', err)
+  } finally {
+    isLoading.value = false
+    cargandoGeneral.value = false
+  }
+}
+
+// --- FUNCIONES DE SANITIZACIÓN ---
+
+function sanitizeData(data) {
+  if (data === null || data === undefined) {
+    return ''
+  }
+
+  if (typeof data === 'string') {
+    const trimmed = data.trim()
+    return trimmed === '' ? '' : trimmed
+  }
+
+  if (typeof data === 'number') {
+    return isFinite(data) ? data : 0
+  }
+
+  if (typeof data === 'boolean') {
+    return data
+  }
+
+  if (Array.isArray(data)) {
+    return data
+      .map((item) => sanitizeData(item))
+      .filter((item) => item !== null && item !== undefined && item !== '')
+  }
+
+  if (typeof data === 'object') {
+    const sanitized = {}
+    for (const key in data) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        const value = data[key]
+        if (value !== null && value !== undefined && value !== '') {
+          sanitized[key] = sanitizeData(value)
+        }
+      }
+    }
+    return sanitized
+  }
+
+  return ''
+}
+
+function strictSanitizeData(data) {
+  const sanitized = sanitizeData(data)
+
+  if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
+    if (Object.keys(sanitized).length === 0) {
+      return ''
+    }
+  }
+
+  return sanitized
+}
+
+// Alternativa usando fetch en lugar de axios
+const cargarSolicitudesFondos = async () => {
+  loadingSolicitudes.value = true
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/solicitud-fondos/', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
+
+    const data = await response.json()
+    solicitudesFondos.value = data
+  } catch (error) {
+    console.error('Error con fetch:', error)
+    mostrarSnackbar(`Error al cargar solicitudes: ${error.message}`, 'error')
+  } finally {
+    loadingSolicitudes.value = false
+  }
+}
+
+// Función helper para mostrar notificaciones
+const mostrarSnackbar = (texto, color = 'success') => {
+  snackbar.value = {
+    show: true,
+    text: texto,
+    color: color,
+  }
+}
+
+// --- CRUD TAREAS ---
+
+const saveTarea = async () => {
+  const { valid } = await tareaFormRef.value.validate()
+  if (!valid) return
+
+  loading.value = true
+  try {
+    const tareaData = {
+      titulo: tareaForm.value.titulo,
+      descripcion: tareaForm.value.descripcion,
+      estado: tareaForm.value.estado,
+      actividad: actividadIdParaTarea.value,
+    }
+
+    let resultado
+
+    if (isEditandoTarea.value) {
+      resultado = await tareasServicios.update(tareaForm.value.id, tareaData)
+
+      const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
+      if (actividad && actividad.tareas) {
+        const tareaIndex = actividad.tareas.findIndex((t) => t.id === tareaForm.value.id)
+        if (tareaIndex !== -1) {
+          const tareaActualizada = {
+            ...resultado,
+            estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
+          }
+          actividad.tareas[tareaIndex] = tareaActualizada
+        }
+      }
+
+      mostrarSnackbar('Sub Actividad actualizada con éxito', 'success')
+    } else {
+      resultado = await tareasServicios.crear(tareaData)
+      const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
+      if (actividad) {
+        if (!actividad.tareas) {
+          actividad.tareas = []
+        }
+        const nuevaTarea = {
+          ...resultado,
+          estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
+        }
+        actividad.tareas.push(nuevaTarea)
+      }
+
+      mostrarSnackbar('Sub Actividad creada con éxito', 'success')
+    }
+  } catch (error) {
+    console.error('Error al guardar sub actividad:', error)
+    mostrarSnackbar(
+      'Error al guardar sub actividad: ' +
+        (error.response?.data?.message || error.message || 'Error desconocido'),
+      'error',
+    )
+  } finally {
+    loading.value = false
+    tareaDialog.value = false
+    await nextTick()
+    if (tareaFormRef.value) {
+      tareaFormRef.value.reset()
+    }
+  }
+}
+
+const deleteTarea = async () => {
+  loading.value = true
+  try {
+    await tareasServicios.del(tareaToDelete.value.id)
+    const actividad = actividades.value.find((a) => a.id === actividadIdParaEliminarTarea.value)
+    if (actividad && actividad.tareas) {
+      actividad.tareas = actividad.tareas.filter((t) => t.id !== tareaToDelete.value.id)
+    }
+
+    mostrarSnackbar('Sub Actividad eliminada con éxito', 'success')
+  } catch (error) {
+    console.error('Error al eliminar sub actividad:', error)
+    mostrarSnackbar(
+      'Error al eliminar sub actividad: ' +
+        (error.response?.data?.message || error.message || 'Error desconocido'),
+      'error',
+    )
+  } finally {
+    loading.value = false
+    deleteTareaDialog.value = false
+  }
+}
+
+// --- LÓGICA DE FILTROS Y PAGINACIÓN ---
+
+const filteredActividades = computed(() => {
+  if (!Array.isArray(actividades.value)) return []
+
+  let filtered = [...actividades.value]
+
+  // Filtrar por búsqueda
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(
+      (actividad) =>
+        (actividad.codigo && actividad.codigo.toLowerCase().includes(query)) ||
+        (actividad.descripcion && actividad.descripcion.toLowerCase().includes(query)),
+    )
+  }
+  // Filtrar por estado
+  if (statusFilters.value.length > 0) {
+    filtered = filtered.filter((actividad) => statusFilters.value.includes(actividad.estado))
+  }
+  return filtered
+})
+
+const actividadesPaginadas = computed(() => {
+  if (!Array.isArray(filteredActividades.value)) return []
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredActividades.value.slice(start, end)
+})
+
+const totalPages = computed(() => {
+  if (!Array.isArray(filteredActividades.value)) return 0
+  return Math.ceil(filteredActividades.value.length / itemsPerPage.value)
+})
+
+const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
+const endItem = computed(() => {
+  if (!Array.isArray(filteredActividades.value)) return 0
+  const end = currentPage.value * itemsPerPage.value
+  return end > filteredActividades.value.length ? filteredActividades.value.length : end
+})
+
+const countByStatus = (status) => {
+  if (!Array.isArray(filteredActividades.value)) return 0
+  return filteredActividades.value.filter((a) => a.estado === status).length
+}
 </script>
 
 <style scoped>
