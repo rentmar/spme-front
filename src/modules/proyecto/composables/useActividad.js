@@ -13,6 +13,7 @@ const actividad = ref(null)
 const proyectoDatos = ref(null)
 const mensaje = ref(null)
 const actividadTarea = ref([])
+const actividadTareaPei = ref([])
 const actividadesTareasListas = ref()
 const actividadInfo = ref(null)
 
@@ -200,6 +201,22 @@ export function useActividad() {
       throw err
     }
   }
+  /***************************** ACTIVIDADES/TAREAS PEI **************************************/
+  // Cargar activ
+  //const actividadTarea = ref([])
+  async function actividadesTareasPei() {
+    loading.value = true
+    try {
+      const respuesta = await actividadServicios.listaActividadesTareasPei()
+      actividadTareaPei.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
 
   return {
     loading, //ref
@@ -208,6 +225,7 @@ export function useActividad() {
     actividad, //ref un kpi por id
     mensaje,
     actividadTarea,
+    actividadTareaPei,
     tareaActual,
     actividadesTareasListas, //Actividades con tareas sin filtrado
     actividadInfo, //Una actividad especifica mas Tareas y proyecto
@@ -223,5 +241,6 @@ export function useActividad() {
     actividadesTareas,
     obtenerListaActividadesConTareas,
     obtenerActidadPorId,
+    actividadesTareasPei,
   }
 }
