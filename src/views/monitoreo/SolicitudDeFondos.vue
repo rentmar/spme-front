@@ -544,8 +544,8 @@
       </v-row>
     </div>
   </v-container>
-  <pre>{{ formData }}</pre>
-  {{ '*******************' }}
+  <!-- <pre>{{ datosFormulario }}</pre>
+  {{ '*******************' }} -->
 </template>
 
 <script setup>
@@ -1037,10 +1037,12 @@ async function submitForm() {
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
 
+    const urlForm = `${baseurl}/api/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+
     const cuerpoMensaje = {
       destinatario_id: payload.id_coordinador,
       asunto: 'Solicitud de Fondos - Coordinado',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value,
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1049,7 +1051,7 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.contador_id,
       asunto: 'Solicitud de Fondos - Contador',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value,
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value+ '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }

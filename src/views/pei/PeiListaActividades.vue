@@ -1024,8 +1024,9 @@
 
   </v-container>
       <!-- {{ '********************************' }}
-     <pre>{{ datosFormulario2 }}</pre> -->
-     <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
+     <pre>{{ datosFormulario1 }}</pre> -->
+      <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
+      <!-- <pre>{{ solicitudesFondos }}</pre> -->
 </template>
 
 <script setup>
@@ -1034,6 +1035,8 @@ import { useActividad } from '@/modules/proyecto/composables/useActividad'
 import { tareasServicios } from '@/modules/proyecto/services/tareasService'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
+
+const baseurl = import.meta.env.VITE_API_BASE
 
 const router = useRouter()
 //const route = useRoute()
@@ -1384,8 +1387,7 @@ const cargarSolicitudesFondos = async () => {
   loadingSolicitudes.value = true
   try {
     //console.log('Cargando solicitudes de fondos con fetch...')
-
-    const response = await fetch('http://127.0.0.1:8000/api/solicitud-fondos/', {
+    const response = await fetch(baseurl + 'api/solicitud-fondos/', {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -1435,7 +1437,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1470,7 +1472,7 @@ async function cargarSolicitudFondos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudFondos/', {
+    const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudFondos/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -1579,7 +1581,7 @@ async function cargarRendicionesDeCuenta() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerRendicionDeCuentas/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerRendicionDeCuentas/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1617,7 +1619,7 @@ async function cargarSolicitudDeReposicion() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudReembolso/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudReembolso/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1655,7 +1657,7 @@ async function cargarSolicitudDeViaje() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudesViaje/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudesViaje/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1693,7 +1695,7 @@ async function cargarSolicitudDePagoDirecto() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch('http://127.0.0.1:8000/monitoreo_api/obtenerSolicitudesPagoDirecto/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudesPagoDirecto/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
