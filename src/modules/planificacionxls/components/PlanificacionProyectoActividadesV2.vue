@@ -857,9 +857,9 @@ const cargar = async () => {
   isLoading.value = true
   try {
     await Promise.all([
-      storePlanificacion.obtenerListaUsuarios(),
-      storePlanificacion.listaTiposDeActividad(),
-      storePlanificacion.listaActividadesProyecto(idproyecto),
+      storePlanificacion.obtenerListaUsuarios(), //Carga la lista de usuarioa
+      storePlanificacion.listaTiposDeActividad(), //Carga la lista de tipos de actividad
+      storePlanificacion.listaActividadesProyecto(idproyecto), //Carga las actividades del proyecto
     ])
     //Comprobador: Solo cargar tableData <=> hay actividades disponibles
     console.log('ACTIVIDADES: ', storePlanificacion.listaActividades)

@@ -2,8 +2,9 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { peiServicios } from '@/modules/pei/services/peiService'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
-import { useActividad } from '@/modules/proyecto/composables/useActividad'
+import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
 import { useTipoActividad } from '@/modules/proyecto/composables/useTipoActividad'
+import { useActividad } from '@/modules/proyecto/composables/useActividad'
 
 export const usePlanificacionPeiStore = defineStore('planificacion-pei', () => {
   //Estados del Store
@@ -164,6 +165,7 @@ export const usePlanificacionPeiStore = defineStore('planificacion-pei', () => {
     estructuraPeiSeleccionado,
     listaActividades,
     listaTiposAct,
+    listaUsuariosCompleta,
     tableData,
     //Getter
     usernamesParaDropdown,

@@ -167,11 +167,22 @@ export const actividadServicios = {
   /****************************************************************************************/
   allPorIdPei: async (idpei) => {
     try {
-      const respuesta = await api.get('pei/' + idpei + '/con-actividades/')
+      const respuesta = await api.get('actividades/pei/' + idpei + '/')
       //console.log(respuesta)
       return respuesta.data
     } catch (err) {
       console.log('Axios: fetch error actividades del PEI con id:' + idpei, err)
+    }
+  },
+  /* Crear una tarea */
+  tareaPeiCrear: async (tareaData) => {
+    try {
+      //const respuesta = await api.post('/tareas-actividad/', tareaData)
+      const respuesta = await api.post('/tareas-pei-actividad-pei/', tareaData)
+      return respuesta.data
+    } catch (error) {
+      console.log('axios: error al crear tarea', error)
+      throw error
     }
   },
 }

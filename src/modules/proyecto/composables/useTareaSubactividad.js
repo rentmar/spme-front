@@ -106,6 +106,21 @@ export function useTareaSubactividad() {
     }
   }
 
+  //Crear una tarea
+  async function crearUnaTareaPei(tareaData) {
+    loading.value = true
+    try {
+      const respuesta = await actividadServicios.tareaPeiCrear(tareaData)
+      tareaSubactividadCreada.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados
     loading,
@@ -123,5 +138,6 @@ export function useTareaSubactividad() {
     actualizarUnaTarea, //Actualizar una tarea
     eliminarUnaTarea, //Eliminar una tarea
     cargarTareaPorIdDetallesInformacion, //Cargar una tarea por su id con detalles
+    crearUnaTareaPei, //Crear una tarea PEI
   }
 }
