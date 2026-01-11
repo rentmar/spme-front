@@ -1,7 +1,7 @@
 import api from '@/services/axios'
 
 export const actividadServicios = {
-  /* Fetch kpis */
+  /* Fetch Actividades */
   all: async () => {
     try {
       const respuesta = await api.get('/actividades/')
@@ -165,6 +165,7 @@ export const actividadServicios = {
   /****************************************************************************************/
   /**************************ACTIVIDADDES/TAREAS PEI **************************************/
   /****************************************************************************************/
+  /* Todas las actividades de un pei */
   allPorIdPei: async (idpei) => {
     try {
       const respuesta = await api.get('actividades/pei/' + idpei + '/')
@@ -174,14 +175,62 @@ export const actividadServicios = {
       console.log('Axios: fetch error actividades del PEI con id:' + idpei, err)
     }
   },
-  /* Crear una tarea */
+  /* Crear una tarea de Act PEI */
   tareaPeiCrear: async (tareaData) => {
     try {
-      //const respuesta = await api.post('/tareas-actividad/', tareaData)
       const respuesta = await api.post('/tareas-pei-actividad-pei/', tareaData)
       return respuesta.data
     } catch (error) {
       console.log('axios: error al crear tarea', error)
+      throw error
+    }
+  },
+  /* CRUD BASICO DE LAS ACTIVIDADES PEI */
+  allActPei: async () => {
+    try {
+      const respuesta = await api.get('/actividades-pei/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: fetch actividades ', error)
+      throw error
+    }
+  },
+  /* Una actividad PEI */
+  porIdActPei: async (idactividad) => {
+    try {
+      const respuesta = await api.get('/actividades-pei/' + idactividad + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: fetch actividad  id ' + idactividad, error)
+      throw error
+    }
+  },
+  /*crear */
+  crearActPei: async (dataActividadPei) => {
+    try {
+      const respuesta = await api.post('/actividades-pei-principal/', dataActividadPei)
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: No se pudo crear la actividad', err)
+    }
+  },
+  /*actualizar */
+  updateActPei: async (idactividad, dataActividadPei) => {
+    try {
+      const respuesta = await api.put('/actividades-pei/' + idactividad + '/', dataActividadPei)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al actualizar actividad id ' + idactividad, error)
+      throw error
+    }
+  },
+  /*eliminar */
+  deleteActPei: async (idactividad) => {
+    try {
+      const respuesta = await api.delete('/actividades-pei/' + idactividad + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al eliminar actividad  id' + idactividad, error)
       throw error
     }
   },
