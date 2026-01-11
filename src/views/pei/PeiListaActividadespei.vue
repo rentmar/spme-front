@@ -27,7 +27,7 @@
       <v-col cols="12" md="9" lg="9">
         <v-card class="pa-4" elevation="2">
           <v-card-title class="d-flex justify-space-between align-center">
-            <span>Lista de Actividades</span>
+            <span>Lista de Actividades PEI</span>
             <span class="text-caption text-grey">Total: {{ filteredActividades.length }}</span>
           </v-card-title>
 
@@ -123,7 +123,7 @@
                             :disabled="
                               getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
                             "
-                            :to="`/monitoreo/formulario01/${actividad.id}`"
+                            :to="`/monitoreo/pei/formulario01/${actividad.id}`"
                             @click.stop
                           ></v-btn>
                         </template>
@@ -157,7 +157,7 @@
                             variant="text"
                             color="deep-purple"
                             size="small"
-                            :to="`/monitoreo/formulario05/${actividad.id}`"
+                            :to="`/monitoreo/pei/formulario05/${actividad.id}`"
                             @click.stop
                           ></v-btn>
                         </template>
@@ -190,7 +190,7 @@
                             variant="text"
                             color="teal-lighten-2"
                             size="small"
-                            :to="`/monitoreo/formulario08/${actividad.id}`"
+                            :to="`/monitoreo/pei/formulario08/${actividad.id}`"
                             @click.stop
                           ></v-btn>
                         </template>
@@ -223,7 +223,7 @@
                             variant="text"
                             color="warning"
                             size="small"
-                            :to="`/monitoreo/formulario03/${actividad.id}`"
+                            :to="`/monitoreo/pei/formulario03/${actividad.id}`"
                             @click.stop
                           ></v-btn>
                         </template>
@@ -256,7 +256,7 @@
                             variant="text"
                             color="error"
                             size="small"
-                            :to="`/monitoreo/formulario02/${actividad.id}`"
+                            :to="`/monitoreo/pei/formulario02/${actividad.id}`"
                             @click.stop
                           ></v-btn>
                           <!-- :disabled="!getSolicitudFondosInfo(actividad.id, 0)?.bloquearIconosSolFondos" -->
@@ -291,7 +291,7 @@
                           variant="text"
                           color="info"
                           size="small"
-                          :to="`/monitoreo/formularioinf/${actividad.id}`"
+                          :to="`/monitoreo/pei/formularioinf/${actividad.id}`"
                           @click.stop
                         ></v-btn>
                       </template>
@@ -348,7 +348,7 @@
                                         color="primary"
                                         size="x-small"
 
-                                        :to="`/monitoreo/formulario01/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="`/monitoreo/pei/formulario01/${actividad.id}?tarea_id=${tarea.id}`"
                                         @click.stop
                                       ></v-btn>
                                         <!-- :disabled="getSolicitudFondosInfo(actividad.id, tarea.id)?.bloquearIconosSolFondos || pruebaBloqueo" -->
@@ -383,7 +383,7 @@
                                         variant="text"
                                         color="deep-purple"
                                         size="x-small"
-                                        :to="`/monitoreo/formulario05/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="`/monitoreo/pei/formulario05/${actividad.id}?tarea_id=${tarea.id}`"
                                         @click.stop
                                       ></v-btn>
                                     </template>
@@ -416,7 +416,7 @@
                                         variant="text"
                                         color="teal-lighten-2"
                                         size="x-small"
-                                        :to="`/monitoreo/formulario08/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="`/monitoreo/pei/formulario08/${actividad.id}?tarea_id=${tarea.id}`"
                                         @click.stop
                                       ></v-btn>
                                     </template>
@@ -449,7 +449,7 @@
                                         variant="text"
                                         color="warning"
                                         size="x-small"
-                                        :to="`/monitoreo/formulario03/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="`/monitoreo/pei/formulario03/${actividad.id}?tarea_id=${tarea.id}`"
                                         @click.stop
                                       ></v-btn>
                                     </template>
@@ -484,7 +484,7 @@
                                         color="error"
                                         size="x-small"
                                         :disabled="false"
-                                        :to="`/monitoreo/formulario02/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="`/monitoreo/pei/formulario02/${actividad.id}?tarea_id=${tarea.id}`"
                                         @click.stop
                                       ></v-btn>
                                     </template>
@@ -517,7 +517,7 @@
                                       variant="text"
                                       color="info"
                                       size="small"
-                                      :to="`/monitoreo/formularioinf/${actividad.id}?tarea_id=${tarea.id}`"
+                                      :to="`/monitoreo/pei/formularioinf/${actividad.id}?tarea_id=${tarea.id}`"
                                       @click.stop
                                     ></v-btn>
                                   </template>
@@ -668,7 +668,7 @@
       <v-card>
         <v-toolbar
           color="secondary"
-          :title="isEditandoTarea ? 'Editar Tarea' : 'Nueva Tarea'"
+          :title="isEditandoTarea ? 'Editar SubActividad PEI' : 'Nueva SubActividad PEI'"
         ></v-toolbar>
         <v-card-text>
           <v-form ref="tareaFormRef" @submit.prevent="saveTarea">
@@ -1026,7 +1026,7 @@
       <!-- {{ '********************************' }}
      <pre>{{ datosFormulario1 }}</pre> -->
       <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
-      <!--<pre>{{ actividades }}</pre> -->
+      <!-- <pre>{{ solicitudesFondos }}</pre> -->
 </template>
 
 <script setup>
