@@ -168,7 +168,13 @@
               @guardar="crearNuevaTarea"
               @cancelar="cerrarDialogo"
             ></DialogTareaPei> -->
-            <DialogTareaPei v-model="mostrarDialogo"></DialogTareaPei>
+            <DialogTareaPei
+              v-model="mostrarDialogo"
+              :actividad="selectedRowData"
+              :tarea="tareaSeleccionada"
+              @guardar="crearNuevaTarea"
+              @cancelar="cerrarDialogo"
+            ></DialogTareaPei>
 
             <v-tooltip text="Ajustar Presupuesto de la Actividad" location="bottom">
               <template v-slot:activator="{ props }">
@@ -310,8 +316,8 @@ const cerrarDialogo = () => {
 }
 const crearNuevaTarea = async (payload) => {
   try {
-    console.log('Crear la tarea:', payload)
-    //await crearUnaTareaPei(payload)
+    console.log('Crear la tarea pei:', payload)
+    await crearUnaTareaPei(payload)
     cerrarDialogo()
     successMsg('Subactividad Creada')
   } catch (err) {
@@ -369,7 +375,7 @@ const guardarPlanificacion = () => {
 
 /************************* CONTROL DE CAMBIOS ***********************************/
 const tieneCambiosSinGuardar = computed(() => storePlanificacion.tieneCambiosSinGuardar)
-const tieneCambiosSinGuardar2 = storePlanificacion.hayCambiosPendientes
+//const tieneCambiosSinGuardar2 = storePlanificacion.hayCambiosPendientes
 const guardando = ref(false) // Bandera de guardado
 
 /************************* PANEL EXCEL ******************************************/

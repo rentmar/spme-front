@@ -167,6 +167,7 @@ export const usePlanificacionPeiStore = defineStore('planificacion-pei', () => {
     listaTiposAct,
     listaUsuariosCompleta,
     tableData,
+    tieneCambiosSinGuardar,
     //Getter
     usernamesParaDropdown,
     //Func
