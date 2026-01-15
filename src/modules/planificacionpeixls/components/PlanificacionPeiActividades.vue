@@ -23,7 +23,7 @@
                 v-bind="props"
                 variant="text"
                 class="toolbar-btn"
-                @click="guardarPlanificacion"
+                @click="mostrarPreEnvio"
                 :disabled="!tieneCambiosSinGuardar || guardando"
               >
                 <v-icon size="18" :color="tieneCambiosSinGuardar ? 'primary' : 'disabled'"
@@ -33,19 +33,6 @@
               </v-btn>
             </template>
           </v-tooltip>
-          <!--Reprogramar-->
-          <!-- <v-tooltip text="Reprogramar" location="bottom">
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                variant="text"
-                class="toolbar-btn"
-                @click="reprogramarPlanificacion"
-              >
-                <v-icon size="18">mdi-wrench-clock</v-icon>
-              </v-btn>
-            </template>
-          </v-tooltip> -->
           <!--Nueva Actividad-->
           <v-tooltip text="Agregar nueva actividad" location="bottom">
             <template #activator="{ props }">
@@ -72,11 +59,6 @@
                     :pei-data="storePlanificacion.estructuraPeiSeleccionado"
                     @crear-actividad="crearActividadPlan"
                   ></SeleccionEstructuraActividadPei>
-
-                  <!--Editor grafico de actividades-->
-                  <!-- <div style="width: 100%; height: 600px">
-                    <EditorEstructuraMainActividades></EditorEstructuraMainActividades>
-                  </div> -->
                 </v-card-text>
               </v-card-text>
             </v-card>
@@ -161,13 +143,6 @@
                 </v-btn>
               </template>
             </v-tooltip>
-            <!-- <DialogTareaPei
-              v-model="mostrarDialogo"
-              :actividad="selectedRowData"
-              :tarea="tareaSeleccionada"
-              @guardar="crearNuevaTarea"
-              @cancelar="cerrarDialogo"
-            ></DialogTareaPei> -->
             <DialogTareaPei
               v-model="mostrarDialogo"
               :actividad="selectedRowData"
@@ -230,32 +205,152 @@
       </div>
     </div>
   </div>
-  {{ tableData }}
+
+  <!-- Modal de Pre-Envío (Simplificado) -->
+  <v-dialog v-model="mostrandoPreEnvio" max-width="800" persistent>
+    <v-card>
+      <v-toolbar color="primary" dark flat>
+        <v-toolbar-title>
+          <v-icon start>mdi-send</v-icon>
+          Confirmar Envío de Cambios
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn icon @click="mostrandoPreEnvio = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
+
+      <v-card-text class="pa-4">
+        <!-- Resumen de cambios -->
+        <v-card variant="flat" class="mb-4 pa-4" color="blue-lighten-5">
+          <div class="text-h6 font-weight-bold mb-2">Resumen de Cambios</div>
+          <div class="text-caption text-medium-emphasis">
+            Se enviarán {{ totalCambiosReales }} cambio(s) al REST API
+          </div>
+        </v-card>
+
+        <!-- Información básica -->
+        <div class="d-flex flex-column gap-3">
+          <div class="d-flex align-center justify-space-between">
+            <span>Actividades originales:</span>
+            <strong>{{ datosOriginalesStore.length }}</strong>
+          </div>
+          <div class="d-flex align-center justify-space-between">
+            <span>Actividades a enviar:</span>
+            <strong class="text-green">{{ tableDataStore.length }}</strong>
+          </div>
+          <div class="d-flex align-center justify-space-between">
+            <span>Total de cambios:</span>
+            <strong class="text-orange">{{ totalCambiosReales }}</strong>
+          </div>
+          <v-divider></v-divider>
+          <div class="d-flex align-center justify-space-between">
+            <span>Presupuesto total:</span>
+            <strong>{{ totalPresupuestoFormateado }}</strong>
+          </div>
+          <div class="d-flex align-center justify-space-between">
+            <span>Actividades planificadas:</span>
+            <strong>{{ actividadesPlanificadas }}</strong>
+          </div>
+          <div class="d-flex align-center justify-space-between">
+            <span>Usuario:</span>
+            <strong>{{ usuarioActualInfo.usuario }} (ID: {{ usuarioActualInfo.id }})</strong>
+          </div>
+        </div>
+
+        <!-- Vista rápida de cambios -->
+        <v-expansion-panels variant="accordion" class="mt-4">
+          <v-expansion-panel>
+            <v-expansion-panel-title>
+              <template v-slot:default="{ expanded }">
+                <v-row no-gutters>
+                  <v-col cols="4" class="d-flex align-center">
+                    <v-icon size="small" class="mr-2">mdi-history</v-icon>
+                    <span>Ver cambios detallados</span>
+                  </v-col>
+                  <v-col cols="8" class="text--secondary">
+                    <v-fade-transition leave-absolute>
+                      <span v-if="expanded" key="0" class="text-caption">Ocultar detalles</span>
+                      <span v-else key="1" class="text-caption"
+                        >{{ totalCambiosReales }} cambios</span
+                      >
+                    </v-fade-transition>
+                  </v-col>
+                </v-row>
+              </template>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <div class="d-flex flex-column gap-2" style="max-height: 300px; overflow-y: auto">
+                <div v-for="(lista, propiedad) in cambiosPorPropiedadDetallados" :key="propiedad">
+                  <div v-if="lista.length > 0" class="mb-2">
+                    <div class="text-caption font-weight-bold mb-1 text-capitalize">
+                      {{ propiedad.replace('_', ' ') }} ({{ lista.length }})
+                    </div>
+                    <div class="d-flex flex-column gap-1 ml-3">
+                      <div
+                        v-for="cambio in lista"
+                        :key="`${cambio.fila}-${cambio.fecha}`"
+                        class="d-flex align-center pa-2 rounded"
+                        style="background-color: rgba(var(--v-theme-primary), 0.05)"
+                      >
+                        <div class="text-caption">{{ cambio.actividad_nombre }}</div>
+                        <v-spacer></v-spacer>
+                        <div class="text-caption text-medium-emphasis">
+                          {{ cambio.anterior || 'Vacío' }} → {{ cambio.nuevo || 'Vacío' }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-card-text>
+
+      <v-divider></v-divider>
+      <v-card-actions class="pa-3">
+        <v-spacer></v-spacer>
+        <v-btn variant="text" @click="mostrandoPreEnvio = false" class="mr-2">Cancelar</v-btn>
+        <v-btn color="primary" @click="confirmarEnvio" :loading="enviando">
+          <v-icon start>mdi-check</v-icon>
+          Confirmar Envío
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  {{ cambiosData }}
 </template>
 
 <script setup>
-//Hottable
+// Hottable
 import HotTable from '@handsontable/vue3'
 import { registerAllModules } from 'handsontable/registry'
 import { registerLanguageDictionary } from 'handsontable/i18n'
 import { esMX } from 'handsontable/i18n'
 import 'handsontable/dist/handsontable.full.css'
-//Vue
+
+// Vue
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-//Selectores
+
+// Importaciones
 import SeleccionEstructuraActividadPei from './parciales/SeleccionEstructuraActividadPei.vue'
 import DialogTareaPei from './parciales/DialogTareaPei.vue'
 import ComponentPresupuesto from '@/modules/planificacionxls/components/parciales/ComponentPresupuesto.vue'
 import ListaTareasActividadPei from './parciales/ListaTareasActividadPei.vue'
-//Composables
+
+// Composables
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
-//Stores
+import { useSeguimientoPlanificacionPei } from '../composables/useSeguimientoPlanificacionPei'
+// Stores
 import { usePlanificacionPeiStore } from '../store/usePlanificacionPeiStore'
-//Utilitarios y librerias
+import { useUserStore } from '@/stores/user'
+
+// Utilitarios
 import { formatCurrency, formatDate } from '@/modules/planificacionxls/utils/formattersPlan'
-import { parse } from 'date-fns'
+import { getChangeHandlers, registroCambios } from '../utils/changeHandlers'
 
 // Props del componente
 const props = defineProps({
@@ -277,18 +372,21 @@ const props = defineProps({
 registerAllModules()
 registerLanguageDictionary(esMX)
 
-//ID del proyecto
+// ID del proyecto
 const route = useRoute()
 const idpei = route.params.id
 
-//Store
+// Stores
 const storePlanificacion = usePlanificacionPeiStore()
+const userStore = useUserStore()
 
-//Composables
+// Composables
 const { successMsg, errorMsg, infoMsg } = useSnackbar()
 const { crearUnaTareaPei } = useTareaSubactividad()
+const { actualizarPlanificacionPei } = useSeguimientoPlanificacionPei()
+
 /************************* CONTROL DE LA INTERFAZ *******************************/
-//Agregar nueva actividad
+// Agregar nueva actividad
 const mostrarModalActividad = ref(false)
 const abrirNuevaActividad = () => {
   mostrarModalActividad.value = true
@@ -297,14 +395,14 @@ const cerrarNuevaActividad = () => {
   mostrarModalActividad.value = false
 }
 
-//Rutina para Agregar Nueva Actividad a la grilla
+// Rutina para Agregar Nueva Actividad a la grilla
 const crearActividadPlan = (actividad) => {
   console.log('Estructura procedencia: ', actividad)
   cargar()
   cerrarNuevaActividad()
 }
 
-//AGREGAR Nueva Tarea
+// AGREGAR Nueva Tarea
 const mostrarDialogo = ref(false)
 const tareaSeleccionada = ref(null)
 const mostrarModalAgregarTarea = () => {
@@ -326,71 +424,170 @@ const crearNuevaTarea = async (payload) => {
   }
 }
 
-//AGREGAR PROCEDENCIA DE FONDOS - DESGLOSE
+// AGREGAR PROCEDENCIA DE FONDOS - DESGLOSE
 const mostrarPresupuesto = ref(false)
 const mostrarModalPresupuesto = () => {
   mostrarPresupuesto.value = true
 }
-//Agregar el desglose del presupuesto a la grilla
+
+// Agregar el desglose del presupuesto a la grilla
 const guardarDesglosePresupuesto = (nuevoDesglose) => {
   if (selectedRowData.value) {
     const rowIndex = tableData.value.findIndex((row) => row.id === selectedRowData.value.id)
 
     if (rowIndex !== -1) {
-      // Crear una nueva copia del array para mantener la reactividad
       const updatedTableData = [...tableData.value]
-
-      // Actualizar solo el campo procedencia_fondos de la fila específica
       updatedTableData[rowIndex] = {
         ...updatedTableData[rowIndex],
         procedencia_fondos: Array.isArray(nuevoDesglose) ? [...nuevoDesglose] : nuevoDesglose,
       }
-
-      // Asignar el nuevo array reactivo
       tableData.value = updatedTableData
 
-      // Forzar actualización de Handsontable
       if (hotTable.value?.hotInstance) {
-        // Actualizar la celda específica
         hotTable.value.hotInstance.setDataAtCell(rowIndex, 10, nuevoDesglose)
-
-        // Forzar re-renderizado completo
         hotTable.value.hotInstance.render()
         hotTable.value.hotInstance.deselectCell()
-
-        console.log('procedencia_fondos actualizado para fila:', rowIndex)
       }
     }
   }
 
   mostrarPresupuesto.value = false
-  // mostrarMensaje('Desglose de presupuesto guardado correctamente', 'success')
   successMsg('Desglose de presupuesto guardado correctamente')
 }
 
-//GUARDAR PLANIFICACION
-const guardarPlanificacion = () => {
-  successMsg('Guardar la planificacion')
+/************************* PRE-ENVÍO SIMPLIFICADO *******************************/
+const mostrandoPreEnvio = ref(false)
+const enviando = ref(false)
+
+// Información del usuario
+const usuarioActualInfo = computed(() => ({
+  id: userStore.id || null,
+  usuario: userStore.usuario || 'Invitado',
+}))
+
+// Datos del store
+const datosOriginalesStore = computed(() => {
+  return storePlanificacion.datosOriginales || []
+})
+
+const tableDataStore = computed(() => {
+  return storePlanificacion.tableData || []
+})
+
+// Información de cambios
+const cambiosData = computed(() => {
+  return registroCambios.obtenerJSON()
+})
+
+const totalCambiosReales = computed(() => {
+  const detalles = cambiosData.value?.detalles || {}
+  let total = 0
+  Object.values(detalles).forEach((lista) => {
+    if (Array.isArray(lista)) {
+      total += lista.length
+    }
+  })
+  return total
+})
+
+const cambiosPorPropiedadDetallados = computed(() => {
+  return cambiosData.value?.detalles || {}
+})
+
+// Cálculos para el seguimiento
+const totalPresupuesto = computed(() => {
+  if (!tableDataStore.value.length) return 0
+  return tableDataStore.value.reduce((total, actividad) => {
+    const presupuesto = parseFloat(actividad.presupuesto) || 0
+    return total + presupuesto
+  }, 0)
+})
+
+const totalPresupuestoFormateado = computed(() => {
+  return new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'BOB',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(totalPresupuesto.value)
+})
+
+const actividadesPlanificadas = computed(() => {
+  if (!tableDataStore.value.length) return 0
+  return tableDataStore.value.filter((actividad) => actividad.estado === 'PLAN').length
+})
+
+// Mostrar pre-envío
+const mostrarPreEnvio = () => {
+  if (totalCambiosReales.value === 0) {
+    infoMsg('No hay cambios para enviar')
+    return
+  }
+  mostrandoPreEnvio.value = true
+}
+
+// Confirmar envío
+const confirmarEnvio = async () => {
+  enviando.value = true
+  try {
+    // Construir el payload en el formato requerido
+    const payload = {
+      actividades: tableDataStore.value,
+      seguimiento: {
+        datos_tabla_actual: datosOriginalesStore.value,
+        datos_tabla_actualizado: tableDataStore.value,
+        cambios_efectuados: cambiosData.value || {},
+        configuracion: {}, // Aquí deberías pasar la configuración si la tienes
+        total_actividades: tableDataStore.value.length,
+        total_presupuesto: totalPresupuesto.value,
+        actividades_planificadas: actividadesPlanificadas.value,
+        pei: storePlanificacion.peiSeleccionado?.id,
+        creado_por: usuarioActualInfo.value.id,
+        actualizado_por: usuarioActualInfo.value.id,
+      },
+    }
+
+    console.log('PAYLOAD: ', payload)
+
+    // Aquí llamarías a tu API para guardar
+    // await api.guardarPlanificacion(payload)
+    const resp = await actualizarPlanificacionPei(payload)
+
+    console.log('respuesta bulk: ', resp)
+
+    successMsg(`Se han enviado ${totalCambiosReales.value} cambios correctamente`)
+
+    // Limpiar cambios después del envío exitoso
+    registroCambios.limpiar()
+    storePlanificacion.setTieneCambiosSinGuardar(false)
+
+    mostrandoPreEnvio.value = false
+  } catch (error) {
+    console.error('Error al enviar cambios:', error)
+    errorMsg('Error al enviar los cambios')
+  } finally {
+    enviando.value = false
+  }
 }
 
 /************************* CONTROL DE CAMBIOS ***********************************/
 const tieneCambiosSinGuardar = computed(() => storePlanificacion.tieneCambiosSinGuardar)
-//const tieneCambiosSinGuardar2 = storePlanificacion.hayCambiosPendientes
-const guardando = ref(false) // Bandera de guardado
+const guardando = ref(false)
 
 /************************* PANEL EXCEL ******************************************/
 const hotTable = ref(null)
-const tableData = ref([]) //Datos de la tabla
-const inicializado = ref(false) //Bandera de inicializacion
+const tableData = ref([])
+const inicializado = ref(false)
 const headers = ref(true)
-//Esconder columnas
+
+// Esconder columnas
 const hiddenColumnsConfig = computed(() => {
   return {
-    columns: [], // Columnas 1, 3 y 7
+    columns: [],
   }
 })
 
-//Configuracion de columnas
+// Configuración de columnas
 const columns = ref([
   { data: 'id', title: 'Id', type: 'numeric', width: 50, readOnly: true },
   { data: 'codigo', title: 'Código', width: 100 },
@@ -413,7 +610,6 @@ const columns = ref([
     type: 'dropdown',
     width: 110,
     source: function (query, process) {
-      // Asegúrate de que el store tenga los usuarios cargados
       const usernames = storePlanificacion.listaUsuariosCompleta
         .filter((user) => user.is_active !== false)
         .map((user) => user.username)
@@ -518,30 +714,28 @@ const columns = ref([
 ])
 
 /************************* Handle Interfaz Excel  *******************************/
-const selectedRowData = ref(null) //Fila seleccionada
+const selectedRowData = ref(null)
 const handleChange = (changes, source) => {
-  //Ignorar cambios de la carga inicial
   if (source === 'loadData') return
 
-  //console.log('Cambios detectados: ', changes)
-  //console.log('Fuente: ', source)
-  //Solo procesar si hay cambios reales
-  if (changes && changes.length > 0) {
-    storePlanificacion.setTieneCambiosSinGuardar(true)
-    changes.forEach(([row, prop, oldValue, newValue]) => {
-      //Verificar si se modifica fecha de inicio y cierre
-      if (prop === 'fecha_inicio' || prop === 'fecha_cierre') {
-        infoMsg('Fechas modificadas')
-      }
-      //Calcula el saldo cuando cambia el presupuesto o el total reportado
-      if (prop === 'presupuesto' || prop === 'totalReportado') {
-        setTimeout(() => {
-          console.log('calcular')
-        }, 50)
-      }
-    })
-  }
+  const handlers = getChangeHandlers(
+    {
+      marcarCambios: (valor) => storePlanificacion.setTieneCambiosSinGuardar(valor),
+      mensajeExito: successMsg,
+      mensajeError: errorMsg,
+      mensajeInfo: infoMsg,
+    },
+    tableData.value,
+    hotTable.value?.hotInstance,
+  )
+
+  changes.forEach(([row, prop, oldValue, newValue]) => {
+    if (handlers[prop]) {
+      handlers[prop](row, oldValue, newValue)
+    }
+  })
 }
+
 const handleSelection = (startRow, startCol, endRow, endCol, selectionLayer) => {
   if (startRow === endRow) {
     const rowData = hotTable.value.hotInstance.getDataAtRow(startRow)
@@ -552,7 +746,6 @@ const handleSelection = (startRow, startCol, endRow, endCol, selectionLayer) => 
       }
     })
     selectedRowData.value = rowObject
-    //mostrarTareasPopup.value = true
   } else {
     selectedRowData.value = null
   }
@@ -563,14 +756,14 @@ const sidePanelVisible = ref(false)
 const toogleSidePanel = async () => {
   sidePanelVisible.value = !sidePanelVisible.value
 }
-/************************** Exportar  *********************************************/
 
+/************************** Exportar  *********************************************/
 const exportarExcel = async () => {
   alert('Exportar a excel')
 }
 
 /**********************************CARGA DE DATOS************************************************/
-const isLoading = ref(false) //Bandera de carga
+const isLoading = ref(false)
 const err = ref(null)
 
 const cargar = async () => {
@@ -580,12 +773,13 @@ const cargar = async () => {
       storePlanificacion.obtenerListaUsuarios(),
       storePlanificacion.listaTiposDeActividad(),
       storePlanificacion.listaActividadesPei(idpei),
+      storePlanificacion.listaPlanificacionSeguimietoPei(idpei),
     ])
 
-    //Comprobador: cargar el tableData <=> hay actividades disponibles
     console.log('ACTIVIDADES PEI: ', storePlanificacion.tableData)
     console.log('Numero de ACT: ', storePlanificacion.tableData.length)
     console.log(storePlanificacion.listaTiposAct)
+
     if (storePlanificacion.tableData && storePlanificacion.tableData.length) {
       tableData.value = storePlanificacion.tableData
       storePlanificacion.inicializarDatosOriginales(storePlanificacion.tableData)
@@ -599,7 +793,8 @@ const cargar = async () => {
     isLoading.value = false
   }
 }
-//Hook
+
+// Hook
 onMounted(() => {
   cargar()
 })
