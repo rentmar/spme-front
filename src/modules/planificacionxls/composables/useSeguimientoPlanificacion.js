@@ -70,6 +70,20 @@ export function useSeguimientoPlanificacion() {
     }
   }
 
+  //Actualizar Actividades
+  async function actualizarPlanificacionProyecto(data) {
+    loading.value = true
+    try {
+      const respuesta = await segPlanService.guardarPlanificacionProyectoBulk(data)
+      return respuesta
+    } catch (err) {
+      console.error(err)
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
@@ -81,5 +95,6 @@ export function useSeguimientoPlanificacion() {
     obtenerPlanificacionesPorIdProyecto,
     obtenerCambioPlanificacion,
     obtenerCambiosPlanIdPlan,
+    actualizarPlanificacionProyecto,
   }
 }

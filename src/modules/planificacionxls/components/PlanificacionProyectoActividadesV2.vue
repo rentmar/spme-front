@@ -1,11 +1,4 @@
 <template>
-  <div v-if="selectedRowData">
-    <!-- <TrazadorActividad
-      :tabla-data-disponible="tablaDataDisponible"
-      :actividad-id="selectedRowData.id"
-    ></TrazadorActividad> -->
-    <!-- <ActividadRelacionEstructura></ActividadRelacionEstructura> -->
-  </div>
   <div class="hot-wrapper" v-if="!isLoading">
     <div class="content-wrapper">
       <!-- Panel Izquierdo - Tabla Excel -->
@@ -30,7 +23,7 @@
                 v-bind="props"
                 variant="text"
                 class="toolbar-btn"
-                @click="guardarPlanificacion"
+                @click="mostrarPreEnvio"
                 :disabled="!tieneCambiosSinGuardar || guardando"
               >
                 <v-icon size="18" :color="tieneCambiosSinGuardar ? 'primary' : 'disabled'"
@@ -40,19 +33,6 @@
               </v-btn>
             </template>
           </v-tooltip>
-          <!--Reprogramar-->
-          <!-- <v-tooltip text="Reprogramar" location="bottom">
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                variant="text"
-                class="toolbar-btn"
-                @click="reprogramarPlanificacion"
-              >
-                <v-icon size="18">mdi-wrench-clock</v-icon>
-              </v-btn>
-            </template>
-          </v-tooltip> -->
           <!--Nueva Actividad-->
           <v-tooltip text="Agregar nueva actividad" location="bottom">
             <template #activator="{ props }">
@@ -80,46 +60,6 @@
                     :proyecto-data="props.proyectoEstructura"
                     @crear-actividad="crearActividadPlan"
                   ></SeleccionEstructuraActividad>
-
-                  <!--Editor grafico de actividades-->
-                  <!-- <div style="width: 100%; height: 600px">
-                    <EditorEstructuraMainActividades></EditorEstructuraMainActividades>
-                  </div> -->
-                </v-card-text>
-              </v-card-text>
-            </v-card>
-          </v-dialog>
-
-          <!-- <v-tooltip text="Agregar nueva actividad Variante" location="bottom">
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                variant="text"
-                class="toolbar-btn"
-                @click="abrirNuevaActividadVariante"
-              >
-                <v-icon size="18">mdi-plus-outline</v-icon>
-                <v-icon size="18">mdi-clipboard-text-outline</v-icon>
-              </v-btn>
-            </template>
-          </v-tooltip> -->
-
-          <v-dialog v-model="mostrarModalActividadVariante" fullscreen>
-            <v-card>
-              <v-toolbar>
-                <v-btn icon="mdi-close" @click="cerrarNuevaActividadVariante"></v-btn>
-
-                <v-toolbar-title>Agregar Nueva Actividad/Proceso </v-toolbar-title>
-
-                <v-toolbar-items>
-                  <!-- <v-btn text="Guardar" variant="text"></v-btn> -->
-                </v-toolbar-items>
-              </v-toolbar>
-              <v-card-text>
-                <v-card-text>
-                  <div style="width: 100%; height: 1000px">
-                    <DiagramaPlanificacion :idproyecto="1"></DiagramaPlanificacion>
-                  </div>
                 </v-card-text>
               </v-card-text>
             </v-card>
@@ -252,24 +192,6 @@
               </template>
             </v-tooltip>
 
-            <!-- <v-tooltip text="Seleccion de indicadores" location="bottom">
-              <template v-slot:activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  color="#505A64"
-                  variant="flat"
-                  size="small"
-                  class="excel-button structure-button"
-                  @click="abrirModalEstructura"
-                >
-                  <template v-slot:prepend>
-                    <v-icon size="16">mdi-sitemap</v-icon>
-                  </template>
-                  Estructura
-                </v-btn>
-              </template>
-            </v-tooltip> -->
-
             <!----Componente Presupuesto-->
             <ComponentPresupuesto
               v-model="mostrarPresupuesto"
@@ -278,26 +200,6 @@
               @guardarDesglose="guardarDesglosePresupuesto"
             ></ComponentPresupuesto>
           </div>
-          <!--Relacion de la actividad-->
-          <!-- <v-dialog v-model="modalEstructura" transition="dialog-bottom-transition" fullscreen>
-            <v-card>
-              <v-toolbar>
-                <v-btn icon="mdi-close" @click="modalEstructura = false"></v-btn>
-                <v-toolbar-title
-                  >Trazado de la Actividad: {{ selectedRowData.codigo }} -
-                  {{ selectedRowData.nombreCorto }}</v-toolbar-title
-                >
-              </v-toolbar>
-              <v-card-text>
-                <SeleccionEstructuraProyecto
-                  :actividad-id="selectedRowData.id"
-                  :ruta-trazado-inicial="selectedRowData.rutaTrazadoIndicadores"
-                  @actualizar-ruta-trazado="actualizarRutaTrazado"
-                >
-                </SeleccionEstructuraProyecto>
-              </v-card-text>
-            </v-card>
-          </v-dialog> -->
           <!--Estructura Pei-->
           <v-dialog v-model="modalPei" transition="dialog-bottom-transition" fullscreen>
             <v-card>
@@ -320,30 +222,6 @@
             </v-card>
           </v-dialog>
         </v-toolbar>
-        <!-- Toolbar de actividades dinámicas -->
-        <!-- <v-toolbar flat density="comfortable" class="activity-toolbar">
-          <span class="toolbar-label">Actividades disponibles:</span>
-          <div class="activity-buttons-container">
-            <v-tooltip
-              v-for="actividad in actividadesDisponibles"
-              :key="actividad.codigo"
-              :text="actividad.nombreCorto"
-              location="bottom"
-            >
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  variant="text"
-                  class="activity-btn"
-                  @click="cargarActividadEnTabla(actividad)"
-                >
-                  <v-icon left size="18">{{ getActivityIcon(actividad.tipo) }}</v-icon>
-                  {{ actividad.codigo }}
-                </v-btn>
-              </template>
-            </v-tooltip>
-          </div>
-        </v-toolbar> -->
 
         <HotTable
           v-if="inicializado"
@@ -371,60 +249,120 @@
       </div>
     </div>
   </div>
-  <!-- Modal de Confirmación Sencillo -->
-  <v-dialog v-model="confirmacionModal" max-width="500px">
+
+  <!-- Modal de Pre-Envío (Exactamente como el PEI) -->
+  <v-dialog v-model="mostrandoPreEnvio" max-width="800" persistent>
     <v-card>
-      <v-card-title class="headline">
-        <v-icon color="primary" class="mr-2">mdi-content-save</v-icon>
-        Confirmar Guardado - Planificacion
-      </v-card-title>
+      <v-toolbar color="primary" dark flat>
+        <v-toolbar-title>
+          <v-icon start>mdi-send</v-icon>
+          Confirmar Envío de Cambios - Proyecto
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn icon @click="mostrandoPreEnvio = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
 
-      <v-card-text>
-        <p>¿Estás seguro de que deseas guardar la planificación?</p>
+      <v-card-text class="pa-4">
+        <!-- Resumen de cambios -->
+        <v-card variant="flat" class="mb-4 pa-4" color="blue-lighten-5">
+          <div class="text-h6 font-weight-bold mb-2">Resumen de Cambios</div>
+          <div class="text-caption text-medium-emphasis">
+            Se enviarán {{ totalCambiosReales }} cambio(s) al REST API
+          </div>
+        </v-card>
 
-        <div class="mt-4 summary-info">
-          <p><strong>Resumen:</strong></p>
-          <ul>
-            <li>
-              Total de actividades: <strong>{{ tableData.length }}</strong>
-            </li>
-          </ul>
+        <!-- Información básica -->
+        <div class="d-flex flex-column gap-3">
+          <div class="d-flex align-center justify-space-between">
+            <span>Actividades originales:</span>
+            <strong>{{ datosOriginalesStore.length }}</strong>
+          </div>
+          <div class="d-flex align-center justify-space-between">
+            <span>Actividades a enviar:</span>
+            <strong class="text-green">{{ tableDataStore.length }}</strong>
+          </div>
+          <div class="d-flex align-center justify-space-between">
+            <span>Total de cambios:</span>
+            <strong class="text-orange">{{ totalCambiosReales }}</strong>
+          </div>
+          <v-divider></v-divider>
+          <div class="d-flex align-center justify-space-between">
+            <span>Presupuesto total:</span>
+            <strong>{{ totalPresupuestoFormateado }}</strong>
+          </div>
+          <div class="d-flex align-center justify-space-between">
+            <span>Actividades planificadas:</span>
+            <strong>{{ actividadesPlanificadas }}</strong>
+          </div>
+          <div class="d-flex align-center justify-space-between">
+            <span>Usuario:</span>
+            <strong>{{ usuarioActualInfo.usuario }} (ID: {{ usuarioActualInfo.id }})</strong>
+          </div>
         </div>
-        <div>
-          <v-select
-            :items="SELECT_OPTIONS.razon_cambio"
-            item-value="valor"
-            item-title="etiqueta"
-            variant="outlined"
-            label="Tipo de Modificacion"
-          ></v-select>
-          <v-text-field
-            label="Modificado por"
-            variant="outlined"
-            v-model="datosGuardado.usuario"
-            readonly
-          ></v-text-field>
-          <v-textarea
-            label="Razon de la modificacion"
-            variant="outlined"
-            v-model="datosGuardado.razon"
-          ></v-textarea>
-        </div>
+
+        <!-- Vista rápida de cambios -->
+        <v-expansion-panels variant="accordion" class="mt-4">
+          <v-expansion-panel>
+            <v-expansion-panel-title>
+              <template v-slot:default="{ expanded }">
+                <v-row no-gutters>
+                  <v-col cols="4" class="d-flex align-center">
+                    <v-icon size="small" class="mr-2">mdi-history</v-icon>
+                    <span>Ver cambios detallados</span>
+                  </v-col>
+                  <v-col cols="8" class="text--secondary">
+                    <v-fade-transition leave-absolute>
+                      <span v-if="expanded" key="0" class="text-caption">Ocultar detalles</span>
+                      <span v-else key="1" class="text-caption"
+                        >{{ totalCambiosReales }} cambios</span
+                      >
+                    </v-fade-transition>
+                  </v-col>
+                </v-row>
+              </template>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <div class="d-flex flex-column gap-2" style="max-height: 300px; overflow-y: auto">
+                <div v-for="(lista, propiedad) in cambiosPorPropiedadDetallados" :key="propiedad">
+                  <div v-if="lista.length > 0" class="mb-2">
+                    <div class="text-caption font-weight-bold mb-1 text-capitalize">
+                      {{ propiedad.replace('_', ' ') }} ({{ lista.length }})
+                    </div>
+                    <div class="d-flex flex-column gap-1 ml-3">
+                      <div
+                        v-for="cambio in lista"
+                        :key="`${cambio.fila}-${cambio.fecha}`"
+                        class="d-flex align-center pa-2 rounded"
+                        style="background-color: rgba(var(--v-theme-primary), 0.05)"
+                      >
+                        <div class="text-caption">{{ cambio.actividad_nombre }}</div>
+                        <v-spacer></v-spacer>
+                        <div class="text-caption text-medium-emphasis">
+                          {{ cambio.anterior || 'Vacío' }} → {{ cambio.nuevo || 'Vacío' }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </v-card-text>
 
-      <v-card-actions>
+      <v-divider></v-divider>
+      <v-card-actions class="pa-3">
         <v-spacer></v-spacer>
-        <v-btn color="grey" variant="text" @click="confirmacionModal = false"> Cancelar </v-btn>
-        <v-btn color="primary" variant="flat" @click="confirmarGuardado" :loading="guardando">
-          Guardar
+        <v-btn variant="text" @click="mostrandoPreEnvio = false" class="mr-2">Cancelar</v-btn>
+        <v-btn color="primary" @click="confirmarEnvio" :loading="enviando">
+          <v-icon start>mdi-check</v-icon>
+          Confirmar Envío
         </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
-  {{ tableData }}
-  <br /><br /><br />
-  OP1:{{ tieneCambiosSinGuardar }} <br /><br /><br />
-  OP2: {{ tieneCambiosSinGuardar2 }}
 </template>
 
 <script setup>
@@ -442,12 +380,12 @@ import { useActividad } from '../../proyecto/composables/useActividad'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { usePlanificacion } from '../composables/usePlanificacion'
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
+import { useSeguimientoPlanificacion } from '../composables/useSeguimientoPlanificacion'
 //Precargas
 import ComponentPresupuesto from './parciales/ComponentPresupuesto.vue'
 //Estructuras
 import SeleccionEstructuraPei from './parciales/SeleccionEstructuraPei.vue'
 import SeleccionEstructuraActividad from './parciales/SeleccionEstructuraActividad.vue'
-import DiagramaPlanificacion from './DiagramaJerarquiaPlanificacion.vue'
 //Stores
 import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { usePlanificacionStore } from '../store/usePlanificacionStore'
@@ -458,11 +396,13 @@ import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 import ListaTareasActividad from './parciales/ListaTareasActividad.vue'
 //Utilitarios
 import { useSnackbar } from '@/composables/useSnackbar'
-import { parse, format, isValid, isBefore } from 'date-fns'
 import { useUserStore } from '@/stores/user'
 import { getActivityIcon } from '../utils/actividadIconColors'
-//Revisar el formatDate , la fecha no concuerda
 import { formatCurrency, formatDate } from '../utils/formattersPlan'
+import {
+  getChangeHandlers,
+  registroCambios,
+} from '@/modules/planificacionpeixls/utils/changeHandlers'
 
 // Props del componente
 const props = defineProps({
@@ -489,15 +429,13 @@ const route = useRoute()
 const idproyecto = route.params.id
 
 //Stores
-//const proyectoStore = useProyectoStore() //Store del proyecto - eliminar
-//const { nodes, edges } = storeToRefs(proyectoStore) //Extraer los nodos y edges - eliminar
-const storePlanificacion = usePlanificacionStore() //Store para la planificacion
-const storeProyecto = useProyectoStore //Store del proyecto
-const userStore = useUserStore() //Store del Usuario
+const storePlanificacion = usePlanificacionStore()
+const userStore = useUserStore()
 
 //Composables
 const { successMsg, errorMsg, infoMsg } = useSnackbar()
 const { crearUnaTarea } = useTareaSubactividad()
+const { actualizarPlanificacionProyecto } = useSeguimientoPlanificacion()
 
 /************************* CONTROL DE LA INTERFAZ *******************************/
 //Agregar nueva actividad
@@ -548,34 +486,24 @@ const guardarDesglosePresupuesto = (nuevoDesglose) => {
     const rowIndex = tableData.value.findIndex((row) => row.id === selectedRowData.value.id)
 
     if (rowIndex !== -1) {
-      // Crear una nueva copia del array para mantener la reactividad
       const updatedTableData = [...tableData.value]
 
-      // Actualizar solo el campo procedencia_fondos de la fila específica
       updatedTableData[rowIndex] = {
         ...updatedTableData[rowIndex],
         procedencia_fondos: Array.isArray(nuevoDesglose) ? [...nuevoDesglose] : nuevoDesglose,
       }
 
-      // Asignar el nuevo array reactivo
       tableData.value = updatedTableData
 
-      // Forzar actualización de Handsontable
       if (hotTable.value?.hotInstance) {
-        // Actualizar la celda específica
         hotTable.value.hotInstance.setDataAtCell(rowIndex, 10, nuevoDesglose)
-
-        // Forzar re-renderizado completo
         hotTable.value.hotInstance.render()
         hotTable.value.hotInstance.deselectCell()
-
-        console.log('procedencia_fondos actualizado para fila:', rowIndex)
       }
     }
   }
 
   mostrarPresupuesto.value = false
-  // mostrarMensaje('Desglose de presupuesto guardado correctamente', 'success')
   successMsg('Desglose de presupuesto guardado correctamente')
 }
 
@@ -584,7 +512,6 @@ const modalPei = ref(false)
 const objetivoInicialId = ref(null)
 const indicadorInicialId = ref(null)
 const abrirModalPei = () => {
-  // Cargar IDs actuales de la fila seleccionada
   if (selectedRowData.value) {
     objetivoInicialId.value = selectedRowData.value.objetivo_pei
     indicadorInicialId.value = selectedRowData.value.indicador_pei
@@ -597,7 +524,6 @@ const manejarSeleccionPei = (datosPei) => {
     const rowIndex = tableData.value.findIndex((row) => row.id === selectedRowData.value.id)
 
     if (rowIndex !== -1) {
-      // Actualizar la fila con los datos de PEI
       tableData.value[rowIndex] = {
         ...tableData.value[rowIndex],
         objetivo_pei: datosPei.objetivo_pei,
@@ -605,46 +531,149 @@ const manejarSeleccionPei = (datosPei) => {
         factoresCriticos: datosPei.factoresCriticos,
       }
 
-      // Forzar actualización de Handsontable
       if (hotTable.value?.hotInstance) {
         hotTable.value.hotInstance.render()
       }
 
-      successMsg('Estructura PEI actualizada correctamente', 'success')
+      successMsg('Estructura PEI actualizada correctamente')
     }
   }
 
   modalPei.value = false
 }
 
-//GUARDAR PLANIFICACION
-const guardarPlanificacion = () => {
-  successMsg('Guardar la planificacion')
+/************************* PRE-ENVÍO (EXACTAMENTE COMO EL PEI) *******************************/
+const mostrandoPreEnvio = ref(false)
+const enviando = ref(false)
+
+// Información del usuario
+const usuarioActualInfo = computed(() => ({
+  id: userStore.id || null,
+  usuario: userStore.usuario || 'Invitado',
+}))
+
+// Datos del store
+const datosOriginalesStore = computed(() => {
+  return storePlanificacion.datosOriginales || []
+})
+
+const tableDataStore = computed(() => {
+  return storePlanificacion.tableData || []
+})
+
+// Información de cambios
+const cambiosData = computed(() => {
+  return registroCambios.obtenerJSON()
+})
+
+const totalCambiosReales = computed(() => {
+  const detalles = cambiosData.value?.detalles || {}
+  let total = 0
+  Object.values(detalles).forEach((lista) => {
+    if (Array.isArray(lista)) {
+      total += lista.length
+    }
+  })
+  return total
+})
+
+const cambiosPorPropiedadDetallados = computed(() => {
+  return cambiosData.value?.detalles || {}
+})
+
+// Cálculos para el seguimiento
+const totalPresupuesto = computed(() => {
+  if (!tableDataStore.value.length) return 0
+  return tableDataStore.value.reduce((total, actividad) => {
+    const presupuesto = parseFloat(actividad.presupuesto) || 0
+    return total + presupuesto
+  }, 0)
+})
+
+const totalPresupuestoFormateado = computed(() => {
+  return new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'BOB',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(totalPresupuesto.value)
+})
+
+const actividadesPlanificadas = computed(() => {
+  if (!tableDataStore.value.length) return 0
+  return tableDataStore.value.filter(
+    (actividad) => actividad.estado === 'PLAN' || actividad.gradoEjecucion === 'PLANIFICADA',
+  ).length
+})
+
+// Mostrar pre-envío
+const mostrarPreEnvio = () => {
+  if (totalCambiosReales.value === 0) {
+    infoMsg('No hay cambios para enviar')
+    return
+  }
+  mostrandoPreEnvio.value = true
 }
 
-//Modal de confirmacion
-const confirmacionModal = ref(false) //Variable de compatibilidad legacy
-const mostrarModalActividadVariante = ref(false) //Variable de compatibilidad legacy
+// Confirmar envío
+const confirmarEnvio = async () => {
+  enviando.value = true
+  try {
+    // Construir el payload en el formato requerido para proyectos
+    const payload = {
+      actividades: tableDataStore.value,
+      seguimiento: {
+        datos_tabla_actual: datosOriginalesStore.value,
+        datos_tabla_actualizado: tableDataStore.value,
+        cambios_efectuados: cambiosData.value || {},
+        configuracion: {}, // Aquí deberías pasar la configuración si la tienes
+        total_actividades: tableDataStore.value.length,
+        total_presupuesto: totalPresupuesto.value,
+        actividades_planificadas: actividadesPlanificadas.value,
+        proyecto: props.proyecto.id,
+        creado_por: usuarioActualInfo.value.id,
+        actualizado_por: usuarioActualInfo.value.id,
+      },
+    }
+
+    console.log('PAYLOAD PARA PROYECTO: ', payload)
+
+    // Llamar a la API para guardar
+    const resp = await actualizarPlanificacionProyecto(payload)
+
+    console.log('Respuesta guardado proyecto: ', resp)
+
+    successMsg(`Se han enviado ${totalCambiosReales.value} cambios correctamente`)
+
+    // Limpiar cambios después del envío exitoso
+    registroCambios.limpiar()
+    storePlanificacion.setTieneCambiosSinGuardar(false)
+
+    mostrandoPreEnvio.value = false
+  } catch (error) {
+    console.error('Error al enviar cambios:', error)
+    errorMsg('Error al enviar los cambios')
+  } finally {
+    enviando.value = false
+  }
+}
+
 /************************* CONTROL DE CAMBIOS ***********************************/
 const tieneCambiosSinGuardar = computed(() => storePlanificacion.tieneCambiosSinGuardar)
-const tieneCambiosSinGuardar2 = storePlanificacion.hayCambiosPendientes
-const guardando = ref(false) // Bandera de guardado
+const guardando = ref(false)
 
 /************************* PANEL EXCEL ******************************************/
 const hotTable = ref(null)
-const tableData = ref([]) //Datos de la tabla
-const inicializado = ref(false) //Bandera de inicializacion
+const tableData = ref([])
+const inicializado = ref(false)
 const headers = ref(true)
+
 //Esconder columnas
 const hiddenColumnsConfig = computed(() => {
   return {
-    columns: [], // Columnas 1, 3 y 7
+    columns: [],
   }
 })
-
-//username para carga
-const usernameDropdown = ref([])
-usernameDropdown.value = storePlanificacion.usernamesParaDropdown
 
 //Configuracion de columnas
 const columns = ref([
@@ -668,7 +697,6 @@ const columns = ref([
     type: 'dropdown',
     width: 110,
     source: function (query, process) {
-      // Asegúrate de que el store tenga los usuarios cargados
       const usernames = storePlanificacion.listaUsuariosCompleta
         .filter((user) => user.is_active !== false)
         .map((user) => user.username)
@@ -783,46 +811,33 @@ const columns = ref([
     readOnly: true,
   },
   { data: 'factoresCriticos', title: 'Factores criticos', readOnly: true },
-  {
-    //Relacion al PEI Indicadores
-    data: 'rutaTrazadoIndicadores',
-    title: 'Ruta e indicadores',
-    readOnly: true,
-  },
-  {
-    //Relacion a al estructura del proyecto
-    data: 'estructuraProcedencia',
-    title: 'Estruc, Procedencia',
-    readOnly: true,
-  },
 ])
 
 /************************* Handle Interfaz Excel  *******************************/
-const selectedRowData = ref(null) //Fila seleccionada
-//Manejador e cambios
+const selectedRowData = ref(null)
+
+// Manejador de cambios
 const handleChange = (changes, source) => {
-  //Ignorar cambios de la carga inicial
   if (source === 'loadData') return
 
-  //console.log('Cambios detectados: ', changes)
-  //console.log('Fuente: ', source)
-  //Solo procesar si hay cambios reales
-  if (changes && changes.length > 0) {
-    storePlanificacion.setTieneCambiosSinGuardar(true)
-    changes.forEach(([row, prop, oldValue, newValue]) => {
-      //Verificar si se modifica fecha de inicio y cierre
-      if (prop === 'fecha_inicio' || prop === 'fecha_cierre') {
-        infoMsg('Fechas modificadas')
-      }
-      //Calcula el saldo cuando cambia el presupuesto o el total reportado
-      if (prop === 'presupuesto' || prop === 'totalReportado') {
-        setTimeout(() => {
-          console.log('calcular')
-        }, 50)
-      }
-    })
-  }
+  const handlers = getChangeHandlers(
+    {
+      marcarCambios: (valor) => storePlanificacion.setTieneCambiosSinGuardar(valor),
+      mensajeExito: successMsg,
+      mensajeError: errorMsg,
+      mensajeInfo: infoMsg,
+    },
+    tableData.value,
+    hotTable.value?.hotInstance,
+  )
+
+  changes.forEach(([row, prop, oldValue, newValue]) => {
+    if (handlers[prop]) {
+      handlers[prop](row, oldValue, newValue)
+    }
+  })
 }
+
 //Manejador de seleccion
 const handleSelection = (startRow, startCol, endRow, endCol, selectionLayer) => {
   if (startRow === endRow) {
@@ -834,11 +849,11 @@ const handleSelection = (startRow, startCol, endRow, endCol, selectionLayer) => 
       }
     })
     selectedRowData.value = rowObject
-    //mostrarTareasPopup.value = true
   } else {
     selectedRowData.value = null
   }
 }
+
 /************************* SIDE PANEL *******************************************/
 const sidePanelVisible = ref(false)
 const toogleSidePanel = async () => {
@@ -846,36 +861,37 @@ const toogleSidePanel = async () => {
 }
 
 /************************** Exportar  *********************************************/
-
-const exportarExcel = async () => {}
+const exportarExcel = async () => {
+  alert('Exportar a excel')
+}
 
 /********************* CARGA DE DATOS ******************************/
-const isLoading = ref(false) //Bandera de carga
-const err = ref(null) //Error
+const isLoading = ref(false)
+const err = ref(null)
 
 const cargar = async () => {
   isLoading.value = true
   try {
     await Promise.all([
-      storePlanificacion.obtenerListaUsuarios(), //Carga la lista de usuarioa
-      storePlanificacion.listaTiposDeActividad(), //Carga la lista de tipos de actividad
-      storePlanificacion.listaActividadesProyecto(idproyecto), //Carga las actividades del proyecto
+      storePlanificacion.obtenerListaUsuarios(),
+      storePlanificacion.listaTiposDeActividad(),
+      storePlanificacion.listaActividadesProyecto(idproyecto),
     ])
-    //Comprobador: Solo cargar tableData <=> hay actividades disponibles
+
     console.log('ACTIVIDADES: ', storePlanificacion.listaActividades)
     console.log('Numero de Act: ', storePlanificacion.listaActividades.length)
+
     if (storePlanificacion.tableData && storePlanificacion.tableData.length > 0) {
       storePlanificacion.inicializarDatosOriginales(storePlanificacion.tableData)
       tableData.value = storePlanificacion.tableData
       successMsg(storePlanificacion.tableData.length + ' Actividades Cargadas')
     }
 
-    //Inicializar componente
     inicializado.value = true
   } catch (e) {
     console.error('Error al cargar:', e)
     err.value = e
-    errorMsg('Error al cargar actividades', 'error')
+    errorMsg('Error al cargar actividades')
   } finally {
     isLoading.value = false
   }
@@ -885,212 +901,11 @@ const cargar = async () => {
 onMounted(() => {
   cargar()
 })
-/*****************************************************************************************/
-/************************* FUNCIONES AUXILIARES ******************************************/
-/*****************************************************************************************/
 
-// Función para verificar fechas dd/MM/YY
-const verificarFechas = (rowIndex) => {
-  //Fila seleccionada
-  const fila = tableData.value[rowIndex]
-  //Si no hay fila seleccionada, se anula la ejecucion
-  if (!fila) return
-
-  // console.log('Fila Seleccionada')
-  // console.log(fila)
-
-  const convertirFechaMMDDYYYY = (fechaString) => {
-    if (!fechaString) return null
-    try {
-      // Si ya es un objeto Date válido, retornarlo directamente
-      if (fechaString instanceof Date && isValid(fechaString)) {
-        return fechaString
-      }
-      // Si es string, parsear con date-fns
-      if (typeof fechaString === 'string') {
-        // Intentar parsear como MM/DD/YYYY
-        const fechaParseada = parse(fechaString, 'dd/MM/yyyy', new Date())
-
-        if (isValid(fechaParseada)) {
-          return fechaParseada
-        }
-
-        // Si falla, intentar con formato ISO o nativo
-        const fechaNativa = new Date(fechaString)
-        return isValid(fechaNativa) ? fechaNativa : null
-      }
-      return null
-    } catch (error) {
-      console.error('Error al convertir la fecha: ', error)
-    }
-  }
-
-  const inicio = convertirFechaMMDDYYYY(fila.fecha_inicio)
-  const cierre = convertirFechaMMDDYYYY(fila.fecha_cierre)
-  // console.log('FECHAS')
-  // console.log('Inicio: ', inicio)
-  // console.log('Cierre: ', cierre)
-
-  // Verificar que ambas fechas sean válidas y que inicio sea antes de cierre
-  const fechasValidas = isValid(inicio) && isValid(cierre)
-  const inicioAntesDeCierre = fechasValidas && isBefore(inicio, cierre)
-
-  if (fila.fecha_inicio && fila.fecha_cierre && fechasValidas && inicioAntesDeCierre) {
-    // console.log('✅ Fechas válidas - Actividad cambia a PLANIFICADA')
-    fila.gradoEjecucion = 'PLANIFICADA'
-    successMsg('Actividad planificada')
-
-    // Actualizar en la tabla visualmente
-    if (hotTable.value?.hotInstance) {
-      setTimeout(() => {
-        hotTable.value.hotInstance.setDataAtRowProp(rowIndex, 'gradoEjecucion', 'PLANIFICADA')
-        hotTable.value.hotInstance.setDataAtRowProp(rowIndex, 'estado', 'PLAN')
-        hotTable.value.hotInstance.render()
-      }, 50)
-    }
-  } else {
-    // console.log('❌ Fechas inválidas - Actividad no cambia de grado de ejecucion')
-    // Mostrar razón específica del error
-    if (!fechasValidas) {
-      // console.log('❌ Razón: Fechas no válidas')
-      if (!isValid(inicio)) console.log('  - Fecha inicio inválida:', fila.fecha_inicio)
-      if (!isValid(cierre)) console.log('  - Fecha cierre inválida:', fila.fecha_cierre)
-    } else if (!inicioAntesDeCierre) {
-      // console.log('❌ Razón: Fecha inicio debe ser anterior a fecha cierre')
-      // console.log('  - Inicio:', format(inicio, 'MM/dd/yyyy'))
-      // console.log('  - Cierre:', format(cierre, 'MM/dd/yyyy'))
-      errorMsg('La Fecha de cierre es anterior a la de inicio')
-    }
-    fila.gradoEjecucion = ''
-    fila.fecha_cierre = null
-
-    // Actualizar en la tabla visualmente
-    if (hotTable.value?.hotInstance) {
-      setTimeout(() => {
-        hotTable.value.hotInstance.setDataAtRowProp(rowIndex, 'gradoEjecucion', '')
-        hotTable.value.hotInstance.render()
-      }, 50)
-    }
-  }
-}
-
-// Función para verificar fechas YYYY-MM-dd
-const verificarFechasNativas = (rowIndex) => {
-  // Fila seleccionada
-  const fila = tableData.value[rowIndex]
-  // Si no hay fila seleccionada, se anula la ejecucion
-  if (!fila) return
-
-  const convertirFechaYYYYMMDD = (fechaString) => {
-    if (!fechaString) return null
-    try {
-      // Si ya es un objeto Date válido, retornarlo directamente
-      if (fechaString instanceof Date && isValid(fechaString)) {
-        return fechaString
-      }
-      // Si es string, parsear con date-fns
-      if (typeof fechaString === 'string') {
-        // Primero intentar parsear como YYYY-MM-DD (formato de tu API)
-        const fechaParseadaISO = parse(fechaString, 'yyyy-MM-dd', new Date())
-        if (isValid(fechaParseadaISO)) {
-          return fechaParseadaISO
-        }
-
-        // Si falla, intentar con formato dd/MM/yyyy (por si el usuario escribe manualmente)
-        const fechaParseadaLocal = parse(fechaString, 'dd/MM/yyyy', new Date())
-        if (isValid(fechaParseadaLocal)) {
-          return fechaParseadaLocal
-        }
-
-        // Si falla, intentar con formato nativo
-        const fechaNativa = new Date(fechaString)
-        return isValid(fechaNativa) ? fechaNativa : null
-      }
-      return null
-    } catch (error) {
-      console.error('Error al convertir la fecha: ', error)
-      return null
-    }
-  }
-
-  const inicio = convertirFechaYYYYMMDD(fila.fecha_inicio)
-  const cierre = convertirFechaYYYYMMDD(fila.fecha_cierre)
-
-  console.log('FECHAS PROCESADAS:', {
-    inicioOriginal: fila.fecha_inicio,
-    inicioConvertido: inicio ? format(inicio, 'yyyy-MM-dd') : null,
-    cierreOriginal: fila.fecha_cierre,
-    cierreConvertido: cierre ? format(cierre, 'yyyy-MM-dd') : null,
-  })
-
-  // Verificar que ambas fechas sean válidas y que inicio sea antes de cierre
-  const fechasValidas = isValid(inicio) && isValid(cierre)
-  const inicioAntesDeCierre = fechasValidas && isBefore(inicio, cierre)
-
-  if (fila.fecha_inicio && fila.fecha_cierre && fechasValidas && inicioAntesDeCierre) {
-    console.log('✅ Fechas válidas - Actividad cambia a PLANIFICADA')
-    fila.gradoEjecucion = 'PLANIFICADA'
-    successMsg('Actividad planificada')
-
-    // Actualizar en la tabla visualmente
-    if (hotTable.value?.hotInstance) {
-      setTimeout(() => {
-        hotTable.value.hotInstance.setDataAtRowProp(rowIndex, 'gradoEjecucion', 'PLANIFICADA')
-        hotTable.value.hotInstance.setDataAtRowProp(rowIndex, 'estado', 'PLAN')
-
-        // Formatear fechas a YYYY-MM-DD para consistencia
-        if (inicio) {
-          hotTable.value.hotInstance.setDataAtRowProp(
-            rowIndex,
-            'fecha_inicio',
-            format(inicio, 'yyyy-MM-dd'),
-          )
-        }
-        if (cierre) {
-          hotTable.value.hotInstance.setDataAtRowProp(
-            rowIndex,
-            'fecha_cierre',
-            format(cierre, 'yyyy-MM-dd'),
-          )
-        }
-
-        hotTable.value.hotInstance.render()
-      }, 50)
-    }
-  } else {
-    console.log('❌ Fechas inválidas - Actividad no cambia de grado de ejecucion')
-    // Mostrar razón específica del error
-    if (!fechasValidas) {
-      console.log('❌ Razón: Fechas no válidas')
-      if (!isValid(inicio)) console.log('  - Fecha inicio inválida:', fila.fecha_inicio)
-      if (!isValid(cierre)) console.log('  - Fecha cierre inválida:', fila.fecha_cierre)
-
-      // Mostrar error al usuario
-      errorMsg('Formato de fecha inválido. Use YYYY-MM-DD (ej: 2025-12-01)')
-    } else if (!inicioAntesDeCierre) {
-      console.log('❌ Razón: Fecha inicio debe ser anterior a fecha cierre')
-      console.log('  - Inicio:', inicio ? format(inicio, 'yyyy-MM-dd') : 'inválida')
-      console.log('  - Cierre:', cierre ? format(cierre, 'yyyy-MM-dd') : 'inválida')
-      errorMsg('La fecha de cierre debe ser posterior a la de inicio')
-    }
-
-    // Solo limpiar gradoEjecucion, NO limpiar las fechas
-    fila.gradoEjecucion = ''
-
-    // Actualizar en la tabla visualmente
-    if (hotTable.value?.hotInstance) {
-      setTimeout(() => {
-        hotTable.value.hotInstance.setDataAtRowProp(rowIndex, 'gradoEjecucion', '')
-        hotTable.value.hotInstance.render()
-      }, 50)
-    }
-  }
-}
 /************************ MENU CONTEXTUAL *******************************/
 const contextMenuConfig = computed(() => {
   const menuItems = ['---------']
 
-  // Agregar nuestras opciones personalizadas con íconos
   const customItems = [
     {
       key: 'subactividad',
@@ -1098,13 +913,11 @@ const contextMenuConfig = computed(() => {
       callback: () => {
         const selected = hotTable.value?.hotInstance?.getSelected()
         if (selected && selected.length > 0) {
-          //const startRow = selected[0][0]
-          //mostrarModalAgregarTareaDesdeMenu(startRow)
           mostrarModalAgregarTarea()
         }
       },
       disabled: () => !selectedRowData.value,
-      hidden: () => !selectedRowData.value, // Alternativa: ocultar en lugar de deshabilitar
+      hidden: () => !selectedRowData.value,
     },
     {
       key: 'presupuesto',
@@ -1128,7 +941,6 @@ const contextMenuConfig = computed(() => {
     },
   ]
 
-  // Agregar separador después de nuestras opciones
   const finalItems = [
     ...menuItems,
     ...customItems,
@@ -1142,8 +954,8 @@ const contextMenuConfig = computed(() => {
       key: 'guardar_cambios',
       name: () =>
         tieneCambiosSinGuardar.value ? '💾 Guardar Cambios' : '💾 Guardar (sin cambios)',
-      callback: () => guardarPlanificacion(),
-      disabled: () => false, // Siempre visible, pero podría deshabilitarse si no hay cambios
+      callback: () => mostrarPreEnvio(),
+      disabled: () => false,
     },
   ]
 
@@ -1152,6 +964,7 @@ const contextMenuConfig = computed(() => {
 </script>
 
 <style scoped>
+/* Estilos (igual que antes) */
 .flow-container {
   width: 100%;
   height: 1000px;
@@ -1159,13 +972,11 @@ const contextMenuConfig = computed(() => {
   border-radius: 8px;
 }
 
-/* Also ensure the vue-flow element itself gets dimensions */
 .vue-flow {
   width: 100%;
   height: 100%;
 }
 
-/* Estilos (mantener igual) */
 .hot-wrapper {
   margin: 16px 0;
   border-radius: 8px;
@@ -1197,7 +1008,6 @@ const contextMenuConfig = computed(() => {
 }
 
 /********* toolbar de actividad *********/
-/* Toolbar estilo Excel */
 .excel-style-toolbar {
   background: linear-gradient(to bottom, #f3f3f3 0%, #e6e6e6 100%) !important;
   border: 1px solid #d0d0d0 !important;
@@ -1209,7 +1019,6 @@ const contextMenuConfig = computed(() => {
   flex-wrap: nowrap;
 }
 
-/* Contenedor de información horizontal */
 .excel-info-container.horizontal-layout {
   display: flex;
   align-items: center;
@@ -1259,7 +1068,6 @@ const contextMenuConfig = computed(() => {
   font-weight: 600;
 }
 
-/* Grupo de botones horizontal */
 .horizontal-buttons {
   display: flex;
   align-items: center;
@@ -1293,7 +1101,6 @@ const contextMenuConfig = computed(() => {
   margin-left: -2px !important;
 }
 
-/* Colores específicos para cada botón */
 .budget-button {
   background: linear-gradient(to bottom, #0078d4 0%, #106ebe 100%) !important;
   color: white !important;
@@ -1312,78 +1119,6 @@ const contextMenuConfig = computed(() => {
   background: linear-gradient(to bottom, #0e6c0e 0%, #0d5c0d 100%) !important;
 }
 
-.structure-button {
-  background: linear-gradient(to bottom, #505a64 0%, #3b444b 100%) !important;
-  color: white !important;
-}
-
-.structure-button:hover {
-  background: linear-gradient(to bottom, #3b444b 0%, #2c3439 100%) !important;
-}
-
-/* Ajustes responsivos */
-@media (max-width: 1200px) {
-  .excel-info-container.horizontal-layout {
-    gap: 8px;
-  }
-
-  .horizontal-item {
-    padding: 4px 8px;
-  }
-
-  .info-text.excel-info-text {
-    font-size: 11px;
-  }
-}
-
-@media (max-width: 900px) {
-  .excel-info-container.horizontal-layout {
-    gap: 6px;
-  }
-
-  .horizontal-item {
-    padding: 3px 6px;
-  }
-
-  .excel-button {
-    padding: 0 8px !important;
-    font-size: 10px !important;
-  }
-}
-
-/* Scroll horizontal para pantallas muy pequeñas */
-.excel-info-container.horizontal-layout {
-  scrollbar-width: thin;
-  scrollbar-color: #c1c1c1 #f0f0f0;
-}
-
-.excel-info-container.horizontal-layout::-webkit-scrollbar {
-  height: 4px;
-}
-
-.excel-info-container.horizontal-layout::-webkit-scrollbar-track {
-  background: #f0f0f0;
-}
-
-.excel-info-container.horizontal-layout::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 2px;
-}
-
-/* Efectos de focus para accesibilidad */
-.excel-button:focus-visible {
-  outline: 2px solid #0078d4;
-  outline-offset: 1px;
-}
-
-/* Mejor alineación vertical */
-.excel-style-toolbar {
-  align-items: center;
-}
-
-.horizontal-item {
-  align-items: center;
-}
 .icon-container {
   position: relative;
   display: inline-flex;
