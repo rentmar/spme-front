@@ -220,6 +220,76 @@ export function useActividad() {
     }
   }
 
+  //FUNCIONES BASICAS PARA EL CRUD DE ACTIVIDADES PEI
+  //fetch actividades
+  async function cargarActividadesPei() {
+    loading.value = true
+    try {
+      const respuesta = await actividadServicios.allActPei()
+      actividadesPei.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //fetch actividad por id
+  async function cargarActividadPeiPorId(idactividad) {
+    loading.value = true
+    try {
+      const respuesta = await actividadServicios.porIdActPei(idactividad)
+      actividadPei.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //crear
+  async function crearActividadPei(dataActvidad) {
+    loading.value = true
+    try {
+      const respuesta = await actividadServicios.crearActPei(dataActvidad)
+      actividadPei.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Update
+  async function updateActividadPei(idactividad, dataActividad) {
+    loading.value = true
+    try {
+      const respuesta = await actividadServicios.updateActPei(idactividad, dataActividad)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Eliminar
+  async function delActividadPei(idactividad) {
+    loading.value = true
+    try {
+      const respuesta = await actividadServicios.deleteActPei(idactividad)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading, //ref
     error, //ref
@@ -232,6 +302,7 @@ export function useActividad() {
     actividadInfo, //Una actividad especifica mas Tareas y proyecto
     //Estado PEI
     actividadesPei,
+    actividadPei,
     peiDatos,
     //func proyecto
     cargarActividades,
@@ -248,5 +319,10 @@ export function useActividad() {
     obtenerActidadPorId,
     //Func PEI
     cargarActividadesPorIdPei,
+    cargarActividadesPei,
+    cargarActividadPeiPorId,
+    crearActividadPei,
+    updateActividadPei,
+    delActividadPei,
   }
 }
