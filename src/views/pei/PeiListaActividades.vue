@@ -1496,6 +1496,7 @@ async function cargarSolicitudFondos() {
       estado: "exito",
       solicitudes: solicitudesFiltradas
     }
+    //console.log('idactividad:', JSON.stringify(actividadIdParaValidar.value,null,2))
 
     const solicitudesFiltradasParaRC = data.solicitudes.filter(solicitud => {
       const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value

@@ -248,7 +248,7 @@ const router = createRouter({
     },
     {
       path: '/pei/listaactividadespei/',
-      name: 'listadeActividadespei',
+      name: 'listaActividadesPei',
       component: () => import('@/views/pei/PeiListaActividadespei.vue'),
     },
     {
@@ -299,43 +299,43 @@ const router = createRouter({
     },
     /******************************* PEI ****************************************************/
     {
-      path: '/monitoreo/pei/formulario01/:id',
+      path: '/monitoreo/pei/formulariopei01/:id',
       component: () => import('@/views/monitoreo/SolicitudDeFondosPei.vue'),
     },
     {
-      path: '/monitoreo/pei/formulario011/:id',
+      path: '/monitoreo/pei/formulariopei011/:id',
       component: () => import('@/views/monitoreo/SolicitudDeFondosValidarPei.vue'),
     },
     {
-      path: '/monitoreo/pei/formulario02/:id',
+      path: '/monitoreo/pei/formulariopei02/:id',
       component: () => import('@/views/monitoreo/RendicionDeCuentasPei.vue'),
     },
     {
-      path: '/monitoreo/pei/formulario022/:id',
+      path: '/monitoreo/pei/formulariopei022/:id',
       component: () => import('@/views/monitoreo/RendicionDeCuentasValidarPei.vue'),
     },
     {
-      path: '/monitoreo/pei/formulario033/:id',
-      component: () => import('@/views/monitoreo/SolicitudDeReposicionValidarPei.vue'),
-    },
-    {
-      path: '/monitoreo/pei/formulario03/:id',
+      path: '/monitoreo/pei/formulariopei03/:id',
       component: () => import('@/views/monitoreo/SolicitudDeReposicionPei.vue'),
     },
     {
-      path: '/monitoreo/pei/formulario05/:id',
+      path: '/monitoreo/pei/formulariopei033/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeReposicionValidarPei.vue'),
+    },
+    {
+      path: '/monitoreo/pei/formulariopei05/:id',
       component: () => import('@/views/monitoreo/SolicitudDeViajePei.vue'),
     },
     {
-      path: '/monitoreo/pei/formulario055/:id',
+      path: '/monitoreo/pei/formulariopei055/:id',
       component: () => import('@/views/monitoreo/SolicitudDeViajeValidarPei.vue'),
     },
     {
-      path: '/monitoreo/pei/formulario08/:id',
+      path: '/monitoreo/pei/formulariopei08/:id',
       component: () => import('@/views/monitoreo/SolicitudDePagoDirectoPei.vue'),
     },
     {
-      path: '/monitoreo/pei/formulario088/:id',
+      path: '/monitoreo/pei/formulariopei088/:id',
       component: () => import('@/views/monitoreo/SolicitudDePagoDirectoValidarPei.vue'),
     },
 

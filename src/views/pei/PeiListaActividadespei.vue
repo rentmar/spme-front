@@ -111,7 +111,7 @@
                   <div class="d-flex align-center">
                     <div class="d-flex flex-column align-center justify-center">
                       <!-- Solicitud de Fondos -->
-                      <v-tooltip text="Solicitud de Fondos" location="top">
+                      <v-tooltip text="Solicitud de Fondos PEI" location="top">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
@@ -123,13 +123,13 @@
                             :disabled="
                               getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
                             "
-                            :to="`/monitoreo/pei/formulario01/${actividad.id}`"
+                            :to="`/monitoreo/pei/formulariopei01/${actividad.id}`"
                             @click.stop
                           ></v-btn>
                         </template>
                       </v-tooltip>
 
-                      <v-tooltip text="Validar Solicitud de Fondos" location="bottom">
+                      <v-tooltip text="Validar Solicitud de Fondos PEI" location="bottom">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
@@ -148,7 +148,7 @@
                     <!-- <v-divider vertical inset class="mx-1 my-1"></v-divider> -->
 
                     <div class="d-flex flex-column align-center justify-center">
-                      <v-tooltip text="Solicitud de Viaje" location="top">
+                      <v-tooltip text="Solicitud de Viaje PEI" location="top">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
@@ -157,13 +157,13 @@
                             variant="text"
                             color="deep-purple"
                             size="small"
-                            :to="`/monitoreo/pei/formulario05/${actividad.id}`"
+                            :to="`/monitoreo/pei/formulariopei05/${actividad.id}`"
                             @click.stop
                           ></v-btn>
                         </template>
                       </v-tooltip>
 
-                      <v-tooltip text="Validar Solicitud de Viaje" location="bottom">
+                      <v-tooltip text="Validar Solicitud de Viaje PEI" location="bottom">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
@@ -181,7 +181,7 @@
 
                     <!-- Solicitud de Pago Directo cambiado de 1 a 5-->
                     <div class="d-flex flex-column align-center justify-center">
-                      <v-tooltip text="Solicitud de Pago Directo" location="top">
+                      <v-tooltip text="Solicitud de Pago Directo PEI" location="top">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
@@ -190,13 +190,13 @@
                             variant="text"
                             color="teal-lighten-2"
                             size="small"
-                            :to="`/monitoreo/pei/formulario08/${actividad.id}`"
+                            :to="`/monitoreo/pei/formulariopei08/${actividad.id}`"
                             @click.stop
                           ></v-btn>
                         </template>
                       </v-tooltip>
 
-                      <v-tooltip text="Validar Solicitud de Pago Directo" location="bottom">
+                      <v-tooltip text="Validar Solicitud de Pago Directo PEI" location="bottom">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
@@ -214,7 +214,7 @@
 
                     <!-- Solicitud de Reposición -->
                     <div class="d-flex flex-column align-center justify-center">
-                      <v-tooltip text="Solicitud de Reposición" location="top">
+                      <v-tooltip text="Solicitud de Reposición PEI" location="top">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
@@ -223,13 +223,13 @@
                             variant="text"
                             color="warning"
                             size="small"
-                            :to="`/monitoreo/pei/formulario03/${actividad.id}`"
+                            :to="`/monitoreo/pei/formulariopei03/${actividad.id}`"
                             @click.stop
                           ></v-btn>
                         </template>
                       </v-tooltip>
 
-                      <v-tooltip text="Validar Solicitud de Reposición" location="bottom">
+                      <v-tooltip text="Validar Solicitud de Reposición PEI" location="bottom">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 1"
@@ -247,7 +247,7 @@
 
                     <!-- Rendición de cuentas para ACTIVIDADES-->
                     <div class="d-flex flex-column align-center justify-center">
-                      <v-tooltip text="Rendición de Cuentas" location="top">
+                      <v-tooltip text="Rendición de Cuentas PEI" location="top">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 2"
@@ -256,7 +256,7 @@
                             variant="text"
                             color="error"
                             size="small"
-                            :to="`/monitoreo/pei/formulario02/${actividad.id}`"
+                            :to="`/monitoreo/pei/formulariopei02/${actividad.id}`"
                             @click.stop
                           ></v-btn>
                           <!-- :disabled="!getSolicitudFondosInfo(actividad.id, 0)?.bloquearIconosSolFondos" -->
@@ -264,7 +264,7 @@
                         </template>
                       </v-tooltip>
 
-                      <v-tooltip text="Validar Rendición de Cuentas" location="bottom">
+                      <v-tooltip text="Validar Rendición de Cuentas PEI" location="bottom">
                         <template v-slot:activator="{ props }">
                           <v-btn
                             v-if="parseInt($route.query.showButton) === 2"
@@ -422,7 +422,7 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Pago Directo" location="bottom">
+                                  <v-tooltip text="Validar Solicitud de Pago Directo PEI" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -728,7 +728,7 @@
 
     <v-dialog v-model="dialogValidarSolicitud" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Fondos"></v-toolbar>
+        <v-toolbar color="primary" title="Validar Solicitud de Fondos PEI"></v-toolbar>
         <v-card-text>
             <template
               v-for="(solicitudF, index) in datosFormulario1.solicitudes"
@@ -804,7 +804,7 @@
 
     <v-dialog v-model="dialogRendicionCuentasValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Rendicion de Cuentas"></v-toolbar>
+        <v-toolbar color="primary" title="Validar Rendicion de Cuentas PEI"></v-toolbar>
         <v-card-text>
 
             <template
@@ -885,7 +885,7 @@
 
       <v-dialog v-model="dialogReposicionValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Reposicion"></v-toolbar>
+        <v-toolbar color="primary" title="Validar Solicitud de Reposicion PEI"></v-toolbar>
         <v-card-text>
 
             <template
@@ -978,7 +978,7 @@
 
       <v-dialog v-model="dialogPagoDirectoValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Pago Directo"></v-toolbar>
+        <v-toolbar color="primary" title="Validar Solicitud de Pago Directo PEI aqui es"></v-toolbar>
         <v-card-text>
 
             <template
@@ -1026,7 +1026,10 @@
       <!-- {{ '********************************' }}
      <pre>{{ datosFormulario1 }}</pre> -->
       <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
-      <!-- <pre>{{ solicitudesFondos }}</pre> -->
+      <!-- <pre>{{ actividadesPei }}</pre> -->
+      <!-- <pre>{{ actividades }}</pre>
+      {{ '********************************' }} -->
+      <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
 </template>
 
 <script setup>
@@ -1069,9 +1072,15 @@ const {
   actividades,
 } = useActividad()
 
+//const actividades = ref([])
+
 // --- NUEVAS VARIABLES PARA SOLICITUDES DE FONDOS ---
 const solicitudesFondos = ref([])
 const loadingSolicitudes = ref(false)
+
+// --- NUEVAS VARIABLES PARA ACTIVIDADES PEI ---
+const actividadesPei = ref([])
+const loadingActividadesPei = ref(false)
 
 // --- ESTADOS REACTIVOS ---
 const cargandoGeneral = ref(true)
@@ -1181,11 +1190,12 @@ const getStatusColor = (status) => {
 
 const abrirFormulario011 = (idSolicitudF) => {
   const routeConfig = {
-    path: `/monitoreo/formulario011/${actividadIdParaValidar.value}`,
+    path: `/monitoreo/pei/formulariopei011/${actividadIdParaValidar.value}`,
     query: {
       solicitud_id: idSolicitudF
     }
   };
+  //console.log('cosassssssssssssssssssss',actividadIdParaValidar)
 
   // Add tarea_id to query if it exists
   if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
@@ -1206,7 +1216,7 @@ const abrirFormularioRendicionC = (idSolicitudF) => {
 
 const abrirFormularioRendicionCuentasValidar = (idSolicitudF) => {
   router.push({
-    path: `/monitoreo/formulario022/${actividadIdParaValidar.value}`,
+    path: `/monitoreo/pei/formulariopei022/${actividadIdParaValidar.value}`,
     query: {
       solicitud_id: idSolicitudF
     }
@@ -1224,7 +1234,7 @@ const abrirFormulario03 = (idSolicitudF) => {
 
 const abrirFormularioReposicion = (idSolicitudR) => {
   router.push({
-    path: `/monitoreo/formulario033/${actividadIdParaValidar.value}`,
+    path: `/monitoreo/pei/formulariopei033/${actividadIdParaValidar.value}`,
     query: {
       solicitud_id: idSolicitudR
     }
@@ -1233,7 +1243,7 @@ const abrirFormularioReposicion = (idSolicitudR) => {
 
 const abrirFormularioSolicitudDeViajeParaValidar = (idSolicitudDeViaje) => {
   router.push({
-    path: `/monitoreo/formulario055/${actividadIdParaValidar.value}`,
+    path: `/monitoreo/pei/formulariopei055/${actividadIdParaValidar.value}`,
     query: {
       solicitud_id: idSolicitudDeViaje
     }
@@ -1242,7 +1252,7 @@ const abrirFormularioSolicitudDeViajeParaValidar = (idSolicitudDeViaje) => {
 
 const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudDePagoDirecto) => {
   router.push({
-    path: `/monitoreo/formulario088/${actividadIdParaValidar.value}`,
+    path: `/monitoreo/pei/formulariopei088/${actividadIdParaValidar.value}`,
     query: {
       solicitud_id: idSolicitudDePagoDirecto
     }
@@ -1262,6 +1272,7 @@ const abrirDialogValidar = async (actividadId, tareaId) => {     //tareaId = nul
     if (datosFormulario.value) {
       await cargarSolicitudFondos();
     }
+    console.log('se carga dato:')
   } catch (error) {
     console.error('Error al cargar datos iniciales:', error);
     mostrarSnackbar('Error al cargar datos iniciales', 'error');
@@ -1330,7 +1341,7 @@ const abrirDialogPagoDirectoValidar = async (actividadId, tareaId = null) => {
   tareaIdParaValidar.value = tareaId
   solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)
 
-  // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
+// Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   await cargarSolicitudDePagoDirecto()
 
   dialogPagoDirectoValidar.value = true;
@@ -1344,6 +1355,7 @@ const getEstadoTexto = (status) => {
 // Carga inicial de datos
 onMounted(async () => {
   await cargar()
+  await cargarActividadesPei()
 })
 
 // Modificar la función cargar para que también cargue las solicitudes de fondos
@@ -1353,10 +1365,12 @@ const cargar = async () => {
     await Promise.all([
       actividadesTareas(),
       cargarSolicitudesFondos(), // Cargar solicitudes de fondos en paralelo
+      // console.log('HHHHHHHHHHHHHHH',actividades.value),
+      // console.log('KKKKKKKKKKKKKKK', actividadesFromApi.value)
     ])
-
+    //debugger
     // [Procesamiento existente de actividades]
-    if (Array.isArray(actividadesFromApi.value)) {
+    if (Array.isArray(actividadesFromApi.value)) {          //Verifica si actividadesFromApi.value es un array
       actividades.value = actividadesFromApi.value.map((actividad) => ({
         ...actividad,
         estadoFrontend: mapEstadoBackendToFrontend(actividad.estado),
@@ -1379,6 +1393,30 @@ const cargar = async () => {
     mostrarSnackbar('Error al cargar datos: ' + (error.message || 'Error desconocido'), 'error')
   } finally {
     loading.value = false
+  }
+}
+
+const cargarActividadesPei = async () => {
+  loadingActividadesPei.value = true
+  try {
+    const response = await fetch(baseurl + 'api/actividades-pei-con-tareas/', {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+    if(!response.ok){
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
+    const data = await response.json()
+    actividadesPei.value = data
+    actividades.value = data
+  } catch (error) {
+    console.error('Error al cargar actividades PEI:', error)
+    mostrarSnackbar(`Error al cargar actividades PEI: ${error.message}`, `error`)
+  } finally {
+    loadingActividadesPei.value = false
   }
 }
 
@@ -1413,7 +1451,6 @@ const cargarSolicitudesFondos = async () => {
 // Obtener información de solicitud de fondos para una actividad (y opcionalmente una tarea)
 const getSolicitudFondosInfo = (actividadId, tareaId = null) => {
   if (!solicitudesFondos.value.length) return null
-
   // Buscar solicitud que coincida con actividad y tarea (si se proporciona)
   const solicitud = solicitudesFondos.value.find((sf) => {
     const matchActividad = sf.actividad === actividadId
@@ -1437,7 +1474,8 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
+    //const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
+      const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario-pei/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1472,7 +1510,7 @@ async function cargarSolicitudFondos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudFondos/', {
+    const response = await fetch(baseurl + 'api/solicitud-fondos-pei/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -1482,24 +1520,24 @@ async function cargarSolicitudFondos() {
     if (!response.ok) {
       throw new Error(`Error en la solicitud: ${response.status}`)
     }
-
-    const data = await response.json()
-    //console.log('Datos recibidoswwwwwwwwwwwwwwwww:', data)
+    const data = {solicitudes: await response.json()}
+    //console.log('Datos recibidoswwwwwwwwwwwwwwwww:', JSON.stringify(data,null,2))
 
     // Filtrar las solicitudes por actividad_id y tarea_id
     const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
-      const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value
-      const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
+      const coincideActividad = solicitud.actividad === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea === tareaIdParaValidar.value
       return coincideActividad && coincideTarea//&& coincideValidacionResp && coincideValidacionCoord
     })
     datosFormulario1.value = {
       estado: "exito",
       solicitudes: solicitudesFiltradas
     }
+    //console.log('idactividad:', JSON.stringify(actividadIdParaValidar.value,null,2))
 
     const solicitudesFiltradasParaRC = data.solicitudes.filter(solicitud => {
-      const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value
-      const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
+      const coincideActividad = solicitud.actividad === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea === tareaIdParaValidar.value
       const coincideValidacionResp = solicitud.validacionResponsable === true
       const coincideValidacionCoord = solicitud.validacionCoordinador === true
       return coincideActividad && coincideTarea && coincideValidacionResp && coincideValidacionCoord
@@ -1581,14 +1619,15 @@ async function cargarRendicionesDeCuenta() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerRendicionDeCuentas/', {
+    //const response = await fetch(baseurl + '/monitoreo_api/obtenerRendicionDeCuentas/', {
+      const response = await fetch(baseurl + 'api/rendicion-cuentas-pei/filtrar/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        id_actividad: actividadIdParaValidar.value,
-        id_tarea: tareaIdParaValidar.value,
+        actividad_id: actividadIdParaValidar.value,
+        tarea_id: tareaIdParaValidar.value,
         //usuario: usuario.value.nombre,
       }),
     })
@@ -1601,8 +1640,8 @@ async function cargarRendicionesDeCuenta() {
       )
     }
 
-    const rawData = await response.json()
-    //console.log('Datos recibidos para RC:', JSON.stringify(rawData,null,2))
+    const rawData = {rendiciones: await response.json()}
+    console.log('Datos recibidos para RC:', JSON.stringify(rawData,null,2))
 
     datosFormularioValidarRC.value = strictSanitizeData(rawData)
     //console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarRC.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
@@ -1619,14 +1658,15 @@ async function cargarSolicitudDeReposicion() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudReembolso/', {
+    //const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudReembolso/', {
+    const response = await fetch(baseurl + 'api/solicitud-reembolso-pei/filtrar/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        id_actividad: actividadIdParaValidar.value,
-        id_tarea: tareaIdParaValidar.value,
+        actividad_id: actividadIdParaValidar.value,
+        tarea_id: tareaIdParaValidar.value,
         //usuario: usuario.value.nombre,
       }),
     })
@@ -1639,8 +1679,8 @@ async function cargarSolicitudDeReposicion() {
       )
     }
 
-    const rawData = await response.json()
-    //console.log('SoicitudDeReposicion Recibido:', JSON.stringify(rawData,null,2))
+    const rawData = {solicitudes: await response.json()}
+    console.log('SoicitudDeReposicion Recibido:', JSON.stringify(rawData,null,2))
 
     datosFormularioValidarSR.value = strictSanitizeData(rawData)
     //console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarSR.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
@@ -1657,7 +1697,7 @@ async function cargarSolicitudDeViaje() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudesViaje/', {
+    const response = await fetch(baseurl + 'api/monitoreo/obtener-solicitudes-viaje-pei/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1668,6 +1708,7 @@ async function cargarSolicitudDeViaje() {
         //usuario: usuario.value.nombre,
       }),
     })
+
     //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
 
     if (!response.ok) {
@@ -1677,11 +1718,12 @@ async function cargarSolicitudDeViaje() {
       )
     }
 
+    //const data = {solicitudes: await response.json()}
     const rawData = await response.json()
     //console.log('SoicitudDeViaje Recibido:', JSON.stringify(rawData,null,2))
 
     listaSolicitudesDeViaje.value = strictSanitizeData(rawData.solicitudes)
-    //console.log('Datos cargados exitosamente:', JSON.stringify(listaSolicitudesDeViaje.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
+    console.log('Datos cargados exitosamenteeee:', JSON.stringify(listaSolicitudesDeViaje.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -1695,14 +1737,15 @@ async function cargarSolicitudDePagoDirecto() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudesPagoDirecto/', {
+    //const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudesPagoDirecto/', {
+    const response = await fetch(baseurl + 'api/solicitud-pago-directo-pei/filtrar/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        id_actividad: actividadIdParaValidar.value,
-        id_tarea: tareaIdParaValidar.value,
+        actividad_id: actividadIdParaValidar.value,
+        tarea_id: tareaIdParaValidar.value,
         //usuario: usuario.value.nombre,
       }),
     })
@@ -1715,11 +1758,11 @@ async function cargarSolicitudDePagoDirecto() {
       )
     }
 
-    const rawData = await response.json()
+    const rawData = {solicitudes: await response.json()}
     console.log('SoicitudDePagoDirecto Recibido:', JSON.stringify(rawData,null,2))
 
     listaSolicitudesDePagoDirecto.value = strictSanitizeData(rawData.solicitudes)
-    console.log('Datos cargados exitosamente:', JSON.stringify(listaSolicitudesDePagoDirecto.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
+    //console.log('Datos cargados exitosamente:', JSON.stringify(listaSolicitudesDePagoDirecto.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)

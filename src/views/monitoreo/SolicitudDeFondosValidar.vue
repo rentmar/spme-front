@@ -933,63 +933,63 @@ async function cargarDatos() {
   }
 }
 
-function sanitizeData(data) {
-  if (data === null || data === undefined) {
-    return '';
-  }
+// function sanitizeData(data) {
+//   if (data === null || data === undefined) {
+//     return '';
+//   }
 
-  if (typeof data === 'string') {
-    // Limpiar strings: trim y convertir empty strings a ''
-    const trimmed = data.trim();
-    return trimmed === '' ? '' : trimmed;
-  }
+//   if (typeof data === 'string') {
+//     // Limpiar strings: trim y convertir empty strings a ''
+//     const trimmed = data.trim();
+//     return trimmed === '' ? '' : trimmed;
+//   }
 
-  if (typeof data === 'number') {
-    // Validar que sea un número finito
-    return isFinite(data) ? data : 0;
-  }
+//   if (typeof data === 'number') {
+//     // Validar que sea un número finito
+//     return isFinite(data) ? data : 0;
+//   }
 
-  if (typeof data === 'boolean') {
-    return data;
-  }
+//   if (typeof data === 'boolean') {
+//     return data;
+//   }
 
-  if (Array.isArray(data)) {
-    // Sanitizar cada elemento del array
-    return data.map(item => sanitizeData(item)).filter(item =>
-      item !== null && item !== undefined && item !== ''
-    );
-  }
+//   if (Array.isArray(data)) {
+//     // Sanitizar cada elemento del array
+//     return data.map(item => sanitizeData(item)).filter(item =>
+//       item !== null && item !== undefined && item !== ''
+//     );
+//   }
 
-  if (typeof data === 'object') {
-    const sanitized = {};
-    for (const key in data) {
-      if (Object.prototype.hasOwnProperty.call(data, key)) {
-        const value = data[key];
-        // Solo incluir propiedades con valores válidos
-        if (value !== null && value !== undefined && value !== '') {
-          sanitized[key] = sanitizeData(value);
-        }
-      }
-    }
-    return sanitized;
-  }
+//   if (typeof data === 'object') {
+//     const sanitized = {};
+//     for (const key in data) {
+//       if (Object.prototype.hasOwnProperty.call(data, key)) {
+//         const value = data[key];
+//         // Solo incluir propiedades con valores válidos
+//         if (value !== null && value !== undefined && value !== '') {
+//           sanitized[key] = sanitizeData(value);
+//         }
+//       }
+//     }
+//     return sanitized;
+//   }
 
-  // Para cualquier otro tipo de dato, retornar string vacío
-  return '';
-}
+//   // Para cualquier otro tipo de dato, retornar string vacío
+//   return '';
+// }
 
-function strictSanitizeData(data) {
-  const sanitized = sanitizeData(data);
+// function strictSanitizeData(data) {
+//   const sanitized = sanitizeData(data);
 
-  // Si el resultado es un objeto vacío, retornar string vacío
-  if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
-    if (Object.keys(sanitized).length === 0) {
-      return '';
-    }
-  }
+//   // Si el resultado es un objeto vacío, retornar string vacío
+//   if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
+//     if (Object.keys(sanitized).length === 0) {
+//       return '';
+//     }
+//   }
 
-  return sanitized;
-}
+//   return sanitized;
+// }
 
 // async function cargarSolicitudFondos() {
 //   isLoading.value = true
