@@ -694,6 +694,7 @@ const proyecto = reactive({
   fecha_finalizacion: null,
   presupuesto: null,
   procedencia_fondos: [],
+  propietario: usuarioStore.id,
 })
 // El store de los proyectos
 const proyectoStore = useProyectoStore()
