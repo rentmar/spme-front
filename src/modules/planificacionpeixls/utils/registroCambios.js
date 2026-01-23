@@ -8,6 +8,8 @@ class RegistroCambios {
       fecha_inicio: [],
       fecha_cierre: [],
       presupuesto: [],
+      codigo: [],
+      nombreCorto: [],
       otros: [], // Para cambios en otras columnas
     }
   }

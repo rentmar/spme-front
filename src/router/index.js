@@ -356,6 +356,42 @@ const router = createRouter({
       name: 'homeNotificaciones',
       component: () => import('@/views/HomeView.vue'),
     },
+    /******************************* FONFOSC*********************************************/
+    {
+      path: '/fonfosc/lista',
+      name: 'fonfoscLista',
+      component: () => import('@/views/fonfosc/ListaProyectosFonFoscView.vue'),
+    },
+    /* Marco Logico de un Proyecto */
+    {
+      path: '/fonfosc/:id/marcologico',
+      name: 'fonfoscMarcoLogico',
+      component: () => import('@/modules/fonfosc/components/FonFoscMarcoLogico.vue'),
+    },
+    /* Informacion META */
+    {
+      path: '/fonfosc/:id/meta',
+      name: 'fonfoscMetaInformacion',
+      component: () => import('@/views/fonfosc/InformacionMetaFonFoscView.vue'),
+    },
+    /* Informacion Presupuestaria */
+    {
+      path: '/fonfosc/:id/presupuesto',
+      name: 'informacionPresupuestaria',
+      component: () => import('@/views/fonfosc/PresupuestoFonFoscView.vue'),
+    },
+    /* LIsta de informes de los proyectos */
+    {
+      path: '/fonfosc/informes-proyectos',
+      name: 'informesProyectosLista',
+      component: () => import('@/views/fonfosc/InformesListaFonFoscView.vue'),
+    },
+    /* Crear un nuevo Proyecto */
+    {
+      path: '/fonfosc/crear-nuevo-proyecto-fonfosc',
+      name: 'crearNuevoProyectoFonFosc',
+      component: () => import('@/views/fonfosc/CrearNuevoProyectoFonFoscView.vue'),
+    },
   ],
 })
 

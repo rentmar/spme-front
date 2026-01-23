@@ -29,22 +29,15 @@
         value="projects-list"
         to="/proyecto"
       ></v-list-item>
-
+      <!--
       <v-list-item
         prepend-icon="mdi-chart-gantt"
         title="Programas/Areas"
         value="programas-list"
         to="/programas"
-      ></v-list-item>
+      ></v-list-item> -->
 
       <v-list-item prepend-icon="mdi-finance" title="FPP" value="fpd-list" to="/"></v-list-item>
-
-      <v-list-item
-        prepend-icon="mdi-cash-multiple"
-        title="FONFOSC"
-        value="fonfosc-list"
-        to="/"
-      ></v-list-item>
     </v-list-group>
 
     <v-list-group value="planning">
@@ -242,6 +235,27 @@
           class="admin-item"
         ></v-list-item>
       </template>
+    </v-list-group>
+
+    <!-- FONFOSC -->
+    <v-list-group value="FONFOSC">
+      <template v-slot:activator="{ props }">
+        <v-list-item v-bind="props" prepend-icon="mdi-bank" title="FONFOSC"></v-list-item>
+      </template>
+
+      <v-list-item
+        prepend-icon="mdi-folder-multiple"
+        title="Proyectos presentados"
+        value="fonfosc-list-proyectos"
+        to="/fonfosc/lista"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-chart-bar"
+        title="Informes"
+        value="fonfosc-list-informes"
+        to="/fonfosc/informes-proyectos"
+      ></v-list-item>
     </v-list-group>
 
     <v-list-item prepend-icon="mdi-help-box" title="Ayuda" value="help" to="/help"></v-list-item>

@@ -92,6 +92,42 @@ const manejarFecha = (tipo, row, oldValue, newValue, callbacks, tabla, hotTable)
  */
 export const getChangeHandlers = (callbacks, tabla, hotTable) => {
   return {
+    codigo: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Codigo cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Codigo actualizado: ${oldValue} → ${newValue}`)
+
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'codigo',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.codigo,
+        )
+      }
+    },
+    nombreCorto: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Nombre cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Nombre actualizado: ${oldValue} → ${newValue}`)
+
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'nombre',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.nombreCorto,
+        )
+      }
+    },
     responsable: (row, oldValue, newValue) => {
       if (oldValue !== newValue) {
         callbacks.marcarCambios?.(true)
