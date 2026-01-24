@@ -25,7 +25,7 @@
                 size="42"
                 :color="getAvatarColor()"
                 class="avatar-main elevation-2"
-                :class="{ 'active-user': usuario?.is_active }"
+                :class="{ 'active-user': isUserActive }"
               >
                 <div v-if="!user.avatar" class="avatar-placeholder">
                   <v-icon icon="mdi-account" size="24" color="white" />
@@ -37,7 +37,7 @@
             </v-badge>
 
             <!-- Indicador de actividad sutil -->
-            <div v-if="usuario?.is_active" class="pulse-indicator"></div>
+            <div v-if="isUserActive" class="pulse-indicator"></div>
           </div>
 
           <!-- Información del usuario -->
@@ -55,7 +55,7 @@
             </div>
             <div class="user-meta d-flex align-center mt-1">
               <v-chip
-                v-if="usuario?.is_active"
+                v-if="showOnlineStatus"
                 size="x-small"
                 density="compact"
                 class="status-chip"
@@ -74,7 +74,7 @@
       </v-btn>
     </template>
 
-    <!-- Menú desplegable (se mantiene igual que antes) -->
+    <!-- Menú desplegable -->
     <v-card elevation="4" class="overflow-hidden" rounded="lg" width="280">
       <v-list density="compact" class="py-2">
         <!-- Header del usuario -->
@@ -82,7 +82,7 @@
           <template #prepend>
             <v-avatar
               size="52"
-              :color="usuario?.is_active ? 'indigo-darken-2' : 'grey-darken-1'"
+              :color="isUserActive ? 'indigo-darken-2' : 'grey-darken-1'"
               class="elevation-2 mr-3"
             >
               <v-icon v-if="!user.avatar" icon="mdi-account-circle" size="32" color="white" />
@@ -91,14 +91,14 @@
           </template>
 
           <v-list-item-title class="font-weight-bold text-body-1">
-            {{ usuario?.username || 'Usuario' }}
+            {{ usuario?.username || userStore.usuario || 'Usuario' }}
           </v-list-item-title>
           <v-list-item-subtitle class="d-flex align-center flex-wrap mt-2">
             <span class="text-caption text-medium-emphasis">
               {{ usuario?.email || user.email || 'Sin email' }}
             </span>
             <v-chip
-              v-if="usuario?.is_active"
+              v-if="showOnlineStatus"
               size="x-small"
               density="comfortable"
               class="ml-2 mt-1"
@@ -188,14 +188,12 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { onMounted, ref } from 'vue'
+import { useUserPermissions } from '@/stores/useUserPermissions'
+import { computed } from 'vue'
 
 const router = useRouter()
 const userStore = useUserStore()
-const usuario = ref(null)
-const loading = ref(false)
-const error = ref(null)
-
+const userPermisosStore = useUserPermissions()
 // App version
 const appVersion = '1.0.0'
 
@@ -212,13 +210,32 @@ defineProps({
   },
 })
 
+// Computed properties
+const usuario = computed(() => {
+  return userStore.userData?.user || null
+})
+
+// Determina si el usuario está activo basado en la autenticación
+const isUserActive = computed(() => {
+  return userStore.isAuthenticated
+})
+
+// Específico para mostrar el chip "En línea" (más estricto)
+const showOnlineStatus = computed(() => {
+  // Solo mostrar "En línea" si está autenticado Y tiene is_active = true
+  return userStore.isAuthenticated && usuario.value?.is_active === true
+})
+
 const handleLogout = () => {
   userStore.clearUserData()
+  userPermisosStore.limpiarPermisos()
   router.push('/')
 }
 
 const getDisplayName = () => {
-  const name = usuario.value?.username || 'Usuario'
+  if (!usuario.value && !userStore.isAuthenticated) return 'Invitado'
+
+  const name = usuario.value?.username || userStore.usuario || 'Usuario'
   if (name.length > 15) {
     return name.substring(0, 12) + '...'
   }
@@ -226,6 +243,8 @@ const getDisplayName = () => {
 }
 
 const getRoleDisplay = () => {
+  if (!usuario.value && !userStore.isAuthenticated) return 'Invitado'
+
   const role = userStore.rol || usuario.value?.cargo
   if (!role) return 'Usuario'
 
@@ -239,15 +258,14 @@ const getRoleDisplay = () => {
 }
 
 const getStatusColor = () => {
-  return usuario.value?.is_active ? 'success' : 'grey'
+  return isUserActive.value ? 'success' : 'grey'
 }
 
 const getAvatarColor = () => {
-  if (!usuario.value) return 'indigo-darken-2'
+  if (!usuario.value && !userStore.isAuthenticated) return 'grey-darken-1'
 
-  // Colores basados en el estado del usuario
-  if (usuario.value.is_active) {
-    const role = userStore.rol || usuario.value.cargo
+  if (isUserActive.value) {
+    const role = userStore.rol || usuario.value?.cargo
     const colors = {
       admin: 'deep-purple-darken-2',
       supervisor: 'blue-darken-2',
@@ -258,22 +276,6 @@ const getAvatarColor = () => {
   }
   return 'grey-darken-1'
 }
-
-const cargarDatos = async () => {
-  loading.value = true
-  try {
-    usuario.value = userStore.userData?.user || ''
-  } catch (err) {
-    console.error('Error carga de info de usuario')
-    error.value = err
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(() => {
-  cargarDatos()
-})
 </script>
 
 <style scoped>
@@ -320,7 +322,7 @@ onMounted(() => {
 }
 
 .avatar-main.active-user {
-  border-color: rgba(76, 175, 80, 0.4); /* Verde success con opacidad */
+  border-color: rgba(76, 175, 80, 0.4);
 }
 
 .avatar-placeholder {
@@ -365,7 +367,7 @@ onMounted(() => {
   right: -2px;
   width: 10px;
   height: 10px;
-  background-color: #4caf50; /* Verde success */
+  background-color: #4caf50;
   border-radius: 50%;
   animation: pulse 2s infinite;
   z-index: 2;

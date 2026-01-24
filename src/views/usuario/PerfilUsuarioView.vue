@@ -9,11 +9,7 @@
 
     <!-- CONTENIDO PRINCIPAL -->
     <template v-if="usuario">
-      <PaginaTituloIcono
-        :icon="'mdi-account-circle'"
-        :titulo="'Mi Perfil'"
-        :subtitulo="'Información Personal'"
-      ></PaginaTituloIcono>
+      <PaginaTituloIcono :icon="'mdi-account-circle'" :titulo="'Mi Perfil'"></PaginaTituloIcono>
 
       <v-row class="profile-content mx-0">
         <v-col cols="12" class="pa-6">
