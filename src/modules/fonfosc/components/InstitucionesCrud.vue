@@ -29,21 +29,42 @@
               single-line
               hide-details
               clearable
+              variant="outlined"
             />
           </v-col>
           <v-col cols="12" md="6" class="text-right">
-            <v-chip color="primary" class="ma-2"> Total: {{ instituciones.length }} </v-chip>
+            <v-chip color="primary" class="ma-2">
+              Total: {{ institucionesFiltradas.length }}
+            </v-chip>
           </v-col>
         </v-row>
 
         <!-- Tabla de instituciones -->
         <v-data-table
           :headers="headers"
-          :items="instituciones"
+          :items="institucionesFiltradas"
           :search="search"
-          :loading="loading"
+          :loading="cargando"
           class="elevation-1 mt-4"
         >
+          <template #item.departamentos="{ item }">
+            <div class="d-flex flex-wrap gap-1">
+              <v-chip
+                v-for="deptoNombre in getDepartamentosNombres(item.departamento)"
+                :key="deptoNombre"
+                size="small"
+                color="primary"
+                variant="outlined"
+                class="ma-1"
+              >
+                {{ deptoNombre }}
+              </v-chip>
+              <span v-if="!item.departamento?.length" class="text-disabled text-caption">
+                Sin departamentos
+              </span>
+            </div>
+          </template>
+
           <template #item.actions="{ item }">
             <v-icon size="small" class="me-2" @click="editItem(item)" color="primary">
               mdi-pencil
@@ -61,12 +82,6 @@
               {{ item.webSite }}
             </a>
             <span v-else class="text-disabled">No especificado</span>
-          </template>
-
-          <template #item.total_proyectos="{ item }">
-            <v-chip size="small" :color="item.total_proyectos > 0 ? 'success' : 'default'">
-              {{ item.total_proyectos }}
-            </v-chip>
           </template>
 
           <template #no-data>
@@ -122,6 +137,38 @@
                 variant="outlined"
                 clearable
               />
+            </v-col>
+
+            <v-col cols="12">
+              <!-- Campo de departamentos (multiselect) -->
+              <v-autocomplete
+                v-model="editedItem.departamento"
+                :items="departamentosLista"
+                label="Departamentos de intervención"
+                item-title="nombre"
+                item-value="id"
+                multiple
+                chips
+                closable-chips
+                clearable
+                variant="outlined"
+                :loading="cargandoDepartamentos"
+                :menu-props="{ maxHeight: '200px' }"
+              >
+                <template #selection="{ item, index }">
+                  <v-chip
+                    v-if="index < 3"
+                    size="small"
+                    closable
+                    @click:close="removeDepartamento(item.value)"
+                  >
+                    {{ item.title }}
+                  </v-chip>
+                  <span v-if="index === 3" class="text-grey text-caption align-self-center">
+                    (+{{ editedItem.departamentos.length - 3 }} más)
+                  </span>
+                </template>
+              </v-autocomplete>
             </v-col>
 
             <v-col cols="12" md="6">
@@ -210,10 +257,9 @@
         <p class="text-h5 text-primary text-center my-4">
           {{ itemToDelete ? itemToDelete.sigla || itemToDelete.nombre : '' }}
         </p>
-        <p v-if="itemToDelete && itemToDelete.total_proyectos > 0" class="text-error">
+        <p class="text-error">
           <v-icon color="error" size="small">mdi-alert</v-icon>
-          Esta institución tiene {{ itemToDelete.total_proyectos }} proyecto(s) asociado(s). La
-          eliminación podría afectar los datos relacionados.
+          Esta acción eliminará permanentemente la institución.
         </p>
       </v-card-text>
 
@@ -228,7 +274,8 @@
 
 <script setup>
 import { ref, watch, nextTick, computed, onMounted } from 'vue'
-import axios from 'axios'
+import { useInstituciones } from '../composables/useInstituciones'
+import { useDepBolivia } from '../composables/useDepBolivia'
 
 // Props para controlar la visibilidad
 const props = defineProps({
@@ -240,6 +287,17 @@ const props = defineProps({
 
 // Emits para comunicación con el padre
 const emit = defineEmits(['update:modelValue', 'success', 'error', 'close'])
+
+// Iniciar el composable
+const {
+  institucionesLista, //Lista de las instituciones
+  cargarInstituciones, //Funcion de cargalistado de instituciones
+  crearInstitucion, //Funcion para crear institucion
+  actualizarInstitucion, //Funcion para actualizar la institucion
+  eliminarInstitucion, //funcion para eliminar
+} = useInstituciones()
+
+const { departamentosLista, cargarDepartamentosBolivia } = useDepBolivia()
 
 // Computed para el diálogo sincronizado con props
 const dialog = computed({
@@ -254,22 +312,9 @@ const dialog = computed({
   },
 })
 
-// Watcher para cargar datos cuando se abre el diálogo
-watch(dialog, (newVal, oldVal) => {
-  if (newVal && !oldVal) {
-    // Se acaba de abrir el diálogo
-    fetchInstituciones()
-  }
-  if (!newVal && oldVal) {
-    // Se acaba de cerrar el diálogo
-    closeFormDialog()
-  }
-})
-
 // Refs reactivos internos
 const formDialog = ref(false)
 const deleteDialog = ref(false)
-const loading = ref(false)
 const saving = ref(false)
 const deleting = ref(false)
 const valid = ref(true)
@@ -277,25 +322,54 @@ const search = ref('')
 const editMode = ref(false)
 const formRef = ref(null)
 const editedIndex = ref(-1)
+const cargandoDepartamentos = ref(false)
 
 // Datos reactivos
-const instituciones = ref([])
 const editedItem = ref(getDefaultItem())
 const itemToDelete = ref(null)
 const defaultItem = getDefaultItem()
 
-// Headers de la tabla
+// Headers de la tabla (agregar columna de departamentos)
 const headers = [
   { title: 'Sigla', key: 'sigla', width: '120px' },
   { title: 'Nombre', key: 'nombre' },
+  { title: 'Departamentos', key: 'departamentos', sortable: false },
   { title: 'Email', key: 'emailInstitucion' },
   { title: 'Teléfono', key: 'telefono', width: '150px' },
   { title: 'Sitio Web', key: 'webSite', width: '200px' },
-  { title: 'Proyectos', key: 'total_proyectos', align: 'center', width: '120px' },
   { title: 'Acciones', key: 'actions', sortable: false, width: '100px' },
 ]
 
-// Reglas de validación
+// Computed para filtrar instituciones y agregar nombres de departamentos
+const institucionesFiltradas = computed(() => {
+  const instituciones = search.value
+    ? institucionesLista.value.filter((institucion) => {
+        const searchTerm = search.value.toLowerCase()
+        return (
+          (institucion.sigla && institucion.sigla.toLowerCase().includes(searchTerm)) ||
+          (institucion.nombre && institucion.nombre.toLowerCase().includes(searchTerm)) ||
+          (institucion.emailInstitucion &&
+            institucion.emailInstitucion.toLowerCase().includes(searchTerm))
+        )
+      })
+    : institucionesLista.value
+
+  // Agregar nombres de departamentos para mostrar en la tabla
+  return instituciones.map((institucion) => ({
+    ...institucion,
+    departamentos_nombres:
+      institucion.departamentos?.map((deptoId) => {
+        return (
+          departamentosLista.value.find((d) => d.id === deptoId) || {
+            id: deptoId,
+            nombre: 'Desconocido',
+          }
+        )
+      }) || [],
+  }))
+})
+
+// Reglas de validación (sin cambios)
 const siglaRules = [
   (v) => !!v || 'La sigla es requerida',
   (v) => (v && v.length <= 50) || 'La sigla no debe exceder los 50 caracteres',
@@ -327,6 +401,7 @@ function getDefaultItem() {
   return {
     sigla: '',
     nombre: '',
+    departamentos: [], // Array de IDs de departamentos
     emailInstitucion: '',
     telefono: '',
     direccion: '',
@@ -356,23 +431,22 @@ function closeDialog() {
   dialog.value = false
 }
 
-async function fetchInstituciones() {
-  loading.value = true
-  try {
-    // Cambia esta URL por tu endpoint real
-    const response = await axios.get('/api/instituciones/')
-    instituciones.value = response.data
-  } catch (error) {
-    console.error('Error fetching instituciones:', error)
-    emit('error', 'Error al cargar las instituciones')
-  } finally {
-    loading.value = false
-  }
-}
-
 function editItem(item) {
-  editedIndex.value = instituciones.value.indexOf(item)
-  editedItem.value = { ...item }
+  console.log('Editando institución:', item)
+  editedIndex.value = institucionesLista.value.findIndex((i) => i.id === item.id)
+
+  // Convertir departamentos a array de IDs
+  const departamentosIds =
+    item.departamentos?.map((depto) => {
+      if (typeof depto === 'object') return depto.id
+      return depto
+    }) || []
+
+  editedItem.value = {
+    ...item,
+    departamentos: departamentosIds,
+  }
+
   editMode.value = true
   formDialog.value = true
   if (formRef.value) {
@@ -381,25 +455,44 @@ function editItem(item) {
 }
 
 function deleteItem(item) {
+  console.log('Solicitando eliminar institución:', item)
   itemToDelete.value = item
   deleteDialog.value = true
+}
+
+function removeDepartamento(deptoId) {
+  const index = editedItem.value.departamentos.indexOf(deptoId)
+  if (index > -1) {
+    editedItem.value.departamentos.splice(index, 1)
+  }
 }
 
 async function confirmDelete() {
   if (!itemToDelete.value) return
 
   deleting.value = true
+  console.log('Confirmando eliminación de institución:', itemToDelete.value)
+
   try {
-    await axios.delete(`/api/instituciones/${itemToDelete.value.id}/`)
-    instituciones.value = instituciones.value.filter((i) => i.id !== itemToDelete.value.id)
+    await eliminarInstitucion(itemToDelete.value.id)
+    const index = institucionesLista.value.findIndex((i) => i.id === itemToDelete.value.id)
+    if (index !== -1) {
+      institucionesLista.value.splice(index, 1)
+    } else {
+      await cargarInstituciones()
+    }
+
+    console.log('Institución eliminada exitosamente:', itemToDelete.value)
     emit('success', 'Institución eliminada correctamente')
     deleteDialog.value = false
   } catch (error) {
-    console.error('Error deleting institucion:', error)
+    console.error('Error eliminando institución:', error)
+
     let errorMessage = 'Error al eliminar la institución'
     if (error.response && error.response.status === 409) {
       errorMessage = 'No se puede eliminar porque tiene proyectos asociados'
     }
+
     emit('error', errorMessage)
   } finally {
     deleting.value = false
@@ -413,50 +506,110 @@ async function save() {
   const { valid: formValid } = await formRef.value.validate()
 
   if (!formValid) {
+    console.log('Formulario inválido, no se guardará')
     return
   }
 
   saving.value = true
+  console.log('Guardando institución:', editedItem.value)
+  console.log('Departamentos seleccionados:', editedItem.value.departamentos)
+
   try {
+    // Preparar datos para enviar (convertir departamentos a array de IDs)
+    const datosParaEnviar = {
+      ...editedItem.value,
+      departamentos: editedItem.value.departamentos || [],
+    }
+
     if (editMode.value) {
-      // Actualizar institución existente
-      const response = await axios.put(
-        `/api/instituciones/${editedItem.value.id}/`,
-        editedItem.value,
+      const institucionActualizada = await actualizarInstitucion(
+        editedItem.value.id,
+        datosParaEnviar,
       )
-      Object.assign(instituciones.value[editedIndex.value], response.data)
+
+      // Actualizar en la lista local
+      const index = institucionesLista.value.findIndex((i) => i.id === editedItem.value.id)
+      if (index !== -1) {
+        institucionesLista.value[index] = institucionActualizada
+      }
+
       emit('success', 'Institución actualizada correctamente')
     } else {
-      // Crear nueva institución
-      const response = await axios.post('/api/instituciones/', editedItem.value)
-      instituciones.value.push(response.data)
+      const nuevaInstitucion = await crearInstitucion(datosParaEnviar)
+      institucionesLista.value.push(nuevaInstitucion)
       emit('success', 'Institución creada correctamente')
     }
+
     closeFormDialog()
   } catch (error) {
-    console.error('Error saving institucion:', error)
-    emit('error', 'Error al guardar la institución')
+    console.error('Error guardando institución:', error)
+
+    let errorMessage = 'Error al guardar la institución'
+    if (error.response && error.response.data) {
+      if (typeof error.response.data === 'object') {
+        const errors = Object.values(error.response.data).flat().join(', ')
+        if (errors) errorMessage = errors
+      } else if (typeof error.response.data === 'string') {
+        errorMessage = error.response.data
+      }
+    }
+
+    emit('error', errorMessage)
   } finally {
     saving.value = false
   }
 }
 
+function getDepartamentosNombres(departamentoIds) {
+  if (!Array.isArray(departamentoIds) || departamentoIds.length === 0) {
+    return []
+  }
+
+  return departamentoIds.map((id) => {
+    const depto = departamentosLista.value?.find((d) => d.id === id)
+    return depto ? depto.nombre : `ID: ${id}`
+  })
+}
+
 /**************** CARGAR INFORMACION *******************/
 const cargando = ref(false)
 const error = ref(null)
+
 const cargarDatos = async () => {
   cargando.value = true
+  console.log('Cargando instituciones y departamentos...')
+
   try {
-    await
+    await Promise.all([cargarInstituciones(), cargarDepartamentosBolivia()])
+    console.log('Departamentos cargados:', departamentosLista.value)
+    console.log('Instituciones cargadas exitosamente:', institucionesLista.value)
   } catch (err) {
-    console.error('Error al cargar informacion de las instituciones', err)
+    console.error('Error al cargar información:', err)
+    error.value = err
+    emit('error', 'Error al cargar los datos')
   } finally {
-    cargando.value = ref(true)
+    cargando.value = false
+    console.log('Carga completada')
   }
 }
 
+// Cargar datos cuando se abre el diálogo
+watch(dialog, (newVal) => {
+  if (newVal) {
+    console.log('Diálogo abierto, cargando datos...')
+    cargarDatos()
+  } else {
+    console.log('Diálogo cerrado')
+  }
+})
+
 //Hook
-onMounted(() => {})
+onMounted(() => {
+  console.log('Componente InstitucionesCrud montado')
+  if (props.modelValue) {
+    cargarDatos()
+  }
+})
 </script>
 
 <style scoped>

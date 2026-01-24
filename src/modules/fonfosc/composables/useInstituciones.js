@@ -25,6 +25,7 @@ export function useInstituciones() {
 
   //cargar una inst. por su id
   async function cargarInstitucionPorId(idinstitucion) {
+    loading.value = true
     try {
       const respuesta = await institucionServicios.insporId(idinstitucion)
       institucion.value = respuesta
@@ -37,9 +38,11 @@ export function useInstituciones() {
 
   //Crear institucion
   async function crearInstitucion(dataInst) {
+    loading.value = true
     try {
-      const respuesta = await institucionServicios.crearInstitucion(dataInst)
+      const respuesta = await institucionServicios.inscrear(dataInst)
       institucion.value = respuesta
+      return respuesta
     } catch (err) {
       error.value = err
     } finally {
@@ -48,7 +51,31 @@ export function useInstituciones() {
   }
 
   //Actualizar una inst por id
-  async function actualizarInstitucion(idinstitucion, dataInst) {}
+  async function actualizarInstitucion(idinstitucion, dataInst) {
+    loading.value = true
+    try {
+      const respuesta = await institucionServicios.insupdate(idinstitucion, dataInst)
+      institucion.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Eliminar Institucion por id
+  async function eliminarInstitucion(idinstitucion) {
+    loading.value = true
+    try {
+      const respuesta = await institucionServicios.insdelete(idinstitucion)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
 
   return {
     //Estados
@@ -59,5 +86,8 @@ export function useInstituciones() {
     //func
     cargarInstituciones,
     cargarInstitucionPorId,
+    actualizarInstitucion,
+    crearInstitucion,
+    eliminarInstitucion,
   }
 }

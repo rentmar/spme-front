@@ -9,6 +9,7 @@ export const institucionServicios = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al obtener los FF', error)
+      throw error
     }
   },
   insporId: async (idins) => {
@@ -17,6 +18,7 @@ export const institucionServicios = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al obtener  FF' + idins, error)
+      throw error
     }
   },
   inscrear: async (dataFf) => {
@@ -25,6 +27,7 @@ export const institucionServicios = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al crear  FF', error)
+      throw error
     }
   },
   insupdate: async (idinst, data) => {
@@ -33,6 +36,16 @@ export const institucionServicios = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al actualizar  FF' + idinst, error)
+      throw error
+    }
+  },
+  insdelete: async (idinst) => {
+    try {
+      const respuesta = await apiFf.delete('/instituciones/' + idinst + '/')
+      return respuesta
+    } catch (error) {
+      console.error('Axios: Error al eleiminar la INSFF ' + idinst, error)
+      throw error
     }
   },
 }

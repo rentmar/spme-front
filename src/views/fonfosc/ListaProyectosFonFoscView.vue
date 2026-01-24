@@ -16,7 +16,7 @@
           <v-icon size="64" color="grey lighten-1">mdi-database-remove</v-icon>
           <h3 class="text-h5 mt-4">No hay proyectos registrados</h3>
           <p class="text-grey mt-2">Parece que aún no hay proyectos cargados en el sistema</p>
-          <v-btn color="primary" class="mt-4">
+          <v-btn color="primary" class="mt-4" @click="nuevoProyecto">
             <v-icon left>mdi-plus</v-icon>
             Crear primer proyecto
           </v-btn>
@@ -36,7 +36,7 @@
             <v-card-text class="pt-0 pb-4">
               <v-text-field
                 v-model="busqueda"
-                label="Buscar proyectos (por código o título)"
+                label="Buscar proyectos (por código, título o institución)"
                 prepend-inner-icon="mdi-magnify"
                 variant="outlined"
                 clearable
@@ -65,36 +65,16 @@
                         {{ getEstadoTexto(item.estado) }}
                       </v-chip>
                       <span>Código: {{ item.codigo }}</span>
+                      <span class="mx-2">•</span>
+                      <span v-if="item.institucion_info">
+                        Institución: {{ item.institucion_info }}
+                      </span>
                     </div>
                     <div class="text-caption mt-1">{{ item.cobertura_geografica }}</div>
                   </v-list-item-subtitle>
 
                   <template v-slot:append>
                     <div class="d-flex">
-                      <!-- <v-tooltip text="Ver detalles" location="top">
-                        <template v-slot:activator="{ props }">
-                          <v-btn
-                            v-bind="props"
-                            icon="mdi-eye-outline"
-                            variant="text"
-                            color="primary"
-                            @click="verDetalles(item)"
-                          ></v-btn>
-                        </template>
-                      </v-tooltip> -->
-
-                      <!-- <v-tooltip text="Editar" location="top">
-                        <template v-slot:activator="{ props }">
-                          <v-btn
-                            v-bind="props"
-                            icon="mdi-pencil"
-                            variant="text"
-                            color="warning"
-                            @click="editarProyecto(item)"
-                          ></v-btn>
-                        </template>
-                      </v-tooltip> -->
-
                       <!-- ENLACE AL MARCO LÓGICO - USANDO TU RUTA -->
                       <v-tooltip text="Marco Lógico" location="top">
                         <template v-slot:activator="{ props }">
@@ -167,6 +147,10 @@
                           <v-icon left>mdi-cash</v-icon>
                           Financiamiento
                         </v-tab>
+                        <v-tab value="institucion">
+                          <v-icon left>mdi-office-building</v-icon>
+                          Institución
+                        </v-tab>
                       </v-tabs>
 
                       <v-card-text class="pt-4">
@@ -190,9 +174,9 @@
                                   <strong>Cobertura geográfica:</strong>
                                   {{ item.cobertura_geografica }}
                                 </p>
-                                <p><strong>Institución ID:</strong> {{ item.institucion }}</p>
-                                <p><strong>Responsable ID:</strong> {{ item.responsable }}</p>
-                                <p><strong>PEI ID:</strong> {{ item.pei }}</p>
+                                <p v-if="item.pei">
+                                  <strong>PEI asociado:</strong> {{ getPeiInfo(item.pei) }}
+                                </p>
                               </v-col>
                             </v-row>
                           </v-window-item>
@@ -236,9 +220,28 @@
                                     v-for="(fondos, index) in item.procedencia_fondos"
                                     :key="index"
                                   >
-                                    ID: {{ fondos
+                                    {{ getProcedenciaFondosInfo(fondos)
                                     }}{{ index < item.procedencia_fondos.length - 1 ? ', ' : '' }}
                                   </span>
+                                </p>
+                              </v-col>
+                            </v-row>
+                          </v-window-item>
+
+                          <!-- Tab Institución -->
+                          <v-window-item value="institucion">
+                            <v-row>
+                              <v-col cols="12" md="6">
+                                <p v-if="item.institucion_info">
+                                  <strong>Institución:</strong> {{ item.institucion_info }}
+                                </p>
+                                <p v-if="item.institucion && item.institucion.detalle_completo">
+                                  <strong>Detalles institución:</strong>
+                                  {{ item.institucion.detalle_completo }}
+                                </p>
+                                <p v-if="item.responsable && item.responsable.nombre_completo">
+                                  <strong>Responsable:</strong>
+                                  {{ item.responsable.nombre_completo }}
                                 </p>
                               </v-col>
                             </v-row>
@@ -246,17 +249,6 @@
                         </v-window>
 
                         <div class="d-flex justify-end mt-4">
-                          <!-- Botón para ver detalles completos -->
-                          <!-- <v-btn
-                            color="primary"
-                            variant="text"
-                            size="small"
-                            @click="verDetalles(item)"
-                            class="mr-2"
-                          >
-                            Ver detalles completos
-                          </v-btn> -->
-
                           <!-- Botón para ir al marco lógico desde la vista expandida -->
                           <v-btn
                             color="secondary"
@@ -352,7 +344,27 @@
 
               <v-list-item>
                 <template v-slot:prepend>
-                  <v-icon color="success">mdi-play-circle</v-icon>
+                  <v-icon color="info">mdi-clock-outline</v-icon>
+                </template>
+                <v-list-item-title>Observados</v-list-item-title>
+                <v-list-item-subtitle class="text-right">
+                  {{ contarPorEstado('OBS') }}
+                </v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item>
+                <template v-slot:prepend>
+                  <v-icon color="success">mdi-check-circle</v-icon>
+                </template>
+                <v-list-item-title>Aprobados</v-list-item-title>
+                <v-list-item-subtitle class="text-right">
+                  {{ contarPorEstado('APROB') }}
+                </v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item>
+                <template v-slot:prepend>
+                  <v-icon color="green">mdi-play-circle</v-icon>
                 </template>
                 <v-list-item-title>En ejecución</v-list-item-title>
                 <v-list-item-subtitle class="text-right">
@@ -362,11 +374,11 @@
 
               <v-list-item>
                 <template v-slot:prepend>
-                  <v-icon color="green">mdi-check-circle</v-icon>
+                  <v-icon color="teal">mdi-flag-checkered</v-icon>
                 </template>
                 <v-list-item-title>Finalizados</v-list-item-title>
                 <v-list-item-subtitle class="text-right">
-                  {{ contarPorEstado('FI') }}
+                  {{ contarPorEstado('FIN') }}
                 </v-list-item-subtitle>
               </v-list-item>
             </v-list>
@@ -405,7 +417,7 @@ const nuevoProyecto = () => {
   mostrarDialogFf.value = true
 }
 
-//Iniciar COmposables
+//Iniciar Composables
 const { successMsg, errorMsg } = useSnackbar()
 
 //Funcion para la creacion del proyecto
@@ -420,8 +432,8 @@ const procesarProyectoNuevo = async (proyectoData) => {
     // Mostrar mensaje de éxito
     successMsg('Proyecto creado exitosamente')
 
-    // Aquí puedes actualizar la lista de proyectos o redirigir
-    // cargarProyectos() // Si tienes un método para recargar
+    // Recargar la lista de proyectos
+    await cargarDatos()
   } catch (error) {
     console.error('Error al crear proyecto:', error)
     errorMsg('No se pudo crear el proyecto')
@@ -441,7 +453,7 @@ onMounted(() => {
   cargarDatos()
 })
 
-// Computed para filtrar proyectos - MANTENIENDO TU LOGICA
+// Computed para filtrar proyectos - AJUSTADO PARA BUSCAR EN INSTITUCIÓN
 const proyectosFiltrados = computed(() => {
   if (!busqueda.value.trim()) {
     return proyectoLista.value
@@ -449,10 +461,17 @@ const proyectosFiltrados = computed(() => {
 
   const termino = busqueda.value.toLowerCase()
   return proyectoLista.value.filter((proyecto) => {
-    return (
-      (proyecto.codigo && proyecto.codigo.toLowerCase().includes(termino)) ||
-      (proyecto.titulo && proyecto.titulo.toLowerCase().includes(termino))
-    )
+    // Buscar en código
+    const matchCodigo = proyecto.codigo && proyecto.codigo.toLowerCase().includes(termino)
+
+    // Buscar en título
+    const matchTitulo = proyecto.titulo && proyecto.titulo.toLowerCase().includes(termino)
+
+    // Buscar en información de institución
+    const matchInstitucion =
+      proyecto.institucion_info && proyecto.institucion_info.toLowerCase().includes(termino)
+
+    return matchCodigo || matchTitulo || matchInstitucion
   })
 })
 
@@ -461,6 +480,17 @@ const cargarDatos = async () => {
   try {
     await Promise.all([storeFonFosc.cargarListaFonfosc()])
     proyectoLista.value = storeFonFosc.fonfoscLista
+
+    // Si los datos vienen sin la propiedad computada, la agregamos
+    proyectoLista.value = proyectoLista.value.map((proyecto) => ({
+      ...proyecto,
+      institucion_info:
+        proyecto.institucion_info ||
+        (proyecto.institucion
+          ? proyecto.institucion.sigla || proyecto.institucion.nombre || 'Sin institución'
+          : 'Sin institución asignada'),
+    }))
+
     console.log('Proyectos cargados:', proyectoLista.value)
   } catch (err) {
     console.error('Error de carga', err)
@@ -469,14 +499,15 @@ const cargarDatos = async () => {
   }
 }
 
-// Métodos de utilidad - ADAPTADOS A TUS DATOS
+// Métodos de utilidad - AJUSTADOS AL NUEVO MODELO
 const getStatusColor = (estado) => {
   const colores = {
     ES: 'warning', // Estructuración
-    EP: 'info', // En Planificación
     PL: 'info', // Planificado
-    EJ: 'success', // En Ejecución
-    FI: 'green', // Finalizado
+    OBS: 'orange', // Observado
+    APROB: 'success', // Aprobado
+    EJ: 'green', // En Ejecución
+    FIN: 'teal', // Finalizado
   }
   return colores[estado] || 'grey'
 }
@@ -484,10 +515,11 @@ const getStatusColor = (estado) => {
 const getEstadoTexto = (estado) => {
   const estados = {
     ES: 'En Estructuración',
-    EP: 'En Planificación',
     PL: 'Planificado',
+    OBS: 'Observado',
+    APROB: 'Aprobado',
     EJ: 'En Ejecución',
-    FI: 'Finalizado',
+    FIN: 'Finalizado',
   }
   return estados[estado] || estado
 }
@@ -500,11 +532,29 @@ const getCategoriaTexto = (categoria) => {
   return categorias[categoria] || categoria
 }
 
+const getPeiInfo = (pei) => {
+  if (!pei) return 'No asignado'
+  if (typeof pei === 'string') return pei
+  if (pei.codigo) return pei.codigo
+  return 'PEI asignado'
+}
+
+const getProcedenciaFondosInfo = (fondos) => {
+  if (!fondos) return ''
+  if (typeof fondos === 'string') return fondos
+  if (fondos.nombre) return fondos.nombre
+  return 'Financiador'
+}
+
 const formatoFecha = (fecha) => {
   if (!fecha) return 'No definida'
   try {
     const date = new Date(fecha)
-    return date.toLocaleDateString('es-ES')
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
   } catch {
     return fecha
   }
@@ -524,7 +574,7 @@ const contarPorEstado = (estado) => {
   return proyectoLista.value.filter((proyecto) => proyecto.estado === estado).length
 }
 
-// Métodos de acción - SIMILARES A LA VISTA DE REFERENCIA
+// Métodos de acción
 const toggleExpanded = (id) => {
   expandido.value = expandido.value === id ? null : id
 }
