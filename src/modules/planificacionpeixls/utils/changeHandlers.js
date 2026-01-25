@@ -288,6 +288,57 @@ export const getChangeHandlers = (callbacks, tabla, hotTable) => {
         )
       }
     },
+    objetivo_pei: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Tipo cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Objetivo PEI actualizado: ${oldValue} → ${newValue}`)
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'objetivo_pei',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.nombreCorto,
+        )
+      }
+    },
+    indicador_pei: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Tipo cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Indicador PEI actualizado: ${oldValue} → ${newValue}`)
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'indicador_pei',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.nombreCorto,
+        )
+      }
+    },
+    factoresCriticos: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Tipo cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Factores criticos actualizado: ${oldValue} → ${newValue}`)
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'factoresCriticos',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.nombreCorto,
+        )
+      }
+    },
   }
 }
 

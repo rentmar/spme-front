@@ -519,11 +519,20 @@ const abrirModalPei = () => {
   modalPei.value = true
 }
 // Manejar la selección de PEI
+// Manejar la selección de PEI
 const manejarSeleccionPei = (datosPei) => {
   if (selectedRowData.value) {
     const rowIndex = tableData.value.findIndex((row) => row.id === selectedRowData.value.id)
 
     if (rowIndex !== -1) {
+      // 1. Guardar valores ANTIGUOS antes de actualizar
+      const valoresAntiguos = {
+        objetivo_pei: tableData.value[rowIndex].objetivo_pei,
+        indicador_pei: tableData.value[rowIndex].indicador_pei,
+        factoresCriticos: tableData.value[rowIndex].factoresCriticos,
+      }
+
+      // 2. Actualizar los datos
       tableData.value[rowIndex] = {
         ...tableData.value[rowIndex],
         objetivo_pei: datosPei.objetivo_pei,
@@ -531,6 +540,60 @@ const manejarSeleccionPei = (datosPei) => {
         factoresCriticos: datosPei.factoresCriticos,
       }
 
+      // 3. Verificar cambios y activar bandera
+      let hayCambios = false
+
+      // Verificar objetivo_pei
+      if (valoresAntiguos.objetivo_pei !== datosPei.objetivo_pei) {
+        registroCambios.registrar(
+          'objetivo_pei',
+          rowIndex,
+          valoresAntiguos.objetivo_pei,
+          datosPei.objetivo_pei,
+          selectedRowData.value.id,
+          selectedRowData.value.nombreCorto,
+        )
+        hayCambios = true
+        console.log('✅ Cambio detectado en objetivo_pei')
+      }
+
+      // Verificar indicador_pei
+      if (valoresAntiguos.indicador_pei !== datosPei.indicador_pei) {
+        registroCambios.registrar(
+          'indicador_pei',
+          rowIndex,
+          valoresAntiguos.indicador_pei,
+          datosPei.indicador_pei,
+          selectedRowData.value.id,
+          selectedRowData.value.nombreCorto,
+        )
+        hayCambios = true
+        console.log('✅ Cambio detectado en indicador_pei')
+      }
+
+      // Verificar factoresCriticos (comparar como JSON porque es un array/objeto)
+      const oldFactoresStr = JSON.stringify(valoresAntiguos.factoresCriticos || [])
+      const newFactoresStr = JSON.stringify(datosPei.factoresCriticos || [])
+      if (oldFactoresStr !== newFactoresStr) {
+        registroCambios.registrar(
+          'factoresCriticos',
+          rowIndex,
+          valoresAntiguos.factoresCriticos,
+          datosPei.factoresCriticos,
+          selectedRowData.value.id,
+          selectedRowData.value.nombreCorto,
+        )
+        hayCambios = true
+        console.log('✅ Cambio detectado en factoresCriticos')
+      }
+
+      // 4. Activar la bandera de cambios si hubo algún cambio
+      if (hayCambios) {
+        storePlanificacion.setTieneCambiosSinGuardar(true)
+        console.log('🚩 Bandera de cambios activada en store')
+      }
+
+      // 5. Actualizar la tabla visualmente
       if (hotTable.value?.hotInstance) {
         hotTable.value.hotInstance.render()
       }
@@ -810,7 +873,12 @@ const columns = ref([
     type: 'numeric',
     readOnly: true,
   },
-  { data: 'factoresCriticos', title: 'Factores criticos', readOnly: true },
+  {
+    data: 'factoresCriticos',
+    title: 'Factores criticos',
+    readOnly: true,
+    width: 150,
+  },
 ])
 
 /************************* Handle Interfaz Excel  *******************************/

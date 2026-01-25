@@ -521,12 +521,12 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useActividadStore } from '@/modules/proyecto/store/useActividadStore'
+import { useListaActividadStore } from '@/modules/proyecto/store/useListaActividadesStore'
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 
 // Iniciar el store de actividades
-const storeActividad = useActividadStore()
+const storeActividad = useListaActividadStore()
 
 //Iniciar el composable de Subactividades
 const {

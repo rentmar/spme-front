@@ -255,13 +255,13 @@ const proyectosStore = useProyectoStore()
 /* DESESTRUCTURACION  */
 // Referencias
 const {
-  proyectosPlanificacion: proyectosRaw,
+  proyectosPlanificacionFiltrado: proyectosRaw,
   cargando: cargandoProyecto,
   peiVigente: peiActual,
 } = storeToRefs(proyectosStore)
 
 // Funciones
-const { obtenerProyectosPlanificacion } = proyectosStore
+const { obtenerProyectosPlanificacion, obtenerProyectosPlanificacionFiltrados } = proyectosStore
 
 // Procesar proyectos para agregar tipo
 const proyectos = computed(() => {
@@ -296,7 +296,10 @@ onMounted(async () => {
 // Funcion de carga de store
 const cargarDatos = async () => {
   try {
-    await obtenerProyectosPlanificacion(peiVigente.value.id)
+    await Promise.all([
+      obtenerProyectosPlanificacion(peiVigente.value.id),
+      obtenerProyectosPlanificacionFiltrados(peiVigente.value.id),
+    ])
   } catch (err) {
     console.log('Error al cargar la informacion stores', err)
   }

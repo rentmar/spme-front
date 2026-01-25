@@ -10,6 +10,8 @@ class RegistroCambios {
       presupuesto: [],
       codigo: [],
       nombreCorto: [],
+      objetivo_pei: [],
+
       otros: [], // Para cambios en otras columnas
     }
   }
