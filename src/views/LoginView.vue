@@ -23,7 +23,7 @@ onMounted(async () => {
 
   // Inicializar la sesión si hay token en localStorage
   if (!userStore.initialized) {
-    await userStore.initialize()
+    await Promise.all([userStore.initialize()])
   }
 
   // Si ya está autenticado, redirigir al home

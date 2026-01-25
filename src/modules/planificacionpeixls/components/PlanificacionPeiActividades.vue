@@ -653,7 +653,7 @@ const columns = ref([
   { data: 'procedencia_fondos', title: 'Proc. Fondos' },
   {
     data: 'presupuestoGlobal',
-    title: 'Presupuesto Global',
+    title: 'Pres. Global',
     type: 'numeric',
     width: 110,
     numericFormat: {

@@ -169,6 +169,125 @@ export const getChangeHandlers = (callbacks, tabla, hotTable) => {
     fecha_cierre: (row, oldValue, newValue) => {
       manejarFecha('cierre', row, oldValue, newValue, callbacks, tabla, hotTable)
     },
+    supuestos: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Tipo cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Supuestos actualizado: ${oldValue} → ${newValue}`)
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'supuestos',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.nombreCorto,
+        )
+      }
+    },
+    riesgos: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Tipo cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Riesgos actualizado: ${oldValue} → ${newValue}`)
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'riesgos',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.nombreCorto,
+        )
+      }
+    },
+    presupuesto: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Tipo cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Presupuesto actualizado: ${oldValue} → ${newValue}`)
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'presupuesto',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.nombreCorto,
+        )
+      }
+    },
+    procedencia_fondos: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Tipo cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Procedencia de fondos actualizado: ${oldValue} → ${newValue}`)
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'presupuesto',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.nombreCorto,
+        )
+      }
+    },
+    presupuestoGlobal: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Tipo cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Presupuesto global actualizado: ${oldValue} → ${newValue}`)
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'presupuesto',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.nombreCorto,
+        )
+      }
+    },
+    totalEjecutado: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Tipo cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Total ejecutado actualizado: ${oldValue} → ${newValue}`)
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'presupuesto',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.nombreCorto,
+        )
+      }
+    },
+    saldo: (row, oldValue, newValue) => {
+      if (oldValue !== newValue) {
+        callbacks.marcarCambios?.(true)
+        console.log('Tipo cambiado:', oldValue, '→', newValue)
+        callbacks.mensajeExito?.(`Saldo ejecutado actualizado: ${oldValue} → ${newValue}`)
+        // Registrar cambio
+        const actividad = tabla?.[row]
+        registroCambios.registrar(
+          'presupuesto',
+          row,
+          oldValue,
+          newValue,
+          actividad?.id,
+          actividad?.nombreCorto,
+        )
+      }
+    },
   }
 }
 
