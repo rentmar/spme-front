@@ -177,6 +177,15 @@ export const peiServicios = {
       console.error('Axios: error al obtener la lista del pei con id: ', error)
     }
   },
+  /* DEtalle del PEi */
+  peiDetalleVista: async (idpei) => {
+    try {
+      const respuesta = await api.get('/pei/' + idpei + '/dashboard/enriquecido/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al obtener la lista del pei con id: ', error)
+    }
+  },
 }
 
 export const objetivoPeiServicios = {
