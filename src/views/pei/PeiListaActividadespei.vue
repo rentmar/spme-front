@@ -338,7 +338,7 @@
 
                                 <!-- Solicitud de Fondos para TAREA -->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Fondos" location="top">
+                                  <v-tooltip text="Solicitud de Fondos PEI" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -347,15 +347,14 @@
                                         variant="text"
                                         color="primary"
                                         size="x-small"
-
-                                        :to="`/monitoreo/pei/formulario01/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="`/monitoreo/pei/formulariopei01/${actividad.id}?tarea_id=${tarea.id}`"
                                         @click.stop
                                       ></v-btn>
                                         <!-- :disabled="getSolicitudFondosInfo(actividad.id, tarea.id)?.bloquearIconosSolFondos || pruebaBloqueo" -->
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Fondos" location="bottom">
+                                  <v-tooltip text="Validar Solicitud de Fondos PEI" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -374,7 +373,7 @@
 
                                 <!-- Solicitud de Viaje para TAREA se cambio de 1 a 5-->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Viaje" location="top">
+                                  <v-tooltip text="Solicitud de Viaje PEI" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -383,13 +382,13 @@
                                         variant="text"
                                         color="deep-purple"
                                         size="x-small"
-                                        :to="`/monitoreo/pei/formulario05/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="`/monitoreo/pei/formulariopei05/${actividad.id}?tarea_id=${tarea.id}`"
                                         @click.stop
                                       ></v-btn>
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Viaje" location="bottom">
+                                  <v-tooltip text="Validar Solicitud de Viaje PEI" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -407,7 +406,7 @@
 
                                 <!-- Solicitud de Pago Directo para TAREA se cambio de 1 a 5-->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Pago Directo" location="top">
+                                  <v-tooltip text="Solicitud de Pago Directo PEI" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -416,7 +415,7 @@
                                         variant="text"
                                         color="teal-lighten-2"
                                         size="x-small"
-                                        :to="`/monitoreo/pei/formulario08/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="`/monitoreo/pei/formulariopei08/${actividad.id}?tarea_id=${tarea.id}`"
                                         @click.stop
                                       ></v-btn>
                                     </template>
@@ -440,7 +439,7 @@
 
                                 <!-- Solicitud de Reposición para TAREA -->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Reposición" location="top">
+                                  <v-tooltip text="Solicitud de Reposición PEI" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -449,13 +448,13 @@
                                         variant="text"
                                         color="warning"
                                         size="x-small"
-                                        :to="`/monitoreo/pei/formulario03/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="`/monitoreo/pei/formulariopei03/${actividad.id}?tarea_id=${tarea.id}`"
                                         @click.stop
                                       ></v-btn>
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Reposición" location="bottom">
+                                  <v-tooltip text="Validar Solicitud de Reposición PEI" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -474,7 +473,7 @@
 
                                 <!-- Rendición de cuentas para TAREAS-->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip :text="getRendicionText(actividad.id, tarea.id)" location="top">
+                                  <v-tooltip text="Rendicion de Cuentas PEI" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 2"
@@ -484,13 +483,13 @@
                                         color="error"
                                         size="x-small"
                                         :disabled="false"
-                                        :to="`/monitoreo/pei/formulario02/${actividad.id}?tarea_id=${tarea.id}`"
+                                        :to="`/monitoreo/pei/formulariopei02/${actividad.id}?tarea_id=${tarea.id}`"
                                         @click.stop
                                       ></v-btn>
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Rendición de Cuentas" location="bottom">
+                                  <v-tooltip text="Validar Rendición de Cuentas PEI" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 2"
