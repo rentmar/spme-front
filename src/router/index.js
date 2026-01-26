@@ -269,6 +269,25 @@ const router = createRouter({
       component: () => import('@/views/HomeView.vue'),
       meta: { requiresAuth: true },
     },
+    /****************************Monitoreo ************************************************/
+    {
+      path: '/pei/listaactividades/',
+      name: 'listadeActividades',
+      component: () => import('@/views/pei/PeiListaActividades.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/pei/listaactividadespei/',
+      name: 'listaActividadesPei',
+      component: () => import('@/views/pei/PeiListaActividadespei.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/inicio',
+      name: 'homeMonitoreo',
+      component: () => import('@/views/HomeView.vue'),
+      meta: { requiresAuth: true },
+    },
     {
       path: '/pei/listaactividades/',
       name: 'listadeActividades',
