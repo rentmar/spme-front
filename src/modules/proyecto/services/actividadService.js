@@ -234,4 +234,14 @@ export const actividadServicios = {
       throw error
     }
   },
+  /* Lista de actividades y tareas */
+  listaActividadesTareasPei: async () => {
+    try {
+      const respuesta = await api.get('/actividades-pei-con-tareas/')
+      //console.log(respuesta)
+      return respuesta.data
+    } catch (err) {
+      console.log('Axios: fetch actividades pei tareas', err)
+    }
+  },
 }

@@ -69,6 +69,12 @@
                 </template>
 
                 <v-list-item-title class="font-weight-bold">
+                  <!-- CHIP PARA DISTINGUIR TIPO DE ACTIVIDAD -->
+                  <v-chip v-if="actividad.pei_id" color="green" size="x-small" class="mr-2">
+                    PEI
+                  </v-chip>
+                  <v-chip v-else color="blue" size="x-small" class="mr-2"> PROYECTO </v-chip>
+
                   {{ actividad.codigo }} - {{ actividad.nombreCorto }}
                 </v-list-item-title>
                 <v-list-item-subtitle class="mt-1">
@@ -79,8 +85,13 @@
                       text-color="white"
                       class="mr-2"
                     >
-                      {{ actividad.estado_display }}
+                      {{ actividad.estado }}
                     </v-chip>
+                    <!-- Mostrar PEI ID si es actividad PEI -->
+                    <span v-if="actividad.pei_id" class="mr-2">
+                      <v-icon small>mdi-identifier</v-icon>
+                      PEI ID: {{ actividad.pei_id }}
+                    </span>
                     <span class="mr-2"
                       >Presupuesto: {{ formatCurrency(actividad.presupuesto) }}</span
                     >
@@ -117,7 +128,10 @@
                     <v-divider vertical inset class="mx-1 my-1"></v-divider>
 
                     <!-- Informe de Actividad -->
-                    <v-tooltip text="Informe de Actividad" location="top">
+                    <v-tooltip
+                      :text="actividad.pei_id ? 'Informe de Actividad PEI' : 'Informe de Actividad'"
+                      location="top"
+                    >
                       <template v-slot:activator="{ props }">
                         <v-btn
                           v-bind="props"
@@ -125,14 +139,25 @@
                           variant="text"
                           color="info"
                           size="small"
-                          :to="`/monitoreo/informe-actividad/${actividad.id}`"
+                          :to="
+                            actividad.pei_id
+                              ? `/monitoreo/informe-actividad-pei/${actividad.id}/`
+                              : `/monitoreo/informe-actividad/${actividad.id}`
+                          "
                           @click.stop
                         ></v-btn>
                       </template>
                     </v-tooltip>
 
                     <!-- Informe de Tarea (para la actividad principal) -->
-                    <v-tooltip text="Ver Informe de Actividad/Subactividad" location="top">
+                    <v-tooltip
+                      :text="
+                        actividad.pei_id
+                          ? 'Ver Informe de Actividad/Subactividad PEI'
+                          : 'Ver Informe de Actividad/Subactividad'
+                      "
+                      location="top"
+                    >
                       <template v-slot:activator="{ props }">
                         <v-btn
                           v-bind="props"
@@ -140,7 +165,11 @@
                           variant="text"
                           color="cyan"
                           size="small"
-                          :to="`/monitoreo/informes-actividad-subactividad/${actividad.id}`"
+                          :to="
+                            actividad.pei_id
+                              ? `/monitoreo/informes-actividad-subactividad-pei/${actividad.id}`
+                              : `/monitoreo/informes-actividad-subactividad/${actividad.id}`
+                          "
                           @click.stop
                         ></v-btn>
                       </template>
@@ -290,7 +319,14 @@
                                 <!-- Acciones principales -->
                                 <div class="d-flex">
                                   <!-- Informe de Subactividad -->
-                                  <v-tooltip text="Informe de Subactividad" location="top">
+                                  <v-tooltip
+                                    :text="
+                                      actividad.pei_id
+                                        ? 'Informe de Subactividad PEI'
+                                        : 'Informe de Subactividad'
+                                    "
+                                    location="top"
+                                  >
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-bind="props"
@@ -298,7 +334,11 @@
                                         variant="text"
                                         color="info"
                                         size="small"
-                                        :to="`/monitoreo/informe-subactividad/${tarea.id}`"
+                                        :to="
+                                          actividad.pei_id
+                                            ? `/monitoreo/informe-subactividad-pei/${tarea.id}/`
+                                            : `/monitoreo/informe-subactividad/${tarea.id}`
+                                        "
                                         @click.stop
                                       ></v-btn>
                                     </template>
@@ -520,7 +560,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, inject } from 'vue'
 import { useListaActividadStore } from '@/modules/proyecto/store/useListaActividadesStore'
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
@@ -528,14 +568,11 @@ import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 // Iniciar el store de actividades
 const storeActividad = useListaActividadStore()
 
-//Iniciar el composable de Subactividades
-const {
-  //loading: loadingTareas,
-  //error: errorTareas,
-  crearUnaTarea,
-  actualizarUnaTarea,
-  eliminarUnaTarea,
-} = useTareaSubactividad()
+// PEI vigente
+const peiVigente = inject('peiVigente')
+
+// Iniciar el composable de Subactividades
+const { crearUnaTarea, actualizarUnaTarea, eliminarUnaTarea } = useTareaSubactividad()
 
 // --- ESTADOS REACTIVOS ---
 const loading = ref(true)
@@ -584,9 +621,8 @@ onMounted(async () => {
 const cargar = async () => {
   loading.value = true
   try {
-    await storeActividad.cargarActividadesTareas()
-    actividades.value = storeActividad.actividadesFiltradas
-    emptyResponse.value = actividades.value.length === 0
+    await storeActividad.cargarListaActividadesGeneral(peiVigente.value.id)
+    actividades.value = storeActividad.actividadesFiltradasTotales
   } catch (error) {
     console.error('Error al cargar datos:', error)
     actividades.value = []
@@ -603,9 +639,7 @@ const filteredActividades = computed(() => {
 
   let filtered = actividades.value.map((actividad) => ({
     ...actividad,
-    // Agregar computed property para tareas ordenadas
     tareasOrdenadas: [...(actividad.tareas || [])].sort((a, b) => {
-      // Ordenar por ID descendente (más recientes primero)
       return b.id - a.id
     }),
   }))
@@ -699,33 +733,25 @@ const guardarTarea = async (datosTarea) => {
   cargandoTarea.value = true
   try {
     if (tareaSeleccionada.value) {
-      //Actualizar la tarea en la rest api
       const response = await actualizarUnaTarea(datosTarea.id, datosTarea)
-
-      //Actualizar en el estado local
       const actividad = actividades.value.find((a) => a.id === actividadSeleccionada.value.id)
       if (actividad && actividad.tareas) {
         const tareaIndex = actividad.tareas.findIndex((t) => t.id === datosTarea.id)
         if (tareaIndex !== -1) {
           actividad.tareas[tareaIndex] = {
             ...actividad.tareas[tareaIndex],
-            ...response, // Usar los datos actualizados del servidor
+            ...response,
           }
         }
       }
-
       mostrarSnackbar('Subactividad actualizada con éxito', 'success')
     } else {
-      //Crear nueva tarea
       const response = await crearUnaTarea(datosTarea)
-
-      //Agregar al estado local
       const actividad = actividades.value.find((a) => a.id === actividadSeleccionada.value.id)
       if (actividad) {
         if (!actividad.tareas) {
           actividad.tareas = []
         }
-        //Insertar la respuesta
         actividad.tareas.push(response)
       }
       mostrarSnackbar('Subactividad creada con éxito', 'success')
@@ -736,7 +762,6 @@ const guardarTarea = async (datosTarea) => {
   } finally {
     cargandoTarea.value = false
     tareaDialog.value = false
-    //Limpiar las selecciones
     actividadSeleccionada.value = null
     tareaSeleccionada.value = null
   }
@@ -759,12 +784,10 @@ const deleteTarea = async () => {
   try {
     await new Promise((resolve) => setTimeout(resolve, 500))
     await eliminarUnaTarea(tareaToDelete.value.id)
-
     const actividad = actividades.value.find((a) => a.id === actividadIdParaEliminarTarea.value)
     if (actividad && actividad.tareas) {
       actividad.tareas = actividad.tareas.filter((t) => t.id !== tareaToDelete.value.id)
     }
-
     mostrarSnackbar('Subactividad eliminada con éxito', 'success')
   } catch (error) {
     console.error('Error al eliminar Subactividad:', error)
@@ -835,7 +858,6 @@ const calcularDiasRestantes = (fechaLimite) => {
   const limite = new Date(fechaLimite)
   const diffTime = limite - hoy
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
   if (diffDays === 0) return 'Hoy'
   if (diffDays === 1) return '1 día'
   if (diffDays > 0) return `${diffDays} días`
@@ -848,7 +870,6 @@ const getDiasRestantesColor = (fechaLimite) => {
   const limite = new Date(fechaLimite)
   const diffTime = limite - hoy
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
   if (diffDays < 0) return 'text-error'
   if (diffDays <= 3) return 'text-warning'
   if (diffDays <= 7) return 'text-info'
@@ -877,33 +898,28 @@ const mostrarSnackbar = (texto, color = 'success') => {
 </script>
 
 <style scoped>
-/* Para asegurar que el chip no se rompa */
 .text-no-wrap {
   white-space: nowrap;
 }
 
-/* Para el texto truncado */
 .text-truncate {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 100px; /* Ancho mínimo */
+  min-width: 100px;
 }
 
-/* Estilo específico para el chip de código */
 .chip-codigo {
   font-size: 0.75rem;
   letter-spacing: 0.5px;
 }
 
-/* Para pantallas pequeñas */
 @media (max-width: 600px) {
   .text-truncate {
     max-width: 50% !important;
   }
 }
 
-/* Estilos generales */
 .rotate-180 {
   transform: rotate(180deg);
   transition: transform 0.3s ease;

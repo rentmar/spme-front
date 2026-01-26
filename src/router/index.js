@@ -355,6 +355,24 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/monitoreo/informe-actividad-pei/:id',
+      name: 'informeActividadesPei',
+      component: () => import('@/views/monitoreo/InformeActividadPeiView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/informe-subactividad-pei/:id',
+      name: 'InformeSubActividadPei',
+      component: () => import('@/views/monitoreo/InformeSubactividadPei.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/informes-actividad-subactividad-pei/:id',
+      name: 'ListaInformesActividadSubActividadPei',
+      component: () => import('@/views/monitoreo/InformesActividadSubactividadPeiView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/actividades/informe/',
       name: 'actividades',
       component: () => import('@/views/monitoreo/InformeListaActividadView.vue'),
