@@ -95,7 +95,7 @@
           </v-list-item-title>
           <v-list-item-subtitle class="d-flex align-center flex-wrap mt-2">
             <span class="text-caption text-medium-emphasis">
-              {{ usuario?.email || user.email || 'Sin email' }}
+              {{ usuario?.correo || 'Sin email' }}
             </span>
             <v-chip
               v-if="showOnlineStatus"
@@ -138,10 +138,11 @@
 
         <v-list-item
           prepend-icon="mdi-cog-outline"
-          title="Configuración"
+          title=" Mis Mensajes"
           value="settings"
           class="menu-item"
           rounded="lg"
+          to="/notificaciones/"
         >
           <template #append>
             <v-icon icon="mdi-chevron-right" size="16" class="text-medium-emphasis" />
@@ -150,9 +151,10 @@
 
         <v-list-item
           prepend-icon="mdi-account-group-outline"
-          title="Equipo"
+          title="Mis Proyectos"
           value="team"
           class="menu-item"
+          to="/proyectos/mis-proyectos/"
           rounded="lg"
         >
           <template #append>

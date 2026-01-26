@@ -24,6 +24,7 @@
       ></v-list-item>
 
       <v-list-item
+        v-if="canSee(['admin'])"
         prepend-icon="mdi-folder-multiple-outline"
         title="Proyectos"
         value="projects-list"
@@ -141,7 +142,7 @@
     </v-list-group>
 
     <!-- Administración de Usuarios -->
-    <v-list-group value="admin">
+    <v-list-group value="admin" v-if="canSee['admin']">
       <template v-slot:activator="{ props }">
         <v-list-item v-bind="props" prepend-icon="mdi-account-cog" title="Usuarios"></v-list-item>
       </template>
@@ -202,12 +203,12 @@
           ></v-badge>
         </template>
       </v-list-item>
-      <v-list-item
+      <!-- <v-list-item
         prepend-icon="mdi-cog-outline"
         title="Configuración"
         value="notification-settings"
         to="/notificaciones/configuracion"
-      ></v-list-item>
+      ></v-list-item> -->
       <!-- Sección de administración (solo visible para admin) -->
       <template v-if="userIsAdmin">
         <v-divider class="my-1"></v-divider>
@@ -227,13 +228,13 @@
           class="admin-item"
         ></v-list-item> -->
 
-        <v-list-item
+        <!-- <v-list-item
           prepend-icon="mdi-server-security"
           title="Configuración del Sistema"
           value="system-notification-settings"
           to="/admin/notificaciones/configuracion"
           class="admin-item"
-        ></v-list-item>
+        ></v-list-item> -->
       </template>
     </v-list-group>
 
@@ -258,14 +259,14 @@
       ></v-list-item>
     </v-list-group>
 
-    <v-list-item prepend-icon="mdi-help-box" title="Ayuda" value="help" to="/help"></v-list-item>
+    <!-- <v-list-item prepend-icon="mdi-help-box" title="Ayuda" value="help" to="/help"></v-list-item> -->
 
-    <v-list-item
+    <!-- <v-list-item
       prepend-icon="mdi-information"
       title="Acerca de"
       value="about"
       to="/about"
-    ></v-list-item>
+    ></v-list-item> -->
   </v-list>
 </template>
 
@@ -274,6 +275,9 @@
 // basado en los permisos del usuario
 import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useUserRole } from '@/composables/useUserRole'
+
+const { isAdmin, isContable, isCoordinador, canSee } = useUserRole()
 
 const userStore = useUserStore()
 const unreadNotificationsCount = ref(0)

@@ -103,6 +103,11 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/proyectos/mis-proyectos/',
+      name: 'proyectoMisProyectos',
+      component: () => import('@/views/proyecto/UserMisProyectosView.vue'),
+    },
+    {
       path: '/proyecto/actividades/tareas/',
       name: 'proyectoActividadesTarea',
       component: () => import('@/views/planeamiento/ActividadesListTareasView.vue'),

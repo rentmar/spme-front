@@ -193,6 +193,52 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  /********************** Usuario  ****************************/
+
+  // Verificación mejorada que considera admin siempre ve todo
+  const canSee = (roles) => {
+    if (!userData.value || !userData.value.user?.cargo) return false
+
+    const currentRole = userData.value.user.cargo // Mantener exacto
+
+    // Admin siempre ve todo (comparación exacta)
+    if (currentRole === 'admin') return true
+
+    // Verificar si los roles son un array
+    if (Array.isArray(roles)) {
+      return roles.includes(currentRole)
+    }
+
+    // Si es string, comparar directamente
+    return currentRole === roles
+  }
+
+  // NUEVA: Verificación inversa
+  const cannotSee = (roles) => {
+    return !canSee(roles)
+  }
+
+  // NUEVOS getters para verificación rápida (sin modificar rol existente)
+  const isAdminUser = computed(() => {
+    return rol.value === 'admin' // Comparación exacta
+  })
+
+  const isCoordinator = computed(() => {
+    return rol.value === 'coordinador' // Comparación exacta
+  })
+
+  const isTechnician = computed(() => {
+    return rol.value === 'tecnico' // Comparación exacta
+  })
+
+  const isAccountant = computed(() => {
+    return rol.value === 'contable' // Comparación exacta
+  })
+
+  // Atajos comunes usando canSee
+  const canManageTeams = computed(() => canSee(['administrador', 'coordinador']))
+  const canViewTasks = computed(() => canSee(['administrador', 'coordinador', 'tecnico']))
+
   return {
     //Estado
     userData, //Datos del usuario
@@ -224,5 +270,14 @@ export const useUserStore = defineStore('user', () => {
     initialize, //Inicializar session automatica
     loadUserInfo, //Cargar informacion del usuario
     cargarListaUsuarios,
+    //Funciones para UIX
+    cannotSee,
+    canSee,
+    isAdminUser,
+    isCoordinator,
+    isTechnician,
+    isAccountant,
+    canManageTeams,
+    canViewTasks,
   }
 })
