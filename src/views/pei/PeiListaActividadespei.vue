@@ -173,7 +173,7 @@
                             color="deep-purple"
                             size="small"
                             :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
-                            @click.stop="abrirDialogViajeValidar(actividad.id)"
+                            @click.stop="abrirDialogViajeValidar(actividad.id,null)"
                           ></v-btn>
                         </template>
                       </v-tooltip>
@@ -309,14 +309,14 @@
                         <div class="d-flex justify-space-between align-center mb-4">
                           <span class="text-subtitle-1">Sub Actividades para {{ actividad.codigo }}</span>
                           <div class="d-flex align-center">
-                            <v-btn
+                            <!-- <v-btn
                               color="primary"
                               variant="text"
                               @click="openTareaDialog(actividad.id)"
                             >
                               <v-icon left>mdi-plus</v-icon>
                               Añadir Sub Actividad
-                            </v-btn>
+                            </v-btn> -->
                           </div>
                         </div>
                         <v-list density="compact" class="py-0">
@@ -1263,7 +1263,7 @@ const abrirDialogValidar = async (actividadId, tareaId) => {     //tareaId = nul
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
   solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)  //es usado para habilitar iconos
-  // console.log('55555555555555555', JSON.stringify(actividadIdParaValidar,null,2))
+   console.log('55555555555555555SOLFONDOS', JSON.stringify(actividadIdParaValidar.value,null,2))
 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   try {
@@ -1322,11 +1322,12 @@ const abrirDialogReposicionValidar = async (actividadId, tareaId = null) => {
   dialogReposicionValidar.value = true;
 }
 
-const abrirDialogViajeValidar = async (actividadId, tareaId = null) => {
+const abrirDialogViajeValidar = async (actividadId, tareaId) =>{      //tareaId = null) => {
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
   solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)
+  console.log('55555555555555555VIAJE', JSON.stringify(actividadIdParaValidar.value,null,2))
 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   await cargarSolicitudDeViaje()
@@ -1708,7 +1709,8 @@ async function cargarSolicitudDeViaje() {
       }),
     })
 
-    //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
+    console.log('00000000000000000000000000000', JSON.stringify(actividadIdParaValidar.value,null,2) )
+    console.log('00000000000000000000000000000', JSON.stringify(tareaIdParaValidar.value,null,2) )
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -1719,7 +1721,7 @@ async function cargarSolicitudDeViaje() {
 
     //const data = {solicitudes: await response.json()}
     const rawData = await response.json()
-    //console.log('SoicitudDeViaje Recibido:', JSON.stringify(rawData,null,2))
+    console.log('SoicitudDeViaje Recibido:', JSON.stringify(rawData,null,2))
 
     listaSolicitudesDeViaje.value = strictSanitizeData(rawData.solicitudes)
     console.log('Datos cargados exitosamenteeee:', JSON.stringify(listaSolicitudesDeViaje.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)

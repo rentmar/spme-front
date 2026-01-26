@@ -1060,7 +1060,7 @@ async function submitForm() {
       objetivo_actividad: formData.value.objetivo_actividad,
       // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
       ...(formData.value.id_tarea &&
-        formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
+        formData.value.id_tarea > 0 && { tarea: formData.value.id_tarea }),
       datos_forma_pago: formData.value.datos_forma_pago,
       bloquearIconosSolFondos: true,
       //codigo_actividad: formData.value.codigo_actividad,
