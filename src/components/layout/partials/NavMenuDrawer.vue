@@ -88,21 +88,38 @@
       <template v-slot:activator="{ props }">
         <v-list-item v-bind="props" prepend-icon="mdi-chart-line" title="Monitoreo"></v-list-item>
       </template>
+      <!-- PROYECTOS -->
       <v-list-item
-        @click="goToPageWithButton(1)"
         prepend-icon="mdi-account-alert"
         title="Solicitud/Reposición"
-        value="monitoring-requests"
+        value="monitoring-requests-proyectos"
         to="/pei/listaactividades?showButton=1"
       ></v-list-item>
 
       <v-list-item
-        @click="goToPageWithButton(2)"
         prepend-icon="mdi-chart-box"
         title="Rendición Cuentas"
-        value="monitoring-reports"
+        value="monitoring-reports-proyectos"
         to="/pei/listaactividades?showButton=2"
       ></v-list-item>
+      <!-- FIN PROYECTOS -->
+
+      <!-- PEI -->
+      <v-list-item
+        prepend-icon="mdi-account-alert"
+        title="Solicitud/Reposición/PEI"
+        value="monitoring-requests-pei"
+        to="/pei/listaactividadespei?showButton=1"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-chart-box"
+        title="Rendición Cuentas/PEI"
+        value="monitoring-reports-pei"
+        to="/pei/listaactividadespei?showButton=2"
+      ></v-list-item>
+      <!-- FIN PEI -->
+
 
       <!-- <v-list-item
         @click="goToPageWithButton(3)"
