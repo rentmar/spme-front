@@ -1,6 +1,6 @@
 <template>
   <div class="v-container v-locale--is-ltr">
-        <!-- Overlay de carga -->
+    <!-- Overlay de carga -->
     <v-overlay
       :model-value="cargandoGeneral"
       class="align-center justify-center"
@@ -18,33 +18,28 @@
       </div>
     </v-overlay>
 
-  <div v-if="!cargandoGeneral">
-    <PaginaTituloIcono
-      :titulo="'Rendición de Cuentas'"
-      :icon="'mdi-file-document-check'"
-    ></PaginaTituloIcono>
-    <ProyectoIdHeader
-      v-if="datosFormulario"
-      :proyecto-id="datosFormulario.actividad?.proyecto ?? '999999'"
-    ></ProyectoIdHeader>
-    <br />
-    <ActividadInformacion
-      v-if="datosFormulario.actividad"
-      :actividad-id="idActividad"
-    />
+    <div v-if="!cargandoGeneral">
+      <PaginaTituloIcono
+        :titulo="'Rendición de Cuentas'"
+        :icon="'mdi-file-document-check'"
+      ></PaginaTituloIcono>
+      <ProyectoIdHeader
+        v-if="datosFormulario"
+        :proyecto-id="datosFormulario.actividad?.proyecto ?? '999999'"
+      ></ProyectoIdHeader>
+      <br />
+      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
-    <br />
-    <!-- <v-form ref="form" v-model="valid" lazy-validation>
+      <br />
+      <!-- <v-form ref="form" v-model="valid" lazy-validation>
       </v-form> -->
-  </div>
-  <div v-else>
-    <v-progress-circular indeterminate color="primary"></v-progress-circular>
-  </div>
+    </div>
+    <div v-else>
+      <v-progress-circular indeterminate color="primary"></v-progress-circular>
+    </div>
 
     <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
-      <div class="v-card-title text-h5 font-weight-bold">
-        Formulario F-02:
-      </div>
+      <div class="v-card-title text-h5 font-weight-bold">Formulario F-02:</div>
 
       <div class="v-card-text">
         <form class="v-form" novalidate @submit.prevent="submitForm">
@@ -52,28 +47,30 @@
             <v-divider class="my-4"></v-divider>
 
             <v-card-subtitle class="text-h6">Responsable del Cargo de Cuenta</v-card-subtitle>
-            <br>
+            <br />
             <v-row>
               <v-col cols="12" md="4">
                 <v-text-field
-                v-model="formData.nombre"
-                label="Nombre"
-                required readonly></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field
-                v-model="formData.paterno"
-                label="Apellido paterno"
-                required
-                readonly
+                  v-model="formData.nombre"
+                  label="Nombre"
+                  required
+                  readonly
                 ></v-text-field>
               </v-col>
               <v-col cols="12" md="4">
                 <v-text-field
-                v-model="formData.materno"
-                label="Apellido materno"
-                required
-                readonly
+                  v-model="formData.paterno"
+                  label="Apellido paterno"
+                  required
+                  readonly
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="formData.materno"
+                  label="Apellido materno"
+                  required
+                  readonly
                 ></v-text-field>
               </v-col>
               <v-col cols="12" md="4">
@@ -86,13 +83,12 @@
               </v-col>
               <v-col cols="12" md="4">
                 <v-text-field
-                v-model="formData.cargo"
-                label="Cargo"
-                required
-                readonly
+                  v-model="formData.cargo"
+                  label="Cargo"
+                  required
+                  readonly
                 ></v-text-field>
               </v-col>
-
             </v-row>
 
             <v-divider class="my-4"></v-divider>
@@ -110,7 +106,8 @@
               </v-col> -->
 
               <v-col cols="12" sm="6" md="4">
-                <v-text-field v-model="formData.cpte_diario"
+                <v-text-field
+                  v-model="formData.cpte_diario"
                   label="Cpte. Diario"
                   bg-color="blue-lighten-5"
                   required
@@ -160,7 +157,7 @@
                   required
                 ></v-text-field>
               </v-col>
-              </v-row>
+            </v-row>
             <v-row>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field
@@ -184,19 +181,26 @@
                 ></v-text-field>
               </v-col>
             </v-row>
-
           </div>
 
           <v-divider class="my-4"></v-divider>
 
           <div class="form-section">
             <h3>Detalle de Gastos</h3>
-            <br>
+            <br />
             <v-card-title class="d-flex justify-space-between align-center">
-              <v-btn variant="flat" class="text-grey-darken-3 bg-white" rounded="lg" :elevation="3" @click="agregarGasto">
+              <v-btn
+                variant="flat"
+                class="text-grey-darken-3 bg-white"
+                rounded="lg"
+                :elevation="3"
+                @click="agregarGasto"
+              >
                 Agregar Gasto
               </v-btn>
-              <span class="text-caption text-grey">Monto Total de Gasto (Bs.): {{ totalMontoGastado }}</span>
+              <span class="text-caption text-grey"
+                >Monto Total de Gasto (Bs.): {{ totalMontoGastado }}</span
+              >
             </v-card-title>
 
             <v-table>
@@ -271,37 +275,37 @@
 
           <v-divider class="my-4"></v-divider>
 
-                <!-- Sección 4: Información Adicional -->
-                <div class="form-section mb-6">
-                  <v-card-subtitle class="text-h6">Información Adicional</v-card-subtitle>
-                  <br>
+          <!-- Sección 4: Información Adicional -->
+          <div class="form-section mb-6">
+            <v-card-subtitle class="text-h6">Información Adicional</v-card-subtitle>
+            <br />
 
-                  <v-row>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="formData.lugar_solicitud"
-                        label="Lugar donde se realiza la Rendición de Cuentas"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="formData.fecha_actual"
-                        label="Fecha actual Rendición de Cuentas"
-                        type="date"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </div>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="formData.lugar_solicitud"
+                  label="Lugar donde se realiza la Rendición de Cuentas"
+                  bg-color="blue-lighten-5"
+                  required
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="formData.fecha_actual"
+                  label="Fecha actual Rendición de Cuentas"
+                  type="date"
+                  bg-color="grey-lighten-4"
+                  readonly
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </div>
 
           <v-divider class="my-4"></v-divider>
 
           <div class="form-section">
             <v-card-subtitle class="text-h6">Firmas</v-card-subtitle>
-            <br>
+            <br />
             <!--<v-row>
               <v-col cols="12" md="6">
                 <v-select
@@ -388,19 +392,29 @@
           </div>
 
           <div class="d-flex justify-end mt-4">
-                  <v-btn
-                    color="error"
-                    variant="outlined"
-                    prepend-icon="mdi-cancel"
-                    :to="`/pei/listaactividades?showButton=2`"
-                    class="mx-2"
-                  >
-                    Cancelar
-                  </v-btn>
-            <v-btn color="error" prepend-icon="mdi-backspace-outline" @click="resetForm" class="mx-2">
+            <v-btn
+              color="error"
+              variant="outlined"
+              prepend-icon="mdi-cancel"
+              :to="`/pei/listaactividades?showButton=2`"
+              class="mx-2"
+            >
+              Cancelar
+            </v-btn>
+            <v-btn
+              color="error"
+              prepend-icon="mdi-backspace-outline"
+              @click="resetForm"
+              class="mx-2"
+            >
               Limpiar
             </v-btn>
-            <v-btn color="primary" prepend-icon="mdi-file-document-arrow-right" @click="submitForm" :loading="loading">
+            <v-btn
+              color="primary"
+              prepend-icon="mdi-file-document-arrow-right"
+              @click="submitForm"
+              :loading="loading"
+            >
               Enviar Rendicion
             </v-btn>
           </div>
@@ -408,22 +422,21 @@
       </div>
     </div>
   </div>
-     <!-- {{ '*************************' }}
+  <!-- {{ '*************************' }}
      <pre>{{ datosFormulario1 }}</pre> -->
-     <!--<pre>{{ formData.monto_asignado }}</pre>
+  <!--<pre>{{ formData.monto_asignado }}</pre>
      <pre>{{ route }}</pre> -->
 </template>
 
 <script setup>
-
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue'
 
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
-import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
-import {useUserStore} from '@/stores/user';
+import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
+import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
@@ -442,7 +455,7 @@ console.log('ID SolFondos:', idSolicitud)
 
 const baseurl = import.meta.env.VITE_API_BASE
 
-const { usuario } = useUsuario();
+const { usuario } = useUsuario()
 
 const idRendicionCreada = ref(null)
 
@@ -455,8 +468,8 @@ const solicitud = ref(null)
 const snackbar = ref({ show: false, text: '', color: 'success' })
 
 // Variables de estado
-const loading = ref(false);
-const isAdmin = ref(false); // Definir el estado isAdmin
+const loading = ref(false)
+const isAdmin = ref(false) // Definir el estado isAdmin
 
 //variables para carga de datos
 const datosFormulario = ref(null)
@@ -483,8 +496,8 @@ const formData = ref({
   documento_identidad: '',
   // Campos de la actividad
   descripcion_actividad: '',
-  lugar_actividad:'',
-  fecha_actividad:'',
+  lugar_actividad: '',
+  fecha_actividad: '',
   objetivo_actividad: '',
   fecha_desembolso: '',
   fecha_irealizacion: '',
@@ -493,7 +506,9 @@ const formData = ref({
   id_actividad: 0,
   id_usuario: 0,
   // Resto de campos del formulario
-  detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [
+    { fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 },
+  ],
   forma_pago: null,
   lugar_solicitud: '',
   fecha_actual: getCurrentDate(),
@@ -505,11 +520,11 @@ const formData = ref({
   idcoordinador: null,
   monto_asignado: 0,
   monto_gastado: 0,
-  formulario_numero:'',
+  formulario_numero: '',
   validacion_contador: false,
   validacion_administrador: false,
   idcontador: null,
-  idadministrador: null
+  idadministrador: null,
 })
 
 const formDatSF = ref({
@@ -534,18 +549,18 @@ const formDatSF = ref({
   usuario_idsf: null,
   actividad_idsf: null,
   fechaRealizacionActividadsf: '',
-  bloquearIconosSolFondossf: true
+  bloquearIconosSolFondossf: true,
 })
 
- const userStore = useUserStore();
- const usuario1 = computed(() => {
- return {
- 	nombre: userStore.usuario,
- 	role: userStore.rol,
-  id: userStore.id,
-   };
- });
-  console.log('ID Usuario:', usuario1.value.id)
+const userStore = useUserStore()
+const usuario1 = computed(() => {
+  return {
+    nombre: userStore.usuario,
+    role: userStore.rol,
+    id: userStore.id,
+  }
+})
+console.log('ID Usuario:', usuario1.value.id)
 
 const fuente_financiamiento0 = ref()
 
@@ -562,44 +577,41 @@ const actividadData = ref({
 
 // Propiedades computadas
 const saldoPorReembolsar = computed(() => {
-  const montoAsignado = Number(formData.value.monto_asignado) || 0;
-  const montoGastado = Number(totalMontoGastado.value) || 0;
-  return (montoAsignado - montoGastado).toFixed(2);
-});
+  const montoAsignado = Number(formData.value.monto_asignado) || 0
+  const montoGastado = Number(totalMontoGastado.value) || 0
+  return (montoAsignado - montoGastado).toFixed(2)
+})
 
 const totalMontoGastado = computed(() => {
-  return formData.value.detalle_destino_fondos.reduce(
-    (total, gasto) => total + Number(gasto.monto || 0),
-    0
-  ).toFixed(2);
-});
+  return formData.value.detalle_destino_fondos
+    .reduce((total, gasto) => total + Number(gasto.monto || 0), 0)
+    .toFixed(2)
+})
 
- //Watcher para actualizar monto_gastado en formData
- watch(totalMontoGastado, (newValue) => {
-   formData.value.monto_gastado = Number(newValue);
- });
+//Watcher para actualizar monto_gastado en formData
+watch(totalMontoGastado, (newValue) => {
+  formData.value.monto_gastado = Number(newValue)
+})
 
 // Computed properties para obtener nombres completos de validadores
 const nombreCoordinadorCompleto = computed(() => {
   const coordinador = coordinadoresList.value.find(
-    (user) => user.id === formData.value.idcoordinador
-  );
-  return coordinador ? getNombreCompleto(coordinador) : '';
-});
+    (user) => user.id === formData.value.idcoordinador,
+  )
+  return coordinador ? getNombreCompleto(coordinador) : ''
+})
 
 const nombreContadorCompleto = computed(() => {
-  const contador = contadoresList.value.find(
-    (user) => user.id === formData.value.idcontador
-  );
-  return contador ? getNombreCompleto(contador) : '';
-});
+  const contador = contadoresList.value.find((user) => user.id === formData.value.idcontador)
+  return contador ? getNombreCompleto(contador) : ''
+})
 
 const nombreAdministradorCompleto = computed(() => {
   const administrador = administradoresList.value.find(
-    (user) => user.id === formData.value.idadministrador
-  );
-  return administrador ? getNombreCompleto(administrador) : '';
-});
+    (user) => user.id === formData.value.idadministrador,
+  )
+  return administrador ? getNombreCompleto(administrador) : ''
+})
 
 const nombreCompletoSolicitante = computed(() => {
   return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
@@ -633,13 +645,15 @@ watch(
         formData.value.id_actividad = newVal.actividad.id || 0
 
         if (Array.isArray(newVal.actividad.procedencia_fondos)) {
-          formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(item => item.nombre);
+          formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(
+            (item) => item.nombre,
+          )
         } else {
           // Si no es un array (es null, undefined, o un objeto), lo inicializa como array vacío.
           // También puedes intentar asignar el valor directamente si es una cadena o un objeto simple:
           // formData.value.fuente_financiamiento = [newVal.actividad.procedencia_fondos];
           // PERO la opción de array vacío es la más segura si esperas una lista de fuentes.
-          formData.value.fuente_financiamiento = [];
+          formData.value.fuente_financiamiento = []
         }
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
@@ -673,23 +687,27 @@ const filtrarProcedenciaFondos = () => {
     Array.isArray(datosFormulario.value.actividad.procedencia_fondos) // <= CAMBIO AQUÍ
   ) {
     fuente_financiamiento0.value = datosFormulario.value.actividad.procedencia_fondos.map(
-      (item) => item.nombre
-    );
+      (item) => item.nombre,
+    )
   } else {
     // Es bueno asegurarse de que siempre sea un array en caso de no encontrar datos
-    fuente_financiamiento0.value = [];
+    fuente_financiamiento0.value = []
   }
-};
+}
 
-watch(datosFormulario, (newVal) => {
-  if (newVal) {
-    filtrarProcedenciaFondos();
-  }
-}, { immediate: true });
+watch(
+  datosFormulario,
+  (newVal) => {
+    if (newVal) {
+      filtrarProcedenciaFondos()
+    }
+  },
+  { immediate: true },
+)
 
 // Métodos
 function getNombreCompleto(user) {
-  return `${user.nombre || ''} ${user.paterno || ''} ${user.materno || ''}`.trim();
+  return `${user.nombre || ''} ${user.paterno || ''} ${user.materno || ''}`.trim()
 }
 
 function getCurrentDate() {
@@ -704,7 +722,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl+'/api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl + '/api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -740,12 +758,12 @@ const cargarSolicitudesFondos = async () => {
   try {
     //console.log('Cargando solicitudes de fondos con fetch...')
 
-    const response = await fetch(baseurl+'/api/solicitud-fondos/', {
+    const response = await fetch(baseurl + '/api/solicitud-fondos/', {
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
     })
 
     if (!response.ok) {
@@ -755,7 +773,6 @@ const cargarSolicitudesFondos = async () => {
     const data = await response.json()
     //console.log('Datos recibidos con fetch:', data)
     solicitudesFondos.value = data
-
   } catch (error) {
     console.error('Error con fetch:', error)
     mostrarSnackbar(`Error al cargar solicitudes: ${error.message}`, 'error')
@@ -768,7 +785,7 @@ async function cargarSolicitudFondos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudFondos/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudFondos/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -783,7 +800,7 @@ async function cargarSolicitudFondos() {
     //console.log('ttttttttttt', JSON.stringify(data,null,2))
 
     // Filtrar las solicitudes por actividad_id y tarea_id
-    const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
+    const solicitudesFiltradas = data.solicitudes.filter((solicitud) => {
       // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
       const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
       const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
@@ -793,7 +810,6 @@ async function cargarSolicitudFondos() {
     //console.log('Solicitudes filtradas encontradas:', solicitudesFiltradas)
     datosFormulario1.value = solicitudesFiltradas[0]
     actualizarDatosFormulario(solicitudesFiltradas[0])
-
   } catch (err) {
     error.value = err.message
     console.error('Error al cargar solicitudes:', err)
@@ -811,7 +827,7 @@ watch(
       actualizarDetalleDestinoFondos(newVal.detalleDestinoFondos)
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 // Función para actualizar datosFormulario con los valores de la solicitud
@@ -853,13 +869,14 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
     }
 
     // Parsear el JSON string
-    const detalleParseado = JSON.parse(detalleDestinoFondos)
+    // const detalleParseado = JSON.parse(detalleDestinoFondos)
+    const detalleParseado = detalleDestinoFondos
 
     // Mapear al formato que espera la tabla
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
       partida: `${index + 1}.${index + 1}.${index + 1}`, // Generar partida automáticamente o usar una lógica específica
       descripcion_gasto: item.concepto || '',
-      monto: item.monto || 0
+      monto: item.monto || 0,
     }))
 
     //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
@@ -887,12 +904,12 @@ function actualizarValidadores() {
 
   // Buscar responsable por ID
   const responsable = datosFormulario.value.validadores.find(
-    validador => validador.id === formDatSF.value.responsable_idsf
+    (validador) => validador.id === formDatSF.value.responsable_idsf,
   )
 
   // Buscar coordinador por ID
   const coordinador = datosFormulario.value.validadores.find(
-    validador => validador.id === formDatSF.value.coordinador_idsf
+    (validador) => validador.id === formDatSF.value.coordinador_idsf,
   )
 
   // Actualizar formData con los IDs encontrados
@@ -920,14 +937,13 @@ function actualizarListasValidadores() {
 
   // Filtrar responsables (puedes ajustar la lógica según el cargo)
   responsablesList.value = datosFormulario.value.validadores.filter(
-    validador => validador.cargo && validador.cargo.toLowerCase().includes('responsable')
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('responsable'),
   )
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
   coordinadoresList.value = datosFormulario.value.validadores.filter(
-    validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador'),
   )
-
 }
 
 // Obtener información de solicitud de fondos para una actividad (y opcionalmente una tarea)
@@ -937,7 +953,7 @@ const getSolicitudFondosInfo = (actividadId, tareaId = null) => {
   // console.log('Buscando solicitud para actividad:', actividadId, 'tarea:', tareaId)
 
   // Buscar solicitud que coincida con actividad y tarea (si se proporciona)
-  const solicitudEncontrada = solicitudesFondos.value.find(sf => {
+  const solicitudEncontrada = solicitudesFondos.value.find((sf) => {
     // Convertir a números para comparación segura
     const sfActividadId = sf.actividad ? parseInt(sf.actividad) : null
     const sfTareaId = sf.tarea ? parseInt(sf.tarea) : null
@@ -958,83 +974,94 @@ const getSolicitudFondosInfo = (actividadId, tareaId = null) => {
   return solicitudEncontrada || null
 }
 
-watch(solicitudesFondos, (newSolicitudes) => {
-  if (newSolicitudes.length > 0) {
-    //console.log('Solicitudes cargadas, buscando coincidencia...')
+watch(
+  solicitudesFondos,
+  (newSolicitudes) => {
+    if (newSolicitudes.length > 0) {
+      //console.log('Solicitudes cargadas, buscando coincidencia...')
 
-    // Buscar la solicitud que coincida con los parámetros de la ruta
-    const solicitudEncontrada = getSolicitudFondosInfo(idActividad, idTarea)
-    solicitud.value = solicitudEncontrada
+      // Buscar la solicitud que coincida con los parámetros de la ruta
+      const solicitudEncontrada = getSolicitudFondosInfo(idActividad, idTarea)
+      solicitud.value = solicitudEncontrada
 
-    if (solicitudEncontrada) {
-      //console.log('Solicitud encontrada, pre-llenando datos:', solicitudEncontrada)
+      if (solicitudEncontrada) {
+        //console.log('Solicitud encontrada, pre-llenando datos:', solicitudEncontrada)
 
-      // Pre-llenar campos con los datos de la solicitud
-      //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
-      formData.value.monto_asignado = solicitudEncontrada.montoSolicitado || 0 // Asumiendo que monto asignado = monto solicitado
+        // Pre-llenar campos con los datos de la solicitud
+        //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+        formData.value.monto_asignado = solicitudEncontrada.montoSolicitado || 0 // Asumiendo que monto asignado = monto solicitado
 
-      // También puedes pre-llenar otros campos si es necesario
-      if (solicitudEncontrada.numeroFormulario) {
-        formData.value.formulario_numero = solicitudEncontrada.numeroFormulario
+        // También puedes pre-llenar otros campos si es necesario
+        if (solicitudEncontrada.numeroFormulario) {
+          formData.value.formulario_numero = solicitudEncontrada.numeroFormulario
+        }
+
+        // console.log('Monto solicitado asignado:', formData.value.monto_solicitado)
+      } else {
+        console.log('No se encontró solicitud para actividad:', idActividad, 'tarea:', idTarea)
       }
-
-      // console.log('Monto solicitado asignado:', formData.value.monto_solicitado)
-    } else {
-      console.log('No se encontró solicitud para actividad:', idActividad, 'tarea:', idTarea)
     }
-  }
-}, { deep: true, immediate: true })
+  },
+  { deep: true, immediate: true },
+)
 
-onMounted(async () => { // Usar async/await en onMounted
+onMounted(async () => {
+  // Usar async/await en onMounted
   try {
     cargandoGeneral.value = true
     // Ejecutar todas las cargas de datos en paralelo
-    await Promise.all([
-      cargarDatos(),
-      cargarSolicitudFondos(),
-      cargarSolicitudesFondos()
-    ]);
+    await Promise.all([cargarDatos(), cargarSolicitudFondos(), cargarSolicitudesFondos()])
   } catch (error) {
-    console.error("Error al cargar todos los datos iniciales:", error);
+    console.error('Error al cargar todos los datos iniciales:', error)
   } finally {
-    cargandoGeneral.value = false; // Solo apagar aquí
+    cargandoGeneral.value = false // Solo apagar aquí
   }
   resetForm()
-});
+})
 
-watch(solicitudesFondos, (newSolicitudes) => {
-  if (newSolicitudes.length > 0) {
-    const solicitudEncontrada = getSolicitudFondosInfo(idActividad, idTarea || 0)
-    solicitud.value = solicitudEncontrada
+watch(
+  solicitudesFondos,
+  (newSolicitudes) => {
+    if (newSolicitudes.length > 0) {
+      const solicitudEncontrada = getSolicitudFondosInfo(idActividad, idTarea || 0)
+      solicitud.value = solicitudEncontrada
 
-    if (solicitudEncontrada) {
-      //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
-      formData.value.monto_asignado = solicitudEncontrada.formaPago || 0
+      if (solicitudEncontrada) {
+        //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+        formData.value.monto_asignado = solicitudEncontrada.formaPago || 0
+      }
     }
-  }
-}, { deep: true })
+  },
+  { deep: true },
+)
 
 // Función helper para mostrar notificaciones
 const mostrarSnackbar = (texto, color = 'success') => {
   snackbar.value = {
     show: true,
     text: texto,
-    color: color
+    color: color,
   }
 }
 
 function agregarGasto() {
-  formData.value.detalle_destino_fondos.push({ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 });
+  formData.value.detalle_destino_fondos.push({
+    fecha: '',
+    partida: '',
+    factura_recibo: '',
+    descripcion_gasto: '',
+    monto: 0,
+  })
 }
 
 function eliminarGasto(index) {
   if (formData.value.detalle_destino_fondos.length > 1) {
-    formData.value.detalle_destino_fondos.splice(index, 1);
+    formData.value.detalle_destino_fondos.splice(index, 1)
   }
 }
 
 async function submitForm() {
-  loading.value = true;
+  loading.value = true
   try {
     // Validar campos requeridos
     const requiredFields = [
@@ -1046,37 +1073,47 @@ async function submitForm() {
       //'idresponsable',
       'idcoordinador',
       'idcontador',
-      'idadministrador'
-    ];
+      'idadministrador',
+    ]
 
     for (const field of requiredFields) {
       if (!formData.value[field]) {
-        throw new Error(`El campo '${field}' es requerido.`);
+        throw new Error(`El campo '${field}' es requerido.`)
       }
     }
 
-    if (!formData.value.detalle_destino_fondos || formData.value.detalle_destino_fondos.length === 0) {
-      throw new Error('Debe agregar al menos un gasto.');
+    if (
+      !formData.value.detalle_destino_fondos ||
+      formData.value.detalle_destino_fondos.length === 0
+    ) {
+      throw new Error('Debe agregar al menos un gasto.')
     }
 
-    if (formData.value.detalle_destino_fondos.some(gasto => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0)) {
-      throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.');
+    if (
+      formData.value.detalle_destino_fondos.some(
+        (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0,
+      )
+    ) {
+      throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
     }
 
-    const hasInvalidGasto = formData.value.detalle_destino_fondos.some(gasto =>
-      !gasto.fecha || // <--- AÑADIR: Verifica que la fecha exista
-      !gasto.partida ||
-      !gasto.factura_recibo || // <--- AÑADIR: Verifica que el número de factura/recibo exista
-      !gasto.descripcion_gasto ||
-      Number(gasto.monto) <= 0 // <--- Asegúrate de convertir a número para la comparación
-    );
+    const hasInvalidGasto = formData.value.detalle_destino_fondos.some(
+      (gasto) =>
+        !gasto.fecha || // <--- AÑADIR: Verifica que la fecha exista
+        !gasto.partida ||
+        !gasto.factura_recibo || // <--- AÑADIR: Verifica que el número de factura/recibo exista
+        !gasto.descripcion_gasto ||
+        Number(gasto.monto) <= 0, // <--- Asegúrate de convertir a número para la comparación
+    )
 
     if (hasInvalidGasto) {
-      throw new Error('Todos los gastos deben tener fecha, partida, factura/recibo, descripción y un monto mayor a cero.');
+      throw new Error(
+        'Todos los gastos deben tener fecha, partida, factura/recibo, descripción y un monto mayor a cero.',
+      )
     }
 
     // Obtener información de la solicitud de fondos
-    const solicitudInfo = getSolicitudFondosInfo(idActividad, idTarea);
+    const solicitudInfo = getSolicitudFondosInfo(idActividad, idTarea)
 
     // Preparar payload para la rendición de cuentas
     const payload = {
@@ -1087,11 +1124,11 @@ async function submitForm() {
       cpteDiario: formData.value.cpte_diario,
       fechaDesembolso: formData.value.fecha_desembolso,
       saldo: Number(saldoPorReembolsar.value),
-      detalleDestinoFondos: formData.value.detalle_destino_fondos.map(gasto => ({
-        fecha: gasto.fecha || "",
-        partida: gasto.partida || "",
-        factura_recibo: gasto.factura_recibo || "",
-        descripcion: gasto.descripcion_gasto || "",
+      detalleDestinoFondos: formData.value.detalle_destino_fondos.map((gasto) => ({
+        fecha: gasto.fecha || '',
+        partida: gasto.partida || '',
+        factura_recibo: gasto.factura_recibo || '',
+        descripcion: gasto.descripcion_gasto || '',
         monto: Number(gasto.monto) || 0,
       })),
       validacionResponsable: Boolean(formData.value.validacion_responsable),
@@ -1113,23 +1150,23 @@ async function submitForm() {
       idSolicitudViaje: null,
       idSolicitudPagoDirecto: null,
       idSolicitudFondos: solicitudInfo ? solicitudInfo.id : null,
-    };
+    }
 
-    console.log('Payload a enviar:', JSON.stringify(payload, null, 2));
+    console.log('Payload a enviar:', JSON.stringify(payload, null, 2))
 
     // Enviar la solicitud
-    const response = await fetch(baseurl+'/api/monitoreo/crear-rendicion-cuentas/', {
+    const response = await fetch(baseurl + '/api/monitoreo/crear-rendicion-cuentas/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-    });
+    })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.detail || `Error HTTP: ${response.status}`)
     }
 
-    const responseData = await response.json();
+    const responseData = await response.json()
     //console.log('Rendición enviada con éxito:', responseData);
     numeroFormulario.value = responseData.numero_formulario
 
@@ -1144,11 +1181,11 @@ async function submitForm() {
     }
 
     // GUARDAR EL ID DE LA RENDICIÓN CREADA
-    idRendicionCreada.value = responseData.id || responseData.rendicion_id;
+    idRendicionCreada.value = responseData.id || responseData.rendicion_id
 
-    alert('Rendición enviada con éxito');
-    exportToExcel();
-    resetForm();
+    alert('Rendición enviada con éxito')
+    exportToExcel()
+    resetForm()
 
     await enviarMensajeAutomatico(cuerpoMensaje)
 
@@ -1168,13 +1205,11 @@ async function submitForm() {
       }
 
       console.log('emailPayload enviado al servidor:', emailPayload)
-      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(emailPayload),
-        },
-      )
+      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailPayload),
+      })
 
       if (emailResponse.ok) {
         console.log('Correo de notificación enviado exitosamente')
@@ -1192,12 +1227,11 @@ async function submitForm() {
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=2')
     }, 1000)
-
   } catch (error) {
-    console.error('Error completo:', error);
-    alert(`Error: ${error.message}`);
+    console.error('Error completo:', error)
+    alert(`Error: ${error.message}`)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
@@ -1208,12 +1242,14 @@ function resetForm() {
     descripcion_actividad: '',
     lugar_solicitud: '',
     fecha_actividad: '',
-    detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
+    detalle_destino_fondos: [
+      { fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 },
+    ],
     idresponsable: null,
     idcoordinador: null,
     idcontador: null,
     idadministrador: null,
-  });
+  })
 }
 
 function exportToExcel() {
@@ -1222,7 +1258,12 @@ function exportToExcel() {
     ['FORMULARIO F-02: RENDICION DE CUENTAS', '', '', ''],
     [''],
     [''],
-    ['Nombre del Solicitante:', formData.value.nombre, formData.value.paterno, formData.value.materno],
+    [
+      'Nombre del Solicitante:',
+      formData.value.nombre,
+      formData.value.paterno,
+      formData.value.materno,
+    ],
     ['Documento de Identidad:', formData.value.documento_identidad, '', ''],
     ['Cargo:', formData.value.cargo, '', ''],
     ['Formulario Número:', formDatSF.value.numeroFormulariosf || '', '', ''],
@@ -1234,7 +1275,7 @@ function exportToExcel() {
     [''],
     ['Saldo por Reembolsar (Bs.):', Number(saldoPorReembolsar.value), '', ''],
     ['Fuente de Financiamiento:', formData.value.fuente_financiamiento, '', ''],
-    ['Descripcion de Actividad:',formData.value.descripcion_actividad, '', ''],
+    ['Descripcion de Actividad:', formData.value.descripcion_actividad, '', ''],
     ['Lugar de Actividad:', formData.value.lugar_actividad, '', ''],
     ['Fecha de Actividad:', formData.value.fecha_actividad, '', ''],
     [''],
@@ -1247,7 +1288,13 @@ function exportToExcel() {
   ]
 
   // 2. Encabezados de la tabla de gastos
-  const expensesHeaders = ['FECHA', 'PARTIDA', 'FACTURA/RECIBO', 'DESCRIPCIÓN DEL GASTO', 'MONTO (BS.)']
+  const expensesHeaders = [
+    'FECHA',
+    'PARTIDA',
+    'FACTURA/RECIBO',
+    'DESCRIPCIÓN DEL GASTO',
+    'MONTO (BS.)',
+  ]
 
   // 3. Datos de gastos
   const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
@@ -1429,10 +1476,8 @@ function getCurrentDate1() {
 onMounted(() => {
   cargarDatos()
   cargarSolicitudesFondos()
-  getSolicitudFondosInfo(idActividad,idTarea)
-
-});
-
+  getSolicitudFondosInfo(idActividad, idTarea)
+})
 </script>
 
 <style scoped>

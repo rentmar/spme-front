@@ -25,21 +25,18 @@
         :icon="'mdi-cash-check'"
       ></PaginaTituloIcono>
       <!--Encabezado del Proyecto-->
-       <ProyectoIdHeader
+      <ProyectoIdHeader
         v-if="datosFormulario"
         :proyecto-id="datosFormulario.actividad?.proyecto ?? '99999'"
       ></ProyectoIdHeader>
       <br />
       <!--Encabezado de la Actividad-->
-        <ActividadInformacion
-        v-if="datosFormulario.actividad"
-        :actividad-id="idActividad" />
-
+      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
       <v-row>
         <!-- Panel lateral de información -->
         <v-col cols="12" md="4" lg="3">
-           <v-card elevation="2" rounded="lg" class="mb-4">
+          <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="primary" density="compact">
               <v-toolbar-title class="text-white">Información General</v-toolbar-title>
             </v-toolbar>
@@ -47,14 +44,14 @@
               <div class="info-item mb-3">
                 <div class="text-subtitle-2 text-medium-emphasis">Actividad:</div>
                 <div class="text-body-1 font-weight-medium">
-                   {{ datosFormulario.actividad.nombreCorto }}
+                  {{ datosFormulario.actividad.nombreCorto }}
                 </div>
               </div>
               <div class="info-item mb-3">
                 <div class="text-subtitle-2 text-medium-emphasis">Estado:</div>
                 <v-chip color="warning" size="small" class="mt-1">
                   <v-icon small class="mr-1">mdi-progress-clock</v-icon>
-                   {{ datosFormulario.actividad.estado }}
+                  {{ datosFormulario.actividad.estado }}
                 </v-chip>
               </div>
             </v-card-text>
@@ -550,7 +547,7 @@
       </v-row>
     </div>
   </v-container>
-    <!--  {{ '***************************************B' }}
+  <!--  {{ '***************************************B' }}
      <pre>{{ datosFormulario }}</pre> -->
 </template>
 
@@ -622,7 +619,6 @@ const formData = ref({
   // Campos de forma de pago
   forma_pago: null,
   datos_forma_pago: {
-
     otros: { nombre_otros: '', ci_otros: '' },
     transferencia: {
       nombre_transferencia: '',
@@ -665,7 +661,7 @@ const formDatSF = ref({
   usuario_idsf: null,
   actividad_idsf: null,
   fechaRealizacionActividadsf: '',
-  bloquearIconosSolFondossf: true
+  bloquearIconosSolFondossf: true,
 })
 
 //datos para abrir Solicitud de Fondos
@@ -784,7 +780,7 @@ watch(
       formData.value.materno = getSafeValue(usuario.materno)
       formData.value.cargo = getSafeValue(usuario.cargo)
       formData.value.documento_identidad = getSafeValue(usuario.ci)
-      formData.value.id_usuario = getSafeValue(usuario.id,0)
+      formData.value.id_usuario = getSafeValue(usuario.id, 0)
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
@@ -809,8 +805,14 @@ watch(
         actividadData.value = {
           ...actividadData.value,
           descripcion: getSafeValue(newVal.actividad.descripcion, actividadData.value.descripcion),
-          fecha_programada: getSafeValue(newVal.actividad.fecha_inicio, actividadData.value.fecha_programada),
-          fecha_cierre: getSafeValue(newVal.actividad.fecha_cierre, actividadData.value.fecha_cierre),
+          fecha_programada: getSafeValue(
+            newVal.actividad.fecha_inicio,
+            actividadData.value.fecha_programada,
+          ),
+          fecha_cierre: getSafeValue(
+            newVal.actividad.fecha_cierre,
+            actividadData.value.fecha_cierre,
+          ),
         }
       }
 
@@ -823,7 +825,6 @@ watch(
           newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
         coordinadoresList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
-
       } else {
         responsablesList.value = []
         contadoresList.value = []
@@ -839,7 +840,9 @@ watch(
   () => formData.value.idcoordinador,
   (newIdCoordinador) => {
     if (newIdCoordinador && coordinadoresList.value.length > 0) {
-      const coordinadorSeleccionado = coordinadoresList.value.find((coordinador) => coordinador.id === newIdCoordinador )
+      const coordinadorSeleccionado = coordinadoresList.value.find(
+        (coordinador) => coordinador.id === newIdCoordinador,
+      )
 
       if (coordinadorSeleccionado && coordinadorSeleccionado.correo) {
         formData.value.correo_coordinador = coordinadorSeleccionado.correo
@@ -856,7 +859,9 @@ watch(
   () => formData.value.idcontador,
   (newIdContador) => {
     if (newIdContador && contadoresList.value.length > 0) {
-      const contadorSeleccionado = contadoresList.value.find((contador) => contador.id === newIdContador )
+      const contadorSeleccionado = contadoresList.value.find(
+        (contador) => contador.id === newIdContador,
+      )
 
       if (contadorSeleccionado && contadorSeleccionado.correo) {
         formData.value.correo_contador = contadorSeleccionado.correo
@@ -877,7 +882,7 @@ watch(
       actualizarDetalleDestinoFondos(newVal.detalleDestinoFondos)
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 // 6. Para la función exportToExcel, necesitas obtener el texto de la forma de pago:
@@ -998,7 +1003,7 @@ async function cargarSolicitudFondos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudFondos/', {
+    const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudFondos/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -1012,21 +1017,19 @@ async function cargarSolicitudFondos() {
     const data = await response.json()
 
     // Filtrar las solicitudes por actividad_id y tarea_id
-    const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
-
+    const solicitudesFiltradas = data.solicitudes.filter((solicitud) => {
       // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
       const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
       const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
-      const coincideSolicitud = solicitud.id?.toString() === idSolicitud?.toString()
+      //const coincideSolicitud = solicitud.id?.toString() === idSolicitud?.toString()
 
       // console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
 
-      return coincideActividad && coincideTarea && coincideSolicitud
+      return coincideActividad && coincideTarea //&& coincideSolicitud
     })
 
     datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
     actualizarDatosFormulario(solicitudesFiltradas[0])
-
   } catch (err) {
     error.value = err.message
     console.error('Error al cargar solicitudes:', err)
@@ -1090,8 +1093,8 @@ async function submitForm() {
       codigo_actividad: formData.value.codigo_actividad,
     }
 
-    console.log('Payload enviado al servidor:', JSON.stringify(payload,null,2))
-    const response = await fetch(baseurl + '/monitoreo_api/crearSolicitudReembolso/', {
+    console.log('Payload enviado al servidor:', JSON.stringify(payload, null, 2))
+    const response = await fetch(baseurl + 'api/solicitud-reembolso-v2/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1138,13 +1141,11 @@ async function submitForm() {
       }
 
       console.log('emailPayload enviado al servidor:', emailPayload)
-      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(emailPayload),
-        },
-      )
+      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailPayload),
+      })
 
       if (emailResponse.ok) {
         console.log('Correo de notificación enviado exitosamente')
@@ -1469,13 +1470,14 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
     }
 
     // Parsear el JSON string
-    const detalleParseado = JSON.parse(detalleDestinoFondos)
+    // const detalleParseado = JSON.parse(detalleDestinoFondos)
+    const detalleParseado = detalleDestinoFondos
 
     // Mapear al formato que espera la tabla
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
       partida: `${index + 1}.${index + 1}.${index + 1}`, // Generar partida automáticamente o usar una lógica específica
       descripcion_gasto: item.concepto || '',
-      monto: item.monto || 0
+      monto: item.monto || 0,
     }))
 
     console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
@@ -1499,7 +1501,7 @@ function actualizarInformacionAdicional() {
   console.log('Información adicional actualizada:', {
     forma_pago: formData.value.forma_pago,
     lugar_solicitud: formData.value.lugar_solicitud,
-    fecha_solicitud: formData.value.fecha_solicitud
+    fecha_solicitud: formData.value.fecha_solicitud,
   })
 }
 
@@ -1509,12 +1511,12 @@ function actualizarValidadores() {
 
   // Buscar responsable por ID
   const responsable = datosFormulario.value.validadores.find(
-    validador => validador.id === formDatSF.value.responsable_idsf
+    (validador) => validador.id === formDatSF.value.responsable_idsf,
   )
 
   // Buscar coordinador por ID
   const coordinador = datosFormulario.value.validadores.find(
-    validador => validador.id === formDatSF.value.coordinador_idsf
+    (validador) => validador.id === formDatSF.value.coordinador_idsf,
   )
 
   // Actualizar formData con los IDs encontrados
@@ -1522,7 +1524,8 @@ function actualizarValidadores() {
     formData.value.idresponsable = responsable.id
     console.log('Responsable encontrado:', getNombreCompleto(responsable))
   } else {
-    console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
+    //console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
+    console.log('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
   }
 
   if (coordinador) {
@@ -1542,12 +1545,12 @@ function actualizarListasValidadores() {
 
   // Filtrar responsables (puedes ajustar la lógica según el cargo)
   responsablesList.value = datosFormulario.value.validadores.filter(
-    validador => validador.cargo && validador.cargo.toLowerCase().includes('responsable')
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('responsable'),
   )
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
   coordinadoresList.value = datosFormulario.value.validadores.filter(
-    validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador'),
   )
 
   console.log('Responsables list:', responsablesList.value)
@@ -1561,8 +1564,7 @@ const puedeValidarResponsable = computed(() => {
   const responsableAsignadoId = formData.value.idresponsable
 
   // El usuario puede validar si es el responsable asignado Y tiene el cargo correspondiente
-  return usuarioActualId === responsableAsignadoId &&
-         usuarioActualCargo?.includes('responsable')
+  return usuarioActualId === responsableAsignadoId && usuarioActualCargo?.includes('responsable')
 })
 
 const puedeValidarCoordinador = computed(() => {
@@ -1571,8 +1573,7 @@ const puedeValidarCoordinador = computed(() => {
   const coordinadorAsignadoId = formData.value.idcoordinador
 
   // El usuario puede validar si es el coordinador asignado Y tiene el cargo correspondiente
-  return usuarioActualId === coordinadorAsignadoId &&
-         usuarioActualCargo?.includes('coordinador')
+  return usuarioActualId === coordinadorAsignadoId && usuarioActualCargo?.includes('coordinador')
 })
 
 // Ciclo de vida

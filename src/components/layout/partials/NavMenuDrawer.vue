@@ -11,7 +11,7 @@
 
     <v-list-item prepend-icon="mdi-home" title="Inicio" value="home" to="/Home"></v-list-item>
 
-    <v-list-group value="estructuracion">
+    <v-list-group value="estructuracion" v-if="canSee(['admin'])">
       <template v-slot:activator="{ props }">
         <v-list-item v-bind="props" prepend-icon="mdi-sitemap" title="Estructuración"></v-list-item>
       </template>
@@ -38,7 +38,13 @@
         to="/programas"
       ></v-list-item> -->
 
-      <v-list-item prepend-icon="mdi-finance" title="FPP" value="fpd-list" to="/"></v-list-item>
+      <v-list-item
+        v-if="canSee(['admin'])"
+        prepend-icon="mdi-finance"
+        title="FPP"
+        value="fpd-list"
+        to="/"
+      ></v-list-item>
     </v-list-group>
 
     <v-list-group value="planning">
@@ -70,12 +76,12 @@
         value="planning-schedules"
         to="/planificacion/cronogramas"
       ></v-list-item>
-      <v-list-item
+      <!-- <v-list-item
         prepend-icon="mdi-history"
         title="Historial"
         value="planning-historial"
         to="/planificacion/historial/"
-      ></v-list-item>
+      ></v-list-item> -->
     </v-list-group>
 
     <v-list-group value="monitoreo">
@@ -159,7 +165,7 @@
     </v-list-group>
 
     <!-- Administración de Usuarios -->
-    <v-list-group value="admin" v-if="canSee['admin']">
+    <v-list-group v-if="canSee(['admin'])">
       <template v-slot:activator="{ props }">
         <v-list-item v-bind="props" prepend-icon="mdi-account-cog" title="Usuarios"></v-list-item>
       </template>
@@ -227,7 +233,7 @@
         to="/notificaciones/configuracion"
       ></v-list-item> -->
       <!-- Sección de administración (solo visible para admin) -->
-      <template v-if="userIsAdmin">
+      <template>
         <v-divider class="my-1"></v-divider>
         <!--
         <v-list-item
@@ -256,7 +262,7 @@
     </v-list-group>
 
     <!-- FONFOSC -->
-    <v-list-group value="FONFOSC">
+    <v-list-group value="FONFOSC" v-if="canSee(['admin'])">
       <template v-slot:activator="{ props }">
         <v-list-item v-bind="props" prepend-icon="mdi-bank" title="FONFOSC"></v-list-item>
       </template>
@@ -294,7 +300,7 @@ import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useUserRole } from '@/composables/useUserRole'
 
-const { isAdmin, isContable, isCoordinador, canSee } = useUserRole()
+const { isAdmin, isContable, isCoordinador, canSee, cannotSee } = useUserRole()
 
 const userStore = useUserStore()
 const unreadNotificationsCount = ref(0)

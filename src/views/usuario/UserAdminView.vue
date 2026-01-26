@@ -653,7 +653,7 @@ const availablePermissions = ['A', 'B', 'C', 'D'] // Ajustar según tus permisos
 
 const accountTypeOptions = ['Ahorros', 'Corriente']
 
-const cargoOptions = ['admin', 'coordinador', 'tecnico', 'contable']
+const cargoOptions = ['admin', 'coordinador', 'tecnico', 'contable', 'adminsis']
 
 const userForm = ref(null)
 const baseUrl = import.meta.env.VITE_API_BASE
