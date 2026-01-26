@@ -2,9 +2,10 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { peiServicios } from '@/modules/pei/services/peiService'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
-import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
+//import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
 import { useTipoActividad } from '@/modules/proyecto/composables/useTipoActividad'
 import { useActividad } from '@/modules/proyecto/composables/useActividad'
+import { useSeguimientoPlanificacionPei } from '../composables/useSeguimientoPlanificacionPei'
 
 export const usePlanificacionPeiStore = defineStore('planificacion-pei', () => {
   //Estados del Store
@@ -22,10 +23,16 @@ export const usePlanificacionPeiStore = defineStore('planificacion-pei', () => {
   const actividadesPeiSeleccionado = ref([])
   const estructuraPeiSeleccionado = ref()
 
+  //Estado planificacion/seguimiento del Pei
+  const ultimaPlanificacionPei = ref(null)
+  const registrosPlanificacionesPei = ref([])
+
   //Iniciar composables
   const { usuarios, obtenerUsuarios } = useUsuario()
   const { cargarActividadesPorIdPei, actividadesPei: actividades } = useActividad()
   const { tipoDeActividades, cargarListaTiposActividades } = useTipoActividad()
+  const { listaSeguimientoPlanificacionPei, obtenerListaSeguimientoPlanificacionPei } =
+    useSeguimientoPlanificacionPei()
 
   //Accion: Inicializar los datos Orginales
   function inicializarDatosOriginales(tableData) {
@@ -156,6 +163,86 @@ export const usePlanificacionPeiStore = defineStore('planificacion-pei', () => {
     }
   }
 
+  // Función mejorada que verifica múltiples campos de fecha
+  function extraerUltimaPlanificacionCompleta() {
+    try {
+      // Verificar si hay registros
+      if (
+        !registrosPlanificacionesPei.value ||
+        !registrosPlanificacionesPei.value.registros ||
+        !Array.isArray(registrosPlanificacionesPei.value.registros) ||
+        registrosPlanificacionesPei.value.registros.length === 0
+      ) {
+        console.warn('No hay registros de planificación disponibles')
+        ultimaPlanificacionPei.value = null
+        return null
+      }
+
+      const registros = registrosPlanificacionesPei.value.registros
+
+      // Función para convertir fecha a timestamp
+      const obtenerTimestamp = (registro) => {
+        // Prioridad 1: actualizado_el (si está disponible)
+        if (registro.actualizado_el) {
+          return new Date(registro.actualizado_el).getTime()
+        }
+        // Prioridad 2: creado_el
+        if (registro.creado_el) {
+          return new Date(registro.creado_el).getTime()
+        }
+        // Prioridad 3: versión (numérica)
+        return registro.version * 10000000000 // Multiplicar para asegurar orden temporal
+      }
+
+      // Encontrar el registro con la fecha más reciente
+      let registroMasReciente = registros[0]
+      let maxTimestamp = obtenerTimestamp(registroMasReciente)
+
+      for (let i = 1; i < registros.length; i++) {
+        const registro = registros[i]
+        const timestamp = obtenerTimestamp(registro)
+
+        if (timestamp > maxTimestamp) {
+          maxTimestamp = timestamp
+          registroMasReciente = registro
+        }
+      }
+
+      // Asignar al estado
+      ultimaPlanificacionPei.value = registroMasReciente
+
+      console.log('Última planificación encontrada:', {
+        id: registroMasReciente.id,
+        version: registroMasReciente.version,
+        fecha_creacion: registroMasReciente.creado_el,
+        fecha_actualizacion: registroMasReciente.actualizado_el,
+        timestamp: maxTimestamp,
+      })
+
+      return registroMasReciente
+    } catch (error) {
+      console.error('Error al extraer la última planificación:', error)
+      ultimaPlanificacionPei.value = null
+      return null
+    }
+  }
+
+  //Obtener la lista de planificacion seguimiento
+  async function listaPlanificacionSeguimietoPei(idpei) {
+    loading.value = true
+    try {
+      await obtenerListaSeguimientoPlanificacionPei(idpei)
+      registrosPlanificacionesPei.value = listaSeguimientoPlanificacionPei.value
+      // Extraer automáticamente la última planificación
+      extraerUltimaPlanificacionCompleta()
+    } catch (err) {
+      console.error(err)
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados
     loading,
@@ -166,7 +253,11 @@ export const usePlanificacionPeiStore = defineStore('planificacion-pei', () => {
     listaActividades,
     listaTiposAct,
     listaUsuariosCompleta,
+    datosOriginales,
     tableData,
+    tieneCambiosSinGuardar,
+    registrosPlanificacionesPei,
+    ultimaPlanificacionPei,
     //Getter
     usernamesParaDropdown,
     //Func
@@ -180,6 +271,7 @@ export const usePlanificacionPeiStore = defineStore('planificacion-pei', () => {
     verificarCambios,
     resetearCambios,
     listaTiposDeActividad,
+    listaPlanificacionSeguimietoPei,
     //Getter
     hayCambiosPendientes,
   }

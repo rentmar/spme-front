@@ -24,27 +24,21 @@
       ></v-list-item>
 
       <v-list-item
+        v-if="canSee(['admin'])"
         prepend-icon="mdi-folder-multiple-outline"
         title="Proyectos"
         value="projects-list"
         to="/proyecto"
       ></v-list-item>
-
+      <!--
       <v-list-item
         prepend-icon="mdi-chart-gantt"
         title="Programas/Areas"
         value="programas-list"
         to="/programas"
-      ></v-list-item>
+      ></v-list-item> -->
 
       <v-list-item prepend-icon="mdi-finance" title="FPP" value="fpd-list" to="/"></v-list-item>
-
-      <v-list-item
-        prepend-icon="mdi-cash-multiple"
-        title="FONFOSC"
-        value="fonfosc-list"
-        to="/"
-      ></v-list-item>
     </v-list-group>
 
     <v-list-group value="planning">
@@ -165,7 +159,7 @@
     </v-list-group>
 
     <!-- Administración de Usuarios -->
-    <v-list-group value="admin">
+    <v-list-group value="admin" v-if="canSee['admin']">
       <template v-slot:activator="{ props }">
         <v-list-item v-bind="props" prepend-icon="mdi-account-cog" title="Usuarios"></v-list-item>
       </template>
@@ -226,12 +220,12 @@
           ></v-badge>
         </template>
       </v-list-item>
-      <v-list-item
+      <!-- <v-list-item
         prepend-icon="mdi-cog-outline"
         title="Configuración"
         value="notification-settings"
         to="/notificaciones/configuracion"
-      ></v-list-item>
+      ></v-list-item> -->
       <!-- Sección de administración (solo visible para admin) -->
       <template v-if="userIsAdmin">
         <v-divider class="my-1"></v-divider>
@@ -251,24 +245,45 @@
           class="admin-item"
         ></v-list-item> -->
 
-        <v-list-item
+        <!-- <v-list-item
           prepend-icon="mdi-server-security"
           title="Configuración del Sistema"
           value="system-notification-settings"
           to="/admin/notificaciones/configuracion"
           class="admin-item"
-        ></v-list-item>
+        ></v-list-item> -->
       </template>
     </v-list-group>
 
-    <v-list-item prepend-icon="mdi-help-box" title="Ayuda" value="help" to="/help"></v-list-item>
+    <!-- FONFOSC -->
+    <v-list-group value="FONFOSC">
+      <template v-slot:activator="{ props }">
+        <v-list-item v-bind="props" prepend-icon="mdi-bank" title="FONFOSC"></v-list-item>
+      </template>
 
-    <v-list-item
+      <v-list-item
+        prepend-icon="mdi-folder-multiple"
+        title="Proyectos presentados"
+        value="fonfosc-list-proyectos"
+        to="/fonfosc/lista"
+      ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-chart-bar"
+        title="Informes"
+        value="fonfosc-list-informes"
+        to="/fonfosc/informes-proyectos"
+      ></v-list-item>
+    </v-list-group>
+
+    <!-- <v-list-item prepend-icon="mdi-help-box" title="Ayuda" value="help" to="/help"></v-list-item> -->
+
+    <!-- <v-list-item
       prepend-icon="mdi-information"
       title="Acerca de"
       value="about"
       to="/about"
-    ></v-list-item>
+    ></v-list-item> -->
   </v-list>
 </template>
 
@@ -277,6 +292,9 @@
 // basado en los permisos del usuario
 import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useUserRole } from '@/composables/useUserRole'
+
+const { isAdmin, isContable, isCoordinador, canSee } = useUserRole()
 
 const userStore = useUserStore()
 const unreadNotificationsCount = ref(0)

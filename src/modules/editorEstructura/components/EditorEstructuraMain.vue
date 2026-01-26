@@ -473,6 +473,9 @@ const formulariosPorTipo = {
   actividad: defineAsyncComponent(() => import('./nodosFormularios/ActividadNodoForm.vue')),
   productogral: defineAsyncComponent(() => import('./nodosFormularios/ProductoGralNodo.vue')),
   efecto: defineAsyncComponent(() => import('./nodosFormularios/EfectoNodoForm.vue')),
+  procesooe: defineAsyncComponent(
+    () => import('./nodosFormularios/ProcesoObjetivoEspecificoForm.vue'),
+  ),
 
   //proyecto: defineAsyncComponent(() => import('./nodos/formularios/ProyectoForm.vue')),
   // Agrega más tipos según necesites

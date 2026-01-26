@@ -1,7 +1,7 @@
 import api from '@/services/axios'
 
 export const actividadServicios = {
-  /* Fetch kpis */
+  /* Fetch Actividades */
   all: async () => {
     try {
       const respuesta = await api.get('/actividades/')
@@ -232,6 +232,16 @@ export const actividadServicios = {
     } catch (error) {
       console.error('Axios: Error al eliminar actividad  id' + idactividad, error)
       throw error
+    }
+  },
+  /* Lista de actividades y tareas */
+  listaActividadesTareasPei: async () => {
+    try {
+      const respuesta = await api.get('/actividades-pei-con-tareas/')
+      //console.log(respuesta)
+      return respuesta.data
+    } catch (err) {
+      console.log('Axios: fetch actividades pei tareas', err)
     }
   },
 }

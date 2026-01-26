@@ -12,12 +12,12 @@
     <!-- Menú contextual -->
     <template #menu>
       <!-- Agregar Producto Objetivo General -->
-      <v-list-item class="custom-menu-item" @click="agregarActividades">
+      <!-- <v-list-item class="custom-menu-item" @click="agregarActividades">
         <v-list-item-title>Agregar Actividad</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-clock-outline'"></v-icon>
         </template>
-      </v-list-item>
+      </v-list-item> -->
     </template>
     <template #handles>
       <Handle type="target" position="top" :id="`source-${id}`" :style="handleStyle" />

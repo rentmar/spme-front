@@ -1,104 +1,120 @@
 <template>
-  <div>
+  <div class="contribucion-container">
     <!-- Objetivo General -->
-    <label v-if="objetivogeneral">{{ getLabel('objetivogeneral') }}</label>
-    <v-textarea
-      v-if="objetivogeneral"
-      v-model="caberaContribucion.objetivogeneral.data.contribucion"
-      hint="Contribución al objetivo general"
-      clearable
-      variant="outlined"
-      class="custom-textarea"
-      @update:modelValue="emitirPayloadCompleto"
-      @blur="emitirPayloadCompleto('blur')"
-    ></v-textarea>
+    <div v-if="objetivogeneral" class="contribucion-section">
+      <h3 class="section-title">{{ getLabel('objetivogeneral') }}</h3>
+      <v-textarea
+        v-model="caberaContribucion.objetivogeneral.data.contribucion"
+        clearable
+        variant="outlined"
+        class="custom-textarea"
+        rows="3"
+        @update:modelValue="emitirPayloadCompleto"
+        @blur="emitirPayloadCompleto('blur')"
+      ></v-textarea>
+      <p class="section-subtitle">Contribución al objetivo general</p>
+    </div>
 
     <!-- Objetivo Específico Proyecto -->
-    <label v-if="objetivoespecifico">{{ getLabel('objetivoespecifico') }}</label>
-    <v-textarea
-      v-if="objetivoespecifico"
-      v-model="caberaContribucion.objetivoespecifico.data.contribucion"
-      hint="Contribución al objetivo específico proyecto"
-      clearable
-      variant="outlined"
-      @update:modelValue="emitirPayloadCompleto"
-      @blur="emitirPayloadCompleto('blur')"
-    ></v-textarea>
+    <div v-if="objetivoespecifico" class="contribucion-section">
+      <h3 class="section-title">{{ getLabel('objetivoespecifico') }}</h3>
+      <v-textarea
+        v-model="caberaContribucion.objetivoespecifico.data.contribucion"
+        clearable
+        variant="outlined"
+        rows="3"
+        @update:modelValue="emitirPayloadCompleto"
+        @blur="emitirPayloadCompleto('blur')"
+      ></v-textarea>
+      <p class="section-subtitle">Contribución al objetivo específico proyecto</p>
+    </div>
 
     <!-- Objetivo Específico OG -->
-    <label v-if="objetivoespecificoog">{{ getLabel('objetivoespecificoog') }}</label>
-    <v-textarea
-      v-if="objetivoespecificoog"
-      v-model="caberaContribucion.objetivoespecificoog.data.contribucion"
-      hint="Contribución al objetivo específico OG"
-      clearable
-      variant="outlined"
-      @update:modelValue="emitirPayloadCompleto"
-      @blur="emitirPayloadCompleto('blur')"
-    ></v-textarea>
+    <div v-if="objetivoespecificoog" class="contribucion-section">
+      <h3 class="section-title">{{ getLabel('objetivoespecificoog') }}</h3>
+      <v-textarea
+        v-model="caberaContribucion.objetivoespecificoog.data.contribucion"
+        clearable
+        variant="outlined"
+        rows="3"
+        @update:modelValue="emitirPayloadCompleto"
+        @blur="emitirPayloadCompleto('blur')"
+      ></v-textarea>
+      <p class="section-subtitle">Contribución al objetivo específico OG</p>
+    </div>
 
     <!-- Resultado OG -->
-    <label v-if="resultadoog">{{ getLabel('resultadoog') }}</label>
-    <v-textarea
-      v-if="resultadoog"
-      v-model="caberaContribucion.resultadoog.data.contribucion"
-      hint="Contribución al resultado OG"
-      clearable
-      variant="outlined"
-      @update:modelValue="emitirPayloadCompleto"
-      @blur="emitirPayloadCompleto('blur')"
-    ></v-textarea>
+    <div v-if="resultadoog" class="contribucion-section">
+      <h3 class="section-title">{{ getLabel('resultadoog') }}</h3>
+      <v-textarea
+        v-model="caberaContribucion.resultadoog.data.contribucion"
+        clearable
+        variant="outlined"
+        rows="3"
+        @update:modelValue="emitirPayloadCompleto"
+        @blur="emitirPayloadCompleto('blur')"
+      ></v-textarea>
+      <p class="section-subtitle">Contribución al resultado OG</p>
+    </div>
 
     <!-- Resultado OE -->
-    <label v-if="resultadooe"> {{ getLabel('resultadooe') }} </label>
-    <v-textarea
-      v-if="resultadooe"
-      v-model="caberaContribucion.resultadooe.data.contribucion"
-      hint="Contribución al resultado OE"
-      clearable
-      variant="outlined"
-      @update:modelValue="emitirPayloadCompleto"
-      @blur="emitirPayloadCompleto('blur')"
-    ></v-textarea>
+    <div v-if="resultadooe" class="contribucion-section">
+      <h3 class="section-title">{{ getLabel('resultadooe') }}</h3>
+      <v-textarea
+        v-model="caberaContribucion.resultadooe.data.contribucion"
+        clearable
+        variant="outlined"
+        rows="3"
+        @update:modelValue="emitirPayloadCompleto"
+        @blur="emitirPayloadCompleto('blur')"
+      ></v-textarea>
+      <p class="section-subtitle">Contribución al resultado OE</p>
+    </div>
 
     <!-- Producto OE -->
-    <label v-if="productooe"> {{ getLabel('productooe') }} </label>
-    <v-textarea
-      v-if="productooe"
-      v-model="caberaContribucion.productooe.data.contribucion"
-      hint="Contribución al producto OE"
-      clearable
-      variant="outlined"
-      @update:modelValue="emitirPayloadCompleto"
-      @blur="emitirPayloadCompleto('blur')"
-    ></v-textarea>
+    <div v-if="productooe" class="contribucion-section">
+      <h3 class="section-title">{{ getLabel('productooe') }}</h3>
+      <v-textarea
+        v-model="caberaContribucion.productooe.data.contribucion"
+        clearable
+        variant="outlined"
+        rows="3"
+        @update:modelValue="emitirPayloadCompleto"
+        @blur="emitirPayloadCompleto('blur')"
+      ></v-textarea>
+      <p class="section-subtitle">Contribución al producto OE</p>
+    </div>
 
     <!-- Producto ROE -->
-    <label v-if="productoroe">{{ getLabel('productoroe') }}</label>
-    <v-textarea
-      v-if="productoroe"
-      v-model="caberaContribucion.productoroe.data.contribucion"
-      hint="Contribución al producto ROE"
-      clearable
-      variant="outlined"
-      @update:modelValue="emitirPayloadCompleto"
-      @blur="emitirPayloadCompleto('blur')"
-    ></v-textarea>
+    <div v-if="productoroe" class="contribucion-section">
+      <h3 class="section-title">{{ getLabel('productoroe') }}</h3>
+      <v-textarea
+        v-model="caberaContribucion.productoroe.data.contribucion"
+        clearable
+        variant="outlined"
+        rows="3"
+        @update:modelValue="emitirPayloadCompleto"
+        @blur="emitirPayloadCompleto('blur')"
+      ></v-textarea>
+      <p class="section-subtitle">Contribución al producto ROE</p>
+    </div>
 
     <!-- Producto -->
-    <label v-if="producto">{{ getLabel('producto') }}</label>
-    <v-textarea
-      v-if="producto"
-      v-model="caberaContribucion.producto.data.contribucion"
-      hint="Contribución al producto"
-      clearable
-      variant="outlined"
-      @update:modelValue="emitirPayloadCompleto"
-      @blur="emitirPayloadCompleto('blur')"
-    ></v-textarea>
+    <div v-if="producto" class="contribucion-section">
+      <h3 class="section-title">{{ getLabel('producto') }}</h3>
+      <v-textarea
+        v-model="caberaContribucion.producto.data.contribucion"
+        clearable
+        variant="outlined"
+        rows="3"
+        @update:modelValue="emitirPayloadCompleto"
+        @blur="emitirPayloadCompleto('blur')"
+      ></v-textarea>
+      <p class="section-subtitle">Contribución al producto</p>
+    </div>
 
     <!-- Debug: Mostrar payload actual -->
-    <div v-if="debugMode" class="debug-container">
+    <div v-if="debugMode" class="debug-container mt-6">
       <h4>Último Payload Emitido:</h4>
       <pre>{{ JSON.stringify(lastPayload, null, 2) }}</pre>
     </div>
@@ -481,4 +497,65 @@ onMounted(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.contribucion-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.contribucion-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.contribucion-section:hover {
+  border-color: #1976d2;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+}
+
+.section-title {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+}
+
+.section-subtitle {
+  margin: 8px 0 0 0;
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+}
+
+.custom-textarea {
+  margin-top: 8px;
+}
+
+.debug-container {
+  border: 1px dashed #ccc;
+  padding: 16px;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+.debug-container h4 {
+  margin-top: 0;
+  color: #666;
+}
+
+.debug-container pre {
+  margin: 8px 0 0 0;
+  padding: 12px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.4;
+}
+</style>

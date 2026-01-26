@@ -68,4 +68,14 @@ export const segPlanService = {
       throw error
     }
   },
+  /* Actualizar Planificacion de proyectos */
+  guardarPlanificacionProyectoBulk: async (data) => {
+    try {
+      const respuesta = await apiPlan.post('/planificacion/procesar-bulk/', data)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: fetch ', error)
+      throw error
+    }
+  },
 }

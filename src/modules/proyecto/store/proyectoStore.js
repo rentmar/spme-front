@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import {
   proyectoServicios,
   proyectoObjetivos,
@@ -7,6 +7,8 @@ import {
 } from '../services/proyectoService'
 
 import { usePeiVigente } from '@/modules/pei/composables/usePeiVigente'
+import { useUserStore } from '@/stores/user'
+import { useUserPermissions } from '@/stores/useUserPermissions'
 
 //Store de los proyectos
 export const useProyectoStore = defineStore('proyecto', () => {
@@ -16,6 +18,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
   const proyectoEstructura = ref(null) //Proyecto estrucutra
   const proyectoEstructuraNodos = ref(null) //Proyecto estructura con nodos
   const proyectosPlanificacion = ref([]) //Almacena los proyectos en estado de Planificacion
+  const proyectosPlanificacionFiltrado = ref([]) //Almacena los proyectos planificados segun el usuario
   const proyecto_objgeneral_info = ref(null) //Proyecto - objetivo-general-info adicional
   const objetivosIndicadores = ref([])
   const nodosClasificados = ref(null)
@@ -29,6 +32,12 @@ export const useProyectoStore = defineStore('proyecto', () => {
 
   //Iniciar el composable
   const { cargarPeiVigente, peiVigente: pei } = usePeiVigente()
+  //Iniciar el store
+  const storeUsuarios = useUserStore()
+  const permissionsStore = useUserPermissions()
+
+  //GETTERS
+  const usuarioRol = computed(() => storeUsuarios.rol)
 
   /***  ACCIONES    ***/
 
@@ -40,7 +49,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
       cargarPeiVigente()
       peiVigente.value = pei
     } catch (err) {
-      console.error('No se cargi el Pei vigente', err)
+      console.error('No se cargo el Pei vigente', err)
       error.value = err
     } finally {
       cargando.value = false
@@ -116,6 +125,63 @@ export const useProyectoStore = defineStore('proyecto', () => {
       obtenerPeiVigente()
     } catch (err) {
       error.value = err
+    } finally {
+      cargando.value = false
+    }
+  }
+
+  //Obtener una lista de proyectos en estado de planificacion del PEI vigente
+  const obtenerProyectosPlanificacionFiltrados = async (idpei) => {
+    cargando.value = true
+    error.value = null
+
+    try {
+      // 1. Obtener todos los proyectos
+      const todosProyectos = await proyectoServicios.obtenerTodosPlanificacion(idpei)
+
+      // 2. Verificar si es admin
+      const rol = storeUsuarios.rol?.toLowerCase() || ''
+      const esAdmin = ['admin', 'administrador', 'director'].includes(rol)
+
+      let proyectosFiltrados = []
+
+      if (esAdmin) {
+        // Admin: todos los proyectos
+        proyectosFiltrados = todosProyectos
+      } else {
+        // No-admin: cargar permisos y filtrar
+        if (!permissionsStore.tienePermisosCargados) {
+          await permissionsStore.cargarPermisosGlobales()
+        }
+
+        // Filtrar: solo proyectos que están en proyectosAccesibles
+        proyectosFiltrados = todosProyectos.filter((proyecto) =>
+          permissionsStore.proyectosAccesibles.some((p) => p.id == proyecto.id),
+        )
+
+        // Agregar información de nivel de acceso
+        proyectosFiltrados = proyectosFiltrados.map((proyecto) => {
+          const proyectoAccesible = permissionsStore.proyectosAccesibles.find(
+            (p) => p.id == proyecto.id,
+          )
+          return {
+            ...proyecto,
+            nivel_acceso: proyectoAccesible?.nivel_acceso || 0,
+            nivel_acceso_display: proyectoAccesible?.nivel_acceso_display || 'Sin acceso',
+          }
+        })
+      }
+
+      // 3. Almacenar en estado
+      proyectosPlanificacionFiltrado.value = proyectosFiltrados
+
+      // 4. Obtener PEI
+      await obtenerPeiVigente()
+
+      return proyectosFiltrados
+    } catch (err) {
+      error.value = err
+      throw err
     } finally {
       cargando.value = false
     }
@@ -305,6 +371,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
     proyectoEstructura, //ref
     proyectoEstructuraNodos, //ref
     proyectosPlanificacion, //ref Todos los proyectos en estado de PLANIFICACION
+    proyectosPlanificacionFiltrado, //ref
     proyectoObjetivos, //ref
     objetivosIndicadores, //ref
     proyecto_objgeneral_info, //ref
@@ -315,9 +382,11 @@ export const useProyectoStore = defineStore('proyecto', () => {
     nodes, //ref
     edges, //ref
     peiVigente,
+    usuarioRol,
     getTiposNodos,
     obtenerProyectos, //accion
     obtenerProyectosPlanificacion, //accion, todos los proyectos en estado de planificacion
+    obtenerProyectosPlanificacionFiltrados,
     obtenerProyectoPorId, //accion
     obtenerProyectoEstructuraPorId, //accion
     obtenerProyectoEstructuraNodosPorId, //accion
