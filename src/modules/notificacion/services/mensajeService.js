@@ -240,4 +240,14 @@ export const mensajeServicios = {
       throw new Error(`Error envio mensajes multiples c/remitente: ${error.message}`)
     }
   },
+  /***************************ENVIAR CORREOS******************************************/
+  enviarCorreo: async (datosCorreo) => {
+    try {
+      const respuesta = await apiMsg.post('/correos/nuevo-mensaje/', datosCorreo)
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: error al enviar correo de NUEVO MENSAJE', err)
+      throw err
+    }
+  },
 }

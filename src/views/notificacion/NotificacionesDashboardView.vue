@@ -1616,9 +1616,15 @@ onMounted(() => {
 const cargar = async () => {
   loading.value = true
   try {
-    await mensajesStore.cargarNotificaciones()
-    await usuarioStore.cargarListaUsuarios()
-    await mensajesStore.cargarNotificacionesEnviadas()
+    Promise.all([
+      mensajesStore.cargarNotificaciones(),
+      usuarioStore.cargarListaUsuarios(),
+      usuarioStore.cargarListaUsuariosCompleta(),
+      mensajesStore.cargarNotificacionesEnviadas(),
+    ])
+    // await mensajesStore.cargarNotificaciones()
+    // await usuarioStore.cargarListaUsuarios()
+    // await mensajesStore.cargarNotificacionesEnviadas()
     console.log('Carga completada:', mensajesStore.notificaciones.length, 'mensajes')
   } catch (error) {
     console.error('Error al cargar los mensajes', error)

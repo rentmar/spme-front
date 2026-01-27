@@ -47,7 +47,7 @@
             clearable
             chips
           >
-            <template #item="{ props, item }">
+            <!-- <template #item="{ props, item }">
               <v-list-item v-bind="props">
                 <template #prepend>
                   <v-avatar :color="getAvatarColor(item.raw.nombre_completo)" size="30">
@@ -63,7 +63,7 @@
                   {{ item.raw.email || item.raw.username }}
                 </v-list-item-subtitle>
               </v-list-item>
-            </template>
+            </template> -->
           </v-autocomplete>
 
           <!-- Asunto -->
@@ -243,6 +243,7 @@
         </v-btn>
       </v-card-actions>
     </v-card>
+    {{ destinatarioId }}
   </v-dialog>
 </template>
 
@@ -268,7 +269,7 @@ const emit = defineEmits(['update:modelValue', 'enviado', 'cancelado'])
 const usuarioStore = useUserStore()
 
 //Iniciar composables
-const { enviarMensajesMultiplesConRemitente } = useNotificaciones()
+const { enviarMensajesMultiplesConRemitente, enviarEmailNuevoMensaje } = useNotificaciones()
 const { successMsg, errorMsg } = useSnackbar()
 
 // Referencias
@@ -293,6 +294,33 @@ const formulario = ref({
   prioridad: 2, // Media por defecto
 })
 
+const usuariosDisponibles = computed(() => {
+  if (!usuarioStore.listaUsuarios) return []
+
+  // Normalizar los datos reactivos
+  const usuariosNormalizados = usuarioStore.listaUsuarios
+    .map((usuario) => {
+      // Acceder a los datos dentro de _custom.value
+      if (usuario._custom && usuario._custom.value) {
+        const userData = usuario._custom.value
+        return {
+          id: userData.id,
+          nombre_completo: userData.nombre_completo,
+          email: userData.email,
+          username: userData.username,
+          cargo: userData.cargo,
+          es_superusuario: userData.es_superusuario,
+        }
+      }
+      // Si ya es un objeto normal (sin _custom)
+      return usuario
+    })
+    // Excluir al usuario actual
+    .filter((usuario) => usuario.id !== usuarioStore.id)
+
+  return usuariosNormalizados
+})
+
 // Emojis disponibles (categorizados)
 const categoriasEmojis = ref({
   caritas: ['😊', '😂', '😎', '🥰', '😍', '🤩', '😜', '🤪', '🥳', '😇'],
@@ -312,14 +340,14 @@ const remitenteNombre = computed(() => {
   return usuarioStore.nombreCompleto || usuarioStore.username || 'Usuario'
 })
 
-const usuariosDisponibles = computed(() => {
-  if (!usuarioStore.listaUsuarios) return []
+// const usuariosDisponibles = computed(() => {
+//   if (!usuarioStore.listaUsuarios) return []
 
-  // Excluir al usuario actual
-  return usuarioStore.listaUsuarios.filter(
-    (usuario) => usuario.id !== usuarioStore.id && usuario.is_active !== false,
-  )
-})
+//   // Excluir al usuario actual
+//   return usuarioStore.listaUsuarios.filter(
+//     (usuario) => usuario.id !== usuarioStore.id && usuario.is_active !== false,
+//   )
+// })
 
 const emojisDisponibles = computed(() => {
   return Object.values(categoriasEmojis.value).flat()
@@ -383,7 +411,8 @@ const inicializarFormulario = async () => {
 
 const cargarUsuarios = async () => {
   try {
-    await usuarioStore.cargarListaUsuarios()
+    Promise.all([usuarioStore.cargarListaUsuarios(), usuarioStore.cargarListaUsuariosCompleta()])
+    //await usuarioStore.cargarListaUsuarios()
   } catch (error) {
     console.error('Error cargando usuarios:', error)
     mostrarError('No se pudieron cargar los usuarios')
@@ -496,6 +525,13 @@ const enviarMensaje = async () => {
         dialogVisible.value = false
         emit('enviado', datosResponse)
       }, 1500)
+      const destinatarios = usuarioStore.obtenerCorreosPorIds(destinatarioId.value)
+      console.log('Destinatarios:', destinatarios)
+      await enviarEmailNuevoMensaje(
+        destinatarios,
+        'Nuevo Mensaje',
+        'Tiene un nuevo mensaje, porfavor revise su bandeja',
+      )
     } else {
       console.log('Mensaje no enviado')
       errorMsg('Error al enviar mensaje')

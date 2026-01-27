@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { peiServicios } from '@/modules/pei/services/peiService'
+import { useActividad } from '@/modules/proyecto/composables/useActividad'
+
 export const useInformeActividadPeiStore = defineStore('informe-actividad-pei', () => {
   //Estados
   const loading = ref(false)
@@ -31,6 +33,8 @@ export const useInformeActividadPeiStore = defineStore('informe-actividad-pei', 
       loading.value = false
     }
   }
+
+  const cargarListaInformesActividadSubactividad = async () => {}
 
   return {
     loading,

@@ -253,6 +253,36 @@ export function useNotificaciones() {
     }
   }
 
+  /*
+  destinatarios = [
+  {"email": "MRolqueza@gmail.com"},
+  {"email": "rolquezamarcelo@gmail.com"},
+  {"email": "olivguil9@gmail.com"}
+]
+  */
+  async function enviarEmailNuevoMensaje(
+    destinatarios,
+    asunto = 'Nuevo Mensaje',
+    contenido = 'Tiene un nuevo mensaje en bandeja',
+  ) {
+    loading.value = true
+    try {
+      const datosEmail = {
+        destinatarios: destinatarios,
+        asunto_mensaje: asunto,
+        contenido_mensaje: contenido,
+      }
+
+      const respuesta = await mensajeServicios.enviarCorreo(datosEmail)
+      return respuesta
+    } catch (err) {
+      error.value = err
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados
     loading,
@@ -274,5 +304,6 @@ export function useNotificaciones() {
     eliminaMensajeHard,
     eliminaMensajeSoft,
     cambiarEstadoMensajesArchivado,
+    enviarEmailNuevoMensaje,
   }
 }
