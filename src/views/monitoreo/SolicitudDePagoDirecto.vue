@@ -575,15 +575,13 @@
       </v-row>
     </div>
   </v-container>
- <!-- <pre>{{ coordinadoresList }}</pre>
-  {{ '*******************' }} -->
-    <!-- <pre>{{ formasPagoOptions }}</pre>
-    {{ '*******************' }} -->
-    <!-- <pre>{{ formData.forma_pago }}</pre>
-    {{ '*******************' }} -->
-    <!-- <pre>{{ datosFormulario }}</pre>
-    {{ '*******************' }} -->
-    <!-- <pre>{{ coordinadoresList }}</pre> -->
+  <!-- <pre>{{ formData.correo_contador }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ formData.correo_coordinador }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ coordinadoresList }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ contadoresList }}</pre> -->
 </template>
 
 <script setup>
@@ -1017,6 +1015,21 @@ async function submitForm() {
       throw new Error('El monto total solicitado debe ser mayor a cero.')
     }
 
+    // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+    const coordinadorSeleccionado = coordinadoresList.value.find(
+     (coordinador) => coordinador.id === formData.value.idcoordinador
+    )
+    const contadorSeleccionado = contadoresList.value.find(
+     (contador) => contador.id === formData.value.idcontador
+    )
+
+    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+    const correoContadorActual = contadorSeleccionado?.correo || ''
+
+    // Actualizar los valores en formData
+    formData.value.correo_coordinador = correoCoordinadorActual
+    formData.value.correo_contador = correoContadorActual
+
     const payload = {
     // detalle_destino_fondos should be an object, not a stringified JSON
     detalle_destino_fondos: {
@@ -1040,14 +1053,13 @@ async function submitForm() {
     descripcion_actividad: formData.value.descripcion_actividad,
     objetivo_actividad: formData.value.objetivo_actividad,
     // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
-    ...(formData.value.id_tarea &&
-      formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
+    ...(formData.value.id_tarea && formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
     datos_forma_pago: formData.value.datos_forma_pago,
     bloquear_icono_sf: true,
   }
 
-    console.log('Payload enviado al servidor:', JSON.stringify(payload,null,2))
-    const response = await fetch(baseurl + '/monitoreo_api/crearSolicitudPagoDirecto/', {
+    console.log('Payload enviado:', JSON.stringify(payload, null, 2))
+    const response = await fetch(baseurl + 'monitoreo_api/crearSolicitudPagoDirecto/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1063,26 +1075,35 @@ async function submitForm() {
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
 
+    const urlForm = `${window.location.origin}/monitoreo/formulario088/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
+
     const cuerpoMensaje = {
       destinatario_id: payload.id_coordinador,
       asunto: 'Solicitud de Pago - Coordinado',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value,
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
-      accion_url: '',
-      accion_texto: '',
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    const cuerpoMensaje2 = {
+      destinatario_id: payload.contador_id,
+      asunto: 'Solicitud de Pago - Coordinado',
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
     }
 
     exportToExcel()
     resetForm()
 
-    await enviarMensajeAutomatico(cuerpoMensaje)
+    await enviarMensajeAutomatico(cuerpoMensaje2)
 
 ////////////////////////////////////////////////////////////////////////////
     // Enviar notificación por correo al coordinador
     try {
       const emailPayload = {
-        emails: [formData.value.correo_coordinador, formData.value.correo_contador],
+        emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Fondos',
@@ -1090,15 +1111,13 @@ async function submitForm() {
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
           descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+          url_revision: `${window.location.origin}/monitoreo/formulario088/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
 
-      console.log('emailPayload enviado al servidor:', emailPayload)
+      console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
 
-      const emailResponse = await fetch(
-        //http://localhost:8000/api-msg/correos/solicitud-pendiente/
-        baseurl + '/api-msg/correos/solicitud-pendiente/',
+      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
         {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
@@ -1117,7 +1136,7 @@ async function submitForm() {
     }
 ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:', data)
+    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
 
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=1')

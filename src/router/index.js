@@ -288,12 +288,12 @@ const router = createRouter({
       component: () => import('@/views/HomeView.vue'),
       meta: { requiresAuth: true },
     },
-    {
-      path: '/pei/listaactividades/',
-      name: 'listadeActividades',
-      component: () => import('@/views/pei/PeiListaActividades.vue'),
-      meta: { requiresAuth: true },
-    },
+    // {
+    //   path: '/pei/listaactividades/',
+    //   name: 'listadeActividades',
+    //   component: () => import('@/views/pei/PeiListaActividades.vue'),
+    //   meta: { requiresAuth: true },
+    // },
     {
       path: '/monitoreo/inicio',
       name: 'homeMonitoreo',
@@ -350,6 +350,58 @@ const router = createRouter({
       component: () => import('@/views/monitoreo/SolicitudDePagoDirectoValidar.vue'),
       meta: { requiresAuth: true },
     },
+    ////////////////////////////////pei//////////////////////////////
+    {
+      path: '/monitoreo/pei/formulariopei01/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeFondosPei.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/pei/formulariopei011/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeFondosValidarPei.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/pei/formulariopei02/:id',
+      component: () => import('@/views/monitoreo/RendicionDeCuentasPei.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/pei/formulariopei022/:id',
+      component: () => import('@/views/monitoreo/RendicionDeCuentasValidarPei.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/pei/formulariopei033/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeReposicionValidarPei.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/pei/formulariopei03/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeReposicionPei.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/pei/formulariopei05/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeViajePei.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/pei/formulariopei055/:id',
+      component: () => import('@/views/monitoreo/SolicitudDeViajeValidarPei.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/pei/formulariopei08/:id',
+      component: () => import('@/views/monitoreo/SolicitudDePagoDirectoPei.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/monitoreo/pei/formulariopei088/:id',
+      component: () => import('@/views/monitoreo/SolicitudDePagoDirectoValidarPei.vue'),
+      meta: { requiresAuth: true },
+    },
+    /////////////////////////////////////////////////////////////////
     {
       path: '/monitoreo/formularioInf/:id',
       component: () => import('@/views/monitoreo/InformeActividadView.vue'),

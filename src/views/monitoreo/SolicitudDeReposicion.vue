@@ -547,8 +547,13 @@
       </v-row>
     </div>
   </v-container>
-  <!--  {{ '***************************************B' }}
-     <pre>{{ datosFormulario }}</pre> -->
+  <!-- <pre>{{ formData.correo_contador }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ formData.correo_coordinador }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ coordinadoresList }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ contadoresList }}</pre> -->
 </template>
 
 <script setup>
@@ -1053,10 +1058,7 @@ async function submitForm() {
   loading.value = true
   try {
     // Validar si el formulario está completo
-    if (
-      !formData.value.lugar_solicitud ||
-      !formData.value.forma_pago ||
-      !formData.value.idcoordinador
+    if (!formData.value.lugar_solicitud || !formData.value.forma_pago || !formData.value.idcoordinador
     ) {
       throw new Error('Por favor, completa todos los campos obligatorios del formulario.')
     }
@@ -1064,36 +1066,52 @@ async function submitForm() {
       throw new Error('El monto total solicitado debe ser mayor a cero.')
     }
     // Transformar los datos al formato esperado por el endpoint
+
+    // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+    const coordinadorSeleccionado = coordinadoresList.value.find(
+     (coordinador) => coordinador.id === formData.value.idcoordinador
+    )
+    const contadorSeleccionado = contadoresList.value.find(
+     (contador) => contador.id === formData.value.idcontador
+    )
+
+    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+    const correoContadorActual = contadorSeleccionado?.correo || ''
+
+    // Actualizar los valores en formData
+    formData.value.correo_coordinador = correoCoordinadorActual
+    formData.value.correo_contador = correoContadorActual
+
     const payload = {
-      detalle_destino_fondos: {
+      detalleDestinoFondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida: gasto.partida,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
       },
-      forma_pago: formData.value.forma_pago,
-      lugar_solicitud: formData.value.lugar_solicitud,
-      fecha_solicitud: formData.value.fecha_solicitud,
-      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
-      monto_solicitado: totalMontoSolicitado.value,
-      validacion_responsable: formData.value.validacion_responsable,
-      contador_id: formData.value.idcontador,
-      validacion_coordinador: formData.value.validacion_coordinador,
-      id_coordinador: formData.value.idcoordinador,
-      id_usuario: formData.value.id_usuario,
-      id_actividad: formData.value.id_actividad,
+      formaPago: formData.value.forma_pago,
+      lugarSolicitud: formData.value.lugar_solicitud,
+      fechaSolicitud: formData.value.fecha_solicitud,
+      fechaRealizacionActividad: formData.value.fecha_ejecucion,
+      montoSolicitado: totalMontoSolicitado.value,
+      validacionResponsable: formData.value.validacion_responsable,
+      responsable:formData.value.idcontador,
+      //contador_id: formData.value.idcontador,
+      validacionCoordinador: formData.value.validacion_coordinador,
+      coordinador: formData.value.idcoordinador,
+      usuario: formData.value.id_usuario,
+      actividad: formData.value.id_actividad,
       descripcion_actividad: formData.value.descripcion_actividad,
       objetivo_actividad: formData.value.objetivo_actividad,
       // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
-      ...(formData.value.id_tarea &&
-        formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
+      ...(formData.value.id_tarea && formData.value.id_tarea > 0 && { tarea: formData.value.id_tarea }),
       datos_forma_pago: formData.value.datos_forma_pago,
-      bloquear_icono_sf: true,
-      codigo_actividad: formData.value.codigo_actividad,
+      //bloquear_icono_sf: true,
+      //codigo_actividad: formData.value.codigo_actividad,
     }
 
-    console.log('Payload enviado al servidor:', JSON.stringify(payload, null, 2))
+    console.log('Payload enviado##############:', JSON.stringify(payload, null, 2))
     const response = await fetch(baseurl + 'api/solicitud-reembolso-v2/', {
       method: 'POST',
       headers: {
@@ -1110,25 +1128,35 @@ async function submitForm() {
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
 
+    const urlForm = `${window.location.origin}/monitoreo/formulario088/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
+
     const cuerpoMensaje = {
       destinatario_id: payload.id_coordinador,
       asunto: 'Solicitud de Fondos - Coordinado',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value,
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
-      accion_url: '',
-      accion_texto: '',
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    const cuerpoMensaje2 = {
+      destinatario_id: payload.contador_id,
+      asunto: 'Solicitud de Pago - Coordinado',
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
     }
 
     exportToExcel()
     resetForm()
 
-    await enviarMensajeAutomatico(cuerpoMensaje)
+    await enviarMensajeAutomatico(cuerpoMensaje2)
 
     ///////// Enviar notificación por correo al coordinador y al contador//////////
     try {
       const emailPayload = {
-        emails: [formData.value.correo_coordinador, formData.value.correo_contador],
+        //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
+        emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Fondos',
@@ -1136,16 +1164,19 @@ async function submitForm() {
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
           descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+          url_revision: `${window.location.origin}/monitoreo/formulario033/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
 
-      console.log('emailPayload enviado al servidor:', emailPayload)
-      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/', {
+      console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
+
+      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(emailPayload),
-      })
+      },
+    )
 
       if (emailResponse.ok) {
         console.log('Correo de notificación enviado exitosamente')
@@ -1159,7 +1190,7 @@ async function submitForm() {
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:', data)
+    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
 
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=1')
