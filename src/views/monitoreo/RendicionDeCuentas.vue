@@ -422,7 +422,7 @@
       </div>
     </div>
   </div>
-  <pre>{{ formData.correo_contador }}</pre>
+  <!-- <pre>{{ formData.correo_contador }}</pre>
   {{ '*******************' }}
   <pre>{{ formData.correo_coordinador }}</pre>
   {{ '*******************' }}
@@ -432,7 +432,7 @@
   {{ '*******************' }}
   <pre>{{ contadoresList }}</pre>
   {{ '*******************' }}
-  <pre>{{ administradoresList }}</pre>
+  <pre>{{ administradoresList }}</pre> -->
 </template>
 
 <script setup>
@@ -533,8 +533,8 @@ const formData = ref({
   idcontador: null,
   idadministrador: null,
   correo_contador: '',
-  correo_coordinador:'',
-  correo_administrador:'',
+  correo_coordinador: '',
+  correo_administrador: '',
 })
 
 const formDatSF = ref({
@@ -1193,13 +1193,13 @@ async function submitForm() {
 
     // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
     const coordinadorSeleccionado = coordinadoresList.value.find(
-     (coordinador) => coordinador.id === formData.value.idcoordinador
+      (coordinador) => coordinador.id === formData.value.idcoordinador,
     )
     const contadorSeleccionado = contadoresList.value.find(
-     (contador) => contador.id === formData.value.idcontador
+      (contador) => contador.id === formData.value.idcontador,
     )
     const administradorSeleccionado = administradoresList.value.find(
-      (administrador) => administrador.id == formData.value.idadministrador
+      (administrador) => administrador.id == formData.value.idadministrador,
     )
 
     const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
@@ -1210,7 +1210,6 @@ async function submitForm() {
     formData.value.correo_coordinador = correoCoordinadorActual
     formData.value.correo_contador = correoContadorActual
     formData.value.correo_administrador = correoAdministradorActual
-
 
     // Preparar payload para la rendición de cuentas
     const payload = {
@@ -1255,7 +1254,7 @@ async function submitForm() {
     const response = await fetch(baseurl + '/api/monitoreo/crear-rendicion-cuentas/', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
     })
@@ -1268,12 +1267,16 @@ async function submitForm() {
     const data = await response.json()
     //console.log('Rendición enviada con éxito:', responseData);
     numeroFormulario.value = data.numero_formulario
-    const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
+    const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
 
     const cuerpoMensaje = {
       destinatario_id: payload.idcoordinador,
       asunto: 'Solicitud de Fondos - Coordinado',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Fondos pediente del formulario ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
       //accion_url: '',
@@ -1284,7 +1287,11 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.idcontador,
       asunto: 'Solicitud de Viaje',
-      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Viaje pediente del formulario ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
       // accion_url: '',
@@ -1293,9 +1300,13 @@ async function submitForm() {
     await enviarMensajeAutomatico(cuerpoMensaje2)
 
     const cuerpoMensaje3 = {
-      destinatario_id: payload.idresponsable,
+      destinatario_id: payload.idadministrador,
       asunto: 'Solicitud de Viaje',
-      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Viaje pediente del formulario ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
       // accion_url: '',
@@ -1315,7 +1326,9 @@ async function submitForm() {
     try {
       const emailPayload = {
         //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
-        emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter(email => email),
+        emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter(
+          (email) => email,
+        ),
         datos_solicitud: {
           codigo: numeroFormulario.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Fondos',
@@ -1329,13 +1342,11 @@ async function submitForm() {
 
       console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
 
-      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
-      {
+      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(emailPayload),
-      },
-    )
+      })
 
       if (emailResponse.ok) {
         console.log('Correo de notificación enviado exitosamente')
@@ -1348,7 +1359,7 @@ async function submitForm() {
     }
     ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
+    console.log('Respuesta del servidor:', JSON.stringify(data, null, 2))
 
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=2')

@@ -417,7 +417,6 @@
   <pre>{{ coordinadoresList }}</pre>
   {{ '*******************' }}
   <pre>{{ responsablesList }}</pre> -->
-  
 </template>
 
 <script setup>
@@ -840,7 +839,7 @@ async function submitForm() {
     await enviarMensajeAutomatico(cuerpoMensaje)
 
     const cuerpoMensaje2 = {
-      destinatario_id: payload.contador_id,
+      destinatario_id: payload.id_responsable,
       asunto: 'Solicitud de Viaje',
       contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormularioSF.value,
       tipo: 'sistema',
