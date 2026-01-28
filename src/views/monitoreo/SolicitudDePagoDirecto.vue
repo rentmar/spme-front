@@ -21,7 +21,7 @@
     <div v-if="!cargandoGeneral">
       <!--Titulo de la pagina-->
       <PaginaTituloIcono
-        :titulo="'Solicitud de Pago'"
+        :titulo="'Solicitud de Pago Directo'"
         :icon="'mdi-cash-check'"
       ></PaginaTituloIcono>
       <!--Encabezado del Proyecto-->
@@ -58,7 +58,7 @@
           </v-card>
 
           <!-- Tarjeta de resumen rápido -->
-          <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
               <v-toolbar-title class="text-white">Resumen Rápido</v-toolbar-title>
             </v-toolbar>
@@ -83,7 +83,7 @@
                 >
               </div>
             </v-card-text>
-          </v-card>
+          </v-card> -->
         </v-col>
 
         <!-- Formulario principal -->
@@ -717,16 +717,15 @@ const formaPagoElegido = computed(() => {
   return ''
 })
 const MostrarCamposOtros = computed(() => {
-  //return !formaPagoElegido.value.includes('Transferencia Bancaria')
-  return formaPagoElegido.value !== 'Transferencia Bancaria'
+  const formaPagoTexto = formaPagoElegido.value
+  //  return formaPagoElegido.value !== 'Transferaencia Bancaria'
+  return formaPagoTexto === 'Efectivo' || formaPagoTexto === 'Cheque'
 })
 const MostrarCamposTransferencia = computed(() => {
-  //return formaPagoElegido.value.includes('Transferencia Bancaria')
-  return formaPagoElegido.value === 'Transferencia Bancaria'
+  const formaPagoTexto = formaPagoElegido.value
+  //return formaPagoElegido.value === 'Transferencia Bancaria'
+  return formaPagoTexto === 'Transferencia Bancaria'
 })
-// const MostrarCamposCheque = computed(() => {
-//   return formaPagoElegido.value.includes('cheque')
-// })
 
 // Propiedades computadas
 const nombreCoordinadorElegido = computed(() => {

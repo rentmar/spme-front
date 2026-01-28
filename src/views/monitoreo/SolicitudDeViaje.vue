@@ -857,8 +857,6 @@ async function submitForm() {
     try {
       const emailPayload = {
         emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
-        //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
-
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Viaje',
@@ -866,7 +864,7 @@ async function submitForm() {
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
           descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario055/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+          url_revision: `${window.location.origin}/monitoreo/formulario055/${idActividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
 

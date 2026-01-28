@@ -422,16 +422,17 @@
       </div>
     </div>
   </div>
-  <!-- <pre>{{ formData.correo_contador }}</pre>
-  {{ '*******************' }}
-  <pre>{{ formData.correo_coordinador }}</pre>
-  {{ '*******************' }}
-  <pre>{{ formData.correo_administrador }}</pre>
-  {{ '*******************' }}
-  <pre>{{ coordinadoresList }}</pre>
-  {{ '*******************' }}
-  <pre>{{ contadoresList }}</pre>
-  {{ '*******************' }}
+
+  <!-- <pre>{{ formData.correo_contador }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ formData.correo_coordinador }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ formData.correo_administrador }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ coordinadoresList }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ contadoresList }}</pre> -->
+  <!-- {{ '*******************' }}
   <pre>{{ administradoresList }}</pre> -->
 </template>
 
@@ -843,7 +844,7 @@ watch(
 // Función para actualizar datosFormulario con los valores de la solicitud
 function actualizarDatosFormulario(solicitud) {
   if (!solicitud) return
-
+  //console.log('@@@@@@@@@@@@@@@@@@:', JSON.stringify(solicitud, null, 2))
   // Actualizar las propiedades de datosFormulario con los valores de la solicitud
   formDatSF.value.idsf = solicitud.id || 0
   formDatSF.value.numeroFormulariosf = solicitud.numeroFormulario || ''
@@ -853,7 +854,7 @@ function actualizarDatosFormulario(solicitud) {
   formDatSF.value.fechaSolicitudsf = solicitud.fechaSolicitud || ''
   formDatSF.value.montoSolicitadosf = solicitud.montoSolicitado || 0
   formDatSF.value.validacionResponsablesf = solicitud.validacionResponsable || false
-  formDatSF.value.responsable_idsf = solicitud.responsable_id || null
+  formDatSF.value.responsable_idsf = solicitud.contador_id || null //solicitud.responsable_id || null
   formDatSF.value.validacionCoordinadorsf = solicitud.validacionCoordinador || false
   formDatSF.value.coordinador_idsf = solicitud.coordinador_id || null
   formDatSF.value.usuario_idsf = solicitud.usuario_id || null
@@ -862,6 +863,7 @@ function actualizarDatosFormulario(solicitud) {
   formDatSF.value.bloquearIconosSolFondossf = solicitud.bloquearIconosSolFondos || true
 
   //console.log('datosFormulario actualizado con los valores de la solicitud:', datosFormulario.value)
+  //console.log('@@@@@@@@@@@@@@@@@@1:', JSON.stringify(formDatSF.value.responsable_idsf, null, 2))
 
   actualizarDetalleDestinoFondos(solicitud.detalleDestinoFondos)
 
@@ -916,6 +918,9 @@ function actualizarValidadores() {
   const responsable = datosFormulario.value.validadores.find(
     (validador) => validador.id === formDatSF.value.responsable_idsf,
   )
+  //console.log('rrrrrrrr1:', JSON.stringify(datosFormulario.value.validadores, null, 2))
+  //console.log('rrrrrrrr2:', JSON.stringify(formDatSF.value.responsable_idsf, null, 2))
+  //console.log('rrrrrrrr3:', JSON.stringify(responsable, null, 2))
 
   // Buscar coordinador por ID
   const coordinador = datosFormulario.value.validadores.find(
