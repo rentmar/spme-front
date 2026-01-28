@@ -689,7 +689,7 @@ const confirmarEnvio = async () => {
         datos_tabla_actual: datosOriginalesStore.value,
         datos_tabla_actualizado: tableDataStore.value,
         cambios_efectuados: cambiosData.value || {},
-        configuracion: {}, // Aquí deberías pasar la configuración si la tienes
+        configuracion: {}, //configuracion de la tabla
         total_actividades: tableDataStore.value.length,
         total_presupuesto: totalPresupuesto.value,
         actividades_planificadas: actividadesPlanificadas.value,
@@ -699,11 +699,10 @@ const confirmarEnvio = async () => {
       },
     }
 
-    console.log('PAYLOAD PARA PROYECTO: ', payload)
+    console.log('PAYLOAD PARA Actualiza planificacion PROYECTO: ', payload)
 
     // Llamar a la API para guardar
     const resp = await actualizarPlanificacionProyecto(payload)
-
     console.log('Respuesta guardado proyecto: ', resp)
 
     successMsg(`Se han enviado ${totalCambiosReales.value} cambios correctamente`)
