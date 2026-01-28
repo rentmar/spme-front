@@ -1480,10 +1480,10 @@ async function cargarDatos() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: {//JSON.stringify({
+      body: JSON.stringify({
         id_actividad: actividadIdParaValidar.value,
         usuario: usuario.value.nombre,
-      },
+      }),
     })
     //console.log('00000000000000000000000000000', actividadIdParaValidar.value, usuario.value.nombre)
 
@@ -1625,11 +1625,11 @@ async function cargarRendicionesDeCuenta() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: {//JSON.stringify({
+      body: JSON.stringify({
         actividad_id: actividadIdParaValidar.value,
         tarea_id: tareaIdParaValidar.value,
         //usuario: usuario.value.nombre,
-      },
+      }),
     })
     //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
 
@@ -1664,11 +1664,11 @@ async function cargarSolicitudDeReposicion() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: {//JSON.stringify({
+      body: JSON.stringify({
         actividad_id: actividadIdParaValidar.value,
         tarea_id: tareaIdParaValidar.value,
         //usuario: usuario.value.nombre,
-      },
+      }),
     })
     //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
 
@@ -1702,11 +1702,11 @@ async function cargarSolicitudDeViaje() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: {//JSON.stringify({
+      body: JSON.stringify({
         id_actividad: actividadIdParaValidar.value,
         id_tarea: tareaIdParaValidar.value,
         //usuario: usuario.value.nombre,
-      },
+      }),
     })
 
     console.log('00000000000000000000000000000', JSON.stringify(actividadIdParaValidar.value,null,2) )
@@ -1744,11 +1744,11 @@ async function cargarSolicitudDePagoDirecto() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: { //JSON.stringify({
+      body:  JSON.stringify({
         actividad_id: actividadIdParaValidar.value,
         tarea_id: tareaIdParaValidar.value,
         //usuario: usuario.value.nombre,
-      },
+      }),
     })
     //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
 
