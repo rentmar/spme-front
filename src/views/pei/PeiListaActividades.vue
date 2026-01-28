@@ -1582,7 +1582,7 @@ async function cargarRendicionesDeCuenta() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerRendicionDeCuentas/', {
+    const response = await fetch(baseurl + 'monitoreo_api/obtenerRendicionDeCuentas/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1620,7 +1620,7 @@ async function cargarSolicitudDeReposicion() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudReembolso/', {
+    const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudReembolso/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1658,7 +1658,7 @@ async function cargarSolicitudDeViaje() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudesViaje/', {
+    const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudesViaje/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1696,7 +1696,7 @@ async function cargarSolicitudDePagoDirecto() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudesPagoDirecto/', {
+    const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudesPagoDirecto/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
