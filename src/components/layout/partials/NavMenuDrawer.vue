@@ -84,56 +84,61 @@
       ></v-list-item> -->
     </v-list-group>
 
+    <!-- Sección Monitoreo - Corregida -->
     <v-list-group value="monitoreo">
       <template v-slot:activator="{ props }">
         <v-list-item v-bind="props" prepend-icon="mdi-chart-line" title="Monitoreo"></v-list-item>
       </template>
-      <!-- PROYECTOS -->
-      <v-list-item
-        prepend-icon="mdi-account-alert"
-        title="Solicitud/Reposición"
-        value="monitoring-requests-proyectos"
-        to="/pei/listaactividades?showButton=1"
-      ></v-list-item>
 
-      <v-list-item
-        prepend-icon="mdi-chart-box"
-        title="Rendición Cuentas"
-        value="monitoring-reports-proyectos"
-        to="/pei/listaactividades?showButton=2"
-      ></v-list-item>
-      <!-- FIN PROYECTOS -->
+      <!-- PROYECTOS con chip distintivo -->
+      <v-list-item value="monitoring-requests-proyectos" to="/pei/listaactividades?showButton=1">
+        <template v-slot:prepend>
+          <v-chip size="x-small" class="mr-2" density="compact">PROY</v-chip>
+          <v-icon icon="mdi-account-alert"></v-icon>
+        </template>
+        <v-list-item-title class="text-wrap">Solicitud/Reposición</v-list-item-title>
+      </v-list-item>
 
-      <!-- PEI -->
-      <v-list-item
-        prepend-icon="mdi-account-alert"
-        title="Solicitud/Reposición/PEI"
-        value="monitoring-requests-pei"
-        to="/pei/listaactividadespei?showButton=1"
-      ></v-list-item>
+      <v-list-item value="monitoring-reports-proyectos" to="/pei/listaactividades?showButton=2">
+        <template v-slot:prepend>
+          <v-chip size="x-small" class="mr-2" density="compact">PROY</v-chip>
+          <v-icon icon="mdi-chart-box"></v-icon>
+        </template>
+        <v-list-item-title class="text-wrap">Rendición Cuentas</v-list-item-title>
+      </v-list-item>
 
-      <v-list-item
-        prepend-icon="mdi-chart-box"
-        title="Rendición Cuentas/PEI"
-        value="monitoring-reports-pei"
-        to="/pei/listaactividadespei?showButton=2"
-      ></v-list-item>
-      <!-- FIN PEI -->
+      <!-- Informe de Actividad Proyecto (con chip PROY) -->
+      <v-list-item value="informes-actividad" to="/actividades/informe/">
+        <template v-slot:prepend>
+          <v-chip size="x-small" class="mr-2" density="compact">PROY</v-chip>
+          <v-icon icon="mdi-file-document-outline"></v-icon>
+        </template>
+        <v-list-item-title class="text-wrap">Informe de Actividad</v-list-item-title>
+      </v-list-item>
 
+      <!-- PEI con chip distintivo -->
+      <v-list-item value="monitoring-requests-pei" to="/pei/listaactividadespei?showButton=1">
+        <template v-slot:prepend>
+          <v-chip size="x-small" class="mr-2" density="compact">PEI</v-chip>
+          <v-icon icon="mdi-account-alert"></v-icon>
+        </template>
+        <v-list-item-title class="text-wrap">Solicitud/Reposición/PEI</v-list-item-title>
+      </v-list-item>
 
-      <!-- <v-list-item
-        @click="goToPageWithButton(3)"
-        prepend-icon="mdi-file-document-outline"
-        title="Informe de Actividad"
-        value="informe-actividad"
-        to="/pei/listaactividades?showButton=3"
-      ></v-list-item> -->
-      <v-list-item
-        prepend-icon="mdi-file-document-outline"
-        title="Informe de Actividad nuevo"
-        value="informes-actividad"
-        to="/actividades/informe/"
-      >
+      <v-list-item value="monitoring-reports-pei" to="/pei/listaactividadespei?showButton=2">
+        <template v-slot:prepend>
+          <v-chip size="x-small" class="mr-2" density="compact">PEI</v-chip>
+          <v-icon icon="mdi-chart-box"></v-icon>
+        </template>
+        <v-list-item-title class="text-wrap">Rendición Cuentas/PEI</v-list-item-title>
+      </v-list-item>
+
+      <v-list-item value="informe-actividad-pei" to="/actividades/informe-pei/">
+        <template v-slot:prepend>
+          <v-chip size="x-small" class="mr-2" density="compact">PEI</v-chip>
+          <v-icon icon="mdi-file-document-outline"></v-icon>
+        </template>
+        <v-list-item-title class="text-wrap">Informe Actividad PEI</v-list-item-title>
       </v-list-item>
     </v-list-group>
 
