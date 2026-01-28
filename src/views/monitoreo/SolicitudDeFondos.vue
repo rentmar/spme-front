@@ -59,7 +59,7 @@
           </v-card>
 
           <!-- Tarjeta de resumen rápido -->
-          <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
               <v-toolbar-title class="text-white">Resumen Rápido</v-toolbar-title>
             </v-toolbar>
@@ -84,7 +84,7 @@
                 >
               </div>
             </v-card-text>
-          </v-card>
+          </v-card> -->
         </v-col>
 
         <!-- Formulario principal -->
@@ -544,8 +544,9 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ datosFormulario }}</pre>
-  {{ '*******************' }} -->
+  <!-- <pre>{{ formData.correo_coordinador }}</pre>
+  {{ '*******************' }}
+  <pre>{{ coordinadoresList }}</pre> -->
 </template>
 
 <script setup>
@@ -684,12 +685,14 @@ const formaPagoElegido = computed(() => {
   return ''
 })
 const MostrarCamposOtros = computed(() => {
-  //return !formaPagoElegido.value.includes('Transferencia Bancaria')
-  return formaPagoElegido.value !== 'Transferencia Bancaria'
+  const formaPagoTexto = formaPagoElegido.value
+  //  return formaPagoElegido.value !== 'Transferaencia Bancaria'
+  return formaPagoTexto === 'Efectivo' || formaPagoTexto === 'Cheque'
 })
 const MostrarCamposTransferencia = computed(() => {
-  //return formaPagoElegido.value.includes('Transferencia Bancaria')
-  return formaPagoElegido.value === 'Transferencia Bancaria'
+  const formaPagoTexto = formaPagoElegido.value
+  //return formaPagoElegido.value === 'Transferencia Bancaria'
+  return formaPagoTexto === 'Transferencia Bancaria'
 })
 
 // Propiedades computadas
@@ -977,10 +980,10 @@ async function submitForm() {
 
         // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
     const coordinadorSeleccionado = coordinadoresList.value.find(
-      (coordinador) => coordinador.id === formData.value.idcoordinador
+     (coordinador) => coordinador.id === formData.value.idcoordinador
     )
     const contadorSeleccionado = contadoresList.value.find(
-      (contador) => contador.id === formData.value.idcontador
+     (contador) => contador.id === formData.value.idcontador
     )
 
     const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
@@ -1013,8 +1016,7 @@ async function submitForm() {
       descripcion_actividad: formData.value.descripcion_actividad,
       objetivo_actividad: formData.value.objetivo_actividad,
       // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
-      ...(formData.value.id_tarea &&
-        formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
+      ...(formData.value.id_tarea && formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
       datos_forma_pago: formData.value.datos_forma_pago,
       bloquear_icono_sf: true,
       //codigo_actividad: formData.value.codigo_actividad,
@@ -1037,8 +1039,8 @@ async function submitForm() {
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
 
-    const urlForm = `${baseurl}/api/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
-
+    //const urlForm = `${baseurl}/api/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+    const urlForm = `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
     const cuerpoMensaje = {
       destinatario_id: payload.id_coordinador,
       asunto: 'Solicitud de Fondos - Coordinado',
@@ -1051,7 +1053,7 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.contador_id,
       asunto: 'Solicitud de Fondos - Contador',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value+ '. URL: ' + urlForm,
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1075,8 +1077,8 @@ async function submitForm() {
           url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
-      console.log('emailPayload enviado al servidor:', emailPayload)
-      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/', {
+      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(emailPayload),
@@ -1092,8 +1094,9 @@ async function submitForm() {
     }
     ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:', data)
-
+    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
+    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_coordinador, null, 2))
+    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_contador, null, 2))
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=1')
     }, 1000)

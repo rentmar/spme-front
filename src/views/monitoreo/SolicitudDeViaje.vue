@@ -410,16 +410,13 @@
       </v-card-text>
     </v-card>
   </v-container>
-  <!-- <pre>{{ formData.id_responsable }}</pre> -->
-  <!-- {{ '*********************A' }}
-    <pre>{{ formData.id_coordinador }}</pre> -->
-  <!-- {{ '*********************A' }}
-   <pre>{{coordinadoresList}}</pre> -->
-  <!-- {{ '*********************A' }}
-    <pre>{{ contadoresList }}</pre> -->
-  <!-- {{ '*********************A' }}
-    <pre>{{ responsablesList }}</pre> -->
-  {{}}
+  <!-- <pre>{{ formData.correo_contador }}</pre>
+  {{ '*******************' }}
+  <pre>{{ formData.correo_coordinador }}</pre>
+  {{ '*******************' }}
+  <pre>{{ coordinadoresList }}</pre>
+  {{ '*******************' }}
+  <pre>{{ responsablesList }}</pre> -->
 </template>
 
 <script setup>
@@ -597,15 +594,15 @@ watch(
       )
 
       if (coordinadorSeleccionado && coordinadorSeleccionado.correo) {
-        //formData.value.correo_coordinador = coordinadorSeleccionado.correo
-        correo_coordinador.value = coordinadorSeleccionado.correo
+        formData.value.correo_coordinador = coordinadorSeleccionado.correo
+        //correo_coordinador.value = coordinadorSeleccionado.correo
       } else {
-        //formData.value.correo_coordinador = ''
-        correo_coordinador.value = ''
+        formData.value.correo_coordinador = ''
+        //correo_coordinador.value = ''
       }
     } else {
-      //formData.value.correo_coordinador = ''
-      correo_coordinador.value = ''
+      formData.value.correo_coordinador = ''
+      //correo_coordinador.value = ''
     }
   },
   { immediate: true },
@@ -620,15 +617,12 @@ watch(
       )
 
       if (responsableSeleccionado && responsableSeleccionado.correo) {
-        //formData.value.correo_contador = contadorSeleccionado.correo
-        correo_contador.value = responsableSeleccionado.correo
+        formData.value.correo_contador = responsableSeleccionado.correo
       } else {
-        //formData.value.correo_contador = ''
-        correo_contador.value = ''
+        formData.value.correo_contador = ''
       }
     } else {
-      //formData.value.correo_contador = ''
-      correo_contador.value = ''
+      formData.value.correo_contador = ''
     }
   },
   { immediate: true },
@@ -778,10 +772,10 @@ async function submitForm() {
 
     // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
     const coordinadorSeleccionado = coordinadoresList.value.find(
-      (coordinador) => coordinador.id === formData.value.idcoordinador,
+      (coordinador) => coordinador.id === formData.value.id_coordinador,
     )
-    const contadorSeleccionado = contadoresList.value.find(
-      (contador) => contador.id === formData.value.idcontador,
+    const contadorSeleccionado = responsablesList.value.find(
+      (contador) => contador.id === formData.value.id_responsable,
     )
 
     const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
@@ -805,7 +799,7 @@ async function submitForm() {
         })),
       },
     }
-    console.log('Payload completo que se enviará:', JSON.stringify(payload, null, 2)) // ← Verificar aquí
+    console.log('Payload completo que se enviará:', JSON.stringify(payload, null, 2))
 
     // const response = await axios.post(baseurl + '/monitoreo_api/crearSolicitudViaje/', payload, {
     //   headers: {
@@ -845,7 +839,7 @@ async function submitForm() {
     await enviarMensajeAutomatico(cuerpoMensaje)
 
     const cuerpoMensaje2 = {
-      destinatario_id: payload.contador_id,
+      destinatario_id: payload.id_responsable,
       asunto: 'Solicitud de Viaje',
       contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormularioSF.value,
       tipo: 'sistema',
@@ -863,8 +857,6 @@ async function submitForm() {
     try {
       const emailPayload = {
         emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
-        //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
-
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Viaje',
@@ -872,11 +864,11 @@ async function submitForm() {
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
           descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario055/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+          url_revision: `${window.location.origin}/monitoreo/formulario055/${idActividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
 
-      console.log('emailPayload enviado al servidor:', emailPayload)
+      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
       const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -895,7 +887,7 @@ async function submitForm() {
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:', data)
+    console.log('Respuesta del servidor:', JSON.stringify(data, null, 2))
 
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=1')

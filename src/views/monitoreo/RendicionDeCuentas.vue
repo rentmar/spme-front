@@ -422,10 +422,18 @@
       </div>
     </div>
   </div>
-  <!-- {{ '*************************' }}
-     <pre>{{ datosFormulario1 }}</pre> -->
-  <!--<pre>{{ formData.monto_asignado }}</pre>
-     <pre>{{ route }}</pre> -->
+
+  <!-- <pre>{{ formData.correo_contador }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ formData.correo_coordinador }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ formData.correo_administrador }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ coordinadoresList }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ contadoresList }}</pre> -->
+  <!-- {{ '*******************' }}
+  <pre>{{ administradoresList }}</pre> -->
 </template>
 
 <script setup>
@@ -525,6 +533,9 @@ const formData = ref({
   validacion_administrador: false,
   idcontador: null,
   idadministrador: null,
+  correo_contador: '',
+  correo_coordinador: '',
+  correo_administrador: '',
 })
 
 const formDatSF = ref({
@@ -833,7 +844,7 @@ watch(
 // Función para actualizar datosFormulario con los valores de la solicitud
 function actualizarDatosFormulario(solicitud) {
   if (!solicitud) return
-
+  //console.log('@@@@@@@@@@@@@@@@@@:', JSON.stringify(solicitud, null, 2))
   // Actualizar las propiedades de datosFormulario con los valores de la solicitud
   formDatSF.value.idsf = solicitud.id || 0
   formDatSF.value.numeroFormulariosf = solicitud.numeroFormulario || ''
@@ -843,7 +854,7 @@ function actualizarDatosFormulario(solicitud) {
   formDatSF.value.fechaSolicitudsf = solicitud.fechaSolicitud || ''
   formDatSF.value.montoSolicitadosf = solicitud.montoSolicitado || 0
   formDatSF.value.validacionResponsablesf = solicitud.validacionResponsable || false
-  formDatSF.value.responsable_idsf = solicitud.responsable_id || null
+  formDatSF.value.responsable_idsf = solicitud.contador_id || null //solicitud.responsable_id || null
   formDatSF.value.validacionCoordinadorsf = solicitud.validacionCoordinador || false
   formDatSF.value.coordinador_idsf = solicitud.coordinador_id || null
   formDatSF.value.usuario_idsf = solicitud.usuario_id || null
@@ -852,6 +863,7 @@ function actualizarDatosFormulario(solicitud) {
   formDatSF.value.bloquearIconosSolFondossf = solicitud.bloquearIconosSolFondos || true
 
   //console.log('datosFormulario actualizado con los valores de la solicitud:', datosFormulario.value)
+  //console.log('@@@@@@@@@@@@@@@@@@1:', JSON.stringify(formDatSF.value.responsable_idsf, null, 2))
 
   actualizarDetalleDestinoFondos(solicitud.detalleDestinoFondos)
 
@@ -906,6 +918,9 @@ function actualizarValidadores() {
   const responsable = datosFormulario.value.validadores.find(
     (validador) => validador.id === formDatSF.value.responsable_idsf,
   )
+  //console.log('rrrrrrrr1:', JSON.stringify(datosFormulario.value.validadores, null, 2))
+  //console.log('rrrrrrrr2:', JSON.stringify(formDatSF.value.responsable_idsf, null, 2))
+  //console.log('rrrrrrrr3:', JSON.stringify(responsable, null, 2))
 
   // Buscar coordinador por ID
   const coordinador = datosFormulario.value.validadores.find(
@@ -1003,6 +1018,72 @@ watch(
     }
   },
   { deep: true, immediate: true },
+)
+
+// WATCH PARA GUARDAR EL CORREO DEL COORDINADOR Y DEL CONTADOR CUANDO SE SELECCIONA
+watch(
+  () => formData.value.idcoordinador,
+  (newIdCoordinador) => {
+    if (newIdCoordinador && coordinadoresList.value.length > 0) {
+      const coordinadorSeleccionado = coordinadoresList.value.find(
+        (coordinador) => coordinador.id === newIdCoordinador,
+      )
+
+      if (coordinadorSeleccionado && coordinadorSeleccionado.correo) {
+        formData.value.correo_coordinador = coordinadorSeleccionado.correo
+        //correo_coordinador.value = coordinadorSeleccionado.correo
+      } else {
+        formData.value.correo_coordinador = ''
+        //correo_coordinador.value = ''
+      }
+    } else {
+      formData.value.correo_coordinador = ''
+      //correo_coordinador.value = ''
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  //() => formData.value.id_responsable,
+  () => formData.value.idcontador,
+  (newIdContadores) => {
+    if (newIdContadores && contadoresList.value.length > 0) {
+      const contadorSeleccionado = contadoresList.value.find(
+        (contador) => contador.id === newIdContadores,
+      )
+
+      if (contadorSeleccionado && contadorSeleccionado.correo) {
+        formData.value.correo_contador = contadorSeleccionado.correo
+      } else {
+        formData.value.correo_contador = ''
+      }
+    } else {
+      formData.value.correo_contador = ''
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  //() => formData.value.id_responsable,
+  () => formData.value.idadministrador,
+  (newIdAdministrador) => {
+    if (newIdAdministrador && administradoresList.value.length > 0) {
+      const administradorSeleccionado = administradoresList.value.find(
+        (administrador) => administrador.id === newIdAdministrador,
+      )
+
+      if (administradorSeleccionado && administradorSeleccionado.correo) {
+        formData.value.correo_administrador = administradorSeleccionado.correo
+      } else {
+        formData.value.correo_administrador = ''
+      }
+    } else {
+      formData.value.correo_administrador = ''
+    }
+  },
+  { immediate: true },
 )
 
 onMounted(async () => {
@@ -1115,6 +1196,26 @@ async function submitForm() {
     // Obtener información de la solicitud de fondos
     const solicitudInfo = getSolicitudFondosInfo(idActividad, idTarea)
 
+    // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+    const coordinadorSeleccionado = coordinadoresList.value.find(
+      (coordinador) => coordinador.id === formData.value.idcoordinador,
+    )
+    const contadorSeleccionado = contadoresList.value.find(
+      (contador) => contador.id === formData.value.idcontador,
+    )
+    const administradorSeleccionado = administradoresList.value.find(
+      (administrador) => administrador.id == formData.value.idadministrador,
+    )
+
+    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+    const correoContadorActual = contadorSeleccionado?.correo || ''
+    const correoAdministradorActual = administradorSeleccionado?.correo || ''
+
+    // Actualizar los valores en formData
+    formData.value.correo_coordinador = correoCoordinadorActual
+    formData.value.correo_contador = correoContadorActual
+    formData.value.correo_administrador = correoAdministradorActual
+
     // Preparar payload para la rendición de cuentas
     const payload = {
       numeroFormulario: formDatSF.value.numeroFormulariosf || '',
@@ -1157,7 +1258,9 @@ async function submitForm() {
     // Enviar la solicitud
     const response = await fetch(baseurl + '/api/monitoreo/crear-rendicion-cuentas/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(payload),
     })
 
@@ -1166,33 +1269,71 @@ async function submitForm() {
       throw new Error(errorData.detail || `Error HTTP: ${response.status}`)
     }
 
-    const responseData = await response.json()
+    const data = await response.json()
     //console.log('Rendición enviada con éxito:', responseData);
-    numeroFormulario.value = responseData.numero_formulario
+    numeroFormulario.value = data.numero_formulario
+    const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
 
     const cuerpoMensaje = {
-      destinatario_id: payload.id_coordinador,
+      destinatario_id: payload.idcoordinador,
       asunto: 'Solicitud de Fondos - Coordinado',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormulario.value,
+      contenido:
+        'Solicitud de Fondos pediente del formulario ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
-      accion_url: '',
-      accion_texto: '',
+      //accion_url: '',
+      //accion_texto: '',
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    const cuerpoMensaje2 = {
+      destinatario_id: payload.idcontador,
+      asunto: 'Solicitud de Viaje',
+      contenido:
+        'Solicitud de Viaje pediente del formulario ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+      // accion_url: '',
+      // accion_texto: '',
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje2)
+
+    const cuerpoMensaje3 = {
+      destinatario_id: payload.idadministrador,
+      asunto: 'Solicitud de Viaje',
+      contenido:
+        'Solicitud de Viaje pediente del formulario ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+      // accion_url: '',
+      // accion_texto: '',
     }
 
     // GUARDAR EL ID DE LA RENDICIÓN CREADA
-    idRendicionCreada.value = responseData.id || responseData.rendicion_id
+    idRendicionCreada.value = data.id || data.rendicion_id
 
     alert('Rendición enviada con éxito')
     exportToExcel()
     resetForm()
 
-    await enviarMensajeAutomatico(cuerpoMensaje)
+    await enviarMensajeAutomatico(cuerpoMensaje3)
 
     ///////// Enviar notificación por correo al coordinador y al contador//////////
     try {
       const emailPayload = {
-        emails: [formData.value.correo_coordinador, formData.value.correo_contador],
+        //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
+        emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter(
+          (email) => email,
+        ),
         datos_solicitud: {
           codigo: numeroFormulario.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Fondos',
@@ -1200,11 +1341,12 @@ async function submitForm() {
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
           descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+          url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
 
-      console.log('emailPayload enviado al servidor:', emailPayload)
+      console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
+
       const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1222,7 +1364,7 @@ async function submitForm() {
     }
     ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:', responseData)
+    console.log('Respuesta del servidor:', JSON.stringify(data, null, 2))
 
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=2')

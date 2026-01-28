@@ -526,7 +526,7 @@
                                 <v-divider vertical inset class="mx-1 my-1"></v-divider>
 
                                 <!-- Acciones de tarea -->
-                                <v-tooltip text="Editar Sub Actividad" location="top">
+                                <!-- <v-tooltip text="Editar Sub Actividad" location="top">
                                   <template v-slot:activator="{ props }">
                                     <v-btn
                                       v-bind="props"
@@ -537,8 +537,8 @@
                                       @click.stop="openTareaDialog(actividad.id, tarea)"
                                     ></v-btn>
                                   </template>
-                                </v-tooltip>
-                                <v-tooltip text="Eliminar Sub Actividad" location="top">
+                                </v-tooltip> -->
+                                <!-- <v-tooltip text="Eliminar Sub Actividad" location="top">
                                   <template v-slot:activator="{ props }">
                                     <v-btn
                                       v-bind="props"
@@ -549,7 +549,7 @@
                                       @click.stop="confirmDeleteTarea(actividad.id, tarea)"
                                     ></v-btn>
                                   </template>
-                                </v-tooltip>
+                                </v-tooltip> -->
                               </div>
                             </template>
                           </v-list-item>

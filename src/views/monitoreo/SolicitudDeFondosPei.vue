@@ -1023,10 +1023,10 @@ async function submitForm() {
 
     // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
     const coordinadorSeleccionado = coordinadoresList.value.find(
-      (coordinador) => coordinador.id === formData.value.idcoordinador,
+      (coordinador) => coordinador.id === formData.value.idcoordinador
     )
     const contadorSeleccionado = contadoresList.value.find(
-      (contador) => contador.id === formData.value.idcontador,
+      (contador) => contador.id === formData.value.idcontador
     )
 
     const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
@@ -1059,15 +1059,13 @@ async function submitForm() {
       descripcion_actividad: formData.value.descripcion_actividad,
       objetivo_actividad: formData.value.objetivo_actividad,
       // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
-      ...(formData.value.id_tarea &&
-        formData.value.id_tarea > 0 && { tarea: formData.value.id_tarea }),
+      ...(formData.value.id_tarea && formData.value.id_tarea > 0 && { tarea: formData.value.id_tarea }),
       datos_forma_pago: formData.value.datos_forma_pago,
       bloquearIconosSolFondos: true,
       //codigo_actividad: formData.value.codigo_actividad,
     }
 
     console.log('Payload enviado al servidor:', JSON.stringify(payload, null, 2))
-    //const response = await fetch(baseurl + 'api/monitoreo/crear-solicitud-fondos/', {
     const response = await fetch(baseurl + 'api/solicitud-fondos-pei/', {
       method: 'POST',
       headers: {
@@ -1084,16 +1082,13 @@ async function submitForm() {
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numeroFormulario
 
-    const urlForm = `${baseurl}/api/monitoreo/formulariopei011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+    //const urlForm = `${baseurl}/api/monitoreo/formulariopei011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+    const urlForm = `${window.location.origin}/monitoreo/pei/formulariopei011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
 
     const cuerpoMensaje = {
       destinatario_id: payload.coordinador,
       asunto: 'Solicitud de Fondos - Coordinado',
-      contenido:
-        'Solicitud de Fondos pediente del formulario ' +
-        numeroFormularioSF.value +
-        '. URL: ' +
-        urlForm,
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1102,11 +1097,7 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.contador,
       asunto: 'Solicitud de Fondos - Contador',
-      contenido:
-        'Solicitud de Fondos pediente del formulario ' +
-        numeroFormularioSF.value +
-        '. URL: ' +
-        urlForm,
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1119,20 +1110,19 @@ async function submitForm() {
     ///////// Enviar notificación por correo al coordinador y al contador//////////
     try {
       const emailPayload = {
-        emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
+        emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Fondos PEI',
           solicitante: nombreCompletoSolicitante.value,
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
-          descripcion:
-            formData.value.descripcion_actividad || 'Solicitud de fondos para actividad PEI',
-          url_revision: `${window.location.origin}/monitoreo/formulariopei011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad PEI',
+          url_revision: `${window.location.origin}/monitoreo/pei/formulariopei011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
-      console.log('emailPayload enviado al servidor:', emailPayload)
-      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/', {
+      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(emailPayload),
@@ -1148,7 +1138,7 @@ async function submitForm() {
     }
     ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:', data)
+    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
 
     setTimeout(() => {
       router.push('/pei/listaactividadespei?showButton=1')
