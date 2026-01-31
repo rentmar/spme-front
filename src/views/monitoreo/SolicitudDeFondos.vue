@@ -1058,7 +1058,7 @@ async function submitForm() {
       prioridad: 3,
     }
 
-    exportToExcel()
+    //exportToExcel()
     resetForm()
 
     await enviarMensajeAutomatico(cuerpoMensaje2)
