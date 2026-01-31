@@ -1220,7 +1220,32 @@ function exportToExcel() {
 
   // 8. Agregar hoja al workbook y guardar
   XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud de Fondos')
-  XLSX.writeFile(wb, `Solicitud_Fondos_F-01_${getCurrentDate1()}.xlsx`)
+  //XLSX.writeFile(wb, `Solicitud_Fondos_F-01_${getCurrentDate1()}.xlsx`)
+  try {
+    // Crear el blob
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    
+    // Crear URL del blob
+    const url = window.URL.createObjectURL(blob)
+    
+    // Crear enlace de descarga
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `Solicitud_Fondos_F-01_${getCurrentDate1()}.xlsx`
+    document.body.appendChild(a)
+    a.click()
+    
+    // Limpiar después de la descarga
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    }, 100)
+  } catch (error) {
+    console.error('Error al generar Excel:', error)
+    // Fallback: usar el método antiguo
+    XLSX.writeFile(wb, `Solicitud_Fondos_F-01_${getCurrentDate1()}.xlsx`)
+  }
 }
 
 function applyExcelStyles(

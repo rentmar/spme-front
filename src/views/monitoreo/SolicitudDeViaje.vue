@@ -718,8 +718,8 @@ async function cargarUsuarios() {
     if (datosSolicitante.value) {
       solicitante.value = getNombreCompleto(datosSolicitante.value)
     }
-    console.log('responsables', responsablesList.value)
-    console.log('coordinadores', coordinadoresList.value)
+    //console.log('responsables', responsablesList.value)
+    //console.log('coordinadores', coordinadoresList.value)
   } catch (error) {
     console.error('Error al cargar la lista de usuarios:', error)
     alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.')
