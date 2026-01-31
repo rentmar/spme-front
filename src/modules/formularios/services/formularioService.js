@@ -69,4 +69,29 @@ export const formulariosServico = {
       throw err
     }
   },
+  /* Informe de actividad principal CRUD BASICO */
+  listarInformeActividadPrincipal: async () => {
+    try {
+      const respuesta = await api.get('/informe-actividad-principal/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: Error al cargar la lista de informes de Actividad Principal', err)
+    }
+  },
+  unInformeActividadPrincipaPorId: async (idinfactividad) => {
+    try {
+      const respuesta = await api.get('/informe-actividad-principal/' + idinfactividad + '/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: Error al cargar la lista de informes de Actividad Principal', err)
+    }
+  },
+  creaInformeActividadPrincipal: async (infData) => {
+    try {
+      const respuesta = await api.post('/informe-actividad-principal/', infData)
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: Error al crear la lista de informes de Actividad Principal', err)
+    }
+  },
 }

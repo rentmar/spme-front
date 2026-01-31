@@ -60,4 +60,13 @@ export const usuarioServicios = {
       console.error('Axios: Error al cargar la lista de usuarios', err)
     }
   },
+  /* Listado de Usuarios */
+  listaDeUsuariosCompleta: async () => {
+    try {
+      const respuesta = await api.get('/usuarios-crud/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Axios: Error al cargar la lista de usuarios completa', err)
+    }
+  },
 }

@@ -9,6 +9,7 @@ const usuario = ref(null)
 const tokens = ref(null)
 const permisosUsuario = ref(null)
 const listaUsuariosMensajes = ref()
+const listaDeUsuarioCompleta = ref([])
 
 export function useUsuario() {
   //Datos de usuario por nick
@@ -88,6 +89,21 @@ export function useUsuario() {
     }
   }
 
+  //Obtener la lista de usuarios completa
+  async function obtenerListaUsuariosCompleta() {
+    loading.value = true
+    try {
+      const respuesta = await usuarioServicios.listaDeUsuariosCompleta()
+      console.log('respuest comp', respuesta)
+      listaDeUsuarioCompleta.value = respuesta
+      return respuesta
+    } catch (err) {
+      console.error('Error al cargar la lista de Usuarios completa', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   //Obtener el id de un usuario
 
   //Fecth usuarios
@@ -102,11 +118,13 @@ export function useUsuario() {
     tokens,
     permisosUsuario,
     listaUsuariosMensajes,
+    listaDeUsuarioCompleta,
     informacionUsuarioPorNick, //func
     obtenerUsuarios, //fund
     obtenerUsuariosNicks, //func
     obtenerTokens,
     obtenerPermisos,
     obtenerListaUsuarios,
+    obtenerListaUsuariosCompleta,
   }
 }

@@ -22,7 +22,7 @@
       <v-col cols="12" md="9" lg="9">
         <v-card class="pa-4" elevation="2">
           <v-card-title class="d-flex justify-space-between align-center">
-            <span>Lista de Actividades</span>
+            <span>Lista de Actividades PEI</span>
             <span class="text-caption text-grey">Total: {{ filteredActividades.length }}</span>
           </v-card-title>
 
@@ -226,6 +226,100 @@
                               </v-badge>
                             </template>
 
+                            <!-- Sección Monitoreo - Corregida -->
+                            <v-list-group value="monitoreo">
+                              <template v-slot:activator="{ props }">
+                                <v-list-item
+                                  v-bind="props"
+                                  prepend-icon="mdi-chart-line"
+                                  title="Monitoreo"
+                                ></v-list-item>
+                              </template>
+
+                              <!-- PROYECTOS con chip distintivo -->
+                              <v-list-item
+                                value="monitoring-requests-proyectos"
+                                to="/pei/listaactividades?showButton=1"
+                              >
+                                <template v-slot:prepend>
+                                  <v-chip size="x-small" class="mr-2" density="compact"
+                                    >PROY</v-chip
+                                  >
+                                  <v-icon icon="mdi-account-alert"></v-icon>
+                                </template>
+                                <v-list-item-title class="text-wrap"
+                                  >Solicitud/Reposición</v-list-item-title
+                                >
+                              </v-list-item>
+
+                              <v-list-item
+                                value="monitoring-reports-proyectos"
+                                to="/pei/listaactividades?showButton=2"
+                              >
+                                <template v-slot:prepend>
+                                  <v-chip size="x-small" class="mr-2" density="compact"
+                                    >PROY</v-chip
+                                  >
+                                  <v-icon icon="mdi-chart-box"></v-icon>
+                                </template>
+                                <v-list-item-title class="text-wrap"
+                                  >Rendición Cuentas</v-list-item-title
+                                >
+                              </v-list-item>
+
+                              <!-- Informe de Actividad Proyecto (con chip PROY) -->
+                              <v-list-item value="informes-actividad" to="/actividades/informe/">
+                                <template v-slot:prepend>
+                                  <v-chip size="x-small" class="mr-2" density="compact"
+                                    >PROY</v-chip
+                                  >
+                                  <v-icon icon="mdi-file-document-outline"></v-icon>
+                                </template>
+                                <v-list-item-title class="text-wrap"
+                                  >Informe de Actividad</v-list-item-title
+                                >
+                              </v-list-item>
+
+                              <!-- PEI con chip distintivo -->
+                              <v-list-item
+                                value="monitoring-requests-pei"
+                                to="/pei/listaactividadespei?showButton=1"
+                              >
+                                <template v-slot:prepend>
+                                  <v-chip size="x-small" class="mr-2" density="compact">PEI</v-chip>
+                                  <v-icon icon="mdi-account-alert"></v-icon>
+                                </template>
+                                <v-list-item-title class="text-wrap"
+                                  >Solicitud/Reposición/PEI</v-list-item-title
+                                >
+                              </v-list-item>
+
+                              <v-list-item
+                                value="monitoring-reports-pei"
+                                to="/pei/listaactividadespei?showButton=2"
+                              >
+                                <template v-slot:prepend>
+                                  <v-chip size="x-small" class="mr-2" density="compact">PEI</v-chip>
+                                  <v-icon icon="mdi-chart-box"></v-icon>
+                                </template>
+                                <v-list-item-title class="text-wrap"
+                                  >Rendición Cuentas/PEI</v-list-item-title
+                                >
+                              </v-list-item>
+
+                              <v-list-item
+                                value="informe-actividad-pei"
+                                to="/actividades/informe-pei/"
+                              >
+                                <template v-slot:prepend>
+                                  <v-chip size="x-small" class="mr-2" density="compact">PEI</v-chip>
+                                  <v-icon icon="mdi-file-document-outline"></v-icon>
+                                </template>
+                                <v-list-item-title class="text-wrap"
+                                  >Informe Actividad PEI</v-list-item-title
+                                >
+                              </v-list-item>
+                            </v-list-group>
                             <!-- SOLUCIÓN 5 IMPLEMENTADA AQUÍ -->
                             <v-list-item-title class="font-weight-medium mb-1">
                               <div class="d-flex align-center flex-wrap gap-2">
@@ -560,13 +654,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, inject } from 'vue'
 import { useListaActividadStore } from '@/modules/proyecto/store/useListaActividadesStore'
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 
 // Iniciar el store de actividades
 const storeActividad = useListaActividadStore()
+
+// PEI vigente
+const peiVigente = inject('peiVigente')
 
 // Iniciar el composable de Subactividades
 const { crearUnaTarea, actualizarUnaTarea, eliminarUnaTarea } = useTareaSubactividad()
@@ -618,9 +715,9 @@ onMounted(async () => {
 const cargar = async () => {
   loading.value = true
   try {
-    await storeActividad.cargarActividadesTareas()
-    console.log(storeActividad.actividadesSubactividadesLista)
-    actividades.value = storeActividad.actividadesFiltradas
+    //await storeActividad.cargarListaActividadesGeneral(peiVigente.value.id)
+    await storeActividad.cargarActividadesPeiTareas()
+    actividades.value = storeActividad.actividadesPeiFiltradas
   } catch (error) {
     console.error('Error al cargar datos:', error)
     actividades.value = []

@@ -450,6 +450,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/actividades/informe-pei/',
+      name: 'actividadesPei',
+      component: () => import('@/views/monitoreo/InformeListaActividadPeiView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/reporte/inicio',
       name: 'homeReporte',
       component: () => import('@/views/HomeView.vue'),

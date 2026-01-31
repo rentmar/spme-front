@@ -237,6 +237,9 @@
           :afterSelection="handleSelection"
           :licenseKey="'non-commercial-and-evaluation'"
           :hiddenColumns="hiddenColumnsConfig"
+          :rowHeights="40"
+          :autoRowSize="false"
+          :viewportColumnRenderingOffset="20"
         ></HotTable>
       </div>
 
@@ -521,8 +524,26 @@ const abrirModalPei = () => {
 // Manejar la selección de PEI
 // Manejar la selección de PEI
 const manejarSeleccionPei = (datosPei) => {
-  if (selectedRowData.value) {
-    const rowIndex = tableData.value.findIndex((row) => row.id === selectedRowData.value.id)
+  console.log('🔍 DEBUG - Iniciando manejarSeleccionPei')
+  console.log('📊 selectedRowData:', selectedRowData.value)
+  console.log('📊 datosPei recibidos:', datosPei)
+  console.log('📊 tableData length:', tableData.value.length)
+  console.log(
+    '📊 IDs en tableData:',
+    tableData.value.map((row) => row.id),
+  )
+
+  if (selectedRowData.value && selectedRowData.value.id) {
+    // ENCONTRAR la fila usando el ID que debería ser único
+    const rowIndex = tableData.value.findIndex((row) => {
+      const match = row.id === selectedRowData.value.id
+      console.log(
+        `🔍 Comparando row.id=${row.id} con selected.id=${selectedRowData.value.id}: ${match}`,
+      )
+      return match
+    })
+
+    console.log('📌 rowIndex encontrado:', rowIndex)
 
     if (rowIndex !== -1) {
       // 1. Guardar valores ANTIGUOS antes de actualizar
@@ -532,49 +553,66 @@ const manejarSeleccionPei = (datosPei) => {
         factoresCriticos: tableData.value[rowIndex].factoresCriticos,
       }
 
-      // 2. Actualizar los datos
-      tableData.value[rowIndex] = {
-        ...tableData.value[rowIndex],
-        objetivo_pei: datosPei.objetivo_pei,
-        indicador_pei: datosPei.indicador_pei,
-        factoresCriticos: datosPei.factoresCriticos,
+      console.log('📊 Valores antiguos:', valoresAntiguos)
+      console.log('📊 Valores nuevos:', datosPei)
+
+      // 2. Actualizar SOLO los campos específicos, mantener el resto
+      const filaActualizada = {
+        ...tableData.value[rowIndex], // Mantener todos los datos existentes
+        objetivo_pei: datosPei.objetivo_pei || '', // Usar valor por defecto si es undefined
+        indicador_pei: datosPei.indicador_pei || '',
+        factoresCriticos: datosPei.factoresCriticos || [],
       }
 
-      // 3. Verificar cambios y activar bandera
+      console.log('🔄 Fila actualizada:', filaActualizada)
+
+      // 3. Usar Vue.set o asignación directa para reactividad
+      // Opción A: Asignación directa (si tableData es ref)
+      tableData.value[rowIndex] = filaActualizada
+
+      // Opción B: Usar Vue.set si necesitas reactividad profunda
+      // Vue.set(tableData.value, rowIndex, filaActualizada)
+
+      // 4. Verificar cambios y activar bandera
       let hayCambios = false
 
       // Verificar objetivo_pei
-      if (valoresAntiguos.objetivo_pei !== datosPei.objetivo_pei) {
+      const oldObjetivo = String(valoresAntiguos.objetivo_pei || '')
+      const newObjetivo = String(datosPei.objetivo_pei || '')
+      if (oldObjetivo !== newObjetivo) {
+        console.log(`📝 Cambio objetivo_pei: "${oldObjetivo}" -> "${newObjetivo}"`)
         registroCambios.registrar(
           'objetivo_pei',
           rowIndex,
-          valoresAntiguos.objetivo_pei,
-          datosPei.objetivo_pei,
+          oldObjetivo,
+          newObjetivo,
           selectedRowData.value.id,
           selectedRowData.value.nombreCorto,
         )
         hayCambios = true
-        console.log('✅ Cambio detectado en objetivo_pei')
       }
 
       // Verificar indicador_pei
-      if (valoresAntiguos.indicador_pei !== datosPei.indicador_pei) {
+      const oldIndicador = String(valoresAntiguos.indicador_pei || '')
+      const newIndicador = String(datosPei.indicador_pei || '')
+      if (oldIndicador !== newIndicador) {
+        console.log(`📝 Cambio indicador_pei: "${oldIndicador}" -> "${newIndicador}"`)
         registroCambios.registrar(
           'indicador_pei',
           rowIndex,
-          valoresAntiguos.indicador_pei,
-          datosPei.indicador_pei,
+          oldIndicador,
+          newIndicador,
           selectedRowData.value.id,
           selectedRowData.value.nombreCorto,
         )
         hayCambios = true
-        console.log('✅ Cambio detectado en indicador_pei')
       }
 
-      // Verificar factoresCriticos (comparar como JSON porque es un array/objeto)
+      // Verificar factoresCriticos
       const oldFactoresStr = JSON.stringify(valoresAntiguos.factoresCriticos || [])
       const newFactoresStr = JSON.stringify(datosPei.factoresCriticos || [])
       if (oldFactoresStr !== newFactoresStr) {
+        console.log(`📝 Cambio factoresCriticos: ${oldFactoresStr} -> ${newFactoresStr}`)
         registroCambios.registrar(
           'factoresCriticos',
           rowIndex,
@@ -584,25 +622,47 @@ const manejarSeleccionPei = (datosPei) => {
           selectedRowData.value.nombreCorto,
         )
         hayCambios = true
-        console.log('✅ Cambio detectado en factoresCriticos')
       }
 
-      // 4. Activar la bandera de cambios si hubo algún cambio
+      // 5. Activar la bandera de cambios si hubo algún cambio
       if (hayCambios) {
         storePlanificacion.setTieneCambiosSinGuardar(true)
-        console.log('🚩 Bandera de cambios activada en store')
+        console.log('🚩 Bandera de cambios activada')
+      } else {
+        console.log('ℹ️ No hubo cambios detectados')
       }
 
-      // 5. Actualizar la tabla visualmente
+      // 6. Forzar actualización visual si usas Handsontable
       if (hotTable.value?.hotInstance) {
+        console.log('🔄 Renderizando Handsontable')
+        // Actualizar celda específica
+        hotTable.value.hotInstance.setDataAtRowProp(rowIndex, 'objetivo_pei', datosPei.objetivo_pei)
+        hotTable.value.hotInstance.setDataAtRowProp(
+          rowIndex,
+          'indicador_pei',
+          datosPei.indicador_pei,
+        )
+        hotTable.value.hotInstance.setDataAtRowProp(
+          rowIndex,
+          'factoresCriticos',
+          datosPei.factoresCriticos,
+        )
         hotTable.value.hotInstance.render()
       }
 
       successMsg('Estructura PEI actualizada correctamente')
+      console.log('✅ Actualización completada para fila:', rowIndex)
+    } else {
+      console.error('❌ ERROR: No se encontró la fila con id:', selectedRowData.value.id)
+      errorMsg('No se pudo encontrar la fila seleccionada en la tabla')
     }
+  } else {
+    console.error('❌ ERROR: selectedRowData no tiene id:', selectedRowData.value)
+    errorMsg('No hay una fila seleccionada válida')
   }
 
   modalPei.value = false
+  console.log('🔚 Modal cerrado')
 }
 
 /************************* PRE-ENVÍO (EXACTAMENTE COMO EL PEI) *******************************/
@@ -689,7 +749,7 @@ const confirmarEnvio = async () => {
         datos_tabla_actual: datosOriginalesStore.value,
         datos_tabla_actualizado: tableDataStore.value,
         cambios_efectuados: cambiosData.value || {},
-        configuracion: {}, // Aquí deberías pasar la configuración si la tienes
+        configuracion: {}, //configuracion de la tabla
         total_actividades: tableDataStore.value.length,
         total_presupuesto: totalPresupuesto.value,
         actividades_planificadas: actividadesPlanificadas.value,
@@ -699,11 +759,10 @@ const confirmarEnvio = async () => {
       },
     }
 
-    console.log('PAYLOAD PARA PROYECTO: ', payload)
+    console.log('PAYLOAD PARA Actualiza planificacion PROYECTO: ', payload)
 
     // Llamar a la API para guardar
     const resp = await actualizarPlanificacionProyecto(payload)
-
     console.log('Respuesta guardado proyecto: ', resp)
 
     successMsg(`Se han enviado ${totalCambiosReales.value} cambios correctamente`)

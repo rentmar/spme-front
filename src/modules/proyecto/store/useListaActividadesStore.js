@@ -12,7 +12,7 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
   const actividadesSubactividadesLista = ref() //Lista de Actividades mas tareas
   //Estados de actividad pei - tarea
   const actividadPei = ref(null) //Una actividad PEI
-  const actividadesSubactividadesListaPei = ref()
+  const actividadesSubactividadesListaPei = ref() //Lista de Actividades mas tareas
   //Listado general de actividades
   const actividadesListaGeneral = ref([])
 
@@ -32,9 +32,46 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     loading.value = true
     try {
       await obtenerListaActividadesConTareas()
-      actividadesSubactividadesLista.value = actividadesTareasListas.value
+      actividadesSubactividadesLista.value = actividadesTareasListas.value.actividades
     } catch (err) {
       console.error('Error al cargar las actividades', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Cargar las actividades PEI + Tareas
+  const cargarActividadesPeiTareas = async () => {
+    loading.value = true
+    try {
+      await obtenerListaActividadesConTareasPei()
+      actividadesSubactividadesListaPei.value = actividadesTareasListasPei.value
+    } catch (err) {
+      console.error('Error al cargar las actividades del PEI', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Cargar actividades por id de PEI
+  //Cargar las actividades PEI + Tareas (MODIFICADA para aceptar id_pei)
+  const cargarActividadesPeiTareasPorIdPei = async (id_pei = null) => {
+    loading.value = true
+    try {
+      await obtenerListaActividadesConTareasPei()
+
+      let actividadesFiltradas = actividadesTareasListasPei.value
+
+      // Si se proporciona id_pei, filtrar por ese PEI
+      if (id_pei !== null) {
+        actividadesFiltradas = actividadesTareasListasPei.value.filter(
+          (actividad) => actividad.pei_id === id_pei,
+        )
+      }
+
+      actividadesSubactividadesListaPei.value = actividadesFiltradas
+    } catch (err) {
+      console.error('Error al cargar las actividades del PEI', err)
     } finally {
       loading.value = false
     }
@@ -118,13 +155,15 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
   })
 
   //Filtrado de actividades
+  // Si es admin carga todas
+  //Si no es admin carga solo de las q es responsable
   const actividadesFiltradas = computed(() => {
-    if (!actividadesSubactividadesLista.value?.actividades) return []
+    if (!actividadesSubactividadesLista.value) return []
 
     const usuario = userStore.userData
     const esAdmin = userStore.rol === 'admin'
 
-    return actividadesSubactividadesLista.value.actividades.filter((actividad) => {
+    return actividadesSubactividadesLista.value.filter((actividad) => {
       // Siempre excluir inactivas y creadas
       if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
         return false
@@ -149,6 +188,33 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     })
   })
 
+  const actividadesPeiFiltradas = computed(() => {
+    // Usar actividadesSubactividadesListaPei.value (no actividadesSubactividadesLista.value)
+    if (!actividadesSubactividadesListaPei.value) return []
+
+    const usuario = userStore.userData
+    const esAdmin = userStore.rol === 'admin'
+
+    return actividadesSubactividadesListaPei.value.filter((actividad) => {
+      // Siempre excluir inactivas y creadas
+      if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
+        return false
+      }
+
+      // Si es admin, ve todo
+      if (esAdmin) {
+        return true
+      }
+
+      // Si no es admin, solo ve sus actividades
+      const esResponsable =
+        actividad.responsable_info?.username === usuario?.user?.username ||
+        actividad.responsable === usuario?.user?.id
+
+      return esResponsable
+    })
+  })
+
   return {
     loading,
     error,
@@ -157,11 +223,14 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     actividadesSubactividadesLista,
     actividadesSubactividadesListaPei,
     actividadesFiltradas,
+    actividadesPeiFiltradas,
     actividadesListaGeneral,
     //Getters
     actividadesFiltradasTotales,
     //Funciones
     cargarActividadesTareas,
+    cargarActividadesPeiTareas,
     cargarListaActividadesGeneral,
+    cargarActividadesPeiTareasPorIdPei,
   }
 })

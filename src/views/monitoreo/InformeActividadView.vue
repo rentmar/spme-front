@@ -197,9 +197,12 @@
                   </h3>
                   <v-row>
                     <v-col cols="12">
-                      <InformacionCuantitativa
+                      <!-- <InformacionCuantitativa
                         @registrar-informacion="manejarRegistro"
-                      ></InformacionCuantitativa>
+                      ></InformacionCuantitativa> -->
+                      <InformacionCuantitativaV2
+                        @registrar-informacion="manejarRegistro"
+                      ></InformacionCuantitativaV2>
                     </v-col>
                   </v-row>
                 </div>
@@ -324,11 +327,12 @@ import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdH
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
 import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAvanceIndicadores.vue'
-import InformacionCuantitativa from '@/modules/formularios/components/InformacionCuantitativa.vue'
+import InformacionCuantitativaV2 from '@/modules/formularios/components/InformacionCuantitativaV2.vue'
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
 import ProcedenciaFondosPresupuesto from '@/modules/procedenciaFondos/components/ProcedenciaFondosPresupuesto.vue'
 //Auxiliares
 import { useSnackbar } from '@/composables/useSnackbar'
+import { formulariosServico } from '@/modules/formularios/services/formularioService'
 
 // Router
 const router = useRouter()
@@ -362,6 +366,7 @@ const formData = ref({
   herramientasEvaluacion: '',
   procedenciaFondos: '',
   observacionesPresupuesto: '',
+  actividad: idactividad,
 })
 
 /***************** METODOS *******************************/
@@ -416,6 +421,7 @@ const resetForm = () => {
     herramientasEvaluacion: '',
     procedenciaFondos: '',
     observacionesPresupuesto: '',
+    actividad: idactividad,
   }
 }
 
@@ -429,18 +435,19 @@ const submitForm = async () => {
   loading.value = true
   try {
     // Validaciones básicas
-    if (!formData.value.objetivoActividad || !formData.value.informeObjetivoActividad) {
-      throw new Error('Por favor, complete los campos obligatorios del formulario.')
-    }
+    // if (!formData.value.objetivoActividad || !formData.value.informeObjetivoActividad) {
+    //   throw new Error('Por favor, complete los campos obligatorios del formulario.')
+    // }
 
     // Aquí iría la lógica para enviar al backend
     console.log('Enviando informe:', formData.value)
 
     // Simular envío
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    //await new Promise((resolve) => setTimeout(resolve, 1500))
+    await formulariosServico.creaInformeActividadPrincipal(formData.value)
 
     alert('Informe enviado exitosamente')
-    router.push('/pei/listaactividades?showButton=1')
+    router.push('/actividades/informe/')
   } catch (error) {
     console.error('Error al enviar el informe:', error)
     alert(`Error: ${error.message}`)

@@ -11,15 +11,18 @@ export const useUserStore = defineStore('user', () => {
   const isLoading = ref(false) //Bandera de carga
   const initialized = ref(false)
   const listaUsuarios = ref(null)
+  const listaUsuariosCompleta = ref([])
 
   //Iniciar composables
   const {
     tokens,
     permisosUsuario,
     listaUsuariosMensajes,
+    listaDeUsuarioCompleta,
     obtenerPermisos,
     obtenerTokens,
     obtenerListaUsuarios,
+    obtenerListaUsuariosCompleta,
   } = useUsuario()
 
   //GETTERS
@@ -189,8 +192,50 @@ export const useUserStore = defineStore('user', () => {
     } catch (error) {
       console.error('Error cargando la lista de usuarios', error)
     } finally {
-      isLoading.value = true
+      isLoading.value = false
     }
+  }
+
+  //obtener la lista de usuarios completa
+  const cargarListaUsuariosCompleta = async () => {
+    isLoading.value = true
+    try {
+      await obtenerListaUsuariosCompleta()
+      listaUsuariosCompleta.value = listaDeUsuarioCompleta.value
+    } catch (err) {
+      console.error('Error al cargar la lista de usuarios completa', err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const obtenerCorreosPorIds = (ids) => {
+    if (!ids || !ids.length || !listaUsuariosCompleta.value) {
+      return []
+    }
+
+    // Filtrar usuarios por IDs y extraer emails
+    const correos = listaUsuariosCompleta.value
+      .filter((usuario) => {
+        // Acceder al ID del usuario
+        const usuarioData = usuario._custom?.value || usuario
+        const userId = usuarioData.id
+        return ids.includes(userId)
+      })
+      .map((usuario) => {
+        // Extraer email - PRIMERO buscar 'email', luego 'correo'
+        const usuarioData = usuario._custom?.value || usuario
+
+        // 1. Buscar 'email' (para usuarios nuevos)
+        // 2. Si está vacío, buscar 'correo'
+        // 3. Si ambos están vacíos, devolver null
+        const email = usuarioData.email || usuarioData.correo
+
+        return { email }
+      })
+      .filter((item) => item.email && item.email.trim() !== '' && item.email.includes('@'))
+
+    return correos
   }
 
   /********************** Usuario  ****************************/
@@ -247,6 +292,7 @@ export const useUserStore = defineStore('user', () => {
     isLoading, //Estado de carga
     initialized, //Inicializado
     listaUsuarios, //Lista de usuarios, superusuarios excluido
+    listaDeUsuarioCompleta,
 
     //Getters
     isAuthenticated, //Comprobacion de autenticacion
@@ -270,6 +316,8 @@ export const useUserStore = defineStore('user', () => {
     initialize, //Inicializar session automatica
     loadUserInfo, //Cargar informacion del usuario
     cargarListaUsuarios,
+    cargarListaUsuariosCompleta,
+    obtenerCorreosPorIds, //Obtiene los correos por Ids
     //Funciones para UIX
     cannotSee,
     canSee,

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useActividad } from '@/modules/proyecto/composables/useActividad'
 import { useInformeActividad } from '../composables/useInformeActividad'
+import { formulariosServico } from '../services/formularioService'
 
 export const useInformeActividadStore = defineStore('informe-actividad', () => {
   //Estados
@@ -223,6 +224,18 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
     }
   }
 
+  const crearInformeActividadPrincipal = async (infData) => {
+    loading.value = true
+    try {
+      const respuesta = await formulariosServico.creaInformeActividadPrincipal(infData)
+      return respuesta
+    } catch (err) {
+      console.error('Error al crear el informe de actividad')
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados
     loading,
@@ -247,5 +260,8 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
     buscarInformesPorNumero,
     existeInforme,
     obtenerEstadisticasInformes,
+
+    //Funciones de creacion
+    crearInformeActividadPrincipal,
   }
 })
