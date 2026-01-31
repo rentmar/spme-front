@@ -265,7 +265,9 @@
                   <v-table class="elevation-1 rounded-lg mb-4 users-table">
                     <thead>
                       <tr>
+                        <th class="fecha-column">Fecha</th>
                         <th class="text-subtitle-2 font-weight-bold">Partida</th>
+                        <th>Factura/Recibo</th>
                         <th class="text-subtitle-2 font-weight-bold">Descripción</th>
                         <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
                         <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
@@ -273,6 +275,17 @@
                     </thead>
                     <tbody>
                       <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
+                        <td class="fecha-column">
+                          <v-text-field
+                            v-model="gasto.fecha"
+                            type="date"
+                            bg-color="blue-lighten-5"
+                            hide-details
+                            density="compact"
+                            required
+                            class="fecha-input"
+                          ></v-text-field>
+                        </td>
                         <td class="narrow-column">
                           <v-text-field
                             v-model="gasto.partida"
@@ -285,6 +298,16 @@
                             required
                           ></v-text-field>
                         </td>
+                        <td>
+                          <v-text-field
+                            v-model="gasto.factura_recibo"
+                            bg-color="blue-lighten-5"
+                            hide-details
+                            density="compact"
+                            required
+                          ></v-text-field>
+                        </td>
+
                         <td class="wide-column">
                           <v-text-field
                             v-model="gasto.descripcion_gasto"
@@ -551,9 +574,9 @@
   <!-- {{ '*******************' }}
   <pre>{{ formData.correo_coordinador }}</pre> -->
   <!-- {{ '*******************' }}
-  <pre>{{ coordinadoresList }}</pre> -->
+  <pre>{{ datosFormulario1 }}</pre> -->
   <!-- {{ '*******************' }}
-  <pre>{{ contadoresList }}</pre> -->
+  <pre>{{ solicitudesFiltradas }}</pre> -->
 </template>
 
 <script setup>
@@ -617,7 +640,7 @@ const formData = ref({
   id_tarea: 0,
   id_usuario: 0,
   // Resto de campos del formulario
-  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
   monto_solicitado: 0,
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
@@ -1087,7 +1110,9 @@ async function submitForm() {
     const payload = {
       detalleDestinoFondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          fecha: gasto.fecha || '',
           partida: gasto.partida,
+          factura_recibo: gasto.factura_recibo || '',
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
@@ -1294,18 +1319,20 @@ function exportToExcel() {
   ]
 
   // 2. Encabezados de la tabla de gastos
-  const expensesHeaders = ['PARTIDA', 'DESCRIPCIÓN DEL GASTO', 'MONTO (BS.)', 'OBSERVACIONES']
+  const expensesHeaders = ['FECHA', 'PARTIDA', 'FACTURA/RECIBO', 'DESCRIPCIÓN DEL GASTO', 'MONTO (BS.)', 'OBSERVACIONES']
 
   // 3. Datos de gastos
   const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
+    gasto.fecha,
     gasto.partida,
+    gasto.factura_recibo,
     gasto.descripcion_gasto,
     gasto.monto,
     '',
   ])
 
   // 4. Total al final de la tabla
-  const totalRow = ['TOTAL', '', totalMontoSolicitado.value, '']
+  const totalRow = ['TOTAL', '', '', '', totalMontoSolicitado.value, '']
 
   // 5. Crear workbook
   const wb = XLSX.utils.book_new()
@@ -1323,8 +1350,8 @@ function exportToExcel() {
   )
 
   // 8. Agregar hoja al workbook y guardar
-  XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud de Fondos')
-  XLSX.writeFile(wb, `Solicitud_Fondos_F-01_${getCurrentDate1()}.xlsx`)
+  XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud de Reposicion')
+  XLSX.writeFile(wb, `Solicitud_Reposicion_F-03_${getCurrentDate1()}.xlsx`)
 }
 
 function applyExcelStyles(
@@ -1484,7 +1511,7 @@ function actualizarDatosFormulario(solicitud) {
   formDatSF.value.fechaSolicitudsf = solicitud.fechaSolicitud || ''
   formDatSF.value.montoSolicitadosf = solicitud.montoSolicitado || 0
   formDatSF.value.validacionResponsablesf = solicitud.validacionResponsable || false
-  formDatSF.value.responsable_idsf = solicitud.responsable_id || null
+  formDatSF.value.responsable_idsf = solicitud.contador_id || null
   formDatSF.value.validacionCoordinadorsf = solicitud.validacionCoordinador || false
   formDatSF.value.coordinador_idsf = solicitud.coordinador_id || null
   formDatSF.value.usuario_idsf = solicitud.usuario_id || null
@@ -1492,7 +1519,7 @@ function actualizarDatosFormulario(solicitud) {
   formDatSF.value.fechaRealizacionActividadsf = solicitud.fechaRealizacionActividad || ''
   formDatSF.value.bloquearIconosSolFondossf = solicitud.bloquearIconosSolFondos || true
 
-  console.log('datosFormulario actualizado con los valores de la solicitud:', datosFormulario.value)
+  //console.log('datosFormulario actualizado con los valores de la solicitud:', datosFormulario.value)
 
   actualizarDetalleDestinoFondos(solicitud.detalleDestinoFondos)
 
@@ -1520,7 +1547,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
       monto: item.monto || 0,
     }))
 
-    console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
+    //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
   } catch (error) {
     console.error('Error al parsear detalleDestinoFondos:', error)
     formData.value.detalle_destino_fondos = []
@@ -1538,11 +1565,11 @@ function actualizarInformacionAdicional() {
   // Actualizar fecha_solicitud
   formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
 
-  console.log('Información adicional actualizada:', {
-    forma_pago: formData.value.forma_pago,
-    lugar_solicitud: formData.value.lugar_solicitud,
-    fecha_solicitud: formData.value.fecha_solicitud,
-  })
+  // console.log('Información adicional actualizada:', {
+  //   forma_pago: formData.value.forma_pago,
+  //   lugar_solicitud: formData.value.lugar_solicitud,
+  //   fecha_solicitud: formData.value.fecha_solicitud,
+  // })
 }
 
 // Función para extraer y formatear los validadores por ID
@@ -1562,15 +1589,14 @@ function actualizarValidadores() {
   // Actualizar formData con los IDs encontrados
   if (responsable) {
     formData.value.idresponsable = responsable.id
-    console.log('Responsable encontrado:', getNombreCompleto(responsable))
+    //console.log('Responsable encontrado:', getNombreCompleto(responsable))
   } else {
-    //console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
-    console.log('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
+    console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
   }
 
   if (coordinador) {
     formData.value.idcoordinador = coordinador.id
-    console.log('Coordinador encontrado:', getNombreCompleto(coordinador))
+    //console.log('Coordinador encontrado:', getNombreCompleto(coordinador))
   } else {
     console.warn('No se encontró coordinador con ID:', formDatSF.value.coordinador_idsf)
   }
@@ -1593,8 +1619,8 @@ function actualizarListasValidadores() {
     (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador'),
   )
 
-  console.log('Responsables list:', responsablesList.value)
-  console.log('Coordinadores list:', coordinadoresList.value)
+  //console.log('Responsables list:', responsablesList.value)
+  //console.log('Coordinadores list:', coordinadoresList.value)
 }
 
 // Verificación mejorada con roles
@@ -1626,6 +1652,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.fecha-column {
+  width: 180px; /* Ancho suficiente para mostrar fecha completa */
+  min-width: 180px;
+  max-width: 200px;
+}
+
+.fecha-input {
+  width: 100%;
+}
+
 .solicitud-fondos-container {
   max-width: 1400px;
   margin: 0 auto;

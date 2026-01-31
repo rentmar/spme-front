@@ -1347,7 +1347,7 @@ async function submitForm() {
 
       console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
 
-      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/', {
+      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(emailPayload),
