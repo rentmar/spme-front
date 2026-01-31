@@ -715,8 +715,9 @@ onMounted(async () => {
 const cargar = async () => {
   loading.value = true
   try {
-    await storeActividad.cargarListaActividadesGeneral(peiVigente.value.id)
-    actividades.value = storeActividad.actividadesSubactividadesListaPei
+    //await storeActividad.cargarListaActividadesGeneral(peiVigente.value.id)
+    await storeActividad.cargarActividadesPeiTareas()
+    actividades.value = storeActividad.actividadesPeiFiltradas
   } catch (error) {
     console.error('Error al cargar datos:', error)
     actividades.value = []

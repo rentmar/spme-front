@@ -560,16 +560,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useListaActividadStore } from '@/modules/proyecto/store/useListaActividadesStore'
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 
 // Iniciar el store de actividades
 const storeActividad = useListaActividadStore()
-
-// PEI vigente
-const peiVigente = inject('peiVigente')
 
 // Iniciar el composable de Subactividades
 const { crearUnaTarea, actualizarUnaTarea, eliminarUnaTarea } = useTareaSubactividad()
@@ -621,8 +618,9 @@ onMounted(async () => {
 const cargar = async () => {
   loading.value = true
   try {
-    await storeActividad.cargarListaActividadesGeneral(peiVigente.value.id)
-    actividades.value = storeActividad.actividadesFiltradasTotales
+    await storeActividad.cargarActividadesTareas()
+    console.log(storeActividad.actividadesSubactividadesLista)
+    actividades.value = storeActividad.actividadesFiltradas
   } catch (error) {
     console.error('Error al cargar datos:', error)
     actividades.value = []

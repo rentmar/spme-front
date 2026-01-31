@@ -21,6 +21,9 @@
             <v-icon size="14" color="green">mdi-cash</v-icon>
             {{ formatCurrency(actividad?.presupuesto) }}
           </span>
+          <span>
+            <ValidationBar :actividad-id="actividad.id"></ValidationBar>
+          </span>
         </div>
       </div>
     </div>
@@ -139,6 +142,9 @@
               <div class="tarea-detalles">
                 <div class="tarea-meta" v-if="tarea.descripcion">
                   <span class="descripcion">{{ truncateText(tarea.descripcion, 80) }}</span>
+                </div>
+                <div>
+                  <ValidationBar :actividad-id="actividad.id" :tarea-id="tarea.id"></ValidationBar>
                 </div>
                 <div class="tarea-footer">
                   <div class="tarea-fechas">
@@ -270,6 +276,7 @@
 
     <ConfirmDialog></ConfirmDialog>
   </div>
+  {{ actividad }}
 </template>
 
 <script setup>
@@ -279,6 +286,7 @@ import { useInformeActividadStore } from '@/modules/formularios/store/useInforme
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
+import ValidationBar from '@/modules/formularios/components/ValidationBar.vue'
 
 const props = defineProps({
   actividad: {

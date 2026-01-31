@@ -197,9 +197,12 @@
                   </h3>
                   <v-row>
                     <v-col cols="12">
-                      <InformacionCuantitativa
+                      <!-- <InformacionCuantitativa
                         @registrar-informacion="manejarRegistro"
-                      ></InformacionCuantitativa>
+                      ></InformacionCuantitativa> -->
+                      <InformacionCuantitativaV2
+                        @registrar-informacion="manejarRegistro"
+                      ></InformacionCuantitativaV2>
                     </v-col>
                   </v-row>
                 </div>
@@ -324,7 +327,7 @@ import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdH
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
 import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAvanceIndicadores.vue'
-import InformacionCuantitativa from '@/modules/formularios/components/InformacionCuantitativa.vue'
+import InformacionCuantitativaV2 from '@/modules/formularios/components/InformacionCuantitativaV2.vue'
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
 import ProcedenciaFondosPresupuesto from '@/modules/procedenciaFondos/components/ProcedenciaFondosPresupuesto.vue'
 //Auxiliares
@@ -363,6 +366,7 @@ const formData = ref({
   herramientasEvaluacion: '',
   procedenciaFondos: '',
   observacionesPresupuesto: '',
+  actividad: idactividad,
 })
 
 /***************** METODOS *******************************/
@@ -417,6 +421,7 @@ const resetForm = () => {
     herramientasEvaluacion: '',
     procedenciaFondos: '',
     observacionesPresupuesto: '',
+    actividad: idactividad,
   }
 }
 
