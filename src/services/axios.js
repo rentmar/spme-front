@@ -87,10 +87,21 @@ const apiMsg = axios.create({
   },
 })
 
-//Instancia para mensajes
+//Instancia para fonfosc
 const apiFf = axios.create({
   //baseURL: import.meta.env.VITE_API_URL_PLAN,
   baseURL: import.meta.env.VITE_API_BASE_FF,
+  withCredentials: false,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+//Instancia para fonfosc
+const apiPrint = axios.create({
+  //baseURL: import.meta.env.VITE_API_URL_PLAN,
+  baseURL: import.meta.env.VITE_API_BASE_PRINT,
   withCredentials: false,
   timeout: 10000,
   headers: {
@@ -113,6 +124,7 @@ apiRep.interceptors.response.use((response) => response, errorInterceptor)
 apiAxs.interceptors.response.use((response) => response, errorInterceptor)
 apiMsg.interceptors.response.use((response) => response, errorInterceptor)
 apiFf.interceptors.response.use((response) => response, errorInterceptor)
+apiPrint.interceptors.response.use((response) => response, errorInterceptor)
 // Interceptor para manejar errores globales
 // api.interceptors.response.use(
 //   (response) => response,
@@ -122,4 +134,4 @@ apiFf.interceptors.response.use((response) => response, errorInterceptor)
 //   },
 // )
 export default api
-export { api, apiPlan, apiUsuarios, apiProg, apiProy, apiRep, apiAxs, apiMsg, apiFf }
+export { api, apiPlan, apiUsuarios, apiProg, apiProy, apiRep, apiAxs, apiMsg, apiFf, apiPrint }
