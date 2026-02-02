@@ -504,10 +504,10 @@ const formData = ref({
   documento_identidad: '',
   // Campos de la actividad
   descripcion_actividad: '',
-  lugar_actividad: '',
-  fecha_actividad: '',
+  lugar_actividad: '',        //********** */
+  fecha_actividad: '',        //********** */
   objetivo_actividad: '',
-  fecha_desembolso: '',
+  fecha_desembolso: '',       //********** */
   fecha_irealizacion: '',
   fecha_frealizacion: '',
   fuente_financiamiento: '',
@@ -518,7 +518,7 @@ const formData = ref({
     { fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 },
   ],
   forma_pago: null,
-  lugar_solicitud: '',
+  lugar_solicitud: '',        //******* */
   fecha_actual: getCurrentDate(),
   fecha_solicitud: '',
   //monto_solicitado: 0,
@@ -1245,6 +1245,7 @@ async function submitForm() {
       idTarea: idTarea ? parseInt(idTarea) : null,
       descripcionActividad: formData.value.descripcion_actividad,
       lugarActividad: formData.value.lugar_actividad,
+      lugarRendicion:formData.value.lugar_solicitud,
       fechaActividad: formData.value.fecha_actividad,
       bloquearIconoRC: true,
       idSolicitudReembolso: null,
