@@ -545,8 +545,8 @@
     </div>
   </v-container>
   <!-- <pre>{{ formData.correo_coordinador }}</pre>
-  {{ '*******************' }}
-  <pre>{{ coordinadoresList }}</pre> -->
+  {{ '*******************' }} -->
+  <!-- <pre>{{ datosFormulario }}</pre> -->
 </template>
 
 <script setup>
@@ -729,8 +729,12 @@ watch(
   (newVal) => {
     if (newVal && newVal.usuario) {
       //console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
+      // const solicitanteSeleccionado = coordinadoresList.value.find(
+      //   (solicitante) => coordinador.id === newIdCoordinador,
+      // )
 
       const usuario = newVal.usuario
+
 
       // Función helper para manejar valores null/undefined
       const getSafeValue = (value, defaultValue = '') => {
@@ -883,6 +887,7 @@ async function cargarDatos() {
     cargandoGeneral.value = false
   }
 }
+
 
 function sanitizeData(data) {
   if (data === null || data === undefined) {
@@ -1058,7 +1063,7 @@ async function submitForm() {
       prioridad: 3,
     }
 
-    //exportToExcel()
+    exportToExcel()
     resetForm()
 
     await enviarMensajeAutomatico(cuerpoMensaje2)

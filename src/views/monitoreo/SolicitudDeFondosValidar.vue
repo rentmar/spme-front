@@ -569,6 +569,8 @@
   <pre>{{ formData.datos_forma_pago }}</pre> -->
   <!-- {{ '***************************************B' }}
   <pre>{{ datosFormulario1 }}</pre> -->
+    <!-- {{ '***************************************B' }}
+  <pre>{{ datosFormulario }}</pre> -->
 </template>
 
 <script setup>
@@ -733,12 +735,12 @@ watch(
       }
 
       // Llenar campos del usuario
-      formData.value.nombre = getSafeValue(usuario.nombre)
-      formData.value.paterno = getSafeValue(usuario.paterno)
-      formData.value.materno = getSafeValue(usuario.materno)
-      formData.value.cargo = getSafeValue(usuario.cargo)
-      formData.value.documento_identidad = getSafeValue(usuario.ci)
-      formData.value.id_usuario = getSafeValue(usuario.id,0)
+      // formData.value.nombre = getSafeValue(usuario.nombre)
+      // formData.value.paterno = getSafeValue(usuario.paterno)
+      // formData.value.materno = getSafeValue(usuario.materno)
+      // formData.value.cargo = getSafeValue(usuario.cargo)
+      // formData.value.documento_identidad = getSafeValue(usuario.ci)
+      // formData.value.id_usuario = getSafeValue(usuario.id,0)
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
@@ -785,6 +787,22 @@ watch(
     if (newVal && newVal.detalleDestinoFondos) {
       actualizarDetalleDestinoFondos(newVal.detalleDestinoFondos)
     }
+      const getSafeValue = (value, defaultValue = '') => {
+        return value !== null && value !== undefined ? value : defaultValue
+      }
+    const idSolicitante = newVal.usuario_id
+    console.log('uuuuuuuu', idSolicitante)
+    console.log('uuuuuuu9', datosFormulario.value)
+    const datosSolicitante = datosFormulario.value.validadores.find((fp) => fp.id === idSolicitante)
+    console.log('uuuuuu2', datosSolicitante)
+    //return datosSolicitante
+
+    formData.value.nombre = getSafeValue(datosSolicitante.nombre)
+    formData.value.paterno = getSafeValue(datosSolicitante.paterno)
+    formData.value.materno = getSafeValue(datosSolicitante.materno)
+    formData.value.cargo = getSafeValue(datosSolicitante.cargo)
+    formData.value.documento_identidad = getSafeValue(datosSolicitante.ci)
+    formData.value.id_usuario = getSafeValue(datosSolicitante.id,0)
   },
   { deep: true }
 )
