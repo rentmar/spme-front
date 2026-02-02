@@ -567,10 +567,10 @@
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
 <!-- {{ '***************************************B' }}
   <pre>{{ formData.datos_forma_pago }}</pre> -->
-  {{ '***************************************B' }}
-  <pre>{{ datosFormulario1 }}</pre>
-    {{ '***************************************B' }}
-  <pre>{{ datosFormulario }}</pre>
+  <!-- {{ '***************************************B' }}
+  <pre>{{ datosFormulario1 }}</pre> -->
+    <!-- {{ '***************************************B' }}
+  <pre>{{ datosFormulario }}</pre> -->
 </template>
 
 <script setup>
