@@ -78,6 +78,42 @@ export function useImpresionFormularios() {
     }
   }
 
+  //Generar pd solicitud de viaje
+  async function generarPdfSolicitudViajeTareas(idsolviaje) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirSolViajeTareas(idsolviaje)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Generar pd solicitud de Pago directo
+  async function generarPdfSolicitudPagoDirectoTareas(idsolpagodirectotarea) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirSolPagoDirectoTareas(idsolpagodirectotarea)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Generar pdf Rendicion de cuentas
+  async function generarPdfRendicionCuentasTareas(idsolrendicioncuentas) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirRendCuentasTareas(idsolrendicioncuentas)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   //
   return {
     loading,
@@ -88,5 +124,8 @@ export function useImpresionFormularios() {
     generarPdfSolicitudReposicion,
     generarPdfRendicionCuentas,
     generarPdfSolicitudFondosTareas,
+    generarPdfSolicitudViajeTareas,
+    generarPdfSolicitudPagoDirectoTareas,
+    generarPdfRendicionCuentasTareas,
   }
 }
