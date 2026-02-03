@@ -78,7 +78,7 @@ export function useImpresionFormularios() {
     }
   }
 
-  //Generar pd solicitud de viaje
+  //Generar pd solicitud de viaje tareas
   async function generarPdfSolicitudViajeTareas(idsolviaje) {
     loading.value = true
     try {
@@ -114,6 +114,17 @@ export function useImpresionFormularios() {
     }
   }
 
+  async function generarPdfSolicitudReposicionTareas(idsolreposicion) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirSolReposicionTareas(idsolreposicion)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   //
   return {
     loading,
@@ -127,5 +138,6 @@ export function useImpresionFormularios() {
     generarPdfSolicitudViajeTareas,
     generarPdfSolicitudPagoDirectoTareas,
     generarPdfRendicionCuentasTareas,
+    generarPdfSolicitudReposicionTareas,
   }
 }
