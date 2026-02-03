@@ -176,15 +176,82 @@
                     <v-icon color="primary" class="mr-2">mdi-chart-line</v-icon>
                     Registro de Indicadores
                   </h3>
-                  <v-row>
-                    <v-col cols="12">
-                      <RegistroAvanceIndicadores
-                        v-if="storeInfActividad.actividad"
-                        :idactividad="storeInfActividad.actividad?.id"
-                        @todos-los-registros-enviados="manejarRegistrosIndicadores"
-                      ></RegistroAvanceIndicadores>
-                    </v-col>
-                  </v-row>
+
+                  <!-- Switch para activar/desactivar la sección -->
+                  <div class="mb-4">
+                    <v-switch
+                      v-model="habilitarIndicadores"
+                      :label="`${habilitarIndicadores ? 'Sección activada' : 'Sección desactivada'} - Registro de indicadores`"
+                      color="primary"
+                      hide-details
+                      inset
+                    ></v-switch>
+                    <div v-if="!habilitarIndicadores" class="text-caption text-grey mt-2">
+                      La sección de registro de indicadores está desactivada. No se guardará
+                      información de indicadores.
+                    </div>
+                  </div>
+
+                  <!-- Contenido condicional -->
+                  <v-expand-transition>
+                    <div v-if="habilitarIndicadores">
+                      <v-row>
+                        <v-col cols="12">
+                          <v-alert
+                            v-if="
+                              formData.avanceIndicadores &&
+                              Object.keys(formData.avanceIndicadores).length > 0
+                            "
+                            type="info"
+                            variant="tonal"
+                            class="mb-4"
+                          >
+                            <div class="d-flex align-center">
+                              <v-icon class="mr-2">mdi-information</v-icon>
+                              <div>
+                                Ya existen datos de indicadores cargados. Puede modificar los
+                                registros existentes.
+                                <div class="text-caption mt-1">
+                                  Total de registros:
+                                  {{ Object.keys(formData.avanceIndicadores).length }}
+                                </div>
+                              </div>
+                            </div>
+                          </v-alert>
+
+                          <RegistroAvanceIndicadores
+                            v-if="storeInfActividad.actividad"
+                            :idactividad="storeInfActividad.actividad?.id"
+                            :datos-existente="formData.avanceIndicadores"
+                            @todos-los-registros-enviados="manejarRegistrosIndicadores"
+                          ></RegistroAvanceIndicadores>
+                        </v-col>
+                      </v-row>
+                    </div>
+                    <div
+                      v-else-if="
+                        habilitarIndicadores === false &&
+                        formData.avanceIndicadores &&
+                        Object.keys(formData.avanceIndicadores).length > 0
+                      "
+                      class="mt-4"
+                    >
+                      <v-alert type="warning" variant="tonal">
+                        <div class="d-flex align-center">
+                          <v-icon class="mr-2">mdi-alert</v-icon>
+                          <div>
+                            <strong>Advertencia:</strong> Existen datos de indicadores previamente
+                            cargados ({{ Object.keys(formData.avanceIndicadores).length }}
+                            registros).
+                            <div class="text-caption mt-1">
+                              Si desactiva esta sección, los datos de indicadores no se enviarán con
+                              el informe.
+                            </div>
+                          </div>
+                        </div>
+                      </v-alert>
+                    </div>
+                  </v-expand-transition>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -197,9 +264,6 @@
                   </h3>
                   <v-row>
                     <v-col cols="12">
-                      <!-- <InformacionCuantitativa
-                        @registrar-informacion="manejarRegistro"
-                      ></InformacionCuantitativa> -->
                       <InformacionCuantitativaV2
                         @registrar-informacion="manejarRegistro"
                       ></InformacionCuantitativaV2>
@@ -259,6 +323,8 @@
                   </v-row>
                 </div>
 
+                <v-divider class="my-4"></v-divider>
+
                 <!-- Seccio 9: Comentarios y recomendaciones-->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
@@ -315,10 +381,11 @@
       </v-row>
     </div>
   </v-container>
+  {{ formData }}
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useInformeActividadStore } from '@/modules/formularios/store/useInformeActividadStore'
 //Cabecera - Componentes
@@ -349,6 +416,7 @@ const { successMsg } = useSnackbar()
 const cargandoGeneral = ref(false)
 const loading = ref(false)
 const form = ref(null)
+const habilitarIndicadores = ref(false)
 
 // Datos del formulario
 const formData = ref({
@@ -369,6 +437,19 @@ const formData = ref({
   actividad: idactividad,
 })
 
+/***************** WATCHERS *******************************/
+// Watcher para activar automáticamente la sección si hay datos de indicadores
+watch(
+  () => formData.value.avanceIndicadores,
+  (nuevoValor, viejoValor) => {
+    // Activar automáticamente la sección si hay datos de indicadores
+    if (nuevoValor && Object.keys(nuevoValor).length > 0) {
+      habilitarIndicadores.value = true
+    }
+  },
+  { immediate: true },
+)
+
 /***************** METODOS *******************************/
 //Contribucion al proyecto
 const recibirDatosContribucion = (payload) => {
@@ -379,8 +460,16 @@ const recibirDatosContribucion = (payload) => {
 //Registro de indicadores
 const manejarRegistrosIndicadores = (payload) => {
   console.log('Avance de indicadores recibido: ', payload)
-  formData.value.avanceIndicadores = payload
-  successMsg('Avance Indicadores registrados')
+
+  // Solo guardar si la sección está habilitada
+  if (habilitarIndicadores.value) {
+    formData.value.avanceIndicadores = payload
+    successMsg('Avance Indicadores registrados')
+  } else {
+    // Si la sección está deshabilitada, limpiar los datos
+    formData.value.avanceIndicadores = null
+    console.log('Sección de indicadores deshabilitada, datos no guardados')
+  }
 }
 
 //Informacion cuantitativa
@@ -423,6 +512,7 @@ const resetForm = () => {
     observacionesPresupuesto: '',
     actividad: idactividad,
   }
+  habilitarIndicadores.value = false
 }
 
 //Cancelar
@@ -434,17 +524,37 @@ const cancelar = () => {
 const submitForm = async () => {
   loading.value = true
   try {
+    // Preparar datos finales
+    const datosParaEnviar = { ...formData.value }
+
+    // Si la sección de indicadores está deshabilitada, no enviar datos de indicadores
+    if (!habilitarIndicadores.value) {
+      datosParaEnviar.avanceIndicadores = null
+    }
+
+    // Si no hay datos de indicadores o está deshabilitado, eliminar la propiedad
+    if (
+      !datosParaEnviar.avanceIndicadores ||
+      (datosParaEnviar.avanceIndicadores &&
+        Object.keys(datosParaEnviar.avanceIndicadores).length === 0)
+    ) {
+      delete datosParaEnviar.avanceIndicadores
+    }
+
+    console.log('Enviando informe:', datosParaEnviar)
+
+    // Nota al usuario
+    if (!habilitarIndicadores.value) {
+      console.log('Sección de indicadores deshabilitada - No se enviarán datos de indicadores')
+    }
+
     // Validaciones básicas
     // if (!formData.value.objetivoActividad || !formData.value.informeObjetivoActividad) {
     //   throw new Error('Por favor, complete los campos obligatorios del formulario.')
     // }
 
     // Aquí iría la lógica para enviar al backend
-    console.log('Enviando informe:', formData.value)
-
-    // Simular envío
-    //await new Promise((resolve) => setTimeout(resolve, 1500))
-    await formulariosServico.creaInformeActividadPrincipal(formData.value)
+    await formulariosServico.creaInformeActividadPrincipal(datosParaEnviar)
 
     alert('Informe enviado exitosamente')
     router.push('/actividades/informe/')
@@ -477,6 +587,7 @@ const cargarDatos = async () => {
 
         formData.value.tipoActividad = tipoActividadInf
       }
+      //Cargar los valores de los indicadores
     }
   } catch (err) {
     console.error('Error al cargar la información de la Actividad:', err)

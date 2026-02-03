@@ -4,7 +4,7 @@ export const impresionFormulariosServicio = {
   //Formularios Proyectos
   imprimirSolFondos: async (idsolfondos, descargar = true) => {
     try {
-      const respuesta = await apiPrint.get('/solicitud-fondos-tarea/' + idsolfondos + '/pdf/', {
+      const respuesta = await apiPrint.get('/solicitud-fondos/' + idsolfondos + '/pdf/', {
         responseType: 'blob',
       })
 
@@ -416,7 +416,7 @@ export const impresionFormulariosServicio = {
   },
   imprimirSolReposicionTareas: async (idsolfondos, descargar = true) => {
     try {
-      const respuesta = await apiPrint.get('/rendicion-cuentas-tareas/' + idsolfondos + '/pdf/', {
+      const respuesta = await apiPrint.get('/solicitud-reposicion-tarea/' + idsolfondos + '/pdf/', {
         responseType: 'blob',
       })
 
@@ -467,7 +467,7 @@ export const impresionFormulariosServicio = {
   },
   imprimirRendCuentasTareas: async (idsolfondos, descargar = true) => {
     try {
-      const respuesta = await apiPrint.get('//' + idsolfondos + '/pdf/', {
+      const respuesta = await apiPrint.get('/rendicion-cuentas-tareas/' + idsolfondos + '/pdf/', {
         responseType: 'blob',
       })
 
