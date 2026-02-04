@@ -378,7 +378,7 @@
                                   </v-tooltip>
                                 </div>
 
-                                <!-- Solicitud de Viaje para TAREA se cambio de 1 a 5-->
+                                <!-- Solicitud de Viaje para TAREA -->
                                 <div class="d-flex flex-column align-center justify-center">
                                   <v-tooltip text="Solicitud de Viaje" location="top">
                                     <template v-slot:activator="{ props }">
@@ -416,7 +416,7 @@
                                   </v-tooltip>
                                 </div>
 
-                                <!-- Solicitud de Pago Directo para TAREA se cambio de 1 a 5-->
+                                <!-- Solicitud de Pago Directo para TAREA -->
                                 <div class="d-flex flex-column align-center justify-center">
                                   <v-tooltip text="Solicitud de Pago Directo" location="top">
                                     <template v-slot:activator="{ props }">

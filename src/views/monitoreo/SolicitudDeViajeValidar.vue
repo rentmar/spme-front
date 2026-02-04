@@ -1,7 +1,6 @@
 <template>
   <v-container class="v-container v-locale--is-ltr">
     <v-card id="formulario-pdf" class="pa-6">
-
       <PaginaTituloIcono
         :titulo="'Validar Solicitud de Viaje'"
         :icon="'mdi-file-document-multiple'"
@@ -12,9 +11,8 @@
         :proyecto-id="datosFormulario.actividad?.proyecto"
       ></ProyectoIdHeader>
 
-       <br />
-      <ActividadInformacion v-if="idActividad" :actividad-id="idActividad"
-      ></ActividadInformacion>
+      <br />
+      <ActividadInformacion v-if="idActividad" :actividad-id="idActividad"></ActividadInformacion>
       <br />
 
       <v-card-text>
@@ -40,8 +38,7 @@
                   :max="formData.fecha_fin"
                 ></v-text-field>
               </v-col>
-              <v-col cols="12" sm="6">
-              </v-col>
+              <v-col cols="12" sm="6"> </v-col>
             </v-row>
 
             <v-text-field
@@ -168,12 +165,7 @@
                     ></v-text-field>
                   </td>
                   <td>
-                    <v-btn
-                      variant="text"
-                      icon
-                      color="error"
-                      @click="removeGasto(index)"
-                    >
+                    <v-btn variant="text" icon color="error" @click="removeGasto(index)">
                       <v-icon>mdi-delete</v-icon>
                     </v-btn>
                   </td>
@@ -184,25 +176,24 @@
 
           <v-divider class="my-4"></v-divider>
 
-                          <!-- Sección 4: Información Adicional -->
-                <div class="form-section mb-6">
-                  <!-- <h3 class="text-h6 mb-4 primary--text">
+          <!-- Sección 4: Información Adicional -->
+          <div class="form-section mb-6">
+            <!-- <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-information</v-icon>
                     Información Adicional
                   </h3> -->
 
-                  <v-row>
-                    <v-col cols="12" md="6">
-
-                      <v-text-field
-                        v-model="solicitudDeViaje.lugarSolicitud"
-                        label="Lugar de la Solicitud"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
-                        readonly
-                      ></v-text-field>
-                      <!-- <v-select
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="solicitudDeViaje.lugarSolicitud"
+                  label="Lugar de la Solicitud"
+                  variant="outlined"
+                  bg-color="blue-lighten-5"
+                  required
+                  readonly
+                ></v-text-field>
+                <!-- <v-select
                         v-model="formData.forma_pago"
                         :items="formasPagoOptions"
                         item-title="formaPago"
@@ -212,109 +203,109 @@
                         bg-color="blue-lighten-5"
                         required
                       ></v-select> -->
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="formData.fecha_solicitud"
-                        label="Fecha de la Solicitud"
-                        type="date"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="formData.fecha_solicitud"
+                  label="Fecha de la Solicitud"
+                  type="date"
+                  variant="outlined"
+                  density="compact"
+                  bg-color="grey-lighten-4"
+                  readonly
+                ></v-text-field>
+              </v-col>
+            </v-row>
 
-                  <v-row>
-                    <v-col cols="12" md="6">
-                      <v-select
-                        v-model="formData.forma_pago"
-                        :items="formasPago"
-                        item-title="formaPago"
-                        item-value="id"
-                        label="Forma de Pago"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
-                        readonly
-                      ></v-select>
-                    </v-col>
-                  </v-row>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="formData.forma_pago"
+                  :items="formasPago"
+                  item-title="formaPago"
+                  item-value="id"
+                  label="Forma de Pago"
+                  variant="outlined"
+                  bg-color="blue-lighten-5"
+                  required
+                  readonly
+                ></v-select>
+              </v-col>
+            </v-row>
 
-                  <div v-if="MostrarCamposOtros">
-                    <v-row>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.otros.nombre_otros"
-                          label="Nombre a quien se realiza el pago"
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          readonly
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.otros.ci_otros"
-                          label="Documento de Identidad C.I."
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          readonly
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                  </div>
-                  <div v-if="MostrarCamposTransferencia">
-                    <v-row>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.transferencia.nombre_transferencia"
-                          label="Nombre completo a quien se realiza la transferencia"
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          readonly
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.transferencia.ci_transferencia"
-                          label="Documento de Identidad C.I."
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          readonly
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.transferencia.entidad_bancaria"
-                          label="Nombre de Entidad Bancaria"
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          readonly
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-select
-                          v-model="formData.datos_forma_pago.transferencia.tipo_cuenta"
-                          :items="['Ahorro', 'Corriente']"
-                          label="Tipo de Cuenta (Ahorro/ Corriente)"
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          readonly
-                        ></v-select>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.transferencia.numero_cuenta"
-                          label="Número de Cuenta Bancaria"
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          readonly
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                  </div>
-                </div>
+            <div v-if="MostrarCamposOtros">
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.datos_forma_pago.otros.nombre_otros"
+                    label="Nombre a quien se realiza el pago"
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.datos_forma_pago.otros.ci_otros"
+                    label="Documento de Identidad C.I."
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </div>
+            <div v-if="MostrarCamposTransferencia">
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.datos_forma_pago.transferencia.nombre_transferencia"
+                    label="Nombre completo a quien se realiza la transferencia"
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.datos_forma_pago.transferencia.ci_transferencia"
+                    label="Documento de Identidad C.I."
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.datos_forma_pago.transferencia.entidad_bancaria"
+                    label="Nombre de Entidad Bancaria"
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="formData.datos_forma_pago.transferencia.tipo_cuenta"
+                    :items="['Ahorro', 'Corriente']"
+                    label="Tipo de Cuenta (Ahorro/ Corriente)"
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    readonly
+                  ></v-select>
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.datos_forma_pago.transferencia.numero_cuenta"
+                    label="Número de Cuenta Bancaria"
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </div>
+          </div>
 
           <v-divider class="my-4"></v-divider>
 
@@ -334,20 +325,22 @@
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
-                      <v-checkbox
-                        v-model="solicitudDeViaje.validacionResponsable"
-                        :label="`Aprobado por Contador ${puedeValidarResponsable ? '(Usted)' : ''}`"
-                        :disabled="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
-                        :readonly="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
-                        :color="puedeValidarResponsable ? 'primary' : 'grey'"
-                        @update:modelValue="(newValue) => {
-                          if (newValue) {
-                            nextTick(() => {
-                              validarViaje('responsable');
-                            });
-                          }
-                        }"
-                      ></v-checkbox>
+                <v-checkbox
+                  v-model="solicitudDeViaje.validacionResponsable"
+                  :label="`Aprobado por Contador ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                  :disabled="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
+                  :readonly="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
+                  :color="puedeValidarResponsable ? 'primary' : 'grey'"
+                  @update:modelValue="
+                    (newValue) => {
+                      if (newValue) {
+                        nextTick(() => {
+                          validarViaje('responsable')
+                        })
+                      }
+                    }
+                  "
+                ></v-checkbox>
               </v-col>
             </v-row>
             <v-row>
@@ -370,19 +363,42 @@
                   :disabled="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
                   :readonly="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
                   :color="puedeValidarCoordinador ? 'primary' : 'grey'"
-                  @update:modelValue="(newValue) => {
-                    if (newValue) {
-                      nextTick(() => {
-                        validarViaje('coordinador');
-                      });
+                  @update:modelValue="
+                    (newValue) => {
+                      if (newValue) {
+                        nextTick(() => {
+                          validarViaje('coordinador')
+                        })
+                      }
                     }
-                  }"
+                  "
                 ></v-checkbox>
               </v-col>
             </v-row>
           </div>
 
           <div class="d-flex justify-end mt-4">
+            <v-btn
+              v-if="idActividad && !idTarea"
+              color="info"
+              prepend-icon="mdi-file-pdf-box"
+              @click="generarPdfSolicitudFondosFunc"
+              :loading="loadingPdfSolicitud"
+              :disabled="!idActividad || loadingPdfSolicitud"
+            >
+              SV
+            </v-btn>
+
+            <v-btn
+              v-if="idActividad && idTarea"
+              color="info"
+              prepend-icon="mdi-file-pdf-box"
+              @click="generarPdfSolicitudSubactividadFunc"
+              :loading="loadingPdfSubactividad"
+              :disabled="!idActividad || !idTarea || loadingPdfSubactividad"
+            >
+              SVS
+            </v-btn>
             <v-btn
               color="error"
               class="mr-2"
@@ -404,23 +420,62 @@
       </v-card-text>
     </v-card>
   </v-container>
-   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
-    <!-- {{ '*********************B' }}
+  <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
+  <!-- {{ '*********************B' }}
     <pre>{{ formData.datos_forma_pago }}</pre> -->
-    <!-- {{ '*********************B' }}
+  <!-- {{ '*********************B' }}
     {{ formData.id_coordinador }} -->
 </template>
 
 <script setup>
-import * as XLSX from 'xlsx';
-import { ref, onMounted, computed, nextTick, watch } from 'vue';
-import axios from 'axios';
+import * as XLSX from 'xlsx'
+import { ref, onMounted, computed, nextTick, watch } from 'vue'
+import axios from 'axios'
 import { useUserStore } from '@/stores/user'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
 import { useRoute } from 'vue-router'
+//Composable de impresion
+import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
+
+//Inicializar el composable
+const { generarPdfSolicitudViaje, generarPdfSolicitudViajeTareas } = useImpresionFormularios()
+/*************************** Generar PDFs *******************************************/
+const loadingPdfSolicitud = ref(false)
+const loadingPdfSubactividad = ref(false)
+
+const generarPdfSolicitudFondosFunc = async () => {
+  if (!idActividad) return
+
+  loadingPdfSolicitud.value = true
+  try {
+    // Aquí iría tu lógica para generar el PDF de solicitud de fondos
+    console.log('Generando PDF Solicitud de Fondos para actividad:', idActividad)
+    await generarPdfSolicitudViaje(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Solicitud de Fondos:', error)
+    alert('Error al generar el PDF: ' + error.message)
+  } finally {
+    loadingPdfSolicitud.value = false
+  }
+}
+
+const generarPdfSolicitudSubactividadFunc = async () => {
+  if (!idActividad || !idTarea) return
+
+  loadingPdfSubactividad.value = true
+  try {
+    await generarPdfSolicitudViajeTareas(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Subactividad:', error)
+    alert('Error al generar el PDF de subactividad: ' + error.message)
+  } finally {
+    loadingPdfSubactividad.value = false
+  }
+}
+/*************************** Fin Generar PDFs *******************************************/
 
 const route = useRoute()
 const idActividad = route.params.id || null
@@ -442,19 +497,19 @@ console.log('ID Usuario:', usuario.value.id)
 
 const baseurl = import.meta.env.VITE_API_BASE
 
-const loading = ref(false);
-const responsablesList = ref([]);
-const coordinadoresList = ref([]);
+const loading = ref(false)
+const responsablesList = ref([])
+const coordinadoresList = ref([])
 const datosSolicitante = ref([])
 const solicitante = ref(null)
-const solicitudDeViaje = ref({})  //viene de la funccion cargarSolicitudesDeViaje
+const solicitudDeViaje = ref({}) //viene de la funccion cargarSolicitudesDeViaje
 const numeroFormulario = ref('')
 
 const cargandoGeneral = ref(true)
 
 //variables para carga de datos
 const datosFormulario = ref(null)
-const datosFormulario1 = ref(null)    //viene de funcion cargarSolicitudesDeViaje y actualiza detalle_destino_fondos
+const datosFormulario1 = ref(null) //viene de funcion cargarSolicitudesDeViaje y actualiza detalle_destino_fondos
 const error = ref(null)
 const isLoading = ref(false)
 const formasPago = ref([])
@@ -465,7 +520,7 @@ const formData = ref({
   fecha_evento: '',
   lugar_evento: '',
   instituciones_participantes: '',
-  institucion_queinvita: '',//organizador
+  institucion_queinvita: '', //organizador
   quien_cubregastos: '',
   fondos_unitas: '',
   justificacion_asistencia: '',
@@ -475,7 +530,16 @@ const formData = ref({
   id_usuario: 0,
   detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
   forma_pago: null,
-  datos_forma_pago: { otros: {nombre_otros: '', ci_otros: ''}, transferencia: { nombre_transferencia: '', ci_transferencia: '', entidad_bancaria: '', tipo_cuenta: '', numero_cuenta: ''}},
+  datos_forma_pago: {
+    otros: { nombre_otros: '', ci_otros: '' },
+    transferencia: {
+      nombre_transferencia: '',
+      ci_transferencia: '',
+      entidad_bancaria: '',
+      tipo_cuenta: '',
+      numero_cuenta: '',
+    },
+  },
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
   monto_solicitado: 0,
@@ -483,7 +547,7 @@ const formData = ref({
   id_responsable: null,
   validacion_coordinador: false,
   id_coordinador: null,
-});
+})
 
 const formDatSF = ref({
   // Propiedades existentes...
@@ -507,19 +571,19 @@ const formDatSF = ref({
   usuario_idsf: null,
   actividad_idsf: null,
   fechaRealizacionActividadsf: '',
-  bloquearIconosSolFondossf: true
+  bloquearIconosSolFondossf: true,
 })
 
 const nombreCoordinadorElegido = computed(() => {
   const coordinador = coordinadoresList.value.find(
-    (user) => user.id === formData.value.id_coordinador
+    (user) => user.id === formData.value.id_coordinador,
   )
   return coordinador ? getNombreCompleto(coordinador) : ''
 })
 
 const nombreResponsableElegido = computed(() => {
   const responsable = responsablesList.value.find(
-    (user) => user.id === formData.value.id_responsable
+    (user) => user.id === formData.value.id_responsable,
   )
   return responsable ? getNombreCompleto(responsable) : ''
 })
@@ -527,9 +591,9 @@ const nombreResponsableElegido = computed(() => {
 const totalMontoSolicitado = computed(() => {
   return formData.value.detalle_destino_fondos.reduce(
     (total, gasto) => total + Number(gasto.monto || 0),
-    0
-  );
-});
+    0,
+  )
+})
 
 // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
 watch(
@@ -551,17 +615,16 @@ watch(
       formData.value.materno = getSafeValue(usuario.materno)
       formData.value.cargo = getSafeValue(usuario.cargo)
       formData.value.documento_identidad = getSafeValue(usuario.ci)
-      formData.value.id_usuario = getSafeValue(usuario.id,0)
+      formData.value.id_usuario = getSafeValue(usuario.id, 0)
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
-
         formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)
         formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)
         formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)
         formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)
         formData.value.fecha_ejecucion = getSafeValue(newVal.actividad.fecha_programada)
-        formData.value.id_actividad = getSafeValue(newVal.actividad.id,0)
+        formData.value.id_actividad = getSafeValue(newVal.actividad.id, 0)
         formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
@@ -580,8 +643,10 @@ watch(
       // Llenar lista de validadores si existen
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
         //console.log('Cargando validadores:', newVal.validadores)
-        responsablesList.value = newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
-        coordinadoresList.value = newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
+        responsablesList.value =
+          newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
+        coordinadoresList.value =
+          newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
       } else {
         responsablesList.value = []
         coordinadoresList.value = []
@@ -617,18 +682,19 @@ const MostrarCamposTransferencia = computed(() => {
 })
 
 function getNombreCompleto(user) {
-  return `${user.nombre} ${user.paterno} ${user.materno}`.trim();
+  return `${user.nombre} ${user.paterno} ${user.materno}`.trim()
 }
 
 function getCurrentDate() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
-async function cargarDatos() {      //se carga unicamente para la etiqueta proyectos
+async function cargarDatos() {
+  //se carga unicamente para la etiqueta proyectos
   isLoading.value = true
   error.value = null
   try {
@@ -663,7 +729,7 @@ async function cargarDatos() {      //se carga unicamente para la etiqueta proye
 
 async function cargarFormasDePago() {
   try {
-    const response = await fetch(baseurl+'/monitoreo_api/obtenerFormasPago/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerFormasPago/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
@@ -673,7 +739,9 @@ async function cargarFormasDePago() {
 
     const data = await response.json()
     formasPago.value = data.formasPago // Asignar directamente el array
-    formaPago.value = formasPago.value.find((user) => user.id === solicitudDeViaje.value.formaPago_id)
+    formaPago.value = formasPago.value.find(
+      (user) => user.id === solicitudDeViaje.value.formaPago_id,
+    )
     //console.log('Formas de pago cargadas:', formasPago.value)
   } catch (err) {
     console.error('Error:', err)
@@ -686,101 +754,101 @@ watch(
     if (newVal && newVal.usuario) {
       datosSolicitante.value = newVal.usuario
       //console.log('hhhhhhhhhhhh:', JSON.stringify(datosSolicitante.value, null, 2))
-      if(datosSolicitante.value){
-      solicitante.value = getNombreCompleto(datosSolicitante.value)
+      if (datosSolicitante.value) {
+        solicitante.value = getNombreCompleto(datosSolicitante.value)
       }
     } else {
-      datosSolicitante.value = [];
+      datosSolicitante.value = []
     }
   },
-  { deep: true } // Si necesitas observar cambios profundos
-);
+  { deep: true }, // Si necesitas observar cambios profundos
+)
 
 async function cargarUsuarios() {
   try {
-    const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/');
-    const allUsers = response.data.usuarios;
-    responsablesList.value = allUsers.filter((user) => user.cargo === 'contable');
-    coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador');
+    const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/')
+    const allUsers = response.data.usuarios
+    responsablesList.value = allUsers.filter((user) => user.cargo === 'contable')
+    coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador')
     datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
-    if(datosSolicitante.value){
+    if (datosSolicitante.value) {
       solicitante.value = getNombreCompleto(datosSolicitante.value)
     }
   } catch (error) {
-    console.error('Error al cargar la lista de usuarios:', error);
-    alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
+    console.error('Error al cargar la lista de usuarios:', error)
+    alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.')
   }
 }
 
 function sanitizeData(data) {
   if (data === null || data === undefined) {
-    return '';
+    return ''
   }
 
   if (typeof data === 'string') {
     // Limpiar strings: trim y convertir empty strings a ''
-    const trimmed = data.trim();
-    return trimmed === '' ? '' : trimmed;
+    const trimmed = data.trim()
+    return trimmed === '' ? '' : trimmed
   }
 
   if (typeof data === 'number') {
     // Validar que sea un número finito
-    return isFinite(data) ? data : 0;
+    return isFinite(data) ? data : 0
   }
 
   if (typeof data === 'boolean') {
-    return data;
+    return data
   }
 
   if (Array.isArray(data)) {
     // Sanitizar cada elemento del array
-    return data.map(item => sanitizeData(item)).filter(item =>
-      item !== null && item !== undefined && item !== ''
-    );
+    return data
+      .map((item) => sanitizeData(item))
+      .filter((item) => item !== null && item !== undefined && item !== '')
   }
 
   if (typeof data === 'object') {
-    const sanitized = {};
+    const sanitized = {}
     for (const key in data) {
       if (Object.prototype.hasOwnProperty.call(data, key)) {
-        const value = data[key];
+        const value = data[key]
         // Solo incluir propiedades con valores válidos
         if (value !== null && value !== undefined && value !== '') {
-          sanitized[key] = sanitizeData(value);
+          sanitized[key] = sanitizeData(value)
         }
       }
     }
-    return sanitized;
+    return sanitized
   }
 
   // Para cualquier otro tipo de dato, retornar string vacío
-  return '';
+  return ''
 }
 
 function strictSanitizeData(data) {
-  const sanitized = sanitizeData(data);
+  const sanitized = sanitizeData(data)
 
   // Si el resultado es un objeto vacío, retornar string vacío
   if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
     if (Object.keys(sanitized).length === 0) {
-      return '';
+      return ''
     }
   }
 
-  return sanitized;
+  return sanitized
 }
 
 async function cargarSolicitudesDeViaje() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudesViaje/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudesViaje/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        id_solicitud_viaje: idSolicitud
+        id_solicitud_viaje: idSolicitud,
       }),
     })
     //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
@@ -797,11 +865,13 @@ async function cargarSolicitudesDeViaje() {
 
     solicitudDeViaje.value = rawData.solicitudes[0]
 
-    formData.value.detalle_destino_fondos = solicitudDeViaje.value.detalleGasto.items.map(item =>({
-      partida: item.partida || '',
-      descripcion_gasto: item.concepto || '',
-      monto: item.monto || 0
-    }))
+    formData.value.detalle_destino_fondos = solicitudDeViaje.value.detalleGasto.items.map(
+      (item) => ({
+        partida: item.partida || '',
+        descripcion_gasto: item.concepto || '',
+        monto: item.monto || 0,
+      }),
+    )
     formData.value.forma_pago = solicitudDeViaje.value.formaPago_id
     formData.value.id_responsable = solicitudDeViaje.value.responsable_id
     formData.value.id_coordinador = solicitudDeViaje.value.coordinador_id
@@ -809,7 +879,7 @@ async function cargarSolicitudesDeViaje() {
     //console.log('Datos cargados exitosamente:', JSON.stringify(formData.value.detalle_destino_fondos,null,2))
 
     // Filtrar las solicitudes por actividad_id y tarea_id
-    const solicitudesFiltradas = rawData.solicitudes.filter(solicitud => {
+    const solicitudesFiltradas = rawData.solicitudes.filter((solicitud) => {
       // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
       const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
       const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
@@ -831,19 +901,18 @@ async function cargarSolicitudesDeViaje() {
 }
 
 function addGasto() {
-  formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 });
+  formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 })
 }
 
 function removeGasto(index) {
   if (formData.value.detalle_destino_fondos.length > 1) {
-    formData.value.detalle_destino_fondos.splice(index, 1);
+    formData.value.detalle_destino_fondos.splice(index, 1)
   }
 }
 
 async function submitForm() {
-  loading.value = true;
+  loading.value = true
   try {
-
     const requiredFields = [
       'evento',
       'fecha_evento',
@@ -860,24 +929,24 @@ async function submitForm() {
       'fecha_solicitud',
       'id_responsable',
       'id_coordinador',
-    ];
+    ]
 
     for (const field of requiredFields) {
       if (!formData.value[field]) {
-        throw new Error(`El campo '${field}' es requerido.`);
+        throw new Error(`El campo '${field}' es requerido.`)
       }
     }
 
     if (
       formData.value.detalle_destino_fondos.some(
-        (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0
+        (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0,
       )
     ) {
-      throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.');
+      throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
     }
 
     const payload = {
-      ...formData.value,    //esta linea incluye todas las propiedades de formData
+      ...formData.value, //esta linea incluye todas las propiedades de formData
       id_usuario: usuario.value.id || 0,
       id_actividad: idActividad || 0,
       id_tarea: idTarea || null,
@@ -889,25 +958,25 @@ async function submitForm() {
           monto: Number(gasto.monto),
         })),
       },
-    };
+    }
     //console.log('Payload completo que se enviará:', JSON.stringify(payload,null,2)); // ← Verificar aquí
 
     const response = await axios.post(baseurl + '/monitoreo_api/crearSolicitudViaje/', payload, {
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    })
 
-    numeroFormulario.value = response.numero_formulario;
+    numeroFormulario.value = response.numero_formulario
 
-    alert('Solicitud enviada con éxito');
-    exportToExcel();
-    resetForm();
+    alert('Solicitud enviada con éxito')
+    exportToExcel()
+    resetForm()
   } catch (error) {
-    console.error('Error completo:', error.response?.data || error.message);
-    alert(`Error: ${error.response?.data?.message || error.message}`);
+    console.error('Error completo:', error.response?.data || error.message)
+    alert(`Error: ${error.response?.data?.message || error.message}`)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
@@ -930,7 +999,7 @@ function resetForm() {
     validacion_responsable: false,
     id_coordinador: null,
     validacion_coordinador: false,
-  });
+  })
 }
 
 function exportToExcel() {
@@ -946,7 +1015,7 @@ function exportToExcel() {
     [''],
     ['INFORMACIÓN DEL SEMINARIO', '', '', ''],
     ['Seminario:', formData.value.evento, '', ''],
-    ['Fecha Evento:', formData.value.fecha_evento,'', ''],
+    ['Fecha Evento:', formData.value.fecha_evento, '', ''],
     ['Lugar de Evento:', formData.value.lugar_evento, '', ''],
     ['Instituciones Participantes:', formData.value.instituciones_participantes, '', ''],
     ['Institución que Invita:', formData.value.institucion_queinvita, '', ''],
@@ -1147,7 +1216,6 @@ function applyExcelStyles(
   }
 }
 
-
 // Función para actualizar datosFormulario con los valores de la solicitud
 function actualizarDatosFormulario(solicitud) {
   if (!solicitud) return
@@ -1212,7 +1280,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
       partida: item.partida_sf || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
       descripcion_gasto: item.concepto || '',
-      monto: item.monto || 0
+      monto: item.monto || 0,
     }))
 
     //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
@@ -1238,7 +1306,6 @@ function actualizarInformacionAdicional(solicitud) {
   if (solicitud && solicitud.datos_forma_pago) {
     const datosPago = solicitud.datos_forma_pago
 
-
     // Los datos ya vienen en el formato correcto desde el backend
     // Solo necesitamos asignarlos directamente
     if (datosPago.transferencia) {
@@ -1247,19 +1314,16 @@ function actualizarInformacionAdicional(solicitud) {
         ci_transferencia: datosPago.transferencia.ci_transferencia || '',
         entidad_bancaria: datosPago.transferencia.entidad_bancaria || '',
         tipo_cuenta: datosPago.transferencia.tipo_cuenta || '',
-        numero_cuenta: datosPago.transferencia.numero_cuenta || ''
+        numero_cuenta: datosPago.transferencia.numero_cuenta || '',
       }
-
     }
 
     if (datosPago.otros) {
       formData.value.datos_forma_pago.otros = {
         nombre_otros: datosPago.otros.nombre_otros || '',
-        ci_otros: datosPago.otros.ci_otros || ''
+        ci_otros: datosPago.otros.ci_otros || '',
       }
-
     }
-
   }
 }
 
@@ -1269,12 +1333,12 @@ function actualizarValidadores() {
 
   // Buscar responsable por ID
   const responsable = datosFormulario.value.validadores.find(
-    validador => validador.id === formDatSF.value.responsable_idsf
+    (validador) => validador.id === formDatSF.value.responsable_idsf,
   )
 
   // Buscar coordinador por ID
   const coordinador = datosFormulario.value.validadores.find(
-    validador => validador.id === formDatSF.value.coordinador_idsf
+    (validador) => validador.id === formDatSF.value.coordinador_idsf,
   )
 
   // Actualizar formData con los IDs encontrados
@@ -1302,14 +1366,13 @@ function actualizarListasValidadores() {
 
   // Filtrar responsables (puedes ajustar la lógica según el cargo)
   responsablesList.value = datosFormulario.value.validadores.filter(
-    validador => validador.cargo && validador.cargo.toLowerCase().includes('contable')
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('contable'),
   )
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
   coordinadoresList.value = datosFormulario.value.validadores.filter(
-    validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador'),
   )
-
 }
 const puedeValidarResponsable = computed(() => {
   const idUsuarioLogueado = usuario.value?.id
@@ -1325,47 +1388,47 @@ const puedeValidarCoordinador = computed(() => {
 
 async function validarViaje(tipoValidador) {
   // Verificar permisos según el tipo de validador
-  let tienePermiso = false;
-  let claveValidacion = '';
+  let tienePermiso = false
+  let claveValidacion = ''
 
   switch (tipoValidador) {
     case 'responsable':
-      tienePermiso = puedeValidarResponsable.value;
-      claveValidacion = 'validacion_responsable';
-      break;
+      tienePermiso = puedeValidarResponsable.value
+      claveValidacion = 'validacion_responsable'
+      break
     case 'coordinador':
-      tienePermiso = puedeValidarCoordinador.value;
-      claveValidacion = 'validacion_coordinador';
-      break;
+      tienePermiso = puedeValidarCoordinador.value
+      claveValidacion = 'validacion_coordinador'
+      break
     default:
-      alert('Tipo de validador no reconocido.');
-      return;
+      alert('Tipo de validador no reconocido.')
+      return
   }
 
   if (!tienePermiso) {
-    alert('Usted no está autorizado para validar esta rendición como ' + tipoValidador + '.');
-    solicitudDeViaje.value[claveValidacion] = false;
-    return;
+    alert('Usted no está autorizado para validar esta rendición como ' + tipoValidador + '.')
+    solicitudDeViaje.value[claveValidacion] = false
+    return
   }
 
-   // Crear el payload específico para la validación
+  // Crear el payload específico para la validación
   const payload = {
     id_solicitud_viaje: solicitudDeViaje.value?.id || idSolicitud,
-    [claveValidacion]: true     //validacion_responsable: true o validacion_coordinador: true
-  };
-  console.log('888888888888888888888', JSON.stringify(payload,null,2))
+    [claveValidacion]: true, //validacion_responsable: true o validacion_coordinador: true
+  }
+  console.log('888888888888888888888', JSON.stringify(payload, null, 2))
 
   if (!payload.id_solicitud_viaje) {
-    alert('Error: No se encontró el ID de la reposicion para validar.');
-    formData.value[claveValidacion] = false; // Revertir
-    return;
+    alert('Error: No se encontró el ID de la reposicion para validar.')
+    formData.value[claveValidacion] = false // Revertir
+    return
   }
 
   // Ejecutar la llamada PATCH
-  loading.value = true;
+  loading.value = true
   try {
     const response = await fetch(
-      baseurl+'/monitoreo_api/actualizar-validacion-solicitud-viaje/',
+      baseurl + '/monitoreo_api/actualizar-validacion-solicitud-viaje/',
       //baseurl+'/monitoreo_api/actualizar-validacion-solicitud-reembolso/',
       {
         method: 'PATCH',
@@ -1373,39 +1436,38 @@ async function validarViaje(tipoValidador) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
-      }
-    );
+      },
+    )
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json()
       throw new Error(
-        `Error al actualizar: ${response.status} - ${errorData.detail || errorData.mensaje || 'Error desconocido'}`
-      );
+        `Error al actualizar: ${response.status} - ${errorData.detail || errorData.mensaje || 'Error desconocido'}`,
+      )
     }
 
     //const result = await response.json();
-    alert('Solicitud de Viaje validada exitosamente.');
+    alert('Solicitud de Viaje validada exitosamente.')
 
     // Recargar los datos para reflejar los cambios
-    await cargarSolicitudesDeViaje();
-
+    await cargarSolicitudesDeViaje()
   } catch (err) {
-    console.error('Error al validar la solicitud:', err);
-    alert(`Error al validar la solicitud: ${err.message}`);
+    console.error('Error al validar la solicitud:', err)
+    alert(`Error al validar la solicitud: ${err.message}`)
 
     // Revertir el cambio en caso de error
-    formData.value[claveValidacion] = false;
+    formData.value[claveValidacion] = false
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 onMounted(async () => {
-  await cargarUsuarios();
+  await cargarUsuarios()
   cargarDatos()
   cargarSolicitudesDeViaje()
   cargarFormasDePago()
-});
+})
 </script>
 
 <style scoped>

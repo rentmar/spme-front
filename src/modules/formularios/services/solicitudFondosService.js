@@ -50,23 +50,30 @@ export const solicitudDeFondosServico = {
       throw error
     }
   },
-  //Sol de Fondos por id de actividad
+
+  /************************ Solicitud de Fondos Actividad *******************************************/
+  //Solicitudes de fondos por id Actividad
   solFondosPorIdActividad: async (idactividad) => {
     try {
-      const respuesta = await api.get('//')
+      const respuesta = await api.get('/solicitudes-fondos/actividad/' + idactividad + '/')
       return respuesta.data
     } catch (error) {
-      console.error('Axios: Error al cargar la sol de fondos por id actividad' + idactividad, error)
+      console.error(
+        'Axios: Error al cargar la sol de fondos de la actividad con id ' + idactividad,
+        error,
+      )
       throw error
     }
   },
-  //Sol de Fondos por id de actividad
-  solFondosPorIdTarea: async (idtarea) => {
+  /************************ Solicitud de Fondos Tarea *******************************************/
+  solFondosPorIdtarea: async (idactividad, idtarea) => {
     try {
-      const respuesta = await api.get('//')
+      const respuesta = await api.get(
+        '/solicitudes-fondos/actividad/' + idactividad + '/tarea/' + idtarea + '/',
+      )
       return respuesta.data
     } catch (error) {
-      console.error('Axios: Error al crear la Sol de fondos por id tare' + idtarea, error)
+      console.error('Axios: Error al cargar la sol de fondos de tarea con id ' + idtarea)
       throw error
     }
   },

@@ -1,329 +1,439 @@
 <template>
-  <div class="validation-bar">
-    <!-- Barra de botones principales - SOLO 5 ICONOS -->
+  <div class="validation-bar activity-bar">
+    <!-- Barra principal con 5 botones -->
     <div class="d-flex flex-wrap gap-1">
-      <validation-button
-        v-for="btn in botonesValidacion"
-        :key="btn.type"
-        :config="btn"
-        :disabled="isButtonDisabled(btn.type)"
-        @click="handleButtonClick(btn.type)"
-      />
+      <!-- Botón: Solicitud de Fondos -->
+      <v-btn
+        :color="getButtonColor('solicitud_fondos')"
+        :disabled="loadingStates.solicitudFondos || isButtonDisabled('solicitud_fondos')"
+        :loading="loadingStates.solicitudFondos"
+        size="small"
+        class="validation-btn"
+        @click="handleClick('solicitud_fondos')"
+      >
+        <v-icon>mdi-thumb-up</v-icon>
+        <span v-if="showLabels" class="ml-1">Fondos</span>
+        <v-badge
+          v-if="showBadges && pendientes.fondos > 0"
+          :content="pendientes.fondos"
+          color="error"
+          inline
+          class="ml-1"
+        />
+      </v-btn>
+
+      <!-- Botón: Solicitud de Viaje -->
+      <v-btn
+        :color="getButtonColor('solicitud_viaje')"
+        :disabled="loadingStates.solicitudViaje || isButtonDisabled('solicitud_viaje')"
+        :loading="loadingStates.solicitudViaje"
+        size="small"
+        class="validation-btn"
+        @click="handleClick('solicitud_viaje')"
+      >
+        <v-icon>mdi-thumb-up</v-icon>
+        <span v-if="showLabels" class="ml-1">Viaje</span>
+        <v-badge
+          v-if="showBadges && pendientes.viaje > 0"
+          :content="pendientes.viaje"
+          color="error"
+          inline
+          class="ml-1"
+        />
+      </v-btn>
+
+      <!-- Botón: Solicitud de Pago Directo -->
+      <v-btn
+        :color="getButtonColor('solicitud_pago_directo')"
+        :disabled="loadingStates.solicitudPagoDirecto || isButtonDisabled('solicitud_pago_directo')"
+        :loading="loadingStates.solicitudPagoDirecto"
+        size="small"
+        class="validation-btn"
+        @click="handleClick('solicitud_pago_directo')"
+      >
+        <v-icon>mdi-thumb-up</v-icon>
+        <span v-if="showLabels" class="ml-1">Pago Directo</span>
+        <v-badge
+          v-if="showBadges && pendientes.pagoDirecto > 0"
+          :content="pendientes.pagoDirecto"
+          color="error"
+          inline
+          class="ml-1"
+        />
+      </v-btn>
+
+      <!-- Botón: Solicitud de Reposición -->
+      <v-btn
+        :color="getButtonColor('solicitud_reposicion')"
+        :disabled="loadingStates.solicitudReposicion || isButtonDisabled('solicitud_reposicion')"
+        :loading="loadingStates.solicitudReposicion"
+        size="small"
+        class="validation-btn"
+        @click="handleClick('solicitud_reposicion')"
+      >
+        <v-icon>mdi-thumb-up</v-icon>
+        <span v-if="showLabels" class="ml-1">Reposición</span>
+        <v-badge
+          v-if="showBadges && pendientes.reposicion > 0"
+          :content="pendientes.reposicion"
+          color="error"
+          inline
+          class="ml-1"
+        />
+      </v-btn>
+
+      <!-- Botón: Rendición de Cuentas -->
+      <v-btn
+        :color="getButtonColor('rendicion_cuentas')"
+        :disabled="loadingStates.rendicionCuentas || isButtonDisabled('rendicion_cuentas')"
+        :loading="loadingStates.rendicionCuentas"
+        size="small"
+        class="validation-btn"
+        @click="handleClick('rendicion_cuentas')"
+      >
+        <v-icon>mdi-thumb-up</v-icon>
+        <span v-if="showLabels" class="ml-1">Rendición</span>
+        <v-badge
+          v-if="showBadges && pendientes.rendicion > 0"
+          :content="pendientes.rendicion"
+          color="error"
+          inline
+          class="ml-1"
+        />
+      </v-btn>
     </div>
 
-    <!-- Diálogos de validación -->
-    <!-- 1. Solicitud de Fondos -->
-    <validation-dialog
-      v-model="dialogs.solicitudFondos"
-      title="Validar Solicitud de Fondos"
-      :items="solicitudesFondos"
-      loading-key="loadingSolicitudes"
-      empty-message="No hay solicitudes de fondos pendientes de validación"
-      @item-click="abrirFormulario011"
-    >
-      <template #item-content="{ item }">
-        <div>
-          <v-list-item-title class="font-weight-bold mb-1">
-            Formulario: {{ item.numeroFormulario || `SF-${item.id}` }}
-          </v-list-item-title>
-          <div class="d-flex align-center flex-wrap">
-            <span class="mr-2">Fecha: {{ formatDate(item.fechaSolicitud) }}</span>
-          </div>
-          <div class="text-caption mt-1">Lugar: {{ item.lugarSolicitud }}</div>
-          <div class="text-caption mt-1">Monto: {{ formatCurrency(item.montoSolicitado) }}</div>
-          <div class="text-caption mt-1">
-            <v-chip
-              v-if="item.validacionCoordinador && item.validacionResponsable"
-              size="x-small"
-              color="success"
-              class="ml-1"
-            >
-              <v-icon x-small>mdi-check</v-icon>
-              Completado
-            </v-chip>
-            <v-chip
-              v-else-if="item.validacionCoordinador || item.validacionResponsable"
-              size="x-small"
-              color="warning"
-              class="ml-1"
-            >
-              <v-icon x-small>mdi-clock</v-icon>
-              Parcial
-            </v-chip>
-            <v-chip v-else size="x-small" color="error" class="ml-1">
-              <v-icon x-small>mdi-alert</v-icon>
-              Pendiente
-            </v-chip>
-          </div>
-        </div>
-      </template>
-    </validation-dialog>
+    <!-- Diálogo de Solicitud de Fondos -->
+    <v-dialog v-model="dialogs.solicitudFondos" max-width="600">
+      <v-card>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span>Validar Solicitud de Fondos</span>
+          <v-btn icon @click="dialogs.solicitudFondos = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
 
-    <!-- 2. Solicitud de Viaje -->
-    <validation-dialog
-      v-model="dialogs.solicitudViaje"
-      title="Validar Solicitud de Viaje"
-      :items="solicitudesViaje"
-      loading-key="loadingViajes"
-      empty-message="No hay solicitudes de viaje pendientes de validación"
-      @item-click="abrirFormularioSolicitudDeViajeParaValidar"
-    >
-      <template #item-content="{ item }">
-        <div>
-          <v-list-item-title class="font-weight-bold mb-1">
-            Formulario: {{ item.numeroFormulario || `SV-${item.id}` }}
-          </v-list-item-title>
-          <div class="d-flex align-center flex-wrap">
-            <span class="mr-2">Fecha: {{ formatDate(item.fechaSolicitud) }}</span>
-          </div>
-          <div class="text-caption mt-1">Destino: {{ item.destino || 'No especificado' }}</div>
-          <div class="text-caption mt-1">Duración: {{ item.duracionDias || 0 }} días</div>
-          <div class="text-caption mt-1">Lugar: {{ item.lugarSolicitud }}</div>
-          <div class="text-caption mt-1">
-            <v-chip
-              v-if="item.validacionCoordinador && item.validacionResponsable"
-              size="x-small"
-              color="success"
-              class="ml-1"
+        <v-card-text>
+          <v-list v-if="solicitudesFondos.length > 0">
+            <v-list-item
+              v-for="item in solicitudesFondos"
+              :key="item.id"
+              @click="abrirFormulario011(item.id)"
+              class="mb-2"
+              :class="{ 'bg-grey-lighten-3': isPendiente(item) }"
             >
-              <v-icon x-small>mdi-check</v-icon>
-              Completado
-            </v-chip>
-            <v-chip
-              v-else-if="item.validacionCoordinador || item.validacionResponsable"
-              size="x-small"
-              color="warning"
-              class="ml-1"
-            >
-              <v-icon x-small>mdi-clock</v-icon>
-              Parcial
-            </v-chip>
-            <v-chip v-else size="x-small" color="error" class="ml-1">
-              <v-icon x-small>mdi-alert</v-icon>
-              Pendiente
-            </v-chip>
-          </div>
-        </div>
-      </template>
-    </validation-dialog>
+              <template #prepend>
+                <v-icon :color="getValidationColor(item)">mdi-file-document</v-icon>
+              </template>
 
-    <!-- 3. Solicitud de Pago Directo -->
-    <validation-dialog
-      v-model="dialogs.solicitudPagoDirecto"
-      title="Validar Solicitud de Pago Directo"
-      :items="solicitudesPagoDirecto"
-      loading-key="loadingPagosDirectos"
-      empty-message="No hay solicitudes de pago directo pendientes de validación"
-      @item-click="abrirFormularioSolicitudDePagoDirectoParaValidar"
-    >
-      <template #item-content="{ item }">
-        <div>
-          <v-list-item-title class="font-weight-bold mb-1">
-            Formulario: {{ item.numeroFormulario || `SPD-${item.id}` }}
-          </v-list-item-title>
-          <div class="d-flex align-center flex-wrap">
-            <span class="mr-2">Fecha: {{ formatDate(item.fechaSolicitud) }}</span>
-          </div>
-          <div class="text-caption mt-1">Lugar: {{ item.lugarSolicitud }}</div>
-          <div class="text-caption mt-1">
-            Proveedor: {{ item.nombreProveedor || 'No especificado' }}
-          </div>
-          <div class="text-caption mt-1">Monto: {{ formatCurrency(item.montoSolicitado) }}</div>
-          <div class="text-caption mt-1">
-            <v-chip
-              v-if="item.validacionCoordinador && item.validacionResponsable"
-              size="x-small"
-              color="success"
-              class="ml-1"
-            >
-              <v-icon x-small>mdi-check</v-icon>
-              Completado
-            </v-chip>
-            <v-chip
-              v-else-if="item.validacionCoordinador || item.validacionResponsable"
-              size="x-small"
-              color="warning"
-              class="ml-1"
-            >
-              <v-icon x-small>mdi-clock</v-icon>
-              Parcial
-            </v-chip>
-            <v-chip v-else size="x-small" color="error" class="ml-1">
-              <v-icon x-small>mdi-alert</v-icon>
-              Pendiente
-            </v-chip>
-          </div>
-        </div>
-      </template>
-    </validation-dialog>
+              <v-list-item-title class="font-weight-bold">
+                {{ item.numeroFormulario || `SF-${item.id}` }}
+              </v-list-item-title>
 
-    <!-- 4. Solicitud de Reposición -->
-    <validation-dialog
-      v-model="dialogs.solicitudReposicion"
-      title="Validar Solicitud de Reposición"
-      :items="solicitudesReposicion"
-      loading-key="loadingReposiciones"
-      empty-message="No hay solicitudes de reposición pendientes de validación"
-      @item-click="abrirFormularioReposicion"
-    >
-      <template #item-content="{ item }">
-        <div>
-          <v-list-item-title class="font-weight-bold mb-1">
-            Formulario: {{ item.numeroFormulario || `SREP-${item.id}` }}
-          </v-list-item-title>
-          <div class="d-flex align-center flex-wrap">
-            <span class="mr-2">Fecha: {{ formatDate(item.fechaSolicitud) }}</span>
-          </div>
-          <div class="text-caption mt-1">Lugar: {{ item.lugarSolicitud }}</div>
-          <div class="text-caption mt-1">
-            Motivo: {{ item.motivoReposicion || 'No especificado' }}
-          </div>
-          <div class="text-caption mt-1">Monto: {{ formatCurrency(item.montoReposicion) }}</div>
-          <div class="text-caption mt-1">
-            <v-chip
-              v-if="item.validacionCoordinador && item.validacionResponsable"
-              size="x-small"
-              color="success"
-              class="ml-1"
-            >
-              <v-icon x-small>mdi-check</v-icon>
-              Completado
-            </v-chip>
-            <v-chip
-              v-else-if="item.validacionCoordinador || item.validacionResponsable"
-              size="x-small"
-              color="warning"
-              class="ml-1"
-            >
-              <v-icon x-small>mdi-clock</v-icon>
-              Parcial
-            </v-chip>
-            <v-chip v-else size="x-small" color="error" class="ml-1">
-              <v-icon x-small>mdi-alert</v-icon>
-              Pendiente
-            </v-chip>
-          </div>
-        </div>
-      </template>
-    </validation-dialog>
+              <v-list-item-subtitle>
+                <div class="d-flex flex-wrap align-center gap-2 mt-1">
+                  <span>Fecha: {{ formatDate(item.fechaSolicitud) }}</span>
+                  <v-chip size="x-small" v-if="item.tarea_nombre">
+                    {{ item.tarea_nombre }}
+                  </v-chip>
+                </div>
+                <div class="mt-1">
+                  <strong>Monto:</strong> {{ formatCurrency(item.montoSolicitado) }}
+                </div>
+                <div class="mt-1">
+                  <v-chip size="x-small" :color="getValidationColor(item)">
+                    {{ getValidationText(item) }}
+                  </v-chip>
+                </div>
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
 
-    <!-- 5. Rendición de Cuentas -->
-    <validation-dialog
-      v-model="dialogs.rendicionCuentas"
-      title="Validar Rendición de Cuentas"
-      :items="rendicionesCuentas"
-      loading-key="loadingRendiciones"
-      empty-message="No hay rendiciones de cuentas pendientes de validación"
-      @item-click="abrirFormularioRendicionCuentasValidar"
-    >
-      <template #item-content="{ item }">
-        <div>
-          <v-list-item-title class="font-weight-bold mb-1">
-            Formulario: {{ item.numeroFormulario || `RC-${item.id}` }}
-          </v-list-item-title>
-          <div class="d-flex align-center flex-wrap">
-            <span class="mr-2">Fecha Desembolso: {{ formatDate(item.fechaDesembolso) }}</span>
+          <div v-else class="text-center py-8">
+            <v-icon size="64" color="grey-lighten-1">mdi-check-circle-outline</v-icon>
+            <div class="text-h6 mt-4 text-grey">No hay solicitudes pendientes</div>
+            <div class="text-caption text-grey">
+              Todas las solicitudes de fondos han sido validadas
+            </div>
           </div>
-          <div class="text-caption mt-1">Monto: {{ formatCurrency(item.montoDescargado) }}</div>
-          <div class="text-caption mt-1">
-            <v-chip
-              v-if="
-                item.validacionCoordinador &&
-                item.validacionContador &&
-                item.validacionAdministrador
-              "
-              size="x-small"
-              color="success"
-              class="ml-1"
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
+    <!-- Diálogo de Solicitud de Viaje -->
+    <v-dialog v-model="dialogs.solicitudViaje" max-width="600">
+      <v-card>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span>Validar Solicitud de Viaje</span>
+          <v-btn icon @click="dialogs.solicitudViaje = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-card-text>
+          <v-list v-if="solicitudesViaje.length > 0">
+            <v-list-item
+              v-for="item in solicitudesViaje"
+              :key="item.id"
+              @click="abrirFormulario055(item.id)"
+              class="mb-2"
             >
-              <v-icon x-small>mdi-check-all</v-icon>
-              Completado
-            </v-chip>
-            <v-chip
-              v-else-if="
-                item.validacionCoordinador ||
-                item.validacionContador ||
-                item.validacionAdministrador
-              "
-              size="x-small"
-              color="warning"
-              class="ml-1"
-            >
-              <v-icon x-small>mdi-clock-check</v-icon>
-              Parcial
-            </v-chip>
-            <v-chip v-else size="x-small" color="error" class="ml-1">
-              <v-icon x-small>mdi-alert</v-icon>
-              Pendiente
-            </v-chip>
+              <template #prepend>
+                <v-icon :color="getValidationColor(item)">mdi-airplane-takeoff</v-icon>
+              </template>
+
+              <v-list-item-title class="font-weight-bold">
+                {{ item.numeroFormulario || `SV-${item.id}` }}
+              </v-list-item-title>
+
+              <v-list-item-subtitle>
+                <div class="d-flex flex-wrap align-center gap-2 mt-1">
+                  <span>{{ formatDate(item.fechaSolicitud) }}</span>
+                  <v-chip size="x-small" color="info">
+                    {{ item.destino || 'Sin destino' }}
+                  </v-chip>
+                </div>
+                <div class="mt-1"><strong>Duración:</strong> {{ item.duracionDias }} días</div>
+                <div class="mt-1">
+                  <v-chip size="x-small" :color="getValidationColor(item)">
+                    {{ getValidationText(item) }}
+                  </v-chip>
+                </div>
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+
+          <div v-else class="text-center py-8">
+            <v-icon size="64" color="grey-lighten-1">mdi-airplane-check</v-icon>
+            <div class="text-h6 mt-4 text-grey">No hay solicitudes de viaje</div>
+            <div class="text-caption text-grey">Todas las solicitudes han sido validadas</div>
           </div>
-        </div>
-      </template>
-    </validation-dialog>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
+    <!-- Diálogo de Solicitud de Pago Directo -->
+    <v-dialog v-model="dialogs.solicitudPagoDirecto" max-width="600">
+      <v-card>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span>Validar Solicitud de Pago Directo</span>
+          <v-btn icon @click="dialogs.solicitudPagoDirecto = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-card-text>
+          <v-list v-if="solicitudesPagoDirecto.length > 0">
+            <v-list-item
+              v-for="item in solicitudesPagoDirecto"
+              :key="item.id"
+              @click="abrirFormulario088(item.id)"
+              class="mb-2"
+            >
+              <template #prepend>
+                <v-icon :color="getValidationColor(item)">mdi-credit-card-clock</v-icon>
+              </template>
+
+              <v-list-item-title class="font-weight-bold">
+                {{ item.numeroFormulario || `SPD-${item.id}` }}
+              </v-list-item-title>
+
+              <v-list-item-subtitle>
+                <div class="d-flex flex-wrap align-center gap-2 mt-1">
+                  <span>{{ formatDate(item.fechaSolicitud) }}</span>
+                  <v-chip size="x-small" color="teal">
+                    {{ item.nombreProveedor || 'Sin proveedor' }}
+                  </v-chip>
+                </div>
+                <div class="mt-1">
+                  <strong>Monto:</strong> {{ formatCurrency(item.montoSolicitado) }}
+                </div>
+                <div class="mt-1">
+                  <v-chip size="x-small" :color="getValidationColor(item)">
+                    {{ getValidationText(item) }}
+                  </v-chip>
+                </div>
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+
+          <div v-else class="text-center py-8">
+            <v-icon size="64" color="grey-lighten-1">mdi-credit-card-check</v-icon>
+            <div class="text-h6 mt-4 text-grey">No hay pagos directos</div>
+            <div class="text-caption text-grey">Todas las solicitudes han sido validadas</div>
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
+    <!-- Diálogo de Solicitud de Reposición -->
+    <v-dialog v-model="dialogs.solicitudReposicion" max-width="600">
+      <v-card>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span>Validar Solicitud de Reposición</span>
+          <v-btn icon @click="dialogs.solicitudReposicion = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-card-text>
+          <v-list v-if="solicitudesReposicion.length > 0">
+            <v-list-item
+              v-for="item in solicitudesReposicion"
+              :key="item.id"
+              @click="abrirFormulario033(item.id)"
+              class="mb-2"
+            >
+              <template #prepend>
+                <v-icon :color="getValidationColor(item)">mdi-cash-sync</v-icon>
+              </template>
+
+              <v-list-item-title class="font-weight-bold">
+                {{ item.numeroFormulario || `SREP-${item.id}` }}
+              </v-list-item-title>
+
+              <v-list-item-subtitle>
+                <div class="d-flex flex-wrap align-center gap-2 mt-1">
+                  <span>{{ formatDate(item.fechaSolicitud) }}</span>
+                  <v-chip size="x-small" color="orange">
+                    {{ item.motivoReposicion?.substring(0, 30) || 'Sin motivo' }}
+                  </v-chip>
+                </div>
+                <div class="mt-1">
+                  <strong>Monto:</strong> {{ formatCurrency(item.montoReposicion) }}
+                </div>
+                <div class="mt-1">
+                  <v-chip size="x-small" :color="getValidationColor(item)">
+                    {{ getValidationText(item) }}
+                  </v-chip>
+                </div>
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+
+          <div v-else class="text-center py-8">
+            <v-icon size="64" color="grey-lighten-1">mdi-cash-refund</v-icon>
+            <div class="text-h6 mt-4 text-grey">No hay reposiciones</div>
+            <div class="text-caption text-grey">Todas las solicitudes han sido validadas</div>
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
+    <!-- Diálogo de Rendición de Cuentas -->
+    <v-dialog v-model="dialogs.rendicionCuentas" max-width="600">
+      <v-card>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span>Validar Rendición de Cuentas</span>
+          <v-btn icon @click="dialogs.rendicionCuentas = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-card-text>
+          <v-list v-if="rendicionesCuentas.length > 0">
+            <v-list-item
+              v-for="item in rendicionesCuentas"
+              :key="item.id"
+              @click="abrirFormulario022(item.id)"
+              class="mb-2"
+            >
+              <template #prepend>
+                <v-icon :color="getRendicionColor(item)">mdi-file-chart</v-icon>
+              </template>
+
+              <v-list-item-title class="font-weight-bold">
+                {{ item.numeroFormulario || `RC-${item.id}` }}
+              </v-list-item-title>
+
+              <v-list-item-subtitle>
+                <div class="d-flex flex-wrap align-center gap-2 mt-1">
+                  <span>Desembolso: {{ formatDate(item.fechaDesembolso) }}</span>
+                  <v-chip size="x-small" color="purple">
+                    {{ item.responsable_nombre || 'Sin responsable' }}
+                  </v-chip>
+                </div>
+                <div class="mt-1">
+                  <strong>Monto:</strong> {{ formatCurrency(item.montoDescargado) }}
+                </div>
+                <div class="mt-1">
+                  <v-chip size="x-small" :color="getRendicionColor(item)">
+                    {{ getRendicionText(item) }}
+                  </v-chip>
+                </div>
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+
+          <div v-else class="text-center py-8">
+            <v-icon size="64" color="grey-lighten-1">mdi-file-check</v-icon>
+            <div class="text-h6 mt-4 text-grey">No hay rendiciones</div>
+            <div class="text-caption text-grey">Todas las rendiciones han sido validadas</div>
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import ValidationButton from './partials/ValidationButton.vue'
-import ValidationDialog from './partials/ValidationDialog.vue'
 
 // Props
 const props = defineProps({
-  // Configuración básica
   actividadId: {
     type: Number,
     required: true,
   },
-  tareaId: {
-    type: Number,
-    default: null,
-  },
-
-  // Datos opcionales para pre-cargar
   actividadData: {
     type: Object,
     default: () => ({}),
   },
-
-  // Control de carga
-  autoLoad: {
-    type: Boolean,
-    default: false,
-  },
-
-  // Mostrar etiquetas de texto
   showLabels: {
+    type: Boolean,
+    default: true,
+  },
+  showBadges: {
+    type: Boolean,
+    default: true,
+  },
+  compactMode: {
     type: Boolean,
     default: false,
   },
 })
 
-const emit = defineEmits(['loading-start', 'loading-end', 'error', 'button-click', 'item-selected'])
+const emit = defineEmits(['loading', 'error', 'click'])
 
 const router = useRouter()
 const userStore = useUserStore()
 const baseurl = import.meta.env.VITE_API_BASE
 
-// Estados reactivos
+// Estados
 const loadingStates = ref({
-  solicitudesFondos: false,
-  solicitudesViaje: false,
-  solicitudesPagoDirecto: false,
-  solicitudesReposicion: false,
-  rendicionesCuentas: false,
+  solicitudFondos: false,
+  solicitudViaje: false,
+  solicitudPagoDirecto: false,
+  solicitudReposicion: false,
+  rendicionCuentas: false,
 })
 
-// Datos de los diálogos
+const pendientes = ref({
+  fondos: 0,
+  viaje: 0,
+  pagoDirecto: 0,
+  reposicion: 0,
+  rendicion: 0,
+})
+
 const solicitudesFondos = ref([])
 const solicitudesViaje = ref([])
 const solicitudesPagoDirecto = ref([])
 const solicitudesReposicion = ref([])
 const rendicionesCuentas = ref([])
 
-// Control de diálogos
 const dialogs = ref({
   solicitudFondos: false,
   solicitudViaje: false,
@@ -332,414 +442,293 @@ const dialogs = ref({
   rendicionCuentas: false,
 })
 
-// ICONOS IDÉNTICOS A LA VISTA ORIGINAL
-const botonesValidacion = ref([
-  {
-    type: 'solicitud_fondos',
-    icon: 'mdi-thumb-up', // EXACTAMENTE IGUAL A LA VISTA ORIGINAL
-    color: 'primary',
-    tooltip: 'Validar Solicitud de Fondos',
-    label: 'Fondos',
-    visible: true,
-    showLabel: props.showLabels,
-    // Mismo color y estilo que en la vista original
-  },
-  {
-    type: 'solicitud_viaje',
-    icon: 'mdi-thumb-up', // EXACTAMENTE IGUAL A LA VISTA ORIGINAL
-    color: 'deep-purple',
-    tooltip: 'Validar Solicitud de Viaje',
-    label: 'Viaje',
-    visible: true,
-    showLabel: props.showLabels,
-  },
-  {
-    type: 'solicitud_pago_directo',
-    icon: 'mdi-thumb-up', // EXACTAMENTE IGUAL A LA VISTA ORIGINAL
-    color: 'teal-lighten-2',
-    tooltip: 'Validar Solicitud de Pago Directo',
-    label: 'Pago Directo',
-    visible: true,
-    showLabel: props.showLabels,
-  },
-  {
-    type: 'solicitud_reposicion',
-    icon: 'mdi-thumb-up', // EXACTAMENTE IGUAL A LA VISTA ORIGINAL
-    color: 'warning',
-    tooltip: 'Validar Solicitud de Reposición',
-    label: 'Reposición',
-    visible: true,
-    showLabel: props.showLabels,
-  },
-  {
-    type: 'rendicion_cuentas',
-    icon: 'mdi-thumb-up', // EXACTAMENTE IGUAL A LA VISTA ORIGINAL
-    color: 'error',
-    tooltip: 'Validar Rendición de Cuentas',
-    label: 'Rendición',
-    visible: true,
-    showLabel: props.showLabels,
-  },
-])
-
-const usuario = computed(() => ({
-  nombre: userStore.usuario,
-  role: userStore.rol,
-}))
-
 // Métodos principales
-const handleButtonClick = async (buttonType) => {
-  emit('button-click', {
-    type: buttonType,
-    actividadId: props.actividadId,
-    tareaId: props.tareaId,
-  })
+const handleClick = async (tipo) => {
+  emit('click', { tipo, actividadId: props.actividadId })
 
-  switch (buttonType) {
+  switch (tipo) {
     case 'solicitud_fondos':
       await cargarSolicitudesFondos()
       dialogs.value.solicitudFondos = true
       break
-
     case 'solicitud_viaje':
-      await cargarSolicitudDeViaje()
+      await cargarSolicitudesViaje()
       dialogs.value.solicitudViaje = true
       break
-
     case 'solicitud_pago_directo':
-      await cargarSolicitudDePagoDirecto()
+      await cargarSolicitudesPagoDirecto()
       dialogs.value.solicitudPagoDirecto = true
       break
-
     case 'solicitud_reposicion':
-      await cargarSolicitudDeReposicion()
+      await cargarSolicitudesReposicion()
       dialogs.value.solicitudReposicion = true
       break
-
     case 'rendicion_cuentas':
-      await cargarRendicionesDeCuenta()
+      await cargarRendicionesCuentas()
       dialogs.value.rendicionCuentas = true
       break
   }
 }
 
-// Funciones de carga de datos
+// Métodos de carga
 const cargarSolicitudesFondos = async () => {
-  loadingStates.value.solicitudesFondos = true
-  emit('loading-start', 'solicitudesFondos')
-
+  loadingStates.value.solicitudFondos = true
   try {
     const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudFondos/', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     })
 
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
+    if (!response.ok) throw new Error('Error en la solicitud')
 
     const data = await response.json()
 
-    // Filtrar por actividad y tarea - MISMO FILTRADO QUE LA VISTA ORIGINAL
-    solicitudesFondos.value = data.solicitudes.filter((solicitud) => {
-      const coincideActividad = solicitud.actividad_id === props.actividadId
-      const coincideTarea = props.tareaId ? solicitud.tarea_id === props.tareaId : true
-      return coincideActividad && coincideTarea
-    })
+    // Filtrar por actividad
+    solicitudesFondos.value =
+      data.solicitudes?.filter((s) => s.actividad_id === props.actividadId) || []
 
-    // Ordenar por fecha más reciente primero
-    solicitudesFondos.value.sort((a, b) => new Date(b.fechaSolicitud) - new Date(a.fechaSolicitud))
+    // Calcular pendientes
+    pendientes.value.fondos = solicitudesFondos.value.filter(
+      (s) => !s.validacionCoordinador || !s.validacionResponsable,
+    ).length
   } catch (error) {
     console.error('Error cargando solicitudes de fondos:', error)
-    emit('error', { type: 'solicitudesFondos', error })
+    emit('error', { tipo: 'solicitud_fondos', error })
   } finally {
-    loadingStates.value.solicitudesFondos = false
-    emit('loading-end', 'solicitudesFondos')
+    loadingStates.value.solicitudFondos = false
   }
 }
 
-const cargarSolicitudDeViaje = async () => {
-  loadingStates.value.solicitudesViaje = true
-  emit('loading-start', 'solicitudesViaje')
-
+const cargarSolicitudesViaje = async () => {
+  loadingStates.value.solicitudViaje = true
   try {
     const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudesViaje/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id_actividad: props.actividadId,
-        id_tarea: props.tareaId,
       }),
     })
 
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
+    if (!response.ok) throw new Error('Error en la solicitud')
 
     const data = await response.json()
     solicitudesViaje.value = data.solicitudes || []
 
-    // Ordenar por fecha más reciente primero
-    solicitudesViaje.value.sort((a, b) => new Date(b.fechaSolicitud) - new Date(a.fechaSolicitud))
+    pendientes.value.viaje = solicitudesViaje.value.filter(
+      (s) => !s.validacionCoordinador || !s.validacionResponsable,
+    ).length
   } catch (error) {
     console.error('Error cargando solicitudes de viaje:', error)
-    emit('error', { type: 'solicitudesViaje', error })
+    emit('error', { tipo: 'solicitud_viaje', error })
   } finally {
-    loadingStates.value.solicitudesViaje = false
-    emit('loading-end', 'solicitudesViaje')
+    loadingStates.value.solicitudViaje = false
   }
 }
 
-const cargarSolicitudDePagoDirecto = async () => {
-  loadingStates.value.solicitudesPagoDirecto = true
-  emit('loading-start', 'solicitudesPagoDirecto')
-
+const cargarSolicitudesPagoDirecto = async () => {
+  loadingStates.value.solicitudPagoDirecto = true
   try {
     const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudesPagoDirecto/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id_actividad: props.actividadId,
-        id_tarea: props.tareaId,
       }),
     })
 
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
+    if (!response.ok) throw new Error('Error en la solicitud')
 
     const data = await response.json()
     solicitudesPagoDirecto.value = data.solicitudes || []
 
-    // Ordenar por fecha más reciente primero
-    solicitudesPagoDirecto.value.sort(
-      (a, b) => new Date(b.fechaSolicitud) - new Date(a.fechaSolicitud),
-    )
+    pendientes.value.pagoDirecto = solicitudesPagoDirecto.value.filter(
+      (s) => !s.validacionCoordinador || !s.validacionResponsable,
+    ).length
   } catch (error) {
     console.error('Error cargando solicitudes de pago directo:', error)
-    emit('error', { type: 'solicitudesPagoDirecto', error })
+    emit('error', { tipo: 'solicitud_pago_directo', error })
   } finally {
-    loadingStates.value.solicitudesPagoDirecto = false
-    emit('loading-end', 'solicitudesPagoDirecto')
+    loadingStates.value.solicitudPagoDirecto = false
   }
 }
 
-const cargarSolicitudDeReposicion = async () => {
-  loadingStates.value.solicitudesReposicion = true
-  emit('loading-start', 'solicitudesReposicion')
-
+const cargarSolicitudesReposicion = async () => {
+  loadingStates.value.solicitudReposicion = true
   try {
     const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudReembolso/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id_actividad: props.actividadId,
-        id_tarea: props.tareaId,
       }),
     })
 
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
+    if (!response.ok) throw new Error('Error en la solicitud')
 
     const data = await response.json()
     solicitudesReposicion.value = data.solicitudes || []
 
-    // Ordenar por fecha más reciente primero
-    solicitudesReposicion.value.sort(
-      (a, b) => new Date(b.fechaSolicitud) - new Date(a.fechaSolicitud),
-    )
+    pendientes.value.reposicion = solicitudesReposicion.value.filter(
+      (s) => !s.validacionCoordinador || !s.validacionResponsable,
+    ).length
   } catch (error) {
     console.error('Error cargando solicitudes de reposición:', error)
-    emit('error', { type: 'solicitudesReposicion', error })
+    emit('error', { tipo: 'solicitud_reposicion', error })
   } finally {
-    loadingStates.value.solicitudesReposicion = false
-    emit('loading-end', 'solicitudesReposicion')
+    loadingStates.value.solicitudReposicion = false
   }
 }
 
-const cargarRendicionesDeCuenta = async () => {
-  loadingStates.value.rendicionesCuentas = true
-  emit('loading-start', 'rendicionesCuentas')
-
+const cargarRendicionesCuentas = async () => {
+  loadingStates.value.rendicionCuentas = true
   try {
     const response = await fetch(baseurl + 'monitoreo_api/obtenerRendicionDeCuentas/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id_actividad: props.actividadId,
-        id_tarea: props.tareaId,
       }),
     })
 
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
+    if (!response.ok) throw new Error('Error en la solicitud')
 
     const data = await response.json()
     rendicionesCuentas.value = data.rendiciones || []
 
-    // Ordenar por fecha más reciente primero
-    rendicionesCuentas.value.sort(
-      (a, b) => new Date(b.fechaDesembolso) - new Date(a.fechaDesembolso),
-    )
+    pendientes.value.rendicion = rendicionesCuentas.value.filter(
+      (r) => !r.validacionCoordinador || !r.validacionContador || !r.validacionAdministrador,
+    ).length
   } catch (error) {
     console.error('Error cargando rendiciones:', error)
-    emit('error', { type: 'rendicionesCuentas', error })
+    emit('error', { tipo: 'rendicion_cuentas', error })
   } finally {
-    loadingStates.value.rendicionesCuentas = false
-    emit('loading-end', 'rendicionesCuentas')
+    loadingStates.value.rendicionCuentas = false
   }
 }
 
-// Funciones de navegación - IGUALES A LA VISTA ORIGINAL
-const abrirFormulario011 = (solicitudId) => {
-  const routeConfig = {
+// Navegación
+const abrirFormulario011 = (id) => {
+  router.push({
     path: `/monitoreo/formulario011/${props.actividadId}`,
-    query: { solicitud_id: solicitudId },
-  }
-
-  if (props.tareaId) {
-    routeConfig.query.tarea_id = props.tareaId
-  }
-
-  router.push(routeConfig)
-  emit('item-selected', { type: 'solicitud_fondos', id: solicitudId })
+    query: { solicitud_id: id },
+  })
 }
 
-const abrirFormularioSolicitudDeViajeParaValidar = (solicitudId) => {
+const abrirFormulario055 = (id) => {
   router.push({
     path: `/monitoreo/formulario055/${props.actividadId}`,
-    query: { solicitud_id: solicitudId },
+    query: { solicitud_id: id },
   })
-  emit('item-selected', { type: 'solicitud_viaje', id: solicitudId })
 }
 
-const abrirFormularioSolicitudDePagoDirectoParaValidar = (solicitudId) => {
+const abrirFormulario088 = (id) => {
   router.push({
     path: `/monitoreo/formulario088/${props.actividadId}`,
-    query: { solicitud_id: solicitudId },
+    query: { solicitud_id: id },
   })
-  emit('item-selected', { type: 'solicitud_pago_directo', id: solicitudId })
 }
 
-const abrirFormularioReposicion = (solicitudId) => {
+const abrirFormulario033 = (id) => {
   router.push({
     path: `/monitoreo/formulario033/${props.actividadId}`,
-    query: { solicitud_id: solicitudId },
+    query: { solicitud_id: id },
   })
-  emit('item-selected', { type: 'solicitud_reposicion', id: solicitudId })
 }
 
-const abrirFormularioRendicionCuentasValidar = (rendicionId) => {
+const abrirFormulario022 = (id) => {
   router.push({
     path: `/monitoreo/formulario022/${props.actividadId}`,
-    query: { solicitud_id: rendicionId },
+    query: { solicitud_id: id },
   })
-  emit('item-selected', { type: 'rendicion_cuentas', id: rendicionId })
 }
 
-// Funciones de utilidad
-const isButtonDisabled = (buttonType) => {
+// Helpers
+const getButtonColor = (tipo) => {
+  const colors = {
+    solicitud_fondos: 'primary',
+    solicitud_viaje: 'deep-purple',
+    solicitud_pago_directo: 'teal-lighten-2',
+    solicitud_reposicion: 'warning',
+    rendicion_cuentas: 'error',
+  }
+  return colors[tipo] || 'grey'
+}
+
+const isButtonDisabled = (tipo) => {
   if (!props.actividadData) return false
-
-  // MISMA LÓGICA DE DESHABILITACIÓN QUE LA VISTA ORIGINAL
-  switch (buttonType) {
-    case 'solicitud_fondos':
-    case 'solicitud_viaje':
-    case 'solicitud_pago_directo':
-    case 'solicitud_reposicion':
-    case 'rendicion_cuentas':
-      // En la vista original, los botones de validación tenían esta condición:
-      // :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
-      // Como estamos haciendo solo validaciones, normalmente no deberían estar deshabilitados
-      return false
-    default:
-      return false
-  }
+  return false
 }
 
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES')
-  } catch {
-    return 'Fecha inválida'
-  }
+const isPendiente = (item) => {
+  return !item.validacionCoordinador || !item.validacionResponsable
+}
+
+const getValidationColor = (item) => {
+  if (item.validacionCoordinador && item.validacionResponsable) return 'success'
+  if (item.validacionCoordinador || item.validacionResponsable) return 'warning'
+  return 'error'
+}
+
+const getValidationText = (item) => {
+  if (item.validacionCoordinador && item.validacionResponsable) return 'Completado'
+  if (item.validacionCoordinador || item.validacionResponsable) return 'Parcial'
+  return 'Pendiente'
+}
+
+const getRendicionColor = (item) => {
+  if (item.validacionCoordinador && item.validacionContador && item.validacionAdministrador)
+    return 'success'
+  if (item.validacionCoordinador || item.validacionContador || item.validacionAdministrador)
+    return 'warning'
+  return 'error'
+}
+
+const getRendicionText = (item) => {
+  if (item.validacionCoordinador && item.validacionContador && item.validacionAdministrador)
+    return 'Completado'
+  if (item.validacionCoordinador || item.validacionContador || item.validacionAdministrador)
+    return 'Parcial'
+  return 'Pendiente'
+}
+
+const formatDate = (date) => {
+  if (!date) return 'N/A'
+  return new Date(date).toLocaleDateString('es-ES')
 }
 
 const formatCurrency = (amount) => {
-  const num = Number(amount)
-  return !isNaN(num) ? `Bs. ${num.toFixed(2)}` : 'Bs. 0.00'
+  const num = Number(amount) || 0
+  return `Bs. ${num.toFixed(2)}`
 }
 
-// Watch para cambios en props
-watch(
-  () => props.actividadId,
-  () => {
-    // Resetear datos cuando cambia la actividad
-    solicitudesFondos.value = []
-    solicitudesViaje.value = []
-    solicitudesPagoDirecto.value = []
-    solicitudesReposicion.value = []
-    rendicionesCuentas.value = []
-  },
-)
-
-// Actualizar showLabels en botones cuando cambia la prop
-watch(
-  () => props.showLabels,
-  (newValue) => {
-    botonesValidacion.value.forEach((btn) => {
-      btn.showLabel = newValue
-    })
-  },
-)
-
-// Carga inicial si autoLoad está activado
-import { onMounted } from 'vue'
-
+// Carga inicial
 onMounted(() => {
-  if (props.autoLoad) {
-    // Cargar datos iniciales si es necesario
-  }
+  // Cargar contadores iniciales
+  cargarSolicitudesFondos()
+  cargarSolicitudesViaje()
+  cargarSolicitudesPagoDirecto()
+  cargarSolicitudesReposicion()
+  cargarRendicionesCuentas()
 })
 </script>
 
 <style scoped>
-.validation-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  align-items: center;
+.validation-bar.activity-bar {
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
 }
 
-/* ESTILOS IDÉNTICOS A LA VISTA ORIGINAL */
-.validation-bar .v-btn {
-  min-width: 32px;
+.validation-btn {
+  min-width: 100px;
+  height: 36px;
+  border-radius: 6px;
+}
+
+.compact-mode .validation-btn {
+  min-width: 40px;
   height: 32px;
-  border-radius: 4px;
-}
-
-/* Para mostrar etiquetas */
-.boton-con-etiqueta {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.boton-con-etiqueta .v-btn {
-  margin-bottom: 2px;
-}
-
-.boton-con-etiqueta .etiqueta {
-  font-size: 10px;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.6);
-  text-align: center;
-  line-height: 1;
-}
-
-/* Estilo para el botón activo/hover */
-.validation-bar .v-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  transform: translateY(-1px);
-  transition: all 0.2s ease;
-}
-
-.validation-bar .v-btn:active {
-  transform: translateY(0);
 }
 </style>

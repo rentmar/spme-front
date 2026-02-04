@@ -25,21 +25,18 @@
         :icon="'mdi-cash-check'"
       ></PaginaTituloIcono>
       <!--Encabezado del Proyecto-->
-       <ProyectoIdHeader
+      <ProyectoIdHeader
         v-if="datosFormulario"
         :proyecto-id="datosFormulario.actividad?.proyecto ?? '99999'"
       ></ProyectoIdHeader>
       <br />
       <!--Encabezado de la Actividad-->
-        <ActividadInformacion
-        v-if="datosFormulario.actividad"
-        :actividad-id="idActividad" />
-
+      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
       <v-row>
         <!-- Panel lateral de información -->
         <v-col cols="12" md="4" lg="3">
-           <v-card elevation="2" rounded="lg" class="mb-4">
+          <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="primary" density="compact">
               <v-toolbar-title class="text-white">Información General</v-toolbar-title>
             </v-toolbar>
@@ -47,14 +44,14 @@
               <div class="info-item mb-3">
                 <div class="text-subtitle-2 text-medium-emphasis">Actividad:</div>
                 <div class="text-body-1 font-weight-medium">
-                   {{ datosFormulario.actividad.nombreCorto }}
+                  {{ datosFormulario.actividad.nombreCorto }}
                 </div>
               </div>
               <div class="info-item mb-3">
                 <div class="text-subtitle-2 text-medium-emphasis">Estado:</div>
                 <v-chip color="warning" size="small" class="mt-1">
                   <v-icon small class="mr-1">mdi-progress-clock</v-icon>
-                   {{ datosFormulario.actividad.estado }}
+                  {{ datosFormulario.actividad.estado }}
                 </v-chip>
               </div>
             </v-card-text>
@@ -209,7 +206,7 @@
                     readonly
                   ></v-textarea>
                   <v-text-field
-                    v-model=" textoProcedencia "
+                    v-model="textoProcedencia"
                     label="Fuente de Financiamiento"
                     variant="outlined"
                     density="compact"
@@ -387,23 +384,23 @@
                     <v-row>
                       <v-col cols="12" md="6">
                         <!-- v-model="datosSolicitudDeReposicion.lugar_solicitud" -->
-                      <v-text-field
-                        v-model="formData.datos_forma_pago.otros.nombre_otros"
-                        label="Nombre a quien se realiza el pago"
-                        variant="outlined"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="formData.datos_forma_pago.otros.ci_otros"
-                        label="Documento de Identidad C.I."
-                        variant="outlined"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.otros.nombre_otros"
+                          label="Nombre a quien se realiza el pago"
+                          variant="outlined"
+                          readonly
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.otros.ci_otros"
+                          label="Documento de Identidad C.I."
+                          variant="outlined"
+                          bg-color="grey-lighten-4"
+                          readonly
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
                   </div>
                   <div v-if="MostrarCamposTransferencia">
                     <v-row>
@@ -480,13 +477,15 @@
                         :disabled="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :readonly="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :color="puedeValidarResponsable ? 'primary' : 'grey'"
-                        @update:modelValue="(newValue) => {
-                          if (newValue) {
-                            nextTick(() => {
-                              validarSolicitud();
-                            });
+                        @update:modelValue="
+                          (newValue) => {
+                            if (newValue) {
+                              nextTick(() => {
+                                validarSolicitud()
+                              })
+                            }
                           }
-                        }"
+                        "
                       ></v-checkbox>
                     </v-col>
                   </v-row>
@@ -509,13 +508,15 @@
                         :disabled="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :readonly="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :color="puedeValidarCoordinador ? 'primary' : 'grey'"
-                        @update:modelValue="(newValue) => {
-                          if (newValue) {
-                            nextTick(() => {
-                              validarSolicitud();
-                            });
+                        @update:modelValue="
+                          (newValue) => {
+                            if (newValue) {
+                              nextTick(() => {
+                                validarSolicitud()
+                              })
+                            }
                           }
-                        }"
+                        "
                       ></v-checkbox>
                     </v-col>
                   </v-row>
@@ -532,6 +533,32 @@
                   >
                     Cancelar
                   </v-btn>
+                  <v-btn
+                    v-if="idActividad && !idTarea"
+                    color="info"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-file-pdf-box"
+                    @click="generarPdfSolicitudFondosFunc"
+                    :loading="loadingPdfSolicitud"
+                    :disabled="!idActividad || loadingPdfSolicitud"
+                  >
+                    SR
+                  </v-btn>
+
+                  <v-btn
+                    v-if="idActividad && idTarea"
+                    color="info"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-file-pdf-box"
+                    @click="generarPdfSolicitudSubactividadFunc"
+                    :loading="loadingPdfSolicitud"
+                    :disabled="!idActividad || !idTarea || loadingPdfSubactividad"
+                  >
+                    SRS
+                  </v-btn>
+
                   <v-btn
                     color="secondary"
                     variant="outlined"
@@ -561,7 +588,7 @@
       </v-row>
     </div>
   </v-container>
-<!-- <pre>{{ formData }}</pre> -->
+  <!-- <pre>{{ formData }}</pre> -->
   <!-- {{ '***************************************B' }}
   <pre>{{ datosFormulario1 }}</pre> -->
   <!-- <pre>{{ datosSolicitudDeReposicion }}</pre>
@@ -576,6 +603,46 @@ import ActividadInformacion from '@/modules/proyecto/components/partials/Activid
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
+//Composable de impresion
+import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
+
+//Inicializar el composable
+const { generarPdfSolicitudReposicion, generarPdfSolicitudReposicionTareas } =
+  useImpresionFormularios()
+/*************************** Generar PDFs *******************************************/
+const loadingPdfSolicitud = ref(false)
+const loadingPdfSubactividad = ref(false)
+
+const generarPdfSolicitudFondosFunc = async () => {
+  if (!idActividad) return
+
+  loadingPdfSolicitud.value = true
+  try {
+    // Aquí iría tu lógica para generar el PDF de solicitud de fondos
+    console.log('Generando PDF Solicitud de Fondos para actividad:', idActividad)
+    await generarPdfSolicitudReposicion(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Solicitud de Fondos:', error)
+    alert('Error al generar el PDF: ' + error.message)
+  } finally {
+    loadingPdfSolicitud.value = false
+  }
+}
+
+const generarPdfSolicitudSubactividadFunc = async () => {
+  if (!idActividad || !idTarea) return
+
+  loadingPdfSubactividad.value = true
+  try {
+    await generarPdfSolicitudReposicionTareas(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Subactividad:', error)
+    alert('Error al generar el PDF de subactividad: ' + error.message)
+  } finally {
+    loadingPdfSubactividad.value = false
+  }
+}
+/*************************** Fin Generar PDFs *******************************************/
 
 const router = useRouter()
 const route = useRoute()
@@ -622,7 +689,16 @@ const formData = ref({
   // Resto de campos del formulario
   detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
   forma_pago: null,
-  datos_forma_pago: { otros: {nombre_otros: '', ci_otros: ''}, transferencia: { nombre_transferencia: '', ci_transferencia: '', entidad_bancaria: '', tipo_cuenta: '', numero_cuenta: ''}},
+  datos_forma_pago: {
+    otros: { nombre_otros: '', ci_otros: '' },
+    transferencia: {
+      nombre_transferencia: '',
+      ci_transferencia: '',
+      entidad_bancaria: '',
+      tipo_cuenta: '',
+      numero_cuenta: '',
+    },
+  },
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
   monto_solicitado: 0,
@@ -654,23 +730,23 @@ const formDatSF = ref({
   usuario_idsf: null,
   actividad_idsf: null,
   fechaRealizacionActividadsf: '',
-  bloquearIconosSolFondossf: true
+  bloquearIconosSolFondossf: true,
 })
 
 const datosSolicitudDeReposicion = ref({
-descripcion_actividad: '',
-objetivo_actividad: '',
-fecha_ejecucion: '',
-detalleGastos: '{"items":[]}',
-forma_pago: null,
-fecha_solicitud: '',
-lugar_solicitud: '',
-validacionResponsable: false,
-responsable_id: null,
-validacionCoordinador: false,
-coordinador_id: null,
-usuario_id: null,
-actividad_id: null,
+  descripcion_actividad: '',
+  objetivo_actividad: '',
+  fecha_ejecucion: '',
+  detalleGastos: '{"items":[]}',
+  forma_pago: null,
+  fecha_solicitud: '',
+  lugar_solicitud: '',
+  validacionResponsable: false,
+  responsable_id: null,
+  validacionCoordinador: false,
+  coordinador_id: null,
+  usuario_id: null,
+  actividad_id: null,
 })
 
 //datos para abrir Solicitud de Fondos
@@ -692,9 +768,7 @@ const textoProcedencia = computed(() => {
     ? formData.value.fuente_financiamiento
     : []
 
-  return fuentes
-    .map(({ nombre = '', monto = 0 } = {}) => `${nombre} : Bs. ${monto}`)
-    .join(', ')
+  return fuentes.map(({ nombre = '', monto = 0 } = {}) => `${nombre} : Bs. ${monto}`).join(', ')
 })
 
 const actividadData = ref({
@@ -754,17 +828,16 @@ watch(
       formData.value.materno = getSafeValue(usuario.materno)
       formData.value.cargo = getSafeValue(usuario.cargo)
       formData.value.documento_identidad = getSafeValue(usuario.ci)
-      formData.value.id_usuario = getSafeValue(usuario.id,0)
+      formData.value.id_usuario = getSafeValue(usuario.id, 0)
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
-
         formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)
         formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)
         formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)
         formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)
         formData.value.fecha_ejecucion = getSafeValue(newVal.actividad.fecha_programada)
-        formData.value.id_actividad = getSafeValue(newVal.actividad.id,0)
+        formData.value.id_actividad = getSafeValue(newVal.actividad.id, 0)
         formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
@@ -775,16 +848,24 @@ watch(
         actividadData.value = {
           ...actividadData.value,
           descripcion: getSafeValue(newVal.actividad.descripcion, actividadData.value.descripcion),
-          fecha_programada: getSafeValue(newVal.actividad.fecha_inicio, actividadData.value.fecha_programada),
-          fecha_cierre: getSafeValue(newVal.actividad.fecha_cierre, actividadData.value.fecha_cierre),
+          fecha_programada: getSafeValue(
+            newVal.actividad.fecha_inicio,
+            actividadData.value.fecha_programada,
+          ),
+          fecha_cierre: getSafeValue(
+            newVal.actividad.fecha_cierre,
+            actividadData.value.fecha_cierre,
+          ),
         }
       }
 
       // Llenar lista de validadores si existen
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
         //console.log('Cargando validadores:', newVal.validadores)
-        responsablesList.value = newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
-        coordinadoresList.value = newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
+        responsablesList.value =
+          newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
+        coordinadoresList.value =
+          newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
       } else {
         responsablesList.value = []
         coordinadoresList.value = []
@@ -803,7 +884,7 @@ watch(
     }
     formData.value.idresponsable = newVal.responsable_id
   },
-  { deep: true }
+  { deep: true },
 )
 
 const formasPagoOptions = computed(() => {
@@ -858,7 +939,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl+'/api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl + '/api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -890,60 +971,60 @@ async function cargarDatos() {
 
 function sanitizeData(data) {
   if (data === null || data === undefined) {
-    return '';
+    return ''
   }
 
   if (typeof data === 'string') {
     // Limpiar strings: trim y convertir empty strings a ''
-    const trimmed = data.trim();
-    return trimmed === '' ? '' : trimmed;
+    const trimmed = data.trim()
+    return trimmed === '' ? '' : trimmed
   }
 
   if (typeof data === 'number') {
     // Validar que sea un número finito
-    return isFinite(data) ? data : 0;
+    return isFinite(data) ? data : 0
   }
 
   if (typeof data === 'boolean') {
-    return data;
+    return data
   }
 
   if (Array.isArray(data)) {
     // Sanitizar cada elemento del array
-    return data.map(item => sanitizeData(item)).filter(item =>
-      item !== null && item !== undefined && item !== ''
-    );
+    return data
+      .map((item) => sanitizeData(item))
+      .filter((item) => item !== null && item !== undefined && item !== '')
   }
 
   if (typeof data === 'object') {
-    const sanitized = {};
+    const sanitized = {}
     for (const key in data) {
       if (Object.prototype.hasOwnProperty.call(data, key)) {
-        const value = data[key];
+        const value = data[key]
         // Solo incluir propiedades con valores válidos
         if (value !== null && value !== undefined && value !== '') {
-          sanitized[key] = sanitizeData(value);
+          sanitized[key] = sanitizeData(value)
         }
       }
     }
-    return sanitized;
+    return sanitized
   }
 
   // Para cualquier otro tipo de dato, retornar string vacío
-  return '';
+  return ''
 }
 
 function strictSanitizeData(data) {
-  const sanitized = sanitizeData(data);
+  const sanitized = sanitizeData(data)
 
   // Si el resultado es un objeto vacío, retornar string vacío
   if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
     if (Object.keys(sanitized).length === 0) {
-      return '';
+      return ''
     }
   }
 
-  return sanitized;
+  return sanitized
 }
 
 // async function cargarSolicitudFondos() {
@@ -994,7 +1075,7 @@ async function cargarSolicitudDeReposicion() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudReembolso/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudReembolso/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1012,10 +1093,10 @@ async function cargarSolicitudDeReposicion() {
     }
 
     const data = await response.json()
-    console.log('SoicitudDeReposicion Recibido:', JSON.stringify(data,null,2))
+    console.log('SoicitudDeReposicion Recibido:', JSON.stringify(data, null, 2))
 
     // Filtrar las solicitudes por actividad_id y tarea_id
-    const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
+    const solicitudesFiltradas = data.solicitudes.filter((solicitud) => {
       // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
       const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
       const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
@@ -1026,8 +1107,7 @@ async function cargarSolicitudDeReposicion() {
 
     datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
     actualizarDatosFormulario(solicitudesFiltradas[0])
-    console.log('datos de formulario:', JSON.stringify(datosFormulario1.value,null,2))
-
+    console.log('datos de formulario:', JSON.stringify(datosFormulario1.value, null, 2))
   } catch (err) {
     error.value = err.message
     console.error('Error al cargar Reposiciones', err)
@@ -1088,7 +1168,7 @@ async function submitForm() {
       id_tarea: idTarea || null,
     }
 
-    const response = await fetch(baseurl+'/api/monitoreo/crear-solicitud-fondos/', {
+    const response = await fetch(baseurl + '/api/monitoreo/crear-solicitud-fondos/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1122,10 +1202,7 @@ async function submitForm() {
 }
 
 async function validarSolicitud() {
-  if (
-    (!puedeValidarResponsable.value) &&
-    (!puedeValidarCoordinador.value)
-  ) {
+  if (!puedeValidarResponsable.value && !puedeValidarCoordinador.value) {
     alert('Usted no está autorizado para validar esta solicitud.')
     return
   }
@@ -1162,15 +1239,15 @@ async function validarSolicitud() {
   }
 
   if (!payload.id_solicitud) {
-      alert('Error: No se encontró el ID de la solicitud para validar.')
-      return
+    alert('Error: No se encontró el ID de la solicitud para validar.')
+    return
   }
 
   // 4. Ejecutar la llamada PATCH
   loading.value = true
   try {
     const response = await fetch(
-      baseurl+'/monitoreo_api/actualizar-validacion-solicitud-reembolso/',
+      baseurl + '/monitoreo_api/actualizar-validacion-solicitud-reembolso/',
       {
         method: 'PATCH',
         headers: {
@@ -1191,7 +1268,6 @@ async function validarSolicitud() {
 
     // Redireccionar
     router.push('/pei/listaactividades?showButton=1')
-
   } catch (err) {
     console.error('Error al validar la solicitud:', err)
     alert(`Error al validar la solicitud: ${err.message}`)
@@ -1501,7 +1577,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
       partida: item.partida_sf || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
       descripcion_gasto: item.concepto || '',
-      monto: item.monto || 0
+      monto: item.monto || 0,
     }))
 
     //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
@@ -1527,7 +1603,6 @@ function actualizarInformacionAdicional(solicitud) {
   if (solicitud && solicitud.datos_forma_pago) {
     const datosPago = solicitud.datos_forma_pago
 
-
     // Los datos ya vienen en el formato correcto desde el backend
     // Solo necesitamos asignarlos directamente
     if (datosPago.transferencia) {
@@ -1536,19 +1611,16 @@ function actualizarInformacionAdicional(solicitud) {
         ci_transferencia: datosPago.transferencia.ci_transferencia || '',
         entidad_bancaria: datosPago.transferencia.entidad_bancaria || '',
         tipo_cuenta: datosPago.transferencia.tipo_cuenta || '',
-        numero_cuenta: datosPago.transferencia.numero_cuenta || ''
+        numero_cuenta: datosPago.transferencia.numero_cuenta || '',
       }
-
     }
 
     if (datosPago.otros) {
       formData.value.datos_forma_pago.otros = {
         nombre_otros: datosPago.otros.nombre_otros || '',
-        ci_otros: datosPago.otros.ci_otros || ''
+        ci_otros: datosPago.otros.ci_otros || '',
       }
-
     }
-
   }
 }
 
@@ -1558,12 +1630,12 @@ function actualizarValidadores() {
 
   // Buscar responsable por ID
   const responsable = datosFormulario.value.validadores.find(
-    validador => validador.id === formDatSF.value.responsable_idsf
+    (validador) => validador.id === formDatSF.value.responsable_idsf,
   )
 
   // Buscar coordinador por ID
   const coordinador = datosFormulario.value.validadores.find(
-    validador => validador.id === formDatSF.value.coordinador_idsf
+    (validador) => validador.id === formDatSF.value.coordinador_idsf,
   )
 
   //Actualizar formData con los IDs encontrados
@@ -1591,14 +1663,13 @@ function actualizarListasValidadores() {
 
   // Filtrar responsables (puedes ajustar la lógica según el cargo)
   responsablesList.value = datosFormulario.value.validadores.filter(
-    validador => validador.cargo && validador.cargo.toLowerCase().includes('contable')
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('contable'),
   )
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
   coordinadoresList.value = datosFormulario.value.validadores.filter(
-    validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador'),
   )
-
 }
 
 // Verificación mejorada con roles
@@ -1611,8 +1682,7 @@ const puedeValidarResponsable = computed(() => {
   // El usuario puede validar si:
   // 1. Es el responsable asignado
   // 2. Tiene el cargo correspondiente
-  return usuarioActualId === responsableAsignadoId &&
-         usuarioActualCargo?.includes('contable')
+  return usuarioActualId === responsableAsignadoId && usuarioActualCargo?.includes('contable')
 })
 
 const puedeValidarCoordinador = computed(() => {
@@ -1623,8 +1693,7 @@ const puedeValidarCoordinador = computed(() => {
   // El usuario puede validar si:
   // 1. Es el coordinador asignado
   // 2. Tiene el cargo correspondiente
-  return usuarioActualId === coordinadorAsignadoId &&
-         usuarioActualCargo?.includes('coordinador')
+  return usuarioActualId === coordinadorAsignadoId && usuarioActualCargo?.includes('coordinador')
 })
 
 // Ciclo de vida
