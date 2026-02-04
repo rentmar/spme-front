@@ -1701,7 +1701,7 @@ const puedeValidarContador = computed(() => {
   const contadorAsignadoId = formDataRC.value.idcontador || formData.value.idcontador
 
   return usuarioActualId === contadorAsignadoId &&
-         usuarioActualCargo?.includes('contador')
+         usuarioActualCargo?.includes('contable')
 })
 
 const puedeValidarAdministrador = computed(() => {

@@ -239,7 +239,7 @@
                             color="warning"
                             size="small"
                             :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
-                            @click.stop="abrirDialogReposicionValidar(actividad.id)"
+                            @click.stop="abrirDialogReposicionValidar(actividad.id, null)"
                           ></v-btn>
                         </template>
                       </v-tooltip>
@@ -454,7 +454,7 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Reposición PEI" location="bottom">
+                                  <v-tooltip text="Validar Solicitud de Reposición PEI-SA" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -463,7 +463,6 @@
                                         variant="text"
                                         color="warning"
                                         size="x-small"
-
                                         @click.stop="abrirDialogReposicionValidar(actividad.id, tarea.id)"
                                       ></v-btn>
                                       <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
@@ -919,7 +918,7 @@
             <v-list-item v-if="datosFormularioValidarSR.solicitudes.length === 0 && !loading">
               <v-list-item-title class="text-grey">No tienes validacion de solicitudes pendientes</v-list-item-title>
             </v-list-item>
-<!-- <pre>{{ datosFormularioValidarSR }}</pre> -->
+<pre>{{ datosFormularioValidarSR }}</pre>
 <!-- <pre>{{ datosFormularioValidarSR.solicitudes }}</pre> -->
         </v-card-text>
         <v-card-actions>
@@ -1028,7 +1027,7 @@
       <!-- <pre>{{ actividadesPei }}</pre> -->
       <!-- <pre>{{ actividades }}</pre>
       {{ '********************************' }} -->
-      <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
+      <pre>{{ actividadesPaginadasOrdenadas }}</pre>
 </template>
 
 <script setup>
@@ -1262,46 +1261,46 @@ const abrirDialogValidar = async (actividadId, tareaId) => {     //tareaId = nul
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
-  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)  //es usado para habilitar iconos
-   console.log('55555555555555555SOLFONDOS', JSON.stringify(actividadIdParaValidar.value,null,2))
+  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId) //es usado para habilitar iconos
+   console.log('55555555555555555SOLFONDOS', JSON.stringify(actividadIdParaValidar,null,2))
 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   try {
-    await cargarDatos();
+    await cargarDatos()
     if (datosFormulario.value) {
-      await cargarSolicitudFondos();
+      await cargarSolicitudFondos()
     }
     console.log('se carga dato:')
   } catch (error) {
-    console.error('Error al cargar datos iniciales:', error);
-    mostrarSnackbar('Error al cargar datos iniciales', 'error');
+    console.error('Error al cargar datos iniciales:', error)
+    mostrarSnackbar('Error al cargar datos iniciales', 'error')
   }
 
-  dialogValidarSolicitud.value = true;
+  dialogValidarSolicitud.value = true
 }
 
 const abrirDialogRendicionValidar = async (actividadId, tareaId = null) => {
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
-  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)  //habilita iconos
+  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId) //habilita iconos
 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   try {
-    await cargarDatos();
+    await cargarDatos()
     if (datosFormulario.value) {
       //await cargarSolicitudFondos();
-      await cargarRendicionesDeCuenta();
+      await cargarRendicionesDeCuenta()
     }
   } catch (error) {
-    console.error('Error al cargar datos iniciales:', error);
-    mostrarSnackbar('Error al cargar datos iniciales', 'error');
+    console.error('Error al cargar datos iniciales:', error)
+    mostrarSnackbar('Error al cargar datos iniciales', 'error')
   }
 
-  dialogRendicionCuentasValidar.value = true;
+  dialogRendicionCuentasValidar.value = true
 }
 
-const abrirDialogReposicionValidar = async (actividadId, tareaId = null) => {
+const abrirDialogReposicionValidar = async (actividadId, tareaId) => {
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
@@ -1309,20 +1308,20 @@ const abrirDialogReposicionValidar = async (actividadId, tareaId = null) => {
 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   try {
-    await cargarDatos();
+    await cargarDatos()
     if (datosFormulario.value) {
-      await cargarSolicitudFondos();
-      await cargarSolicitudDeReposicion();
+      await cargarSolicitudFondos()
+      await cargarSolicitudDeReposicion()
     }
   } catch (error) {
-    console.error('Error al cargar datos iniciales:', error);
-    mostrarSnackbar('Error al cargar datos iniciales', 'error');
+    console.error('Error al cargar datos iniciales:', error)
+    mostrarSnackbar('Error al cargar datos iniciales', 'error')
   }
 
-  dialogReposicionValidar.value = true;
+  dialogReposicionValidar.value = true
 }
 
-const abrirDialogViajeValidar = async (actividadId, tareaId) =>{      //tareaId = null) => {
+const abrirDialogViajeValidar = async (actividadId, tareaId) => {
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
@@ -1332,7 +1331,7 @@ const abrirDialogViajeValidar = async (actividadId, tareaId) =>{      //tareaId 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   await cargarSolicitudDeViaje()
 
-  dialogViajeValidar.value = true;
+  dialogViajeValidar.value = true
 }
 
 const abrirDialogPagoDirectoValidar = async (actividadId, tareaId = null) => {
@@ -1344,7 +1343,7 @@ const abrirDialogPagoDirectoValidar = async (actividadId, tareaId = null) => {
 // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   await cargarSolicitudDePagoDirecto()
 
-  dialogPagoDirectoValidar.value = true;
+  dialogPagoDirectoValidar.value = true
 }
 
 const getEstadoTexto = (status) => {
@@ -1666,11 +1665,15 @@ async function cargarSolicitudDeReposicion() {
       },
       body: JSON.stringify({
         actividad_id: actividadIdParaValidar.value,
-        tarea_id: tareaIdParaValidar.value,
+        if (tareaIdParaValidar.value != null){
+          tarea_id: tareaIdParaValidar.value,
+        }
+        //tarea_id: tareaIdParaValidar.value,
         //usuario: usuario.value.nombre,
       }),
     })
     //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
+    console.log('popopopopop', actividadIdParaValidar.value, tareaIdParaValidar.value)
 
     if (!response.ok) {
       const errorData = await response.json()

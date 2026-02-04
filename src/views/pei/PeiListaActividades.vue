@@ -138,9 +138,7 @@
                             variant="text"
                             color="primary"
                             size="small"
-                            :disabled="
-                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
-                            "
+                            :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
                             @click.stop="abrirDialogValidar(actividad.id, null)"
                           ></v-btn>
                         </template>
@@ -474,10 +472,7 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip
-                                    text="Validar Solicitud de Reposición"
-                                    location="bottom"
-                                  >
+                                  <v-tooltip text="Validar Solicitud de Reposición" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -486,9 +481,7 @@
                                         variant="text"
                                         color="warning"
                                         size="x-small"
-                                        @click.stop="
-                                          abrirDialogReposicionValidar(actividad.id, tarea.id)
-                                        "
+                                        @click.stop="abrirDialogReposicionValidar(actividad.id, tarea.id)"
                                       ></v-btn>
                                       <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                                     </template>
@@ -1320,8 +1313,7 @@ const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudDePagoDirec
   })
 }
 
-const abrirDialogValidar = async (actividadId, tareaId) => {
-  //tareaId = null
+const abrirDialogValidar = async (actividadId, tareaId) => {     //tareaId = null
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId

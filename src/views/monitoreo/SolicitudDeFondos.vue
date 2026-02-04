@@ -1230,17 +1230,17 @@ function exportToExcel() {
     // Crear el blob
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
     const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-    
+
     // Crear URL del blob
     const url = window.URL.createObjectURL(blob)
-    
+
     // Crear enlace de descarga
     const a = document.createElement('a')
     a.href = url
     a.download = `Solicitud_Fondos_F-01_${getCurrentDate1()}.xlsx`
     document.body.appendChild(a)
     a.click()
-    
+
     // Limpiar después de la descarga
     setTimeout(() => {
       window.URL.revokeObjectURL(url)
