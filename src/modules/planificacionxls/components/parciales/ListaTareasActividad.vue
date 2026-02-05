@@ -144,7 +144,10 @@
                   <span class="descripcion">{{ truncateText(tarea.descripcion, 80) }}</span>
                 </div>
                 <div>
-                  <ValidationBar :actividad-id="actividad.id"></ValidationBar>
+                  <ValidationTareaBar
+                    :actividad-id="actividad.id"
+                    :tarea-id="tarea.id"
+                  ></ValidationTareaBar>
                 </div>
                 <div class="tarea-footer">
                   <div class="tarea-fechas">
@@ -287,6 +290,7 @@ import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSub
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
 import ValidationBar from '@/modules/formularios/components/ValidationBar.vue'
+import ValidationTareaBar from '@/modules/formularios/components/ValidationTareaBar.vue'
 
 const props = defineProps({
   actividad: {

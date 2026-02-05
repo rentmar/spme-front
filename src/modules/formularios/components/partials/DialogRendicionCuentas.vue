@@ -327,10 +327,6 @@ const formatCurrency = (amount) => {
   return `Bs. ${num.toFixed(2)}`
 }
 
-const formatNumber = (num) => {
-  return Number(num || 0).toFixed(2)
-}
-
 const getValidationColor = (item) => {
   // Para rendición de cuentas, hay 4 validaciones
   if (
