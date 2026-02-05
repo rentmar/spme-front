@@ -1,6 +1,6 @@
 //Composable para Solicitudes de Fondos
 import { ref } from 'vue'
-import solicitudDeFondosServico from '@/views/monitoreo/SolicitudDeFondos.vue'
+import { solicitudDeFondosServico } from '../services/solicitudFondosService'
 
 export function useSolucitudFondos() {
   //Estados

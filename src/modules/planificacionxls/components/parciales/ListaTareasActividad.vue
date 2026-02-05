@@ -144,7 +144,7 @@
                   <span class="descripcion">{{ truncateText(tarea.descripcion, 80) }}</span>
                 </div>
                 <div>
-                  <ValidationBar :actividad-id="actividad.id" :tarea-id="tarea.id"></ValidationBar>
+                  <ValidationBar :actividad-id="actividad.id"></ValidationBar>
                 </div>
                 <div class="tarea-footer">
                   <div class="tarea-fechas">
@@ -276,7 +276,7 @@
 
     <ConfirmDialog></ConfirmDialog>
   </div>
-  {{ actividad }}
+  <!-- {{ actividad }} -->
 </template>
 
 <script setup>

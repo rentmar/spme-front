@@ -44,6 +44,8 @@ export function useRendicionCuentas() {
   return {
     loading,
     error,
+    listaRendicionCuentasActividad,
+    listaRendicionCuentasTarea,
     obtenerListaRendicionCuentasPorIdActividad,
     obtenerListaRendicionCuentasPorIdTarea,
   }
