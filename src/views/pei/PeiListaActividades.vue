@@ -1263,13 +1263,29 @@ const abrirFormularioRendicionC = (idSolicitudF) => {
   })
 }
 
+// const abrirFormularioRendicionCuentasValidar = (idSolicitudF) => {
+//   router.push({
+//     path: `/monitoreo/formulario022/${actividadIdParaValidar.value}`,
+//     query: {
+//       solicitud_id: idSolicitudF,
+//     },
+//   })
+// }
+
 const abrirFormularioRendicionCuentasValidar = (idSolicitudF) => {
-  router.push({
+  const routeConfig = {
     path: `/monitoreo/formulario022/${actividadIdParaValidar.value}`,
     query: {
       solicitud_id: idSolicitudF,
     },
-  })
+  }
+
+  // Add tarea_id to query if it exists
+  if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
+    routeConfig.query.tarea_id = tareaIdParaValidar.value
+  }
+
+  router.push(routeConfig)
 }
 
 const abrirFormulario03 = (idSolicitudF) => {
@@ -1281,31 +1297,79 @@ const abrirFormulario03 = (idSolicitudF) => {
   })
 }
 
-const abrirFormularioReposicion = (idSolicitudR) => {
-  router.push({
+// const abrirFormularioReposicion = (idSolicitudR) => {
+//   router.push({
+//     path: `/monitoreo/formulario033/${actividadIdParaValidar.value}`,
+//     query: {
+//       solicitud_id: idSolicitudR,
+//     },
+//   })
+// }
+
+const abrirFormularioReposicion = (idSolicitudF) => {
+  const routeConfig = {
     path: `/monitoreo/formulario033/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudR,
+      solicitud_id: idSolicitudF,
     },
-  })
+  }
+
+  // Add tarea_id to query if it exists
+  if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
+    routeConfig.query.tarea_id = tareaIdParaValidar.value
+  }
+
+  router.push(routeConfig)
 }
 
-const abrirFormularioSolicitudDeViajeParaValidar = (idSolicitudDeViaje) => {
-  router.push({
+// const abrirFormularioSolicitudDeViajeParaValidar = (idSolicitudDeViaje) => {
+//   router.push({
+//     path: `/monitoreo/formulario055/${actividadIdParaValidar.value}`,
+//     query: {
+//       solicitud_id: idSolicitudDeViaje,
+//     },
+//   })
+// }
+
+const abrirFormularioSolicitudDeViajeParaValidar = (idSolicitudF) => {
+  const routeConfig = {
     path: `/monitoreo/formulario055/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudDeViaje,
+      solicitud_id: idSolicitudF,
     },
-  })
+  }
+
+  // Add tarea_id to query if it exists
+  if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
+    routeConfig.query.tarea_id = tareaIdParaValidar.value
+  }
+
+  router.push(routeConfig)
 }
 
-const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudDePagoDirecto) => {
-  router.push({
+// const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudDePagoDirecto) => {
+//   router.push({
+//     path: `/monitoreo/formulario088/${actividadIdParaValidar.value}`,
+//     query: {
+//       solicitud_id: idSolicitudDePagoDirecto,
+//     },
+//   })
+// }
+
+const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudF) => {
+  const routeConfig = {
     path: `/monitoreo/formulario088/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudDePagoDirecto,
+      solicitud_id: idSolicitudF,
     },
-  })
+  }
+
+  // Add tarea_id to query if it exists
+  if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
+    routeConfig.query.tarea_id = tareaIdParaValidar.value
+  }
+
+  router.push(routeConfig)
 }
 
 const abrirDialogValidar = async (actividadId, tareaId) => {     //tareaId = null

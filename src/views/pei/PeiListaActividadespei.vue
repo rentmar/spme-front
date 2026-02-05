@@ -1272,13 +1272,30 @@ const abrirFormularioRendicionC = (idSolicitudF) => {
   })
 }
 
+// const abrirFormularioRendicionCuentasValidar = (idSolicitudF) => {
+//   router.push({
+//     path: `/monitoreo/pei/formulariopei022/${actividadIdParaValidar.value}`,
+//     query: {
+//       solicitud_id: idSolicitudF,
+//     },
+//   })
+// }
+
 const abrirFormularioRendicionCuentasValidar = (idSolicitudF) => {
-  router.push({
+  const routeConfig = {
     path: `/monitoreo/pei/formulariopei022/${actividadIdParaValidar.value}`,
     query: {
       solicitud_id: idSolicitudF,
     },
-  })
+  }
+  //console.log('cosassssssssssssssssssss',actividadIdParaValidar)
+
+  // Add tarea_id to query if it exists
+  if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
+    routeConfig.query.tarea_id = tareaIdParaValidar.value
+  }
+
+  router.push(routeConfig)
 }
 
 const abrirFormulario03 = (idSolicitudF) => {
@@ -1290,31 +1307,82 @@ const abrirFormulario03 = (idSolicitudF) => {
   })
 }
 
-const abrirFormularioReposicion = (idSolicitudR) => {
-  router.push({
+// const abrirFormularioReposicion = (idSolicitudR) => {
+//   router.push({
+//     path: `/monitoreo/pei/formulariopei033/${actividadIdParaValidar.value}`,
+//     query: {
+//       solicitud_id: idSolicitudR,
+//     },
+//   })
+// }
+
+const abrirFormularioReposicion = (idSolicitudF) => {
+  const routeConfig = {
     path: `/monitoreo/pei/formulariopei033/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudR,
+      solicitud_id: idSolicitudF,
     },
-  })
+  }
+  //console.log('cosassssssssssssssssssss',actividadIdParaValidar)
+
+  // Add tarea_id to query if it exists
+  if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
+    routeConfig.query.tarea_id = tareaIdParaValidar.value
+  }
+
+  router.push(routeConfig)
 }
 
-const abrirFormularioSolicitudDeViajeParaValidar = (idSolicitudDeViaje) => {
-  router.push({
+// const abrirFormularioSolicitudDeViajeParaValidar = (idSolicitudDeViaje) => {
+//   router.push({
+//     path: `/monitoreo/pei/formulariopei055/${actividadIdParaValidar.value}`,
+//     query: {
+//       solicitud_id: idSolicitudDeViaje,
+//     },
+//   })
+// }
+
+const abrirFormularioSolicitudDeViajeParaValidar = (idSolicitudF) => {
+  const routeConfig = {
     path: `/monitoreo/pei/formulariopei055/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudDeViaje,
+      solicitud_id: idSolicitudF,
     },
-  })
+  }
+  //console.log('cosassssssssssssssssssss',actividadIdParaValidar)
+
+  // Add tarea_id to query if it exists
+  if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
+    routeConfig.query.tarea_id = tareaIdParaValidar.value
+  }
+
+  router.push(routeConfig)
 }
 
-const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudDePagoDirecto) => {
-  router.push({
+// const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudDePagoDirecto) => {
+//   router.push({
+//     path: `/monitoreo/pei/formulariopei088/${actividadIdParaValidar.value}`,
+//     query: {
+//       solicitud_id: idSolicitudDePagoDirecto,
+//     },
+//   })
+// }
+
+const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudF) => {
+  const routeConfig = {
     path: `/monitoreo/pei/formulariopei088/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudDePagoDirecto,
+      solicitud_id: idSolicitudF,
     },
-  })
+  }
+  //console.log('cosassssssssssssssssssss',actividadIdParaValidar)
+
+  // Add tarea_id to query if it exists
+  if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
+    routeConfig.query.tarea_id = tareaIdParaValidar.value
+  }
+
+  router.push(routeConfig)
 }
 
 const abrirDialogValidar = async (actividadId, tareaId) => {
@@ -1692,7 +1760,7 @@ async function cargarRendicionesDeCuenta() {
         //usuario: usuario.value.nombre,
       }),
     })
-    //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
+    //console.log('idactividad idTarea',actividadIdParaValidar.value, tareaIdParaValidar.value)
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -1702,6 +1770,7 @@ async function cargarRendicionesDeCuenta() {
     }
 
     const rawData = await response.json()
+    console.log('00000000000000000000000000000', JSON.stringify(rawData,null,2) )
 
     // Filtrar las solicitudes por actividad_id y tarea_id
     const solicitudesFiltradas = rawData.filter((solicitud) => {
