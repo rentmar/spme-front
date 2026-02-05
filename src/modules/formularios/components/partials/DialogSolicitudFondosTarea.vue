@@ -17,22 +17,37 @@
           class="mb-4"
         ></v-progress-linear>
 
-        <!-- Estadísticas -->
-        <div v-if="!loading && estadisticas" class="mb-4">
+        <!-- Estadísticas con IDs visibles -->
+        <div v-if="!loading" class="mb-4">
           <div class="d-flex justify-space-between align-center mb-3">
             <div>
               <div class="text-h6">Solicitudes de Fondos</div>
-              <div class="text-caption text-grey">
-                SubActividad: {{ tarea?.titulo || `ID: ${props.tareaId}` }}
+              <div class="d-flex flex-wrap align-center gap-2 mt-1">
+                <v-chip size="small" color="primary" variant="outlined">
+                  <v-icon start size="16">mdi-clipboard-list</v-icon>
+                  Actividad ID: {{ props.actividadId }}
+                </v-chip>
+                <v-chip size="small" color="primary" variant="outlined">
+                  <v-icon start size="16">mdi-checkbox-marked-outline</v-icon>
+                  Tarea ID: {{ props.tareaId }}
+                </v-chip>
+                <div class="text-caption text-grey">
+                  {{ tarea?.titulo || 'Sin título' }}
+                </div>
               </div>
             </div>
             <div class="text-right">
-              <div class="text-caption">{{ estadisticas.total_solicitudes }} solicitudes</div>
+              <div v-if="estadisticas" class="text-caption">
+                {{ estadisticas.total_solicitudes }} solicitudes
+              </div>
+              <div v-if="estadisticas?.total_monto" class="text-caption text-green">
+                Total: Bs. {{ formatNumber(estadisticas.total_monto) }}
+              </div>
             </div>
           </div>
 
           <!-- Chips de estadísticas -->
-          <div class="d-flex flex-wrap gap-2">
+          <div v-if="estadisticas" class="d-flex flex-wrap gap-2">
             <v-chip size="small" color="grey" variant="outlined">
               <v-icon start size="16">mdi-clock</v-icon>
               Pendientes: {{ estadisticas.por_estado?.pendientes || 0 }}
@@ -59,7 +74,13 @@
                   <div class="d-flex align-center mb-1">
                     <div class="font-weight-bold">{{ solicitud.numeroFormulario }}</div>
                     <v-chip size="x-small" class="ml-2" color="blue-lighten-4">
-                      ID: {{ solicitud.id }}
+                      Solicitud ID: {{ solicitud.id }}
+                    </v-chip>
+                    <v-chip size="x-small" class="ml-1" color="green-lighten-4">
+                      Tarea ID: {{ solicitud.tarea }}
+                    </v-chip>
+                    <v-chip size="x-small" class="ml-1" color="orange-lighten-4">
+                      Actividad ID: {{ solicitud.actividad }}
                     </v-chip>
                   </div>
 
@@ -81,6 +102,16 @@
                     <span class="font-weight-medium">Actividad:</span>
                     {{ actividad?.nombre || 'N/A' }}
                     <span v-if="actividad?.codigo" class="ml-1"> ({{ actividad.codigo }}) </span>
+                    <span class="text-grey ml-1">[ID: {{ props.actividadId }}]</span>
+                  </div>
+
+                  <div class="text-caption mb-1">
+                    <span class="font-weight-medium">SubActividad:</span>
+                    {{ tarea?.titulo || 'N/A' }}
+                    <span v-if="tarea?.descripcion" class="text-grey ml-1">
+                      - {{ tarea.descripcion }}
+                    </span>
+                    <span class="text-grey ml-1">[ID: {{ props.tareaId }}]</span>
                   </div>
 
                   <div class="text-caption mb-1">
@@ -98,6 +129,7 @@
                     <span v-if="solicitud.solicitante?.cargo">
                       ({{ solicitud.solicitante?.cargo }})</span
                     >
+                    <span class="text-grey ml-1"> [ID: {{ solicitud.solicitante?.id }}] </span>
                   </div>
 
                   <div class="text-caption mb-1">
@@ -112,6 +144,7 @@
                       | <span class="font-weight-medium">Lugar:</span>
                       {{ solicitud.lugarSolicitud }}
                     </span>
+                    <span class="text-grey ml-1"> [FormaPago ID: {{ solicitud.formaPago }}] </span>
                   </div>
                 </div>
 
@@ -154,7 +187,15 @@
           <div v-else class="pa-8 text-center">
             <v-icon size="64" color="grey lighten-1" class="mb-4">mdi-cash-remove</v-icon>
             <div class="text-h6 mb-2">No hay solicitudes de fondos</div>
-            <div class="text-caption text-grey">
+            <div class="d-flex justify-center gap-2 mt-2">
+              <v-chip size="small" color="primary" variant="outlined">
+                Actividad ID: {{ props.actividadId }}
+              </v-chip>
+              <v-chip size="small" color="primary" variant="outlined">
+                Tarea ID: {{ props.tareaId }}
+              </v-chip>
+            </div>
+            <div class="text-caption text-grey mt-2">
               No se encontraron solicitudes de fondos para esta tarea
             </div>
           </div>
@@ -164,6 +205,14 @@
         <div v-if="error && !loading" class="pa-4 text-center">
           <v-icon size="64" color="error" class="mb-4">mdi-alert-circle</v-icon>
           <div class="text-h6 mb-2 text-error">Error al cargar datos</div>
+          <div class="d-flex justify-center gap-2 mb-3">
+            <v-chip size="small" color="error" variant="outlined">
+              Actividad ID: {{ props.actividadId }}
+            </v-chip>
+            <v-chip size="small" color="error" variant="outlined">
+              Tarea ID: {{ props.tareaId }}
+            </v-chip>
+          </div>
           <div class="text-caption">{{ error }}</div>
           <v-btn color="primary" @click="cargarDatos" class="mt-2">Reintentar</v-btn>
         </div>
@@ -269,6 +318,10 @@ const formatDate = (date) => {
 const formatCurrency = (amount) => {
   const num = Number(amount) || 0
   return `Bs. ${num.toFixed(2)}`
+}
+
+const formatNumber = (num) => {
+  return Number(num || 0).toFixed(2)
 }
 
 const getValidationColor = (item) => {

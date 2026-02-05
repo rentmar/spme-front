@@ -612,8 +612,6 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 
-import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
-
 /*************************** Generar PDFs *******************************************/
 const loadingPdfSolicitud = ref(false)
 const loadingPdfSubactividad = ref(false)
