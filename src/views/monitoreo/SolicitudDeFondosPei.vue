@@ -1085,7 +1085,7 @@ async function submitForm() {
     numeroFormularioSF.value = data.numeroFormulario
 
     //const urlForm = `${baseurl}/api/monitoreo/formulariopei011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
-    const urlForm = `${window.location.origin}/monitoreo/pei/formulariopei011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
+    const urlForm = `${window.location.origin}/monitoreo/pei/formulariopei011/${idActividad}?solicitud_id=${data.id}${idTarea ? `&tarea_id=${idTarea}` : ''}`;
 
     const cuerpoMensaje = {
       destinatario_id: payload.coordinador,

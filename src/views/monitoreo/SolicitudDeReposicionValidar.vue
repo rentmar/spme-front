@@ -268,7 +268,9 @@
                   <v-table class="elevation-1 rounded-lg mb-4 users-table">
                     <thead>
                       <tr>
+                        <th class="fecha-column">Fecha</th>
                         <th class="text-subtitle-2 font-weight-bold">Partida</th>
+                        <th>Factura/Recibo</th>
                         <th class="text-subtitle-2 font-weight-bold">Descripción</th>
                         <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
                         <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
@@ -277,6 +279,18 @@
                     <!-- "(gasto, index) in datosSolicitudDeReposicion.detalleGastos.items" -->
                     <tbody>
                       <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
+                        <td class="fecha-column">
+                          <v-text-field
+                            v-model="gasto.fecha"
+                            type="date"
+                            bg-color="blue-lighten-5"
+                            hide-details
+                            density="compact"
+                            required
+                            class="fecha-input"
+                            readonly
+                          ></v-text-field>
+                        </td>
                         <td class="narrow-column">
                           <v-text-field
                             v-model="gasto.partida"
@@ -285,6 +299,16 @@
                             hide-details
                             placeholder="1.1.1"
                             class="compact-field"
+                            bg-color="blue-lighten-5"
+                            readonly
+                          ></v-text-field>
+                        </td>
+                        <td>
+                          <v-text-field
+                            v-model="gasto.factura_recibo"
+                            bg-color="blue-lighten-5"
+                            hide-details
+                            density="compact"
                             readonly
                           ></v-text-field>
                         </td>
@@ -1495,11 +1519,13 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
       detalleParseado = detalleDestinoFondos
     }
 
-    //console.log('Detalle de destino de fondos parseado:', detalleParseado)
+    console.log('Detalle de destino de fondos parseado:', detalleParseado)
 
     // Mapear al formato que espera la tabla
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
-      partida: item.partida_sf || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
+      fecha: item.fecha || '',
+      partida: item.partida || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
+      factura_recibo: item.factura_recibo || '',
       descripcion_gasto: item.concepto || '',
       monto: item.monto || 0
     }))
@@ -1636,6 +1662,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.fecha-column {
+  width: 180px; /* Ancho suficiente para mostrar fecha completa */
+  min-width: 180px;
+  max-width: 200px;
+}
+
+.fecha-input {
+  width: 100%;
+}
+
 .solicitud-fondos-container {
   max-width: 1400px;
   margin: 0 auto;
