@@ -1810,7 +1810,8 @@ const puedeValidarContador = computed(() => {
   const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
   const contadorAsignadoId = formDataRC.value.idcontador || formData.value.idcontador
 
-  return usuarioActualId === contadorAsignadoId && usuarioActualCargo?.includes('contador')
+  //return usuarioActualId === contadorAsignadoId && usuarioActualCargo?.includes('contador')
+  return usuarioActualId === contadorAsignadoId && usuarioActualCargo?.includes('contable')
 })
 
 const puedeValidarAdministrador = computed(() => {

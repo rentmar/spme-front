@@ -1259,9 +1259,7 @@ async function submitForm() {
     // Enviar la solicitud
     const response = await fetch(baseurl + '/api/monitoreo/crear-rendicion-cuentas/', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
 
@@ -1277,46 +1275,28 @@ async function submitForm() {
 
     const cuerpoMensaje = {
       destinatario_id: payload.idcoordinador,
-      asunto: 'Solicitud de Fondos - Coordinado',
-      contenido:
-        'Solicitud de Fondos pediente del formulario ' +
-        numeroFormulario.value +
-        '. URL: ' +
-        urlForm,
+      asunto: 'Rendicion de Cuentas',
+      contenido: 'Rendicion de Cuentas pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
-      //accion_url: '',
-      //accion_texto: '',
     }
     await enviarMensajeAutomatico(cuerpoMensaje)
 
     const cuerpoMensaje2 = {
       destinatario_id: payload.idcontador,
-      asunto: 'Solicitud de Viaje',
-      contenido:
-        'Solicitud de Viaje pediente del formulario ' +
-        numeroFormulario.value +
-        '. URL: ' +
-        urlForm,
+      asunto: 'Rendicion de Cuentas',
+      contenido: 'Rendicion de Cuentas pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
-      // accion_url: '',
-      // accion_texto: '',
     }
     await enviarMensajeAutomatico(cuerpoMensaje2)
 
     const cuerpoMensaje3 = {
       destinatario_id: payload.idadministrador,
-      asunto: 'Solicitud de Viaje',
-      contenido:
-        'Solicitud de Viaje pediente del formulario ' +
-        numeroFormulario.value +
-        '. URL: ' +
-        urlForm,
+      asunto: 'Rendicion de Cuentas',
+      contenido: 'Rendicion de Cuentas pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
-      // accion_url: '',
-      // accion_texto: '',
     }
 
     // GUARDAR EL ID DE LA RENDICIÓN CREADA
@@ -1332,16 +1312,14 @@ async function submitForm() {
     try {
       const emailPayload = {
         //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
-        emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter(
-          (email) => email,
-        ),
+        emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter((email) => email),
         datos_solicitud: {
           codigo: numeroFormulario.value || 'SOL-PROV',
-          titulo: 'Formulario Sol. Fondos',
+          titulo: 'Formulario Rendicion de Cuentas',
           solicitante: nombreCompletoSolicitante.value,
-          tipo: 'Solicitud de Actividad',
+          tipo: 'Rendicion de Cuentas',
           prioridad: 'alta',
-          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
+          descripcion: formData.value.descripcion_actividad || 'Rendicion de Cuentas para actividad',
           url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }

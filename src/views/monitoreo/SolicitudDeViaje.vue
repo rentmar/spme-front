@@ -827,10 +827,11 @@ async function submitForm() {
     //idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
 
+    const urlForm = `${window.location.origin}/monitoreo/formulario055/${idActividad}?solicitud_id=${data.id}${idTarea ? `&tarea_id=${idTarea}` : ''}`;
     const cuerpoMensaje = {
       destinatario_id: payload.id_coordinador,
       asunto: 'Solicitud de Viaje',
-      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormularioSF.value,
+      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
       // accion_url: '',
@@ -841,11 +842,9 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.id_responsable,
       asunto: 'Solicitud de Viaje',
-      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormularioSF.value,
+      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
-      // accion_url: '',
-      // accion_texto: '',
     }
 
     exportToExcel()
@@ -864,7 +863,7 @@ async function submitForm() {
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
           descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario055/${idActividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+          url_revision: `${window.location.origin}/monitoreo/formulario055/${idActividad}?solicitud_id=${data.id}${idTarea ? `&tarea_id=${idTarea}` : ''}`,
         },
       }
 

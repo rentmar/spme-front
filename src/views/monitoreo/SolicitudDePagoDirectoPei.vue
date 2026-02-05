@@ -17,7 +17,7 @@
           <p class="mt-4 text-h6">Cargando formulario de solicitud...</p>
         </div>
       </v-overlay>
-  
+
       <div v-if="!cargandoGeneral">
         <!--Titulo de la pagina-->
         <PaginaTituloIcono
@@ -32,7 +32,7 @@
         <br /> -->
         <!--Encabezado de la Actividad-->
           <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
-  
+
         <v-row>
           <!-- Panel lateral de información -->
           <v-col cols="12" md="4" lg="3">
@@ -56,9 +56,9 @@
                 </div>
               </v-card-text>
             </v-card>
-  
+
             <!-- Tarjeta de resumen rápido -->
-            <v-card elevation="2" rounded="lg" class="mb-4">
+            <!-- <v-card elevation="2" rounded="lg" class="mb-4">
               <v-toolbar color="secondary" density="compact">
                 <v-toolbar-title class="text-white">Resumen Rápido</v-toolbar-title>
               </v-toolbar>
@@ -78,9 +78,9 @@
                 <v-divider class="my-2"></v-divider>
                 <div class="d-flex justify-space-between align-center">
                   <span class="text-subtitle-2 text-medium-emphasis">Presupuesto disponible:</span>
-                  <!-- <span class="text-body-1 font-weight-medium text-success"
+                  <span class="text-body-1 font-weight-medium text-success"
                     >Bs. {{ actividadData.presupuesto.toLocaleString() }}</span
-                  > -->
+                  >
                   <span class="text-body-1 font-weight-medium text-success"
                     >Bs. {{ datosFormulario.actividad.presupuesto }}</span
                   >
@@ -88,9 +88,9 @@
 
                 </div>
               </v-card-text>
-            </v-card>
+            </v-card> -->
           </v-col>
-  
+
           <!-- Formulario principal -->
           <v-col cols="12" md="8" lg="9">
             <v-card elevation="2" rounded="lg">
@@ -100,7 +100,7 @@
                   Formulario de Solicitud
                 </v-toolbar-title>
               </v-toolbar>
-  
+
               <v-card-text class="pa-4">
                 <v-form ref="form" @submit.prevent="submitForm">
                   <!-- Sección 1: Información del Solicitante -->
@@ -162,9 +162,9 @@
                       </v-col>
                     </v-row>
                   </div>
-  
+
                   <v-divider class="my-4"></v-divider>
-  
+
                   <!-- Sección 2: Información de la Actividad -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
@@ -219,7 +219,7 @@
                       bg-color="blue-lighten-5"
                       required
                     ></v-text-field>
-  
+
                     <v-col cols="12" md="4">
                       <v-text-field
                         v-model="formData.fecha_ejecucion"
@@ -243,16 +243,16 @@
                       ></v-file-input>
                     </v-col>
                   </div>
-  
+
                   <v-divider class="my-4"></v-divider>
-  
+
                   <!-- Sección 3: Detalle de Gastos -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
                       <v-icon color="primary" class="mr-2">mdi-cash</v-icon>
                       Detalle de Gastos Solicitados
                     </h3>
-  
+
                     <v-alert type="info" variant="tonal" class="mb-4">
                       <template v-slot:prepend>
                         <v-icon color="info">mdi-information</v-icon>
@@ -260,7 +260,7 @@
                       Agregue todos los gastos asociados a la actividad. Especifique partida,
                       descripción y monto.
                     </v-alert>
-  
+
                     <div class="d-flex justify-space-between align-center mb-4">
                       <v-btn
                         color="primary"
@@ -274,7 +274,7 @@
                         Monto Total Solicitado (Bs.): {{ totalMontoSolicitado.toLocaleString() }}
                       </v-chip>
                     </div>
-  
+
                     <v-table class="elevation-1 rounded-lg mb-4 users-table">
                       <thead>
                         <tr>
@@ -335,16 +335,16 @@
                       </tbody>
                     </v-table>
                   </div>
-  
+
                   <v-divider class="my-4"></v-divider>
-  
+
                   <!-- Sección 4: Información Adicional -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
                       <v-icon color="primary" class="mr-2">mdi-information</v-icon>
                       Información Adicional
                     </h3>
-  
+
                     <v-row>
                       <v-col cols="12" md="6">
                         <v-text-field
@@ -377,7 +377,7 @@
                         ></v-text-field>
                       </v-col>
                     </v-row>
-  
+
                     <v-row>
                       <v-col cols="12" md="6">
                         <v-select
@@ -392,7 +392,7 @@
                         ></v-select>
                       </v-col>
                     </v-row>
-  
+
                     <div v-if="MostrarCamposOtros">
                       <v-row>
                         <v-col cols="12" md="6">
@@ -488,16 +488,16 @@
                       </v-row>
                     </div>
                   </div>
-  
+
                   <v-divider class="my-4"></v-divider>
-  
+
                   <!-- Sección 5: Firmas -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
                       <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                       Firmas y Validaciones
                     </h3>
-  
+
                     <v-row>
                       <v-col cols="12" md="6">
                         <v-select
@@ -541,7 +541,7 @@
                       </v-col>
                     </v-row>
                   </div>
-  
+
                   <!-- Botones de acción -->
                   <div class="d-flex justify-end gap-3 mt-8">
                     <v-btn
@@ -590,7 +590,7 @@
       {{ '*******************' }} -->
       <!-- <pre>{{ coordinadoresList }}</pre> -->
   </template>
-  
+
   <script setup>
   import { ref, onMounted, computed, watch } from 'vue'
   import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
@@ -600,10 +600,10 @@
   import * as XLSX from 'xlsx'
   import { useRoute, useRouter } from 'vue-router'
   import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
-  
+
   //Inicar Composable
   const { enviarMensajeAutomatico } = useNotificaciones()
-  
+
   //Routes
   const router = useRouter()
   const route = useRoute()
@@ -612,14 +612,14 @@
   const idTarea = route.query.tarea_id ? parseInt(route.query.tarea_id) : null
   console.log('ID Actividad:', idActividad)
   console.log('ID Tarea:', idTarea)
-  
+
   const baseurl = import.meta.env.VITE_API_BASE
-  
+
   //variables para carga de datos
   const datosFormulario = ref(null)
   const error = ref(null)
   const isLoading = ref(false)
-  
+
   // Estado reactivo
   const cargandoGeneral = ref(true)
   const loading = ref(false)
@@ -630,7 +630,7 @@
   const acceptedFormats = ref({
     medios: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx',
   })
-  
+
   const formData = ref({
     // Campos del usuario (se llenarán automáticamente)
     nombre: '',
@@ -673,12 +673,12 @@
     correo_contador: '',
     medios_archivos: [],
   })
-  
+
   //datos para abrir Solicitud de Fondos
   const idSolicitudFondos = ref(null)
   const numeroFormularioSF = ref(null)
   // Nuevo estado para controlar el bloqueo
-  
+
   const userStore = useUserStore()
   const usuario = computed(() => {
     return {
@@ -688,15 +688,15 @@
     }
   })
   console.log('ID Usuario:', JSON.stringify(usuario.value.id, null, 2)) //.value.id)
-  
+
   const textoProcedencia = computed(() => {
     const fuentes = Array.isArray(formData.value?.fuente_financiamiento)
       ? formData.value.fuente_financiamiento
       : []
-  
+
     return fuentes.map(({ nombre = '', monto = 0 } = {}) => `${nombre} : Bs. ${monto}`).join(', ')
   })
-  
+
   const actividadData = ref({
     codigo: 'ACT-2023-005',
     descripcion: 'Capacitación en gestión de proyectos para equipos técnicos',
@@ -707,7 +707,7 @@
     responsable: { nombre: 'María González' },
     presupuesto: 2500,
   })
-  
+
   // // Logica para formas de pago (solo debe haber tres formas de Pago: otros, Cheque, Transferencia)
   const formasPagoOptions = computed(() => {
     if (datosFormulario.value && datosFormulario.value.formaPago) {
@@ -724,14 +724,16 @@
     return ''
   })
   const MostrarCamposOtros = computed(() => {
+    const formaPagoTexto = formaPagoElegido.value
     //return !formaPagoElegido.value.includes('Transferencia Bancaria')
-    return formaPagoElegido.value !== 'Transferencia Bancaria'
+    //return formaPagoElegido.value !== 'Transferencia Bancaria'
+    return formaPagoTexto === 'Efectivo' || formaPagoTexto === 'Cheque'
   })
   const MostrarCamposTransferencia = computed(() => {
     //return formaPagoElegido.value.includes('Transferencia Bancaria')
     return formaPagoElegido.value === 'Transferencia Bancaria'
   })
-  
+
   // Propiedades computadas
   const nombreCoordinadorElegido = computed(() => {
     const coordinador = coordinadoresList.value.find(
@@ -739,41 +741,41 @@
     )
     return coordinador ? getNombreCompleto(coordinador) : ''
   })
-  
+
   const nombreContadorElegido = computed(() => {
     const contador = contadoresList.value.find((user) => user.id === formData.value.idcontador)
     return contador ? getNombreCompleto(contador) : ''
   })
-  
+
   const totalMontoSolicitado = computed(() => {
     return formData.value.detalle_destino_fondos.reduce(
       (total, gasto) => total + Number(gasto.monto || 0),
       0,
     )
   })
-  
+
   const nombreCompletoSolicitante = computed(() => {
     return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
   })
-  
+
   const isFrozen = computed(() => {
     return true
   })
-  
+
   // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
   watch(
     datosFormulario,
     (newVal) => {
       if (newVal && newVal.usuario) {
         //console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
-  
+
         const usuario = newVal.usuario
-  
+
         // Función helper para manejar valores null/undefined
         const getSafeValue = (value, defaultValue = '') => {
           return value !== null && value !== undefined ? value : defaultValue
         }
-  
+
         // Llenar campos del usuario
         formData.value.nombre = getSafeValue(usuario.nombre) //usuario.nombre || ''
         formData.value.paterno = getSafeValue(usuario.paterno) //usuario.paterno || ''
@@ -781,11 +783,11 @@
         formData.value.cargo = getSafeValue(usuario.cargo) //usuario.cargo || ''
         formData.value.documento_identidad = getSafeValue(usuario.ci) //usuario.ci || ''
         formData.value.id_usuario = getSafeValue(usuario.id, 0) //usuario.id || 0
-  
+
         // Llenar campos de la actividad si existen
         if (newVal.actividad) {
           //console.log('Auto-llenando datos de actividad:', newVal.actividad)
-  
+
           formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion) //newVal.actividad.descripcion || ''
           formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad) //newVal.actividad.objetivo_de_actividad || ''
           formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio) //newVal.actividad.fecha_inicio || ''
@@ -794,11 +796,11 @@
           // Asignar id_tarea desde los parámetros de la ruta si existe
           formData.value.id_tarea = idTarea || 0
           formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos) //newVal.actividad.procedencia_fondos || ''
-  
+
           if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
             //console.log('Formas de pago disponibles:', newVal.formaPago)
           }
-  
+
           // También actualizar actividadData para el componente ActividadInformacion
           actividadData.value = {
             ...actividadData.value,
@@ -813,7 +815,7 @@
             ), //newVal.actividad.fecha_cierre || actividadData.value.fecha_cierre,
           }
         }
-  
+
         // Llenar lista de validadores si existen
         if (newVal.validadores && Array.isArray(newVal.validadores)) {
           //console.log('Cargando validadores:', newVal.validadores)
@@ -832,14 +834,14 @@
     },
     { deep: true },
   )
-  
+
   // WATCH PARA GUARDAR EL CORREO DEL COORDINADOR CUANDO SE SELECCIONA
   watch(
     () => formData.value.idcoordinador,
     (newIdCoordinador) => {
       if (newIdCoordinador && coordinadoresList.value.length > 0) {
         const coordinadorSeleccionado = coordinadoresList.value.find((coordinador) => coordinador.id === newIdCoordinador )
-  
+
         if (coordinadorSeleccionado && coordinadorSeleccionado.correo) {
           formData.value.correo_coordinador = coordinadorSeleccionado.correo
         } else {
@@ -850,13 +852,13 @@
       }
     },
   )
-  
+
   watch(
     () => formData.value.idcontador,
     (newIdContador) => {
       if (newIdContador && contadoresList.value.length > 0) {
         const contadorSeleccionado = contadoresList.value.find((contador) => contador.id === newIdContador )
-  
+
         if (contadorSeleccionado && contadorSeleccionado.correo) {
           formData.value.correo_contador = contadorSeleccionado.correo
         } else {
@@ -867,12 +869,12 @@
       }
     },
   )
-  
+
   // Métodos
   function getNombreCompleto(user) {
     return `${user.nombre} ${user.paterno} ${user.materno}`.trim()
   }
-  
+
   function getCurrentDate() {
     const today = new Date()
     const year = today.getFullYear()
@@ -898,14 +900,14 @@
         }),
       })
       //console.log('Respuesta de la API recibida:', idActividad, usuario.value.nombre)
-  
+
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(
           `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
         )
       }
-  
+
       const rawData = await response.json()
       datosFormulario.value = strictSanitizeData(rawData)
       //console.log('Datos cargados exitosamente:', rawData)
@@ -917,34 +919,34 @@
       cargandoGeneral.value = false
     }
   }
-  
+
   function sanitizeData(data) {
     if (data === null || data === undefined) {
       return ''
     }
-  
+
     if (typeof data === 'string') {
       // Limpiar strings: trim y convertir empty strings a ''
       const trimmed = data.trim()
       return trimmed === '' ? '' : trimmed
     }
-  
+
     if (typeof data === 'number') {
       // Validar que sea un número finito
       return isFinite(data) ? data : 0
     }
-  
+
     if (typeof data === 'boolean') {
       return data
     }
-  
+
     if (Array.isArray(data)) {
       // Sanitizar cada elemento del array
       return data
         .map((item) => sanitizeData(item))
         .filter((item) => item !== null && item !== undefined && item !== '')
     }
-  
+
     if (typeof data === 'object') {
       const sanitized = {}
       for (const key in data) {
@@ -958,35 +960,35 @@
       }
       return sanitized
     }
-  
+
     // Para cualquier otro tipo de dato, retornar string vacío
     return ''
   }
-  
+
   function strictSanitizeData(data) {
     const sanitized = sanitizeData(data)
-  
+
     // Si el resultado es un objeto vacío, retornar string vacío
     if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
       if (Object.keys(sanitized).length === 0) {
         return ''
       }
     }
-  
+
     return sanitized
   }
-  
+
   function addGasto() {
     //esta funcion adiciona una fila de detalle de gasto al vista
     formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 })
   }
-  
+
   function removeGasto(index) {
     if (formData.value.detalle_destino_fondos.length > 1) {
       formData.value.detalle_destino_fondos.splice(index, 1)
     }
   }
-  
+
   async function submitForm() {
     loading.value = true
     try {
@@ -994,12 +996,12 @@
       if (!formData.value.id_actividad || formData.value.id_actividad <= 0) {
         throw new Error('Error: No se puede crear el formulario sin una actividad válida.')
       }
-  
+
       // Validar que id_tarea sea válido cuando se está creando una solicitud para una tarea
       if (idTarea && (!formData.value.id_tarea || formData.value.id_tarea <= 0)) {
         throw new Error('Error: No se puede crear el formulario sin una tarea válida.')
       }
-  
+
       //Validar si el formulario está completo
       if (
         !formData.value.lugar_solicitud ||
@@ -1011,7 +1013,22 @@
       if (totalMontoSolicitado.value <= 0) {
         throw new Error('El monto total solicitado debe ser mayor a cero.')
       }
-  
+
+      // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+      const coordinadorSeleccionado = coordinadoresList.value.find(
+      (coordinador) => coordinador.id === formData.value.idcoordinador
+      )
+      const contadorSeleccionado = contadoresList.value.find(
+      (contador) => contador.id === formData.value.idcontador
+      )
+
+      const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+      const correoContadorActual = contadorSeleccionado?.correo || ''
+
+      // Actualizar los valores en formData
+      formData.value.correo_coordinador = correoCoordinadorActual
+      formData.value.correo_contador = correoContadorActual
+
       const payload = {
       // detalle_destino_fondos should be an object, not a stringified JSON
       detalleDestinoFondos: {
@@ -1040,7 +1057,7 @@
       datos_forma_pago: formData.value.datos_forma_pago,
       bloquear_icono_sf: true,
     }
-  
+
       console.log('Payload enviado al servidor:', JSON.stringify(payload,null,2))
       //const response = await fetch(baseurl + '/monitoreo_api/crearSolicitudPagoDirecto/', {
       const response = await fetch(baseurl + 'api/solicitud-pago-directo-pei/', {
@@ -1050,35 +1067,45 @@
         },
         body: JSON.stringify(payload),
       })
-  
+
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`)
       }
-  
+
       const data = await response.json()
       idSolicitudFondos.value = data.id
       numeroFormularioSF.value = data.numero_formulario
-  
+
+      const urlForm = `${window.location.origin}/monitoreo/pei/formulariopei088/${formData.value.id_actividad}?solicitud_id=${data.id}${payload.id_tarea ? `&tarea_id=${payload.id_tarea}` : ''}`;
+
       const cuerpoMensaje = {
         destinatario_id: payload.coordinador,
-        asunto: 'Solicitud de Pago Directo - Coordinado',
-        contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value,
+        asunto: 'Solicitud de Pago Directo PEI - Coordinado',
+        contenido: 'Solicitud de Pago Directo PEI pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
         tipo: 'sistema',
         prioridad: 3,
-        accion_url: '',
-        accion_texto: '',
       }
-  
+      await enviarMensajeAutomatico(cuerpoMensaje)
+
+      const cuerpoMensaje2 = {
+        destinatario_id: payload.contador,
+        asunto: 'Solicitud de Pago Directo PEI - Coordinado',
+        contenido: 'Solicitud de Pago Directo PEI pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+        tipo: 'sistema',
+        prioridad: 3,
+    }
+
       exportToExcel()
       resetForm()
-  
-      await enviarMensajeAutomatico(cuerpoMensaje)
-  
+
+      await enviarMensajeAutomatico(cuerpoMensaje2)
+
   ////////////////////////////////////////////////////////////////////////////
       // Enviar notificación por correo al coordinador
       try {
         const emailPayload = {
-          emails: [formData.value.correo_coordinador, formData.value.correo_contador],
+          emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
+          //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
           datos_solicitud: {
             codigo: numeroFormularioSF.value || 'SOL-PROV',
             titulo: 'Formulario Sol. Pago Directo',
@@ -1086,21 +1113,20 @@
             tipo: 'Solicitud de Actividad',
             prioridad: 'alta',
             descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad PEI',
-            url_revision: `${window.location.origin}/monitoreo/pei/formulariopei08/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+            url_revision: `${window.location.origin}/monitoreo/pei/formulariopei088/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
           },
         }
-        console.log('emailPayload enviado al servidor:', emailPayload)
-  
-        const emailResponse = await fetch(
-          //http://localhost:8000/api-msg/correos/solicitud-pendiente/
-          baseurl + '/api-msg/correos/solicitud-pendiente/',
+
+        console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
+
+        const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
           {
            method: 'POST',
            headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(emailPayload),
         },
       )
-  
+
         if (emailResponse.ok) {
           console.log('Correo de notificación enviado exitosamente')
         } else {
@@ -1111,9 +1137,9 @@
         // No detenemos el flujo si falla el envío del correo
       }
   ///////////////////////////////////////////////////////////////////////////////
-  
+
       console.log('Respuesta del servidor:', data)
-  
+
       setTimeout(() => {
         router.push('/pei/listaactividadespei?showButton=1')
       }, 1000)
@@ -1125,7 +1151,7 @@
       loading.value = false
     }
   }
-  
+
   function resetForm() {
     Object.assign(formData.value, {
       descripcion_actividad: '',
@@ -1153,7 +1179,7 @@
       //id_actividad: 0,
     })
   }
-  
+
   function exportToExcel() {
     // 1. Crear datos principales con formato de formulario
     const mainData = [
@@ -1181,7 +1207,7 @@
       ['Lugar de Solicitud:', formData.value.lugar_solicitud, '', ''],
       ['Fecha de Solicitud:', getCurrentDate1(), '', ''],
       [''],
-  
+
       ['DATOS PARA TRANSFERENCIA BANCARIA', '', '', ''],
       [
         'Pago a nombre de:',
@@ -1194,12 +1220,12 @@
       ['Nro. Cuenta:', formData.value.datos_forma_pago.transferencia.numero_cuenta, '', ''],
       ['Tipo Cuenta:', formData.value.datos_forma_pago.transferencia.tipo_cuenta, '', ''],
       [''],
-  
+
       ['DATOS PARA OTROS PAGOS', '', '', ''],
       ['Pago a nombre de:', formData.value.datos_forma_pago.otros.nombre_otros, '', ''],
       ['C.I.:', formData.value.datos_forma_pago.otros.ci_otros, '', ''],
       [''],
-  
+
       ['FIRMAS Y VALIDACIONES', '', '', ''],
       [
         'Contador:',
@@ -1216,10 +1242,10 @@
       [''],
       ['DETALLE DEL DESTINO DE FONDOS', '', '', ''],
     ]
-  
+
     // 2. Encabezados de la tabla de gastos
     const expensesHeaders = ['PARTIDA', 'DESCRIPCIÓN DEL GASTO', 'MONTO (BS.)', 'OBSERVACIONES']
-  
+
     // 3. Datos de gastos
     const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
       gasto.partida,
@@ -1227,16 +1253,16 @@
       gasto.monto,
       '',
     ])
-  
+
     // 4. Total al final de la tabla
     const totalRow = ['TOTAL', '', totalMontoSolicitado.value, '']
-  
+
     // 5. Crear workbook
     const wb = XLSX.utils.book_new()
-  
+
     // 6. Hoja principal con formato de formulario
     const wsMain = XLSX.utils.aoa_to_sheet([...mainData, expensesHeaders, ...expensesData, totalRow])
-  
+
     // 7. Aplicar estilos y formatos
     applyExcelStyles(
       wsMain,
@@ -1245,12 +1271,12 @@
       formData.value.descripcion_actividad,
       formData.value.objetivo_actividad,
     )
-  
+
     // 8. Agregar hoja al workbook y guardar
     XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud de Fondos')
     XLSX.writeFile(wb, `Solicitud_Fondos_F-01_${getCurrentDate1()}.xlsx`)
   }
-  
+
   function applyExcelStyles(
     worksheet,
     mainDataRows,
@@ -1259,7 +1285,7 @@
     objetivoActividad,
   ) {
     if (!worksheet['!merges']) worksheet['!merges'] = []
-  
+
     // Fusionar celdas para títulos y secciones
     worksheet['!merges'].push(
       { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
@@ -1269,16 +1295,16 @@
       { s: { r: 18, c: 0 }, e: { r: 18, c: 3 } },
       { s: { r: 21 + mainDataRows, c: 0 }, e: { r: 21 + mainDataRows, c: 3 } },
     )
-  
+
     // Configurar anchos de columnas
     worksheet['!cols'] = [{ wch: 30 }, { wch: 40 }, { wch: 20 }, { wch: 25 }]
-  
+
     // Aplicar formatos a celdas específicas
     Object.keys(worksheet).forEach((cellAddress) => {
       if (cellAddress !== '!ref' && cellAddress !== '!merges' && cellAddress !== '!cols') {
         const cell = worksheet[cellAddress]
         const cellRef = XLSX.utils.decode_cell(cellAddress)
-  
+
         // Estilo para títulos y encabezados de sección
         if (
           cellRef.r === 0 ||
@@ -1294,7 +1320,7 @@
             alignment: { horizontal: 'center', vertical: 'center' },
           }
         }
-  
+
         // Estilo para etiquetas
         else if (cellRef.c === 0 && cellRef.r > 0 && cellRef.r < 21 + mainDataRows) {
           cell.s = {
@@ -1302,7 +1328,7 @@
             fill: { fgColor: { rgb: 'D9E1F2' } },
           }
         }
-  
+
         // Estilo para encabezados de tabla
         else if (cellRef.r === 22 + mainDataRows) {
           cell.s = {
@@ -1311,7 +1337,7 @@
             alignment: { horizontal: 'center' },
           }
         }
-  
+
         // Estilo para la fila total
         else if (cellRef.r === 23 + mainDataRows + expensesRows) {
           cell.s = {
@@ -1319,7 +1345,7 @@
             fill: { fgColor: { rgb: 'F2F2F2' } },
           }
         }
-  
+
         // Formato de moneda para columna de montos (columna C)
         else if (
           cellRef.c === 2 &&
@@ -1328,7 +1354,7 @@
         ) {
           cell.z = '"Bs." #,##0.00'
         }
-  
+
         // Formato de fecha para celdas de fecha
         else if (
           (cell.v && typeof cell.v === 'string' && cell.v.match(/\d{4}-\d{2}-\d{2}/)) ||
@@ -1336,7 +1362,7 @@
         ) {
           cell.z = 'dd/mm/yyyy'
         }
-  
+
         // Estilo específico para la celda de descripción de actividad (B9)
         if (cellRef.r === 8 && cellRef.c === 1) {
           if (!cell.s) cell.s = {}
@@ -1344,7 +1370,7 @@
           cell.s.alignment.wrapText = true
           cell.s.alignment.vertical = 'top'
         }
-  
+
         // Estilo específico para la celda de objetivo de actividad (B11)
         if (cellRef.r === 10 && cellRef.c === 1) {
           if (!cell.s) cell.s = {}
@@ -1354,11 +1380,11 @@
         }
       }
     })
-  
+
     // Agregar bordes a la tabla de gastos
     const tableStartRow = 22 + mainDataRows
     const tableEndRow = 23 + mainDataRows + expensesRows
-  
+
     for (let r = tableStartRow; r <= tableEndRow; r++) {
       for (let c = 0; c < 4; c++) {
         const cellAddress = XLSX.utils.encode_cell({ r, c })
@@ -1372,21 +1398,21 @@
         }
       }
     }
-  
+
     // Ajustar altura de filas para las celdas con texto largo
     if (!worksheet['!rows']) worksheet['!rows'] = []
-  
+
     // Ajustar altura de la fila de descripción (fila 9)
     if (descripcionActividad && descripcionActividad.length > 100) {
       worksheet['!rows'][8] = { hpt: 60 }
     }
-  
+
     // Ajustar altura de la fila de objetivo (fila 11)
     if (objetivoActividad && objetivoActividad.length > 100) {
       worksheet['!rows'][10] = { hpt: 60 }
     }
   }
-  
+
   function getCurrentDate1() {
     const today = new Date()
     const year = today.getFullYear()
@@ -1394,7 +1420,7 @@
     const day = String(today.getDate()).padStart(2, '0')
     return `${day}/${month}/${year}`
   }
-  
+
   // Ciclo de vida
   onMounted(async () => {
     await cargarDatos()
@@ -1402,26 +1428,26 @@
     resetForm()
   })
   </script>
-  
+
   <style scoped>
   .solicitud-fondos-container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px 16px;
   }
-  
+
   .v-card {
     border-radius: 8px;
     overflow: hidden;
     transition: all 0.3s ease;
     border: 1px solid rgba(0, 0, 0, 0.12);
   }
-  
+
   .v-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
   }
-  
+
   .form-section {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     padding: 24px;
@@ -1429,7 +1455,7 @@
     margin-bottom: 24px;
     border: 1px solid #e0e0e0;
   }
-  
+
   .form-section h3 {
     color: #1976d2;
     border-bottom: 2px solid #1976d2;
@@ -1439,63 +1465,63 @@
     display: flex;
     align-items: center;
   }
-  
+
   .info-item {
     padding: 8px 0;
   }
-  
+
   .gap-3 {
     gap: 12px;
   }
-  
+
   .users-table {
     width: 100%;
   }
-  
+
   .users-table th {
     background-color: #f5f5f5;
     position: sticky;
     top: 0;
     z-index: 2;
   }
-  
+
   /* Ajustes responsivos */
   @media (max-width: 960px) {
     .solicitud-fondos-container {
       padding: 16px 12px;
     }
-  
+
     .form-section {
       padding: 20px;
       margin-bottom: 20px;
     }
-  
+
     .d-flex.justify-end {
       flex-direction: column;
       gap: 8px;
     }
-  
+
     .d-flex.justify-end .v-btn {
       width: 100%;
     }
   }
-  
+
   @media (max-width: 600px) {
     .v-card {
       margin: 8px 0;
     }
-  
+
     .form-section {
       padding: 16px;
     }
   }
-  
+
   /* Mejora el aspecto de la tabla */
   :deep(.v-table) {
     border-radius: 8px;
     overflow: hidden;
   }
-  
+
   :deep(.v-table th) {
     background-color: #1976d2 !important;
     color: white !important;
@@ -1503,27 +1529,26 @@
     font-size: 14px;
     padding: 16px 12px;
   }
-  
+
   :deep(.v-table td) {
     padding: 12px;
     background-color: #fafafa;
   }
-  
+
   .narrow-column {
     width: 15%;
   }
-  
+
   .wide-column {
     width: 50%;
   }
-  
+
   .action-column {
     width: 15%;
   }
-  
+
   .compact-field {
     font-size: 14px;
     max-width: 100px;
   }
   </style>
-  

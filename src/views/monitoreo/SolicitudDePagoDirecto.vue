@@ -579,9 +579,9 @@
   <!-- {{ '*******************' }}
   <pre>{{ formData.correo_coordinador }}</pre> -->
   <!-- {{ '*******************' }}
-  <pre>{{ coordinadoresList }}</pre> -->
+  <pre>{{ payload.id_tarea }}</pre> -->
   <!-- {{ '*******************' }}
-  <pre>{{ contadoresList }}</pre> -->
+  <pre>{{ formData.id_tarea }}</pre> -->
 </template>
 
 <script setup>
@@ -1074,7 +1074,7 @@ async function submitForm() {
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
 
-    const urlForm = `${window.location.origin}/monitoreo/formulario088/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
+    const urlForm = `${window.location.origin}/monitoreo/formulario088/${formData.value.id_actividad}?solicitud_id=${data.id}${payload.id_tarea ? `&tarea_id=${payload.id_tarea}` : ''}`;
 
     const cuerpoMensaje = {
       destinatario_id: payload.id_coordinador,
@@ -1105,7 +1105,7 @@ async function submitForm() {
         emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
-          titulo: 'Formulario Sol. Fondos',
+          titulo: 'Formulario Sol. Pago Directo',
           solicitante: nombreCompletoSolicitante.value,
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',

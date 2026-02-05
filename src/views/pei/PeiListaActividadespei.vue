@@ -172,8 +172,10 @@
                             variant="text"
                             color="deep-purple"
                             size="small"
-                            :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
-                            @click.stop="abrirDialogViajeValidar(actividad.id,null)"
+                            :disabled="
+                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
+                            "
+                            @click.stop="abrirDialogViajeValidar(actividad.id, null)"
                           ></v-btn>
                         </template>
                       </v-tooltip>
@@ -205,8 +207,10 @@
                             variant="text"
                             color="teal-lighten-2"
                             size="small"
-                            :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
-                            @click.stop="abrirDialogPagoDirectoValidar(actividad.id)"
+                            :disabled="
+                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
+                            "
+                            @click.stop="abrirDialogPagoDirectoValidar(actividad.id, null)"
                           ></v-btn>
                         </template>
                       </v-tooltip>
@@ -239,7 +243,7 @@
                             color="warning"
                             size="small"
                             :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
-                            @click.stop="abrirDialogReposicionValidar(actividad.id)"
+                            @click.stop="abrirDialogReposicionValidar(actividad.id, null)"
                           ></v-btn>
                         </template>
                       </v-tooltip>
@@ -260,7 +264,7 @@
                             @click.stop
                           ></v-btn>
                           <!-- :disabled="!getSolicitudFondosInfo(actividad.id, 0)?.bloquearIconosSolFondos" -->
-                           <!-- @click.stop="abrirDialogRendicion(actividad.id)" -->
+                          <!-- @click.stop="abrirDialogRendicion(actividad.id)" -->
                         </template>
                       </v-tooltip>
 
@@ -273,8 +277,7 @@
                             variant="text"
                             color="error"
                             size="small"
-
-                            @click.stop="abrirDialogRendicionValidar(actividad.id)"
+                            @click.stop="abrirDialogRendicionValidar(actividad.id, null)"
                           ></v-btn>
                           <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                         </template>
@@ -307,7 +310,9 @@
                     <v-card elevation="0" class="ml-10 mr-4 mb-4 bg-grey-lighten-4">
                       <v-card-text class="pt-4">
                         <div class="d-flex justify-space-between align-center mb-4">
-                          <span class="text-subtitle-1">Sub Actividades para {{ actividad.codigo }}</span>
+                          <span class="text-subtitle-1"
+                            >Sub Actividades para {{ actividad.codigo }}</span
+                          >
                           <div class="d-flex align-center">
                             <!-- <v-btn
                               color="primary"
@@ -335,10 +340,9 @@
                             </template>
                             <template v-slot:append>
                               <div class="d-flex">
-
                                 <!-- Solicitud de Fondos para TAREA -->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Fondos PEI" location="top">
+                                  <v-tooltip text="Solicitud de Fondos PEI-SA" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -350,11 +354,11 @@
                                         :to="`/monitoreo/pei/formulariopei01/${actividad.id}?tarea_id=${tarea.id}`"
                                         @click.stop
                                       ></v-btn>
-                                        <!-- :disabled="getSolicitudFondosInfo(actividad.id, tarea.id)?.bloquearIconosSolFondos || pruebaBloqueo" -->
+                                      <!-- :disabled="getSolicitudFondosInfo(actividad.id, tarea.id)?.bloquearIconosSolFondos || pruebaBloqueo" -->
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Fondos PEI" location="bottom">
+                                  <v-tooltip text="Validar Solicitud de Fondos PEI-SA" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -363,7 +367,6 @@
                                         variant="text"
                                         color="primary"
                                         size="x-small"
-
                                         @click.stop="abrirDialogValidar(actividad.id, tarea.id)"
                                       ></v-btn>
                                       <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
@@ -373,7 +376,7 @@
 
                                 <!-- Solicitud de Viaje para TAREA se cambio de 1 a 5-->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Viaje PEI" location="top">
+                                  <v-tooltip text="Solicitud de Viaje PEI-SA" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -388,7 +391,7 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Viaje PEI" location="bottom">
+                                  <v-tooltip text="Validar Solicitud de Viaje PEI-SA" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -397,8 +400,13 @@
                                         variant="text"
                                         color="deep-purple"
                                         size="x-small"
-                                        :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
-                                        @click.stop="abrirDialogViajeValidar(actividad.id, tarea.id)"
+                                        :disabled="
+                                          getSolicitudFondosInfo(actividad.id)
+                                            ?.bloquearIconosSolFondos && false
+                                        "
+                                        @click.stop="
+                                          abrirDialogViajeValidar(actividad.id, tarea.id)
+                                        "
                                       ></v-btn>
                                     </template>
                                   </v-tooltip>
@@ -406,7 +414,7 @@
 
                                 <!-- Solicitud de Pago Directo para TAREA se cambio de 1 a 5-->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Pago Directo PEI" location="top">
+                                  <v-tooltip text="Solicitud de Pago Directo PEI-SA" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -421,7 +429,7 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Pago Directo PEI" location="bottom">
+                                  <v-tooltip text="Validar Solicitud de Pago Directo PEI-SA" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -430,8 +438,13 @@
                                         variant="text"
                                         color="teal-lighten-2"
                                         size="x-small"
-                                        :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
-                                        @click.stop="abrirDialogPagoDirectoValidar(actividad.id, tarea.id)"
+                                        :disabled="
+                                          getSolicitudFondosInfo(actividad.id)
+                                            ?.bloquearIconosSolFondos && false
+                                        "
+                                        @click.stop="
+                                          abrirDialogPagoDirectoValidar(actividad.id, tarea.id)
+                                        "
                                       ></v-btn>
                                     </template>
                                   </v-tooltip>
@@ -439,7 +452,7 @@
 
                                 <!-- Solicitud de Reposición para TAREA -->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Reposición PEI" location="top">
+                                  <v-tooltip text="Solicitud de Reposición PEI-SA" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -454,7 +467,7 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Reposición PEI" location="bottom">
+                                  <v-tooltip text="Validar Solicitud de Reposición PEI-SA" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -463,8 +476,9 @@
                                         variant="text"
                                         color="warning"
                                         size="x-small"
-
-                                        @click.stop="abrirDialogReposicionValidar(actividad.id, tarea.id)"
+                                        @click.stop="
+                                          abrirDialogReposicionValidar(actividad.id, tarea.id)
+                                        "
                                       ></v-btn>
                                       <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                                     </template>
@@ -473,7 +487,7 @@
 
                                 <!-- Rendición de cuentas para TAREAS-->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Rendicion de Cuentas PEI" location="top">
+                                  <v-tooltip text="Rendicion de Cuentas PEI-SA" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 2"
@@ -489,7 +503,7 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Rendición de Cuentas PEI" location="bottom">
+                                  <v-tooltip text="Validar Rendición de Cuentas PEI-SA" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 2"
@@ -498,8 +512,9 @@
                                         variant="text"
                                         color="error"
                                         size="x-small"
-
-                                        @click.stop="abrirDialogRendicionValidar(actividad.id, tarea.id)"
+                                        @click.stop="
+                                          abrirDialogRendicionValidar(actividad.id, tarea.id)
+                                        "
                                       ></v-btn>
                                       <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                                     </template>
@@ -727,38 +742,47 @@
 
     <v-dialog v-model="dialogValidarSolicitud" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Fondos PEI"></v-toolbar>
+        <v-toolbar color="primary" title="Elige Solicitud de Fondos PEI para Validar"></v-toolbar>
         <v-card-text>
-            <template
-              v-for="(solicitudF, index) in datosFormulario1.solicitudes"
-              :key="`solicitudF-${solicitudF.id}-${index}`"
+          <template
+            v-for="(solicitudF, index) in datosFormulario1.solicitudes"
+            :key="`solicitudF-${solicitudF.id}-${index}`"
+          >
+            <v-list-item
+              :value="solicitudF.id"
+              @click="() => abrirFormulario011(solicitudF.id)"
+              class="mb-2"
             >
-              <v-list-item :value="solicitudF.id" @click="() => abrirFormulario011(solicitudF.id)" class="mb-2">
-                <v-list-item-title class="font-weight-bold">
-                  Formulario: {{ solicitudF.numeroFormulario }}
+              <v-list-item-title class="font-weight-bold">
+                Formulario: {{ solicitudF.numeroFormulario }}
+              </v-list-item-title>
+              <v-list-item-subtitle class="mt-1">
+                <div class="d-flex align-center flex-wrap">
+                  <span class="mr-2">Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span>
+                </div>
+                <div class="text-caption mt-1">
+                  Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}
+                </div>
+              </v-list-item-subtitle>
+              <template v-slot:append>
+                <v-list-item-title
+                  v-if="
+                    solicitudF.validacionCoordinador === true &&
+                    solicitudF.validacionResponsable === true
+                  "
+                  class="font-weight-bold text-success text-right"
+                >
+                  <v-icon color="success" end>mdi-check</v-icon>
                 </v-list-item-title>
-                <v-list-item-subtitle class="mt-1">
-                  <div class="d-flex align-center flex-wrap">
-                    <span class="mr-2"
-                      >Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span
-                    >
-                  </div>
-                  <div class="text-caption mt-1">Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}</div>
-                </v-list-item-subtitle>
-                <template v-slot:append>
-                  <v-list-item-title
-                    v-if="solicitudF.validacionCoordinador === true && solicitudF.validacionResponsable === true"
-                    class="font-weight-bold text-success text-right"
-                  >
-                    <v-icon color="success" end>mdi-check</v-icon>
-                  </v-list-item-title>
-                </template>
-              </v-list-item>
-            </template>
-            <v-list-item v-if="datosFormulario1.solicitudes.length === 0 && !loading">
-              <v-list-item-title class="text-grey">No tienes validacion de solicitudes pendientes</v-list-item-title>
+              </template>
             </v-list-item>
-            <!-- <pre>{{ datosFormulario1.solicitudes }}</pre> -->
+          </template>
+          <v-list-item v-if="datosFormulario1.solicitudes.length === 0 && !loading">
+            <v-list-item-title class="text-grey"
+              >No tienes validacion de solicitudes pendientes</v-list-item-title
+            >
+          </v-list-item>
+          <!-- <pre>{{ datosFormulario1.solicitudes }}</pre> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -770,73 +794,88 @@
     <v-dialog v-model="dialogRendicionCuentas" max-width="800">
       <v-card>
         <v-toolbar color="primary" title="Rendicion de Cuentas a Solicitud de Fondos"></v-toolbar>
-          <v-card-text>
-            <template
-              v-for="(solicitudF, index) in datosFormularioRC.solicitudes"
-              :key="`solicitudF-${solicitudF.id}-${index}`"
+        <v-card-text>
+          <template
+            v-for="(solicitudF, index) in datosFormularioRC.solicitudes"
+            :key="`solicitudF-${solicitudF.id}-${index}`"
+          >
+            <v-list-item
+              :value="solicitudF.id"
+              @click="() => abrirFormularioRendicionC(solicitudF.id)"
+              class="mb-2"
             >
-              <v-list-item :value="solicitudF.id" @click="() => abrirFormularioRendicionC(solicitudF.id)" class="mb-2">
-                <v-list-item-title class="font-weight-bold">
-                  Formulario: {{ solicitudF.numeroFormulario }}
-                </v-list-item-title>
-                <v-list-item-subtitle class="mt-1">
-                  <div class="d-flex align-center flex-wrap">
-                    <span class="mr-2"
-                      >Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span
-                    >
-                  </div>
-                  <div class="text-caption mt-1">Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}</div>
-                </v-list-item-subtitle>
-              </v-list-item>
-            </template>
-            <v-list-item v-if="datosFormularioRC.solicitudes.length === 0 && !loading">
-              <v-list-item-title class="text-grey">No tienes validacion de solicitudes pendientes</v-list-item-title>
+              <v-list-item-title class="font-weight-bold">
+                Formulario: {{ solicitudF.numeroFormulario }}
+              </v-list-item-title>
+              <v-list-item-subtitle class="mt-1">
+                <div class="d-flex align-center flex-wrap">
+                  <span class="mr-2">Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span>
+                </div>
+                <div class="text-caption mt-1">
+                  Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}
+                </div>
+              </v-list-item-subtitle>
             </v-list-item>
-            <!-- <pre>{{ datosFormularioParaDialogRC }}</pre> -->
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="grey" @click="dialogRendicionCuentas = false">Cerrar</v-btn>
-          </v-card-actions>
+          </template>
+          <v-list-item v-if="datosFormularioRC.solicitudes.length === 0 && !loading">
+            <v-list-item-title class="text-grey"
+              >No tienes validacion de solicitudes pendientes</v-list-item-title
+            >
+          </v-list-item>
+          <!-- <pre>{{ datosFormularioParaDialogRC }}</pre> -->
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="grey" @click="dialogRendicionCuentas = false">Cerrar</v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
 
     <v-dialog v-model="dialogRendicionCuentasValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Rendicion de Cuentas PEI"></v-toolbar>
+        <v-toolbar color="primary" title="Elige Rendicion de Cuentas PEI para Validar"></v-toolbar>
         <v-card-text>
-
-            <template
-              v-for="(solicitudF, index) in datosFormularioValidarRC?.rendiciones || []"
-              :key="`solicitudF-${solicitudF.id}-${index}`"
+          <template
+            v-for="(solicitudF, index) in datosFormularioValidarRC?.rendiciones || []"
+            :key="`solicitudF-${solicitudF.id}-${index}`"
+          >
+            <v-list-item
+              :value="solicitudF.id"
+              @click="() => abrirFormularioRendicionCuentasValidar(solicitudF.id)"
+              class="mb-2"
             >
-              <v-list-item :value="solicitudF.id" @click="() => abrirFormularioRendicionCuentasValidar(solicitudF.id)" class="mb-2">
-                <v-list-item-title class="font-weight-bold">
-                  Formulario: {{ solicitudF.numeroFormulario }}
+              <v-list-item-title class="font-weight-bold">
+                Formulario: {{ solicitudF.numeroFormulario }}
+              </v-list-item-title>
+              <v-list-item-subtitle class="mt-1">
+                <div class="d-flex align-center flex-wrap">
+                  <span class="mr-2">Fecha de Solicitud: {{ solicitudF.fechaDesembolso }}</span>
+                </div>
+                <div class="text-caption mt-1">
+                  Lugar de Solicitud: {{ solicitudF.montoDescargado }}
+                </div>
+              </v-list-item-subtitle>
+              <template v-slot:append>
+                <v-list-item-title
+                  v-if="
+                    solicitudF.validacionCoordinador === true &&
+                    solicitudF.validacionContador === true &&
+                    solicitudF.validacionAdministrador === true
+                  "
+                  class="font-weight-bold text-success text-right"
+                >
+                  <v-icon color="success" end>mdi-check</v-icon>
                 </v-list-item-title>
-                <v-list-item-subtitle class="mt-1">
-                  <div class="d-flex align-center flex-wrap">
-                    <span class="mr-2"
-                      >Fecha de Solicitud: {{ solicitudF.fechaDesembolso }}</span
-                    >
-                  </div>
-                  <div class="text-caption mt-1">Lugar de Solicitud: {{ solicitudF.montoDescargado }}</div>
-                </v-list-item-subtitle>
-                <template v-slot:append>
-                  <v-list-item-title
-                    v-if="solicitudF.validacionCoordinador === true && solicitudF.validacionContador === true && solicitudF.validacionAdministrador === true"
-                    class="font-weight-bold text-success text-right"
-                  >
-                    <v-icon color="success" end>mdi-check</v-icon>
-                  </v-list-item-title>
-                </template>
-              </v-list-item>
-            </template>
-
-            <v-list-item v-if="datosFormularioValidarRC.rendiciones.length === 0 && !loading">
-              <v-list-item-title class="text-grey">No tienes validacion de solicitudes pendientes</v-list-item-title>
+              </template>
             </v-list-item>
-            <!-- {{ '****************************************' }}
+          </template>
+
+          <v-list-item v-if="datosFormularioValidarRC.rendiciones.length === 0 && !loading">
+            <v-list-item-title class="text-grey"
+              >No tienes validacion de solicitudes pendientes</v-list-item-title
+            >
+          </v-list-item>
+          <!-- {{ '****************************************' }}
             <pre>{{ datosFormularioValidarRC.rendiciones }}</pre> -->
         </v-card-text>
         <v-card-actions>
@@ -850,30 +889,34 @@
       <v-card>
         <v-toolbar color="primary" title="Reposicion a Solicitud de Fondos"></v-toolbar>
         <v-card-text>
-
-            <template
-              v-for="(solicitudF, index) in datosFormulario1.solicitudes"
-              :key="`solicitudF-${solicitudF.id}-${index}`"
+          <template
+            v-for="(solicitudF, index) in datosFormulario1.solicitudes"
+            :key="`solicitudF-${solicitudF.id}-${index}`"
+          >
+            <v-list-item
+              :value="solicitudF.id"
+              @click="() => abrirFormulario03(solicitudF.id)"
+              class="mb-2"
             >
-              <v-list-item :value="solicitudF.id" @click="() => abrirFormulario03(solicitudF.id)" class="mb-2">
-                <v-list-item-title class="font-weight-bold">
-                  Formulario: {{ solicitudF.numeroFormulario }}
-                </v-list-item-title>
-                <v-list-item-subtitle class="mt-1">
-                  <div class="d-flex align-center flex-wrap">
-                    <span class="mr-2"
-                      >Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span
-                    >
-                  </div>
-                  <div class="text-caption mt-1">Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}</div>
-                </v-list-item-subtitle>
-              </v-list-item>
-            </template>
-
-            <v-list-item v-if="datosFormulario1.solicitudes.length === 0 && !loading">
-              <v-list-item-title class="text-grey">No tienes validacion de solicitudes pendientes</v-list-item-title>
+              <v-list-item-title class="font-weight-bold">
+                Formulario: {{ solicitudF.numeroFormulario }}
+              </v-list-item-title>
+              <v-list-item-subtitle class="mt-1">
+                <div class="d-flex align-center flex-wrap">
+                  <span class="mr-2">Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span>
+                </div>
+                <div class="text-caption mt-1">
+                  Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}
+                </div>
+              </v-list-item-subtitle>
             </v-list-item>
+          </template>
 
+          <v-list-item v-if="datosFormulario1.solicitudes.length === 0 && !loading">
+            <v-list-item-title class="text-grey"
+              >No tienes validacion de solicitudes pendientes</v-list-item-title
+            >
+          </v-list-item>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -882,45 +925,52 @@
       </v-card>
     </v-dialog>
 
-      <v-dialog v-model="dialogReposicionValidar" max-width="800">
+    <v-dialog v-model="dialogReposicionValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Reposicion PEI"></v-toolbar>
+        <v-toolbar color="primary" title="Elige Solicitud de Reposicion PEI para Validar"></v-toolbar>
         <v-card-text>
-
-            <template
-              v-for="(solicitudF, index) in datosFormularioValidarSR.solicitudes"
-              :key="`solicitudF-${solicitudF.id}-${index}`"
+          <template
+            v-for="(solicitudF, index) in datosFormularioValidarSR.solicitudes"
+            :key="`solicitudF-${solicitudF.id}-${index}`"
+          >
+            <v-list-item
+              :value="solicitudF.id"
+              @click="() => abrirFormularioReposicion(solicitudF.id)"
+              class="mb-2"
             >
-              <v-list-item :value="solicitudF.id" @click="() => abrirFormularioReposicion(solicitudF.id)" class="mb-2">
-                <v-list-item-title class="font-weight-bold">
-                  Formulario: {{ solicitudF.numeroFormulario }}
+              <v-list-item-title class="font-weight-bold">
+                Formulario: {{ solicitudF.numeroFormulario }}
+              </v-list-item-title>
+              <v-list-item-subtitle class="mt-1">
+                <div class="d-flex align-center flex-wrap">
+                  <span class="mr-2">Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span>
+                </div>
+                <div class="text-caption mt-1">
+                  Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}
+                </div>
+              </v-list-item-subtitle>
+
+              <template v-slot:append>
+                <v-list-item-title
+                  v-if="
+                    solicitudF.validacionCoordinador === true &&
+                    solicitudF.validacionResponsable === true
+                  "
+                  class="font-weight-bold text-success text-right"
+                >
+                  <v-icon color="success" end>mdi-check</v-icon>
                 </v-list-item-title>
-                <v-list-item-subtitle class="mt-1">
-                  <div class="d-flex align-center flex-wrap">
-                    <span class="mr-2"
-                      >Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span
-                    >
-                  </div>
-                  <div class="text-caption mt-1">Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}</div>
-                </v-list-item-subtitle>
-
-                <template v-slot:append>
-                  <v-list-item-title
-                    v-if="solicitudF.validacionCoordinador === true && solicitudF.validacionResponsable === true"
-                    class="font-weight-bold text-success text-right"
-                  >
-                    <v-icon color="success" end>mdi-check</v-icon>
-                  </v-list-item-title>
-                </template>
-
-              </v-list-item>
-            </template>
-
-            <v-list-item v-if="datosFormularioValidarSR.solicitudes.length === 0 && !loading">
-              <v-list-item-title class="text-grey">No tienes validacion de solicitudes pendientes</v-list-item-title>
+              </template>
             </v-list-item>
-<!-- <pre>{{ datosFormularioValidarSR }}</pre> -->
-<!-- <pre>{{ datosFormularioValidarSR.solicitudes }}</pre> -->
+          </template>
+
+          <v-list-item v-if="datosFormularioValidarSR.solicitudes.length === 0 && !loading">
+            <v-list-item-title class="text-grey"
+              >No tienes validacion de solicitudes pendientes</v-list-item-title
+            >
+          </v-list-item>
+          <!-- <pre>{{ datosFormularioValidarSR }}</pre> -->
+          <!-- <pre>{{ datosFormularioValidarSR.solicitudes }}</pre> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -929,44 +979,51 @@
       </v-card>
     </v-dialog>
 
-      <v-dialog v-model="dialogViajeValidar" max-width="800">
+    <v-dialog v-model="dialogViajeValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Viaje"></v-toolbar>
+        <v-toolbar color="primary" title="Elige Solicitud de Viaje PEI para Validar"></v-toolbar>
         <v-card-text>
-
-            <template
-              v-for="(solicitudF, index) in listaSolicitudesDeViaje"
-              :key="`solicitudF-${solicitudF.id}-${index}`"
+          <template
+            v-for="(solicitudF, index) in listaSolicitudesDeViaje"
+            :key="`solicitudF-${solicitudF.id}-${index}`"
+          >
+            <v-list-item
+              :value="solicitudF.id"
+              @click="() => abrirFormularioSolicitudDeViajeParaValidar(solicitudF.id)"
+              class="mb-2"
             >
-              <v-list-item :value="solicitudF.id" @click="() => abrirFormularioSolicitudDeViajeParaValidar(solicitudF.id)" class="mb-2">
-                <v-list-item-title class="font-weight-bold">
-                  Formulario: {{ solicitudF.numeroFormulario }}
+              <v-list-item-title class="font-weight-bold">
+                Formulario: {{ solicitudF.numeroFormulario }}
+              </v-list-item-title>
+              <v-list-item-subtitle class="mt-1">
+                <div class="d-flex align-center flex-wrap">
+                  <span class="mr-2">Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span>
+                </div>
+                <div class="text-caption mt-1">
+                  Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}
+                </div>
+              </v-list-item-subtitle>
+
+              <template v-slot:append>
+                <v-list-item-title
+                  v-if="
+                    solicitudF.validacionCoordinador === true &&
+                    solicitudF.validacionResponsable === true
+                  "
+                  class="font-weight-bold text-success text-right"
+                >
+                  <v-icon color="success" end>mdi-check</v-icon>
                 </v-list-item-title>
-                <v-list-item-subtitle class="mt-1">
-                  <div class="d-flex align-center flex-wrap">
-                    <span class="mr-2"
-                      >Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span
-                    >
-                  </div>
-                  <div class="text-caption mt-1">Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}</div>
-                </v-list-item-subtitle>
-
-                <template v-slot:append>
-                  <v-list-item-title
-                    v-if="solicitudF.validacionCoordinador === true && solicitudF.validacionResponsable === true"
-                    class="font-weight-bold text-success text-right"
-                  >
-                    <v-icon color="success" end>mdi-check</v-icon>
-                  </v-list-item-title>
-                </template>
-
-              </v-list-item>
-            </template>
-
-            <v-list-item v-if="listaSolicitudesDeViaje.length === 0 && !loading">
-              <v-list-item-title class="text-grey">No tienes validacion de solicitudes pendientes</v-list-item-title>
+              </template>
             </v-list-item>
-<!-- <pre>{{ listaSolicitudesDeViaje }}</pre> -->
+          </template>
+
+          <v-list-item v-if="listaSolicitudesDeViaje.length === 0 && !loading">
+            <v-list-item-title class="text-grey"
+              >No tienes validacion de solicitudes pendientes</v-list-item-title
+            >
+          </v-list-item>
+          <!-- <pre>{{ listaSolicitudesDeViaje }}</pre> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -975,44 +1032,51 @@
       </v-card>
     </v-dialog>
 
-      <v-dialog v-model="dialogPagoDirectoValidar" max-width="800">
+    <v-dialog v-model="dialogPagoDirectoValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Pago Directo PEI aqui es"></v-toolbar>
+        <v-toolbar color="primary" title="Elige Solicitud de Pago Directo PEI para Validar"></v-toolbar>
         <v-card-text>
-
-            <template
-              v-for="(solicitudF, index) in listaSolicitudesDePagoDirecto"
-              :key="`solicitudF-${solicitudF.id}-${index}`"
+          <template
+            v-for="(solicitudF, index) in listaSolicitudesDePagoDirecto"
+            :key="`solicitudF-${solicitudF.id}-${index}`"
+          >
+            <v-list-item
+              :value="solicitudF.id"
+              @click="() => abrirFormularioSolicitudDePagoDirectoParaValidar(solicitudF.id)"
+              class="mb-2"
             >
-              <v-list-item :value="solicitudF.id" @click="() => abrirFormularioSolicitudDePagoDirectoParaValidar(solicitudF.id)" class="mb-2">
-                <v-list-item-title class="font-weight-bold">
-                  Formulario: {{ solicitudF.numeroFormulario }}
+              <v-list-item-title class="font-weight-bold">
+                Formulario: {{ solicitudF.numeroFormulario }}
+              </v-list-item-title>
+              <v-list-item-subtitle class="mt-1">
+                <div class="d-flex align-center flex-wrap">
+                  <span class="mr-2">Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span>
+                </div>
+                <div class="text-caption mt-1">
+                  Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}
+                </div>
+              </v-list-item-subtitle>
+
+              <template v-slot:append>
+                <v-list-item-title
+                  v-if="
+                    solicitudF.validacionCoordinador === true &&
+                    solicitudF.validacionResponsable === true
+                  "
+                  class="font-weight-bold text-success text-right"
+                >
+                  <v-icon color="success" end>mdi-check</v-icon>
                 </v-list-item-title>
-                <v-list-item-subtitle class="mt-1">
-                  <div class="d-flex align-center flex-wrap">
-                    <span class="mr-2"
-                      >Fecha de Solicitud: {{ solicitudF.fechaSolicitud }}</span
-                    >
-                  </div>
-                  <div class="text-caption mt-1">Lugar de Solicitud: {{ solicitudF.lugarSolicitud }}</div>
-                </v-list-item-subtitle>
-
-                <template v-slot:append>
-                  <v-list-item-title
-                    v-if="solicitudF.validacionCoordinador === true && solicitudF.validacionResponsable === true"
-                    class="font-weight-bold text-success text-right"
-                  >
-                    <v-icon color="success" end>mdi-check</v-icon>
-                  </v-list-item-title>
-                </template>
-
-              </v-list-item>
-            </template>
-
-            <v-list-item v-if="listaSolicitudesDePagoDirecto.length === 0 && !loading">
-              <v-list-item-title class="text-grey">No tienes validacion de solicitudes pendientes</v-list-item-title>
+              </template>
             </v-list-item>
-<!-- <pre>{{ listaSolicitudesDeViaje }}</pre> -->
+          </template>
+
+          <v-list-item v-if="listaSolicitudesDePagoDirecto.length === 0 && !loading">
+            <v-list-item-title class="text-grey"
+              >No tienes validacion de solicitudes pendientes</v-list-item-title
+            >
+          </v-list-item>
+          <!-- <pre>{{ listaSolicitudesDeViaje }}</pre> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -1020,15 +1084,14 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
   </v-container>
-      <!-- {{ '********************************' }}
+  <!-- {{ '********************************' }}
      <pre>{{ datosFormulario1 }}</pre> -->
-      <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
-      <!-- <pre>{{ actividadesPei }}</pre> -->
-      <!-- <pre>{{ actividades }}</pre>
+  <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
+  <!-- <pre>{{ actividadesPei }}</pre> -->
+  <!-- <pre>{{ actividades }}</pre>
       {{ '********************************' }} -->
-      <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
+  <!-- <pre>{{ actividadesPaginadasOrdenadas }}</pre> -->
 </template>
 
 <script setup>
@@ -1058,18 +1121,14 @@ const usuario = computed(() => {
 const datosFormulario = ref(null)
 const datosFormulario1 = ref(null)
 const datosFormularioRC = ref(null)
-const datosFormularioValidarRC = ref(null)      //viene de funcion cargarRendicionesDeCuenta
-const datosFormularioValidarSR = ref(null)      //viene de funcion cargarSolicitudDeReposicion
-const listaSolicitudesDeViaje = ref(null)       //viene de funcion cargarSolicitudDeViaje
+const datosFormularioValidarRC = ref(null) //viene de funcion cargarRendicionesDeCuenta
+const datosFormularioValidarSR = ref(null) //viene de funcion cargarSolicitudDeReposicion
+const listaSolicitudesDeViaje = ref(null) //viene de funcion cargarSolicitudDeViaje
 const listaSolicitudesDePagoDirecto = ref(null) //viene defuncion cargarSolicitudDePagoDirecto
 const error = ref(null)
 const isLoading = ref(false)
 
-const {
-  actividadesTareas,
-  actividadTarea: actividadesFromApi,
-  actividades,
-} = useActividad()
+const { actividadesTareas, actividadTarea: actividadesFromApi, actividades } = useActividad()
 
 //const actividades = ref([])
 
@@ -1191,117 +1250,118 @@ const abrirFormulario011 = (idSolicitudF) => {
   const routeConfig = {
     path: `/monitoreo/pei/formulariopei011/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudF
-    }
-  };
+      solicitud_id: idSolicitudF,
+    },
+  }
   //console.log('cosassssssssssssssssssss',actividadIdParaValidar)
 
   // Add tarea_id to query if it exists
   if (tareaIdParaValidar.value !== null && tareaIdParaValidar.value !== undefined) {
-    routeConfig.query.tarea_id = tareaIdParaValidar.value;
+    routeConfig.query.tarea_id = tareaIdParaValidar.value
   }
 
-  router.push(routeConfig);
+  router.push(routeConfig)
 }
 
 const abrirFormularioRendicionC = (idSolicitudF) => {
   router.push({
     path: `/monitoreo/formulario02/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudF
-    }
-  });
+      solicitud_id: idSolicitudF,
+    },
+  })
 }
 
 const abrirFormularioRendicionCuentasValidar = (idSolicitudF) => {
   router.push({
     path: `/monitoreo/pei/formulariopei022/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudF
-    }
-  });
+      solicitud_id: idSolicitudF,
+    },
+  })
 }
 
 const abrirFormulario03 = (idSolicitudF) => {
   router.push({
     path: `/monitoreo/formulario03/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudF
-    }
-  });
+      solicitud_id: idSolicitudF,
+    },
+  })
 }
 
 const abrirFormularioReposicion = (idSolicitudR) => {
   router.push({
     path: `/monitoreo/pei/formulariopei033/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudR
-    }
-  });
+      solicitud_id: idSolicitudR,
+    },
+  })
 }
 
 const abrirFormularioSolicitudDeViajeParaValidar = (idSolicitudDeViaje) => {
   router.push({
     path: `/monitoreo/pei/formulariopei055/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudDeViaje
-    }
-  });
+      solicitud_id: idSolicitudDeViaje,
+    },
+  })
 }
 
 const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudDePagoDirecto) => {
   router.push({
     path: `/monitoreo/pei/formulariopei088/${actividadIdParaValidar.value}`,
     query: {
-      solicitud_id: idSolicitudDePagoDirecto
-    }
-  });
+      solicitud_id: idSolicitudDePagoDirecto,
+    },
+  })
 }
 
-const abrirDialogValidar = async (actividadId, tareaId) => {     //tareaId = null
+const abrirDialogValidar = async (actividadId, tareaId) => {
+  //tareaId = null
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
-  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)  //es usado para habilitar iconos
-   console.log('55555555555555555SOLFONDOS', JSON.stringify(actividadIdParaValidar.value,null,2))
+  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId) //es usado para habilitar iconos
+  console.log('55555555555555555SOLFONDOS', JSON.stringify(actividadIdParaValidar, null, 2))
 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   try {
-    await cargarDatos();
+    await cargarDatos()
     if (datosFormulario.value) {
-      await cargarSolicitudFondos();
+      await cargarSolicitudFondos()
     }
     console.log('se carga dato:')
   } catch (error) {
-    console.error('Error al cargar datos iniciales:', error);
-    mostrarSnackbar('Error al cargar datos iniciales', 'error');
+    console.error('Error al cargar datos iniciales:', error)
+    mostrarSnackbar('Error al cargar datos iniciales', 'error')
   }
 
-  dialogValidarSolicitud.value = true;
+  dialogValidarSolicitud.value = true
 }
 
-const abrirDialogRendicionValidar = async (actividadId, tareaId = null) => {
+const abrirDialogRendicionValidar = async (actividadId, tareaId) => {
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
-  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)  //habilita iconos
+  solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId) //habilita iconos
 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   try {
-    await cargarDatos();
+    await cargarDatos()
     if (datosFormulario.value) {
       //await cargarSolicitudFondos();
-      await cargarRendicionesDeCuenta();
+      await cargarRendicionesDeCuenta()
     }
   } catch (error) {
-    console.error('Error al cargar datos iniciales:', error);
-    mostrarSnackbar('Error al cargar datos iniciales', 'error');
+    console.error('Error al cargar datos iniciales:', error)
+    mostrarSnackbar('Error al cargar datos iniciales', 'error')
   }
 
-  dialogRendicionCuentasValidar.value = true;
+  dialogRendicionCuentasValidar.value = true
 }
 
-const abrirDialogReposicionValidar = async (actividadId, tareaId = null) => {
+const abrirDialogReposicionValidar = async (actividadId, tareaId) => {
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
@@ -1309,42 +1369,42 @@ const abrirDialogReposicionValidar = async (actividadId, tareaId = null) => {
 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   try {
-    await cargarDatos();
+    await cargarDatos()
     if (datosFormulario.value) {
-      await cargarSolicitudFondos();
-      await cargarSolicitudDeReposicion();
+      await cargarSolicitudFondos()
+      await cargarSolicitudDeReposicion()
     }
   } catch (error) {
-    console.error('Error al cargar datos iniciales:', error);
-    mostrarSnackbar('Error al cargar datos iniciales', 'error');
+    console.error('Error al cargar datos iniciales:', error)
+    mostrarSnackbar('Error al cargar datos iniciales', 'error')
   }
 
-  dialogReposicionValidar.value = true;
+  dialogReposicionValidar.value = true
 }
 
-const abrirDialogViajeValidar = async (actividadId, tareaId) =>{      //tareaId = null) => {
+const abrirDialogViajeValidar = async (actividadId, tareaId) => {
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
   solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)
-  console.log('55555555555555555VIAJE', JSON.stringify(actividadIdParaValidar.value,null,2))
+  console.log('55555555555555555VIAJE', JSON.stringify(actividadIdParaValidar.value, null, 2))
 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   await cargarSolicitudDeViaje()
 
-  dialogViajeValidar.value = true;
+  dialogViajeValidar.value = true
 }
 
-const abrirDialogPagoDirectoValidar = async (actividadId, tareaId = null) => {
+const abrirDialogPagoDirectoValidar = async (actividadId, tareaId) => {
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
   solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)
 
-// Cargar datos iniciales al abrir el diálogo usando los IDs capturados
+  // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   await cargarSolicitudDePagoDirecto()
 
-  dialogPagoDirectoValidar.value = true;
+  dialogPagoDirectoValidar.value = true
 }
 
 const getEstadoTexto = (status) => {
@@ -1370,7 +1430,8 @@ const cargar = async () => {
     ])
     //debugger
     // [Procesamiento existente de actividades]
-    if (Array.isArray(actividadesFromApi.value)) {          //Verifica si actividadesFromApi.value es un array
+    if (Array.isArray(actividadesFromApi.value)) {
+      //Verifica si actividadesFromApi.value es un array
       actividades.value = actividadesFromApi.value.map((actividad) => ({
         ...actividad,
         estadoFrontend: mapEstadoBackendToFrontend(actividad.estado),
@@ -1406,7 +1467,7 @@ const cargarActividadesPei = async () => {
         'Content-Type': 'application/json',
       },
     })
-    if(!response.ok){
+    if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`)
     }
     const data = await response.json()
@@ -1475,7 +1536,7 @@ async function cargarDatos() {
   error.value = null
   try {
     //const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
-      const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario-pei/', {
+    const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario-pei/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1520,22 +1581,21 @@ async function cargarSolicitudFondos() {
     if (!response.ok) {
       throw new Error(`Error en la solicitud: ${response.status}`)
     }
-    const data = {solicitudes: await response.json()}
-    //console.log('Datos recibidoswwwwwwwwwwwwwwwww:', JSON.stringify(data,null,2))
+    const data = { solicitudes: await response.json() }
+    console.log('Datos recibidoswwwwwwwwwwwwwwwww:', JSON.stringify(data,null,2))
 
     // Filtrar las solicitudes por actividad_id y tarea_id
-    const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
+    const solicitudesFiltradas = data.solicitudes.filter((solicitud) => {
       const coincideActividad = solicitud.actividad === actividadIdParaValidar.value
       const coincideTarea = solicitud.tarea === tareaIdParaValidar.value
-      return coincideActividad && coincideTarea//&& coincideValidacionResp && coincideValidacionCoord
+      return coincideActividad && coincideTarea //&& coincideValidacionResp && coincideValidacionCoord
     })
     datosFormulario1.value = {
-      estado: "exito",
-      solicitudes: solicitudesFiltradas
+      estado: 'exito',
+      solicitudes: solicitudesFiltradas,
     }
-    //console.log('idactividad:', JSON.stringify(actividadIdParaValidar.value,null,2))
 
-    const solicitudesFiltradasParaRC = data.solicitudes.filter(solicitud => {
+    const solicitudesFiltradasParaRC = data.solicitudes.filter((solicitud) => {
       const coincideActividad = solicitud.actividad === actividadIdParaValidar.value
       const coincideTarea = solicitud.tarea === tareaIdParaValidar.value
       const coincideValidacionResp = solicitud.validacionResponsable === true
@@ -1543,11 +1603,11 @@ async function cargarSolicitudFondos() {
       return coincideActividad && coincideTarea && coincideValidacionResp && coincideValidacionCoord
     })
     datosFormularioRC.value = {
-      estado: "exito",
-      solicitudes: solicitudesFiltradasParaRC
+      estado: 'exito',
+      solicitudes: solicitudesFiltradasParaRC,
     }
 
-    //console.log('Solicitudes filtradas:', JSON.stringify(datosFormulario1.value,null,2), actividadIdParaValidar.value, tareaIdParaValidar.value)
+    console.log('Solicitudes filtradas:', JSON.stringify(datosFormulario1.value,null,2), actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
     console.error('Error al cargar solicitudes:', err)
@@ -1559,60 +1619,61 @@ async function cargarSolicitudFondos() {
 
 function sanitizeData(data) {
   if (data === null || data === undefined) {
-    return '';
+    return ''
   }
 
   if (typeof data === 'string') {
     // Limpiar strings: trim y convertir empty strings a ''
-    const trimmed = data.trim();
-    return trimmed === '' ? '' : trimmed;
+    const trimmed = data.trim()
+    return trimmed === '' ? '' : trimmed
   }
 
   if (typeof data === 'number') {
     // Validar que sea un número finito
-    return isFinite(data) ? data : 0;
+    return isFinite(data) ? data : 0
   }
 
   if (typeof data === 'boolean') {
-    return data;
+    return data
   }
 
   if (Array.isArray(data)) {
     // Sanitizar cada elemento del array
-    return data.map(item => sanitizeData(item)).filter(item =>
-      item !== null && item !== undefined && item !== ''
-    );
+    return data
+      .map((item) => sanitizeData(item))
+      .filter((item) => item !== null && item !== undefined && item !== '')
   }
 
   if (typeof data === 'object') {
-    const sanitized = {};
+    const sanitized = {}
     for (const key in data) {
-      if (Object.prototype.hasOwnProperty.call(data, key)) {//if (data.hasOwnProperty(key)) {
-        const value = data[key];
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        //if (data.hasOwnProperty(key)) {
+        const value = data[key]
         // Solo incluir propiedades con valores válidos
         if (value !== null && value !== undefined && value !== '') {
-          sanitized[key] = sanitizeData(value);
+          sanitized[key] = sanitizeData(value)
         }
       }
     }
-    return sanitized;
+    return sanitized
   }
 
   // Para cualquier otro tipo de dato, retornar string vacío
-  return '';
+  return ''
 }
 
 function strictSanitizeData(data) {
-  const sanitized = sanitizeData(data);
+  const sanitized = sanitizeData(data)
 
   // Si el resultado es un objeto vacío, retornar string vacío
   if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
     if (Object.keys(sanitized).length === 0) {
-      return '';
+      return ''
     }
   }
 
-  return sanitized;
+  return sanitized
 }
 
 async function cargarRendicionesDeCuenta() {
@@ -1620,7 +1681,7 @@ async function cargarRendicionesDeCuenta() {
   error.value = null
   try {
     //const response = await fetch(baseurl + '/monitoreo_api/obtenerRendicionDeCuentas/', {
-      const response = await fetch(baseurl + 'api/rendicion-cuentas-pei/filtrar/', {
+    const response = await fetch(baseurl + 'api/rendicion-cuentas-pei/filtrar/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1640,11 +1701,20 @@ async function cargarRendicionesDeCuenta() {
       )
     }
 
-    const rawData = {rendiciones: await response.json()}
-    console.log('Datos recibidos para RC:', JSON.stringify(rawData,null,2))
+    const rawData = await response.json()
 
-    datosFormularioValidarRC.value = strictSanitizeData(rawData)
-    //console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarRC.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
+    // Filtrar las solicitudes por actividad_id y tarea_id
+    const solicitudesFiltradas = rawData.filter((solicitud) => {
+      const coincideActividad = solicitud.actividad === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea === tareaIdParaValidar.value
+      return coincideActividad && coincideTarea //&& coincideValidacionResp && coincideValidacionCoord
+    })
+    datosFormularioValidarRC.value = {rendiciones: solicitudesFiltradas}
+
+    //const rawData = { rendiciones: await response.json() }
+    //console.log('Datos recibidos para RC:', JSON.stringify(rawData, null, 2))
+    //datosFormularioValidarRC.value = strictSanitizeData(rawData)
+    console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarRC.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -1671,6 +1741,7 @@ async function cargarSolicitudDeReposicion() {
       }),
     })
     //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
+    console.log('popopopopop', actividadIdParaValidar.value, tareaIdParaValidar.value)
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -1679,10 +1750,19 @@ async function cargarSolicitudDeReposicion() {
       )
     }
 
-    const rawData = {solicitudes: await response.json()}
-    console.log('SoicitudDeReposicion Recibido:', JSON.stringify(rawData,null,2))
+    const rawData = { solicitudes: await response.json() }
+    //console.log('SoicitudDeReposicion Recibido:', JSON.stringify(rawData, null, 2))
 
-    datosFormularioValidarSR.value = strictSanitizeData(rawData)
+    // Filtrar las solicitudes por actividad_id y tarea_id
+    const solicitudesFiltradas = rawData.solicitudes.filter((solicitud) => {
+      const coincideActividad = solicitud.actividad === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea === tareaIdParaValidar.value
+      return coincideActividad && coincideTarea //&& coincideValidacionResp && coincideValidacionCoord
+    })
+    datosFormularioValidarSR.value = {
+      estado: 'exito',
+      solicitudes: solicitudesFiltradas,
+    }
     //console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarSR.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
@@ -1709,8 +1789,11 @@ async function cargarSolicitudDeViaje() {
       }),
     })
 
-    console.log('00000000000000000000000000000', JSON.stringify(actividadIdParaValidar.value,null,2) )
-    console.log('00000000000000000000000000000', JSON.stringify(tareaIdParaValidar.value,null,2) )
+    console.log(
+      '00000000000000000000000000000',
+      JSON.stringify(actividadIdParaValidar.value, null, 2),
+    )
+    console.log('00000000000000000000000000000', JSON.stringify(tareaIdParaValidar.value, null, 2))
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -1719,12 +1802,18 @@ async function cargarSolicitudDeViaje() {
       )
     }
 
-    //const data = {solicitudes: await response.json()}
+    //const rawData = {solicitudes: await response.json()}
     const rawData = await response.json()
-    console.log('SoicitudDeViaje Recibido:', JSON.stringify(rawData,null,2))
+    //console.log('SoicitudDeViaje Recibido:', JSON.stringify(rawData, null, 2))
 
-    listaSolicitudesDeViaje.value = strictSanitizeData(rawData.solicitudes)
-    console.log('Datos cargados exitosamenteeee:', JSON.stringify(listaSolicitudesDeViaje.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
+    const solicitudesFiltradas = rawData.solicitudes.filter((solicitud) => {
+      const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
+      return coincideActividad && coincideTarea //&& coincideValidacionResp && coincideValidacionCoord
+    })
+    listaSolicitudesDeViaje.value = strictSanitizeData(solicitudesFiltradas)
+    //listaSolicitudesDeViaje.value = strictSanitizeData(rawData.solicitudes)
+    //console.log('Datos cargados exitosamenteeee:', JSON.stringify(listaSolicitudesDeViaje.value, null, 2), actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -1744,7 +1833,7 @@ async function cargarSolicitudDePagoDirecto() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body:  JSON.stringify({
+      body: JSON.stringify({
         actividad_id: actividadIdParaValidar.value,
         tarea_id: tareaIdParaValidar.value,
         //usuario: usuario.value.nombre,
@@ -1759,10 +1848,16 @@ async function cargarSolicitudDePagoDirecto() {
       )
     }
 
-    const rawData = {solicitudes: await response.json()}
-    console.log('SoicitudDePagoDirecto Recibido:', JSON.stringify(rawData,null,2))
+    const rawData = { solicitudes: await response.json() }
+    //console.log('SoicitudDeReposicion Recibido:', JSON.stringify(rawData, null, 2))
 
-    listaSolicitudesDePagoDirecto.value = strictSanitizeData(rawData.solicitudes)
+    // Filtrar las solicitudes por actividad_id y tarea_id
+    const solicitudesFiltradas = rawData.solicitudes.filter((solicitud) => {
+      const coincideActividad = solicitud.actividad === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea === tareaIdParaValidar.value
+      return coincideActividad && coincideTarea //&& coincideValidacionResp && coincideValidacionCoord
+    })
+    listaSolicitudesDePagoDirecto.value = strictSanitizeData(solicitudesFiltradas)
     //console.log('Datos cargados exitosamente:', JSON.stringify(listaSolicitudesDePagoDirecto.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
@@ -1856,73 +1951,70 @@ const openTareaDialog = (actividadId, tarea = null) => {
 }
 
 const saveTarea = async () => {
-
   const { valid } = await tareaFormRef.value.validate()
   if (!valid) return
 
   loading.value = true
   try {
-     const tareaData = {
-       titulo: tareaForm.value.titulo,
-       descripcion: tareaForm.value.descripcion,
-       estado: tareaForm.value.estado,
-       actividad: actividadIdParaTarea.value
-     }
-     console.log('Datos de tarea a guardar:', tareaData)
+    const tareaData = {
+      titulo: tareaForm.value.titulo,
+      descripcion: tareaForm.value.descripcion,
+      estado: tareaForm.value.estado,
+      actividad: actividadIdParaTarea.value,
+    }
+    console.log('Datos de tarea a guardar:', tareaData)
 
-     let resultado
+    let resultado
 
-     if (isEditandoTarea.value) {
-
+    if (isEditandoTarea.value) {
       resultado = await tareasServicios.update(tareaForm.value.id, tareaData)
 
+      const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
+      if (actividad && actividad.tareas) {
+        const tareaIndex = actividad.tareas.findIndex((t) => t.id === tareaForm.value.id)
+        if (tareaIndex !== -1) {
+          const tareaActualizada = {
+            ...resultado,
+            estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
+          }
+          actividad.tareas[tareaIndex] = tareaActualizada
+        }
+      }
 
-       const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
-       if (actividad && actividad.tareas) {
-         const tareaIndex = actividad.tareas.findIndex((t) => t.id === tareaForm.value.id)
-         if (tareaIndex !== -1) {
-           const tareaActualizada = {
-             ...resultado,
-             estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
-           }
-           actividad.tareas[tareaIndex] = tareaActualizada
-         }
-       }
+      mostrarSnackbar('Tarea actualizada con éxito', 'success')
+    } else {
+      console.log('Tarea creada:', actividadIdParaTarea)
+      //resultado = await crearTareaEnActividad(tareaData)
+      resultado = await tareasServicios.crear(tareaData)
+      const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
+      if (actividad) {
+        if (!actividad.tareas) {
+          actividad.tareas = []
+        }
+        const nuevaTarea = {
+          ...resultado,
+          estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
+        }
+        actividad.tareas.push(nuevaTarea)
+      }
 
-       mostrarSnackbar('Tarea actualizada con éxito', 'success')
-     } else {
-       console.log('Tarea creada:', actividadIdParaTarea)
-       //resultado = await crearTareaEnActividad(tareaData)
-        resultado = await tareasServicios.crear(tareaData)
-       const actividad = actividades.value.find((a) => a.id === actividadIdParaTarea.value)
-       if (actividad) {
-         if (!actividad.tareas) {
-           actividad.tareas = []
-         }
-         const nuevaTarea = {
-           ...resultado,
-           estadoFrontend: mapEstadoBackendToFrontend(resultado.estado),
-         }
-         actividad.tareas.push(nuevaTarea)
-       }
-
-       mostrarSnackbar('Tarea creada con éxito', 'success')
-     }
-   } catch (error) {
-     console.error('Error al guardar tarea:', error)
-     mostrarSnackbar(
-       'Error al guardar tarea: ' +
-         (error.response?.data?.message || error.message || 'Error desconocido'),
-       'error',
-     )
-   } finally {
-     loading.value = false
-     tareaDialog.value = false
-     await nextTick()
-     if (tareaFormRef.value) {
-       tareaFormRef.value.reset()
-     }
-   }
+      mostrarSnackbar('Tarea creada con éxito', 'success')
+    }
+  } catch (error) {
+    console.error('Error al guardar tarea:', error)
+    mostrarSnackbar(
+      'Error al guardar tarea: ' +
+        (error.response?.data?.message || error.message || 'Error desconocido'),
+      'error',
+    )
+  } finally {
+    loading.value = false
+    tareaDialog.value = false
+    await nextTick()
+    if (tareaFormRef.value) {
+      tareaFormRef.value.reset()
+    }
+  }
 }
 
 const confirmDeleteTarea = (actividadId, tarea) => {
@@ -1936,7 +2028,7 @@ const deleteTarea = async () => {
   try {
     //await eliminarTareaDeActividad(actividadIdParaEliminarTarea.value, tareaToDelete.value.id)
 
-    await tareasServicios.del( tareaToDelete.value.id)
+    await tareasServicios.del(tareaToDelete.value.id)
     const actividad = actividades.value.find((a) => a.id === actividadIdParaEliminarTarea.value)
     if (actividad && actividad.tareas) {
       actividad.tareas = actividad.tareas.filter((t) => t.id !== tareaToDelete.value.id)

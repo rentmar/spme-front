@@ -597,6 +597,9 @@
   <pre>{{ datosFormulario1 }}</pre> -->
   <!-- {{ '***************************************B' }}
   <pre>{{ datosFormulario }}</pre> -->
+
+  <!-- {{ '***************************************B' }}
+  <pre>{{ idSolicitud }}</pre> -->
 </template>
 
 <script setup>
@@ -604,6 +607,7 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
@@ -671,6 +675,14 @@ const loading = ref(false)
 const form = ref(null)
 const responsablesList = ref([])
 const coordinadoresList = ref([])
+
+// const {
+//   generarPdfSolicitudFondos,
+// } = useImpresionFormularios()
+//funcion para el.boton
+// const imprimirFormulario = async () => {
+//   await generarPdfSolicitudFondos(idSolicitud)
+// }
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)

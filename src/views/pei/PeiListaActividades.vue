@@ -138,9 +138,7 @@
                             variant="text"
                             color="primary"
                             size="small"
-                            :disabled="
-                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
-                            "
+                            :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
                             @click.stop="abrirDialogValidar(actividad.id, null)"
                           ></v-btn>
                         </template>
@@ -177,7 +175,7 @@
                             :disabled="
                               getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
                             "
-                            @click.stop="abrirDialogViajeValidar(actividad.id)"
+                            @click.stop="abrirDialogViajeValidar(actividad.id, null)"
                           ></v-btn>
                         </template>
                       </v-tooltip>
@@ -212,7 +210,7 @@
                             :disabled="
                               getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
                             "
-                            @click.stop="abrirDialogPagoDirectoValidar(actividad.id)"
+                            @click.stop="abrirDialogPagoDirectoValidar(actividad.id, null)"
                           ></v-btn>
                         </template>
                       </v-tooltip>
@@ -244,10 +242,8 @@
                             variant="text"
                             color="warning"
                             size="small"
-                            :disabled="
-                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
-                            "
-                            @click.stop="abrirDialogReposicionValidar(actividad.id)"
+                            :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
+                            @click.stop="abrirDialogReposicionValidar(actividad.id, null)"
                           ></v-btn>
                         </template>
                       </v-tooltip>
@@ -281,7 +277,7 @@
                             variant="text"
                             color="error"
                             size="small"
-                            @click.stop="abrirDialogRendicionValidar(actividad.id)"
+                            @click.stop="abrirDialogRendicionValidar(actividad.id, null)"
                           ></v-btn>
                           <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                         </template>
@@ -346,7 +342,7 @@
                               <div class="d-flex">
                                 <!-- Solicitud de Fondos para TAREA -->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Fondos" location="top">
+                                  <v-tooltip text="Solicitud de Fondos SA" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -362,7 +358,7 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Fondos" location="bottom">
+                                  <v-tooltip text="Validar Solicitud de Fondos SA" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -380,7 +376,7 @@
 
                                 <!-- Solicitud de Viaje para TAREA -->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Viaje" location="top">
+                                  <v-tooltip text="Solicitud de Viaje SA" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -395,7 +391,7 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Viaje" location="bottom">
+                                  <v-tooltip text="Validar Solicitud de Viaje SA" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -418,7 +414,7 @@
 
                                 <!-- Solicitud de Pago Directo para TAREA -->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Pago Directo" location="top">
+                                  <v-tooltip text="Solicitud de Pago Directo SA" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -433,10 +429,7 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip
-                                    text="Validar Solicitud de Pago Directo"
-                                    location="bottom"
-                                  >
+                                  <v-tooltip text="Validar Solicitud de Pago Directo SA" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -459,7 +452,7 @@
 
                                 <!-- Solicitud de Reposición para TAREA -->
                                 <div class="d-flex flex-column align-center justify-center">
-                                  <v-tooltip text="Solicitud de Reposición" location="top">
+                                  <v-tooltip text="Solicitud de Reposición SA" location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -474,10 +467,7 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip
-                                    text="Validar Solicitud de Reposición"
-                                    location="bottom"
-                                  >
+                                  <v-tooltip text="Validar Solicitud de Reposición SA" location="bottom">
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -486,9 +476,7 @@
                                         variant="text"
                                         color="warning"
                                         size="x-small"
-                                        @click.stop="
-                                          abrirDialogReposicionValidar(actividad.id, tarea.id)
-                                        "
+                                        @click.stop="abrirDialogReposicionValidar(actividad.id, tarea.id)"
                                       ></v-btn>
                                       <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                                     </template>
@@ -755,7 +743,7 @@
 
     <v-dialog v-model="dialogValidarSolicitud" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Fondos"></v-toolbar>
+        <v-toolbar color="primary" title="Elige Solicitud de Fondos para Validar"></v-toolbar>
         <v-card-text>
           <template
             v-for="(solicitudF, index) in datosFormulario1.solicitudes"
@@ -940,7 +928,7 @@
 
     <v-dialog v-model="dialogReposicionValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Reposicion"></v-toolbar>
+        <v-toolbar color="primary" title="Elige Solicitud de Reposicion para Validar"></v-toolbar>
         <v-card-text>
           <template
             v-for="(solicitudF, index) in datosFormularioValidarSR.solicitudes"
@@ -994,7 +982,7 @@
 
     <v-dialog v-model="dialogViajeValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Viaje"></v-toolbar>
+        <v-toolbar color="primary" title="Elige Solicitud de Viaje para Validar"></v-toolbar>
         <v-card-text>
           <template
             v-for="(solicitudF, index) in listaSolicitudesDeViaje"
@@ -1047,7 +1035,7 @@
 
     <v-dialog v-model="dialogPagoDirectoValidar" max-width="800">
       <v-card>
-        <v-toolbar color="primary" title="Validar Solicitud de Pago Directo"></v-toolbar>
+        <v-toolbar color="primary" title="Elige Solicitud de Pago Directo para Validar"></v-toolbar>
         <v-card-text>
           <template
             v-for="(solicitudF, index) in listaSolicitudesDePagoDirecto"
@@ -1320,8 +1308,7 @@ const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudDePagoDirec
   })
 }
 
-const abrirDialogValidar = async (actividadId, tareaId) => {
-  //tareaId = null
+const abrirDialogValidar = async (actividadId, tareaId) => {     //tareaId = null
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
@@ -1342,7 +1329,7 @@ const abrirDialogValidar = async (actividadId, tareaId) => {
   dialogValidarSolicitud.value = true
 }
 
-const abrirDialogRendicionValidar = async (actividadId, tareaId = null) => {
+const abrirDialogRendicionValidar = async (actividadId, tareaId) => {
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
@@ -1363,7 +1350,7 @@ const abrirDialogRendicionValidar = async (actividadId, tareaId = null) => {
   dialogRendicionCuentasValidar.value = true
 }
 
-const abrirDialogReposicionValidar = async (actividadId, tareaId = null) => {
+const abrirDialogReposicionValidar = async (actividadId, tareaId) => {
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
@@ -1396,7 +1383,7 @@ const abrirDialogViajeValidar = async (actividadId, tareaId = null) => {
   dialogViajeValidar.value = true
 }
 
-const abrirDialogPagoDirectoValidar = async (actividadId, tareaId = null) => {
+const abrirDialogPagoDirectoValidar = async (actividadId, tareaId) => {
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
@@ -1676,10 +1663,20 @@ async function cargarRendicionesDeCuenta() {
     }
 
     const rawData = await response.json()
-    //console.log('Datos recibidos para RC:', JSON.stringify(rawData,null,2))
+    //console.log('Datos recibidos para RC:', JSON.stringify(rawData, null, 2))
 
-    datosFormularioValidarRC.value = strictSanitizeData(rawData)
-    //console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarRC.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
+    // Filtrar las solicitudes por actividad_id y tarea_id
+    const solicitudesFiltradas = rawData.rendiciones.filter((solicitud) => {
+      const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
+      return coincideActividad && coincideTarea //&& coincideValidacionResp && coincideValidacionCoord
+    })
+    datosFormularioValidarRC.value = {rendiciones: solicitudesFiltradas}
+
+    //const rawData = { rendiciones: await response.json() }
+    //console.log('Datos recibidos para RC:', JSON.stringify(rawData, null, 2))
+    //datosFormularioValidarRC.value = strictSanitizeData(rawData)
+    console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarRC.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -1714,9 +1711,18 @@ async function cargarSolicitudDeReposicion() {
     }
 
     const rawData = await response.json()
-    //console.log('SoicitudDeReposicion Recibido:', JSON.stringify(rawData,null,2))
+    //console.log('SoicitudDeReposicion Recibido:', JSON.stringify(rawData, null, 2))
 
-    datosFormularioValidarSR.value = strictSanitizeData(rawData)
+    // Filtrar las solicitudes por actividad_id y tarea_id
+    const solicitudesFiltradas = rawData.solicitudes.filter((solicitud) => {
+      const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
+      return coincideActividad && coincideTarea //&& coincideValidacionResp && coincideValidacionCoord
+    })
+    datosFormularioValidarSR.value = {
+      estado: 'exito',
+      solicitudes: solicitudesFiltradas,
+    }
     //console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarSR.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
@@ -1754,7 +1760,13 @@ async function cargarSolicitudDeViaje() {
     const rawData = await response.json()
     //console.log('SoicitudDeViaje Recibido:', JSON.stringify(rawData,null,2))
 
-    listaSolicitudesDeViaje.value = strictSanitizeData(rawData.solicitudes)
+    const solicitudesFiltradas = rawData.solicitudes.filter((solicitud) => {
+      const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
+      return coincideActividad && coincideTarea //&& coincideValidacionResp && coincideValidacionCoord
+    })
+    listaSolicitudesDeViaje.value = strictSanitizeData(solicitudesFiltradas)
+    //listaSolicitudesDeViaje.value = strictSanitizeData(rawData.solicitudes)
     //console.log('Datos cargados exitosamente:', JSON.stringify(listaSolicitudesDeViaje.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
@@ -1790,15 +1802,16 @@ async function cargarSolicitudDePagoDirecto() {
     }
 
     const rawData = await response.json()
-    console.log('SoicitudDePagoDirecto Recibido:', JSON.stringify(rawData, null, 2))
+    //console.log('SoicitudDeReposicion Recibido:', JSON.stringify(rawData, null, 2))
 
-    listaSolicitudesDePagoDirecto.value = strictSanitizeData(rawData.solicitudes)
-    console.log(
-      'Datos cargados exitosamente:',
-      JSON.stringify(listaSolicitudesDePagoDirecto.value, null, 2),
-      actividadIdParaValidar.value,
-      tareaIdParaValidar.value,
-    )
+    // Filtrar las solicitudes por actividad_id y tarea_id
+    const solicitudesFiltradas = rawData.solicitudes.filter((solicitud) => {
+      const coincideActividad = solicitud.actividad_id === actividadIdParaValidar.value
+      const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
+      return coincideActividad && coincideTarea //&& coincideValidacionResp && coincideValidacionCoord
+    })
+    listaSolicitudesDePagoDirecto.value = strictSanitizeData(solicitudesFiltradas)
+    //console.log('Datos cargados exitosamente:', JSON.stringify(listaSolicitudesDePagoDirecto.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
