@@ -1,6 +1,6 @@
 <template>
   <div class="v-container v-locale--is-ltr">
-        <!-- Overlay de carga -->
+    <!-- Overlay de carga -->
     <v-overlay
       :model-value="cargandoGeneral"
       class="align-center justify-center"
@@ -18,33 +18,28 @@
       </div>
     </v-overlay>
 
-  <div v-if="!cargandoGeneral">
-    <PaginaTituloIcono
-      :titulo="'Validar Rendición de Cuentas'"
-      :icon="'mdi-file-document-check'"
-    ></PaginaTituloIcono>
-    <ProyectoIdHeader
-      v-if="datosFormulario"
-      :proyecto-id="datosFormulario.actividad?.proyecto ?? '999999'"
-    ></ProyectoIdHeader>
-    <br />
-    <ActividadInformacion
-      v-if="datosFormulario.actividad"
-      :actividad-id="idActividad"
-    />
+    <div v-if="!cargandoGeneral">
+      <PaginaTituloIcono
+        :titulo="'Validar Rendición de Cuentas'"
+        :icon="'mdi-file-document-check'"
+      ></PaginaTituloIcono>
+      <ProyectoIdHeader
+        v-if="datosFormulario"
+        :proyecto-id="datosFormulario.actividad?.proyecto ?? '999999'"
+      ></ProyectoIdHeader>
+      <br />
+      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
-    <br />
-    <!-- <v-form ref="form" v-model="valid" lazy-validation>
+      <br />
+      <!-- <v-form ref="form" v-model="valid" lazy-validation>
       </v-form> -->
-  </div>
-  <div v-else>
-    <v-progress-circular indeterminate color="primary"></v-progress-circular>
-  </div>
+    </div>
+    <div v-else>
+      <v-progress-circular indeterminate color="primary"></v-progress-circular>
+    </div>
 
     <div class="v-card v-theme--light v-card--density-default v-card--variant-elevated pa-6">
-      <div class="v-card-title text-h5 font-weight-bold">
-        Formulario F-02:
-      </div>
+      <div class="v-card-title text-h5 font-weight-bold">Formulario F-02:</div>
 
       <div class="v-card-text">
         <form class="v-form" novalidate @submit.prevent="submitForm">
@@ -52,28 +47,30 @@
             <v-divider class="my-4"></v-divider>
 
             <v-card-subtitle class="text-h6">Responsable del Cargo de Cuenta</v-card-subtitle>
-            <br>
+            <br />
             <v-row>
               <v-col cols="12" md="4">
                 <v-text-field
-                v-model="formData.nombre"
-                label="Nombre"
-                required readonly></v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field
-                v-model="formData.paterno"
-                label="Apellido paterno"
-                required
-                readonly
+                  v-model="formData.nombre"
+                  label="Nombre"
+                  required
+                  readonly
                 ></v-text-field>
               </v-col>
               <v-col cols="12" md="4">
                 <v-text-field
-                v-model="formData.materno"
-                label="Apellido materno"
-                required
-                readonly
+                  v-model="formData.paterno"
+                  label="Apellido paterno"
+                  required
+                  readonly
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="formData.materno"
+                  label="Apellido materno"
+                  required
+                  readonly
                 ></v-text-field>
               </v-col>
               <v-col cols="12" md="4">
@@ -86,13 +83,12 @@
               </v-col>
               <v-col cols="12" md="4">
                 <v-text-field
-                v-model="formData.cargo"
-                label="Cargo"
-                required
-                readonly
+                  v-model="formData.cargo"
+                  label="Cargo"
+                  required
+                  readonly
                 ></v-text-field>
               </v-col>
-
             </v-row>
 
             <v-divider class="my-4"></v-divider>
@@ -110,7 +106,8 @@
               </v-col> -->
 
               <v-col cols="12" sm="6" md="4">
-                <v-text-field v-model="formDataRC.cpte_diario"
+                <v-text-field
+                  v-model="formDataRC.cpte_diario"
                   label="Cpte. Diario"
                   bg-color="blue-lighten-5"
                   required
@@ -165,7 +162,7 @@
                   readonly
                 ></v-text-field>
               </v-col>
-              </v-row>
+            </v-row>
             <v-row>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field
@@ -189,14 +186,13 @@
                 ></v-text-field>
               </v-col>
             </v-row>
-
           </div>
 
           <v-divider class="my-4"></v-divider>
 
           <div class="form-section">
             <h3>Detalle del Gasto</h3>
-            <br>
+            <br />
             <v-card-title class="d-flex justify-space-between align-center">
               <v-btn
                 variant="flat"
@@ -204,10 +200,13 @@
                 rounded="lg"
                 :elevation="3"
                 @click="agregarGasto"
-                disabled>
+                disabled
+              >
                 Agregar Gasto
               </v-btn>
-              <span class="text-caption text-grey">Monto Total de Gasto (Bs.): {{ totalMontoGastado }}</span>
+              <span class="text-caption text-grey"
+                >Monto Total de Gasto (Bs.): {{ totalMontoGastado }}</span
+              >
             </v-card-title>
 
             <v-table>
@@ -282,36 +281,36 @@
 
           <v-divider class="my-4"></v-divider>
 
-                <!-- Sección 4: Información Adicional -->
-                <div class="form-section mb-6">
-                  <v-card-subtitle class="text-h6">Información Adicional</v-card-subtitle>
-                  <br>
+          <!-- Sección 4: Información Adicional -->
+          <div class="form-section mb-6">
+            <v-card-subtitle class="text-h6">Información Adicional</v-card-subtitle>
+            <br />
 
-                  <v-row>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="formData.lugar_solicitud"
-                        label="Lugar donde se realiza la Rendición de Cuentas"
-                        required
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="formData.fecha_solicitud"
-                        label="Fecha de Rendición de Cuentas"
-                        type="date"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </div>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="formData.lugar_solicitud"
+                  label="Lugar donde se realiza la Rendición de Cuentas"
+                  required
+                  readonly
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="formData.fecha_solicitud"
+                  label="Fecha de Rendición de Cuentas"
+                  type="date"
+                  readonly
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </div>
 
           <v-divider class="my-4"></v-divider>
 
           <div class="form-section">
             <v-card-subtitle class="text-h6">Firmas</v-card-subtitle>
-            <br>
+            <br />
             <!-- <v-row>
               <v-col cols="12" md="6">
                 <v-select
@@ -361,13 +360,15 @@
                   :disabled="!puedeValidarCoordinador || formData.validacion_coordinador"
                   :readonly="!puedeValidarCoordinador || formData.validacion_coordinador"
                   :color="puedeValidarCoordinador ? 'primary' : 'grey'"
-                  @update:modelValue="(newValue) => {
-                    if (newValue) {
-                      nextTick(() => {
-                        validarRendicion('coordinador');
-                      });
+                  @update:modelValue="
+                    (newValue) => {
+                      if (newValue) {
+                        nextTick(() => {
+                          validarRendicion('coordinador')
+                        })
+                      }
                     }
-                  }"
+                  "
                 ></v-checkbox>
               </v-col>
             </v-row>
@@ -391,15 +392,16 @@
                   :disabled="!puedeValidarContador || formData.validacion_contador"
                   :readonly="!puedeValidarContador || formData.validacion_contador"
                   :color="puedeValidarContador ? 'primary' : 'grey'"
-                  @update:modelValue="(newValue) => {
-                    if (newValue) {
-                      nextTick(() => {
-                        validarRendicion('contador');
-                      });
+                  @update:modelValue="
+                    (newValue) => {
+                      if (newValue) {
+                        nextTick(() => {
+                          validarRendicion('contador')
+                        })
+                      }
                     }
-                  }"
+                  "
                 ></v-checkbox>
-
               </v-col>
             </v-row>
 
@@ -422,33 +424,69 @@
                   :disabled="!puedeValidarAdministrador || formData.validacion_administrador"
                   :readonly="!puedeValidarAdministrador || formData.validacion_administrador"
                   :color="puedeValidarAdministrador ? 'primary' : 'grey'"
-                  @update:modelValue="(newValue) => {
-                    if (newValue) {
-                      nextTick(() => {
-                        validarRendicion('administrador');
-                      });
+                  @update:modelValue="
+                    (newValue) => {
+                      if (newValue) {
+                        nextTick(() => {
+                          validarRendicion('administrador')
+                        })
+                      }
                     }
-                  }"
+                  "
                 ></v-checkbox>
-
               </v-col>
             </v-row>
           </div>
 
           <div class="d-flex justify-end mt-4">
-                  <v-btn
-                    color="error"
-                    variant="outlined"
-                    prepend-icon="mdi-cancel"
-                    :to="`/pei/listaactividades?showButton=2`"
-                    class="mx-2"
-                  >
-                    Cancelar
-                  </v-btn>
-            <v-btn color="error" prepend-icon="mdi-backspace-outline" @click="resetForm" class="mx-2" disabled>
+            <v-btn
+              color="error"
+              variant="outlined"
+              prepend-icon="mdi-cancel"
+              :to="`/pei/listaactividades?showButton=2`"
+              class="mx-2"
+            >
+              Cancelar
+            </v-btn>
+            <v-btn
+              v-if="idActividad && !idTarea"
+              color="info"
+              variant="outlined"
+              prepend-icon="mdi-file-pdf-box"
+              @click="generarPdfSolicitudFondosFunc"
+              :loading="loadingPdfSolicitud"
+              :disabled="!idActividad || loadingPdfSolicitud"
+            >
+              SF
+            </v-btn>
+
+            <v-btn
+              v-if="idActividad && idTarea"
+              color="info"
+              variant="outlined"
+              prepend-icon="mdi-file-pdf-box"
+              @click="generarPdfSolicitudSubactividadFunc"
+              :loading="loadingPdfSolicitud"
+              :disabled="!idActividad || !idTarea || loadingPdfSubactividad"
+            >
+              SFS
+            </v-btn>
+            <v-btn
+              color="error"
+              prepend-icon="mdi-backspace-outline"
+              @click="resetForm"
+              class="mx-2"
+              disabled
+            >
               Limpiar
             </v-btn>
-            <v-btn color="primary" prepend-icon="mdi-file-document-arrow-right" @click="submitForm" :loading="loading" disabled>
+            <v-btn
+              color="primary"
+              prepend-icon="mdi-file-document-arrow-right"
+              @click="submitForm"
+              :loading="loading"
+              disabled
+            >
               Enviar Rendicion
             </v-btn>
           </div>
@@ -459,28 +497,66 @@
 
   <!-- {{ saldoPorReembolsar }}
   {{ "**************************************" }} -->
-<!-- <pre>{{ formData.monto_asignado }}</pre>
+  <!-- <pre>{{ formData.monto_asignado }}</pre>
 {{ "**************************************" }}
 {{formData.monto_gastado}} -->
-<!-- {{ "**************************************" }}
+  <!-- {{ "**************************************" }}
 {{ formDataRC.lugar_solicitudRC }} -->
   <!-- {{ "**************************************" }}
      <pre>{{ datosRendicionDeCuenta }}</pre> -->
 </template>
 
 <script setup>
-
-import { ref, onMounted, computed, watch, nextTick } from 'vue';
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
-
-import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
-import {useUserStore} from '@/stores/user';
+import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
+import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
+
+//Composable de impresion
+import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
+
+//Inicializar el composable
+const { generarPdfRendicionCuentas, generarPdfRendicionCuentasTareas } = useImpresionFormularios()
+/*************************** Generar PDFs *******************************************/
+const loadingPdfSolicitud = ref(false)
+const loadingPdfSubactividad = ref(false)
+
+const generarPdfSolicitudFondosFunc = async () => {
+  if (!idActividad) return
+
+  loadingPdfSolicitud.value = true
+  try {
+    // Aquí iría tu lógica para generar el PDF de solicitud de fondos
+    console.log('Generando PDF Solicitud de Fondos para actividad:', idActividad)
+    await generarPdfRendicionCuentas(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Solicitud de Fondos:', error)
+    alert('Error al generar el PDF: ' + error.message)
+  } finally {
+    loadingPdfSolicitud.value = false
+  }
+}
+
+const generarPdfSolicitudSubactividadFunc = async () => {
+  if (!idActividad || !idTarea) return
+
+  loadingPdfSubactividad.value = true
+  try {
+    await generarPdfRendicionCuentasTareas(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Subactividad:', error)
+    alert('Error al generar el PDF de subactividad: ' + error.message)
+  } finally {
+    loadingPdfSubactividad.value = false
+  }
+}
+/*************************** Fin Generar PDFs *******************************************/
 
 const router = useRouter()
 const route = useRoute()
@@ -493,7 +569,7 @@ console.log('ID SolFondos:', idSolicitud)
 
 const baseurl = import.meta.env.VITE_API_BASE
 
-const { usuario } = useUsuario();
+const { usuario } = useUsuario()
 
 const idRendicionCreada = ref(null)
 
@@ -506,7 +582,7 @@ const solicitud = ref(null)
 const snackbar = ref({ show: false, text: '', color: 'success' })
 
 // Variables de estado
-const loading = ref(false);
+const loading = ref(false)
 
 //variables para carga de datos
 const datosFormulario = ref(null)
@@ -531,8 +607,8 @@ const formData = ref({
   documento_identidad: '',
   // Campos de la actividad
   descripcion_actividad: '',
-  lugar_actividad:'',
-  fecha_actividad:'',
+  lugar_actividad: '',
+  fecha_actividad: '',
   objetivo_actividad: '',
   fecha_irealizacion: '',
   fecha_frealizacion: '',
@@ -550,11 +626,11 @@ const formData = ref({
   validacion_coordinador: false,
   idcoordinador: null,
   monto_asignado: 0,
-  formulario_numero:'',
+  formulario_numero: '',
   validacion_contador: false,
   validacion_administrador: false,
   idcontador: null,
-  idadministrador: null
+  idadministrador: null,
 })
 
 const formDatSF = ref({
@@ -579,17 +655,17 @@ const formDatSF = ref({
   usuario_idsf: null,
   actividad_idsf: null,
   fechaRealizacionActividadsf: '',
-  bloquearIconosSolFondossf: true
+  bloquearIconosSolFondossf: true,
 })
 
 const formDataRC = ref({
   cpte_diario: '',
   fecha_desembolso: '',
   descripcion_actividadRC: '',
-  lugar_actividadRC:'',
-  fecha_actividadRC:'',
+  lugar_actividadRC: '',
+  fecha_actividadRC: '',
 
-  detalle_gastos: [{ fecha:'', partida:'', factura_recibo: '', descripcion: '', monto: 0 }],
+  detalle_gastos: [{ fecha: '', partida: '', factura_recibo: '', descripcion: '', monto: 0 }],
   lugar_solicitudRC: '',
   fecha_solicitudRC: '',
 
@@ -602,16 +678,15 @@ const formDataRC = ref({
   validacionCoordinador: false,
   validacionContador: false,
   validacionAdministrador: false,
-
 })
 
- const userStore = useUserStore();
- const usuario1 = computed(() => {
- return {
- 	nombre: userStore.usuario,
- 	role: userStore.rol,
-   };
- });
+const userStore = useUserStore()
+const usuario1 = computed(() => {
+  return {
+    nombre: userStore.usuario,
+    role: userStore.rol,
+  }
+})
 
 const fuente_financiamiento0 = ref()
 
@@ -630,24 +705,23 @@ const actividadData = ref({
 const saldoPorReembolsar = computed(() => {
   //const montoAsignado = Number(formData.value.monto_solicitado) || 0;
   //const montoGastado = Number(totalMontoGastado.value) || 0;
-  const montoAsignado = Number(formData.value.monto_asignado) || 0;
-  const montoGastado = Number(formData.value.monto_gastado) || 0;
-  console.log('montoAsignado', montoAsignado);
-  console.log('montoGastado', montoGastado);
-  return (montoAsignado - montoGastado).toFixed(2);
-});
+  const montoAsignado = Number(formData.value.monto_asignado) || 0
+  const montoGastado = Number(formData.value.monto_gastado) || 0
+  console.log('montoAsignado', montoAsignado)
+  console.log('montoGastado', montoGastado)
+  return (montoAsignado - montoGastado).toFixed(2)
+})
 
 const totalMontoGastado = computed(() => {
-  return formDataRC.value.detalle_gastos.reduce(
-    (total, gasto) => total + Number(gasto.monto || 0),
-    0
-  ).toFixed(2);
-});
+  return formDataRC.value.detalle_gastos
+    .reduce((total, gasto) => total + Number(gasto.monto || 0), 0)
+    .toFixed(2)
+})
 
- //Watcher para actualizar monto_gastado en formData
- watch(totalMontoGastado, (newValue) => {
-   formData.value.monto_gastado = Number(newValue);
- });
+//Watcher para actualizar monto_gastado en formData
+watch(totalMontoGastado, (newValue) => {
+  formData.value.monto_gastado = Number(newValue)
+})
 
 // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
 watch(
@@ -677,13 +751,15 @@ watch(
         formData.value.id_actividad = newVal.actividad.id || 0
 
         if (Array.isArray(newVal.actividad.procedencia_fondos)) {
-          formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(item => item.nombre);
+          formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(
+            (item) => item.nombre,
+          )
         } else {
           // Si no es un array (es null, undefined, o un objeto), lo inicializa como array vacío.
           // También puedes intentar asignar el valor directamente si es una cadena o un objeto simple:
           // formData.value.fuente_financiamiento = [newVal.actividad.procedencia_fondos];
           // PERO la opción de array vacío es la más segura si esperas una lista de fuentes.
-          formData.value.fuente_financiamiento = [];
+          formData.value.fuente_financiamiento = []
         }
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
@@ -717,23 +793,27 @@ const filtrarProcedenciaFondos = () => {
     Array.isArray(datosFormulario.value.actividad.procedencia_fondos) // <= CAMBIO AQUÍ
   ) {
     fuente_financiamiento0.value = datosFormulario.value.actividad.procedencia_fondos.map(
-      (item) => item.nombre
-    );
+      (item) => item.nombre,
+    )
   } else {
     // Es bueno asegurarse de que siempre sea un array en caso de no encontrar datos
-    fuente_financiamiento0.value = [];
+    fuente_financiamiento0.value = []
   }
-};
+}
 
-watch(datosFormulario, (newVal) => {
-  if (newVal) {
-    filtrarProcedenciaFondos();
-  }
-}, { immediate: true });
+watch(
+  datosFormulario,
+  (newVal) => {
+    if (newVal) {
+      filtrarProcedenciaFondos()
+    }
+  },
+  { immediate: true },
+)
 
 // Métodos
 function getNombreCompleto(user) {
-  return `${user.nombre || ''} ${user.paterno || ''} ${user.materno || ''}`.trim();
+  return `${user.nombre || ''} ${user.paterno || ''} ${user.materno || ''}`.trim()
 }
 
 function getCurrentDate() {
@@ -748,7 +828,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl+'/api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl + '/api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -784,12 +864,12 @@ const cargarSolicitudesFondos = async () => {
   try {
     //console.log('Cargando solicitudes de fondos con fetch...')
 
-    const response = await fetch(baseurl+'/api/solicitud-fondos/', {
+    const response = await fetch(baseurl + '/api/solicitud-fondos/', {
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
     })
 
     if (!response.ok) {
@@ -799,7 +879,6 @@ const cargarSolicitudesFondos = async () => {
     const data = await response.json()
     //console.log('Datos recibidos con fetch:', data)
     solicitudesFondos.value = data
-
   } catch (error) {
     console.error('Error con fetch:', error)
     mostrarSnackbar(`Error al cargar solicitudes: ${error.message}`, 'error')
@@ -812,7 +891,7 @@ async function cargarRendicionesDeCuenta() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl+'/monitoreo_api/obtenerRendicionDeCuentas/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerRendicionDeCuentas/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -821,7 +900,7 @@ async function cargarRendicionesDeCuenta() {
         // id_actividad: actividadIdParaValidar.value,
         // id_tarea: tareaIdParaValidar.value,
         // usuario: usuario.value.nombre,
-        id_rendicionCuentas: idSolicitud
+        id_rendicionCuentas: idSolicitud,
       }),
     })
     //console.log('00000000000000000000000000000', actividadIdParaValidar.value, usuario.value, tareaIdParaValidar.value )
@@ -849,7 +928,7 @@ async function cargarSolicitudFondos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudFondos/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudFondos/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -863,7 +942,7 @@ async function cargarSolicitudFondos() {
     const data = await response.json()
 
     // Filtrar las solicitudes por actividad_id y tarea_id
-    const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
+    const solicitudesFiltradas = data.solicitudes.filter((solicitud) => {
       // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
       const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
       const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
@@ -874,7 +953,6 @@ async function cargarSolicitudFondos() {
 
     datosSolicitudDeFondo.value = strictSanitizeData(solicitudesFiltradas[0])
     actualizarDatosFormulario(solicitudesFiltradas[0])
-
   } catch (err) {
     error.value = err.message
     console.error('Error al cargar solicitudes:', err)
@@ -886,60 +964,60 @@ async function cargarSolicitudFondos() {
 
 function sanitizeData(data) {
   if (data === null || data === undefined) {
-    return '';
+    return ''
   }
 
   if (typeof data === 'string') {
     // Limpiar strings: trim y convertir empty strings a ''
-    const trimmed = data.trim();
-    return trimmed === '' ? '' : trimmed;
+    const trimmed = data.trim()
+    return trimmed === '' ? '' : trimmed
   }
 
   if (typeof data === 'number') {
     // Validar que sea un número finito
-    return isFinite(data) ? data : 0;
+    return isFinite(data) ? data : 0
   }
 
   if (typeof data === 'boolean') {
-    return data;
+    return data
   }
 
   if (Array.isArray(data)) {
     // Sanitizar cada elemento del array
-    return data.map(item => sanitizeData(item)).filter(item =>
-      item !== null && item !== undefined && item !== ''
-    );
+    return data
+      .map((item) => sanitizeData(item))
+      .filter((item) => item !== null && item !== undefined && item !== '')
   }
 
   if (typeof data === 'object') {
-    const sanitized = {};
+    const sanitized = {}
     for (const key in data) {
       if (Object.prototype.hasOwnProperty.call(data, key)) {
-        const value = data[key];
+        const value = data[key]
         // Solo incluir propiedades con valores válidos
         if (value !== null && value !== undefined && value !== '') {
-          sanitized[key] = sanitizeData(value);
+          sanitized[key] = sanitizeData(value)
         }
       }
     }
-    return sanitized;
+    return sanitized
   }
 
   // Para cualquier otro tipo de dato, retornar string vacío
-  return '';
+  return ''
 }
 
 function strictSanitizeData(data) {
-  const sanitized = sanitizeData(data);
+  const sanitized = sanitizeData(data)
 
   // Si el resultado es un objeto vacío, retornar string vacío
   if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
     if (Object.keys(sanitized).length === 0) {
-      return '';
+      return ''
     }
   }
 
-  return sanitized;
+  return sanitized
 }
 
 // Agrega este watch para actualizar automáticamente cuando cambien los datosSolicituDeFondo
@@ -950,14 +1028,13 @@ watch(
       actualizarDetalleDestinoFondos(newVal.detalleDestinoFondos)
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 watch(
   datosRendicionDeCuenta,
   (newVal) => {
     if (newVal) {
-
       // Función helper para manejar valores null/undefined
       const getSafeValue = (value, defaultValue = '') => {
         return value !== null && value !== undefined ? value : defaultValue
@@ -1051,7 +1128,7 @@ function actualizarDetalleGastos(detalleDestinoFondos) {
         partida: item.partida || `${index + 1}.${index + 1}.${index + 1}`,
         factura_recibo: item.factura_recibo || '',
         descripcion_gasto: item.descripcion || item.descripcion_gasto || '',
-        monto: item.monto || 0
+        monto: item.monto || 0,
       }))
     } else if (detalleParseado.items && Array.isArray(detalleParseado.items)) {
       return detalleParseado.items.map((item, index) => ({
@@ -1059,7 +1136,7 @@ function actualizarDetalleGastos(detalleDestinoFondos) {
         partida: item.partida || `${index + 1}.${index + 1}.${index + 1}`,
         factura_recibo: item.factura_recibo || item.numero_factura || '',
         descripcion_gasto: item.descripcion || item.concepto || '',
-        monto: item.monto || 0
+        monto: item.monto || 0,
       }))
     }
 
@@ -1085,7 +1162,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
       partida: `${index + 1}.${index + 1}.${index + 1}`, // Generar partida automáticamente o usar una lógica específica
       descripcion_gasto: item.concepto || '',
-      monto: item.monto || 0
+      monto: item.monto || 0,
     }))
 
     //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
@@ -1097,90 +1174,89 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
 
 async function validarRendicion(tipoValidador) {
   // Verificar permisos según el tipo de validador
-  let tienePermiso = false;
-  let claveValidacion = '';
+  let tienePermiso = false
+  let claveValidacion = ''
 
   switch (tipoValidador) {
     case 'responsable':
-      tienePermiso = puedeValidarResponsable.value;
-      claveValidacion = 'validacion_responsable';
-      break;
+      tienePermiso = puedeValidarResponsable.value
+      claveValidacion = 'validacion_responsable'
+      break
     case 'coordinador':
-      tienePermiso = puedeValidarCoordinador.value;
-      claveValidacion = 'validacion_coordinador';
-      break;
+      tienePermiso = puedeValidarCoordinador.value
+      claveValidacion = 'validacion_coordinador'
+      break
     case 'contador':
-      tienePermiso = puedeValidarContador.value;
-      claveValidacion = 'validacion_contador';
-      break;
+      tienePermiso = puedeValidarContador.value
+      claveValidacion = 'validacion_contador'
+      break
     case 'administrador':
-      tienePermiso = puedeValidarAdministrador.value;
-      claveValidacion = 'validacion_administrador';
-      break;
+      tienePermiso = puedeValidarAdministrador.value
+      claveValidacion = 'validacion_administrador'
+      break
     default:
-      alert('Tipo de validador no reconocido.');
-      return;
+      alert('Tipo de validador no reconocido.')
+      return
   }
 
   if (!tienePermiso) {
-    alert('Usted no está autorizado para validar esta rendición como ' + tipoValidador + '.');
-    formData.value[claveValidacion] = false;
-    return;
+    alert('Usted no está autorizado para validar esta rendición como ' + tipoValidador + '.')
+    formData.value[claveValidacion] = false
+    return
   }
 
   // Verificar que el checkbox esté marcado
   if (!formData.value[claveValidacion]) {
-    alert('Debe marcar la casilla para realizar la validación.');
-    return;
+    alert('Debe marcar la casilla para realizar la validación.')
+    return
   }
 
   // Crear el payload específico para la validación
   const payload = {
     id_rendicion: datosRendicionDeCuenta.value?.id || idSolicitud,
-    [claveValidacion]: true
-  };
+    [claveValidacion]: true,
+  }
 
   if (!payload.id_rendicion) {
-    alert('Error: No se encontró el ID de la rendición para validar.');
-    formData.value[claveValidacion] = false; // Revertir
-    return;
+    alert('Error: No se encontró el ID de la rendición para validar.')
+    formData.value[claveValidacion] = false // Revertir
+    return
   }
 
   // Ejecutar la llamada PATCH
-  loading.value = true;
+  loading.value = true
   try {
     const response = await fetch(
-      baseurl+'/monitoreo_api/actualizar-validacion-rendicion-cuentas/',
+      baseurl + '/monitoreo_api/actualizar-validacion-rendicion-cuentas/',
       {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
-      }
-    );
+      },
+    )
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json()
       throw new Error(
-        `Error al actualizar: ${response.status} - ${errorData.detail || errorData.mensaje || 'Error desconocido'}`
-      );
+        `Error al actualizar: ${response.status} - ${errorData.detail || errorData.mensaje || 'Error desconocido'}`,
+      )
     }
 
     //const result = await response.json();
-    alert('Rendición validada exitosamente.');
+    alert('Rendición validada exitosamente.')
 
     // Recargar los datos para reflejar los cambios
-    await cargarRendicionesDeCuenta();
-
+    await cargarRendicionesDeCuenta()
   } catch (err) {
-    console.error('Error al validar la rendición:', err);
-    alert(`Error al validar la rendición: ${err.message}`);
+    console.error('Error al validar la rendición:', err)
+    alert(`Error al validar la rendición: ${err.message}`)
 
     // Revertir el cambio en caso de error
-    formData.value[claveValidacion] = false;
+    formData.value[claveValidacion] = false
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
@@ -1202,12 +1278,12 @@ function actualizarValidadores() {
 
   // Buscar responsable por ID
   const responsable = datosFormulario.value.validadores.find(
-    validador => validador.id === formDatSF.value.responsable_idsf
+    (validador) => validador.id === formDatSF.value.responsable_idsf,
   )
 
   // Buscar coordinador por ID
   const coordinador = datosFormulario.value.validadores.find(
-    validador => validador.id === formDatSF.value.coordinador_idsf
+    (validador) => validador.id === formDatSF.value.coordinador_idsf,
   )
 
   // Actualizar formData con los IDs encontrados
@@ -1235,12 +1311,12 @@ function actualizarListasValidadores() {
 
   // Filtrar responsables (puedes ajustar la lógica según el cargo)
   responsablesList.value = datosFormulario.value.validadores.filter(
-    validador => validador.cargo && validador.cargo.toLowerCase().includes('responsable')
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('responsable'),
   )
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
   coordinadoresList.value = datosFormulario.value.validadores.filter(
-    validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador'),
   )
 }
 
@@ -1251,7 +1327,7 @@ const getSolicitudFondosInfo = (actividadId, tareaId = null) => {
   // console.log('Buscando solicitud para actividad:', actividadId, 'tarea:', tareaId)
 
   // Buscar solicitud que coincida con actividad y tarea (si se proporciona)
-  const solicitudEncontrada = solicitudesFondos.value.find(sf => {
+  const solicitudEncontrada = solicitudesFondos.value.find((sf) => {
     // Convertir a números para comparación segura
     const sfActividadId = sf.actividad ? parseInt(sf.actividad) : null
     const sfTareaId = sf.tarea ? parseInt(sf.tarea) : null
@@ -1272,34 +1348,39 @@ const getSolicitudFondosInfo = (actividadId, tareaId = null) => {
   return solicitudEncontrada || null
 }
 
-watch(solicitudesFondos, (newSolicitudes) => {
-  if (newSolicitudes.length > 0) {
-    //console.log('Solicitudes cargadas, buscando coincidencia...')
+watch(
+  solicitudesFondos,
+  (newSolicitudes) => {
+    if (newSolicitudes.length > 0) {
+      //console.log('Solicitudes cargadas, buscando coincidencia...')
 
-    // Buscar la solicitud que coincida con los parámetros de la ruta
-    const solicitudEncontrada = getSolicitudFondosInfo(idActividad, idTarea)
-    solicitud.value = solicitudEncontrada
+      // Buscar la solicitud que coincida con los parámetros de la ruta
+      const solicitudEncontrada = getSolicitudFondosInfo(idActividad, idTarea)
+      solicitud.value = solicitudEncontrada
 
-    if (solicitudEncontrada) {
-      //console.log('Solicitud encontrada, pre-llenando datos:', solicitudEncontrada)
+      if (solicitudEncontrada) {
+        //console.log('Solicitud encontrada, pre-llenando datos:', solicitudEncontrada)
 
-      // Pre-llenar campos con los datos de la solicitud
-      formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
-      formData.value.monto_asignado = solicitudEncontrada.montoSolicitado || 0 // Asumiendo que monto asignado = monto solicitado
+        // Pre-llenar campos con los datos de la solicitud
+        formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+        formData.value.monto_asignado = solicitudEncontrada.montoSolicitado || 0 // Asumiendo que monto asignado = monto solicitado
 
-      // También puedes pre-llenar otros campos si es necesario
-      if (solicitudEncontrada.numeroFormulario) {
-        formData.value.formulario_numero = solicitudEncontrada.numeroFormulario
+        // También puedes pre-llenar otros campos si es necesario
+        if (solicitudEncontrada.numeroFormulario) {
+          formData.value.formulario_numero = solicitudEncontrada.numeroFormulario
+        }
+
+        // console.log('Monto solicitado asignado:', formData.value.monto_solicitado)
+      } else {
+        console.log('No se encontró solicitud para actividad:', idActividad, 'tarea:', idTarea)
       }
-
-      // console.log('Monto solicitado asignado:', formData.value.monto_solicitado)
-    } else {
-      console.log('No se encontró solicitud para actividad:', idActividad, 'tarea:', idTarea)
     }
-  }
-}, { deep: true, immediate: true })
+  },
+  { deep: true, immediate: true },
+)
 
-onMounted(async () => { // Usar async/await en onMounted
+onMounted(async () => {
+  // Usar async/await en onMounted
   try {
     cargandoGeneral.value = true
 
@@ -1308,49 +1389,58 @@ onMounted(async () => { // Usar async/await en onMounted
       cargarDatos(),
       cargarRendicionesDeCuenta(),
       cargarSolicitudFondos(),
-      cargarSolicitudesFondos()
-    ]);
-
+      cargarSolicitudesFondos(),
+    ])
   } catch (error) {
-    console.error("Error al cargar todos los datos iniciales:", error);
+    console.error('Error al cargar todos los datos iniciales:', error)
   } finally {
-    cargandoGeneral.value = false; // Solo apagar aquí
+    cargandoGeneral.value = false // Solo apagar aquí
   }
-});
+})
 
-watch(solicitudesFondos, (newSolicitudes) => {
-  if (newSolicitudes.length > 0) {
-    const solicitudEncontrada = getSolicitudFondosInfo(idActividad, idTarea || 0)
-    solicitud.value = solicitudEncontrada
+watch(
+  solicitudesFondos,
+  (newSolicitudes) => {
+    if (newSolicitudes.length > 0) {
+      const solicitudEncontrada = getSolicitudFondosInfo(idActividad, idTarea || 0)
+      solicitud.value = solicitudEncontrada
 
-    if (solicitudEncontrada) {
-      formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
-      formData.value.monto_asignado = solicitudEncontrada.formaPago || 0
+      if (solicitudEncontrada) {
+        formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+        formData.value.monto_asignado = solicitudEncontrada.formaPago || 0
+      }
     }
-  }
-}, { deep: true })
+  },
+  { deep: true },
+)
 
 // Función helper para mostrar notificaciones
 const mostrarSnackbar = (texto, color = 'success') => {
   snackbar.value = {
     show: true,
     text: texto,
-    color: color
+    color: color,
   }
 }
 
 function agregarGasto() {
-  formData.value.detalle_destino_fondos.push({ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 });
+  formData.value.detalle_destino_fondos.push({
+    fecha: '',
+    partida: '',
+    factura_recibo: '',
+    descripcion_gasto: '',
+    monto: 0,
+  })
 }
 
 function eliminarGasto(index) {
   if (formData.value.detalle_destino_fondos.length > 1) {
-    formData.value.detalle_destino_fondos.splice(index, 1);
+    formData.value.detalle_destino_fondos.splice(index, 1)
   }
 }
 
 async function submitForm() {
-  loading.value = true;
+  loading.value = true
   try {
     // Validar campos requeridos
     const requiredFields = [
@@ -1362,48 +1452,58 @@ async function submitForm() {
       'idresponsable',
       'idcoordinador',
       'idcontador',
-      'idadministrador'
-    ];
+      'idadministrador',
+    ]
 
     for (const field of requiredFields) {
       if (!formData.value[field]) {
-        throw new Error(`El campo '${field}' es requerido.`);
+        throw new Error(`El campo '${field}' es requerido.`)
       }
     }
 
-    if (!formData.value.detalle_destino_fondos || formData.value.detalle_destino_fondos.length === 0) {
-      throw new Error('Debe agregar al menos un gasto.');
+    if (
+      !formData.value.detalle_destino_fondos ||
+      formData.value.detalle_destino_fondos.length === 0
+    ) {
+      throw new Error('Debe agregar al menos un gasto.')
     }
 
-    if (formData.value.detalle_destino_fondos.some(gasto => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0)) {
-      throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.');
+    if (
+      formData.value.detalle_destino_fondos.some(
+        (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0,
+      )
+    ) {
+      throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
     }
 
-    const hasInvalidGasto = formData.value.detalle_destino_fondos.some(gasto =>
-      !gasto.fecha || // <--- AÑADIR: Verifica que la fecha exista
-      !gasto.partida ||
-      !gasto.factura_recibo || // <--- AÑADIR: Verifica que el número de factura/recibo exista
-      !gasto.descripcion_gasto ||
-      Number(gasto.monto) <= 0 // <--- Asegúrate de convertir a número para la comparación
-    );
+    const hasInvalidGasto = formData.value.detalle_destino_fondos.some(
+      (gasto) =>
+        !gasto.fecha || // <--- AÑADIR: Verifica que la fecha exista
+        !gasto.partida ||
+        !gasto.factura_recibo || // <--- AÑADIR: Verifica que el número de factura/recibo exista
+        !gasto.descripcion_gasto ||
+        Number(gasto.monto) <= 0, // <--- Asegúrate de convertir a número para la comparación
+    )
 
     if (hasInvalidGasto) {
-      throw new Error('Todos los gastos deben tener fecha, partida, factura/recibo, descripción y un monto mayor a cero.');
+      throw new Error(
+        'Todos los gastos deben tener fecha, partida, factura/recibo, descripción y un monto mayor a cero.',
+      )
     }
 
     // Obtener información de la solicitud de fondos
-    const solicitudInfo = getSolicitudFondosInfo(idActividad, idTarea);
+    const solicitudInfo = getSolicitudFondosInfo(idActividad, idTarea)
 
     // Preparar payload para la rendición de cuentas
     const payload = {
-      numeroFormulario: formData.value.formulario_numero || "",
+      numeroFormulario: formData.value.formulario_numero || '',
       montoDescargado: Number(totalMontoGastado.value),
       cpteDiario: formData.value.cpte_diario,
       fechaDesembolso: formData.value.fecha_desembolso,
       saldo: Number(saldoPorReembolsar.value),
-      detalleDestinoFondos: formData.value.detalle_destino_fondos.map(gasto => ({
-        factura_recibo: gasto.factura_recibo || "",
-        descripcion: gasto.descripcion_gasto || "",
+      detalleDestinoFondos: formData.value.detalle_destino_fondos.map((gasto) => ({
+        factura_recibo: gasto.factura_recibo || '',
+        descripcion: gasto.descripcion_gasto || '',
         monto: Number(gasto.monto) || 0,
       })),
       validacionResponsable: Boolean(formData.value.validacion_responsable),
@@ -1425,43 +1525,42 @@ async function submitForm() {
       idSolicitudViaje: null,
       idSolicitudPagoDirecto: null,
       idSolicitudFondos: solicitudInfo ? solicitudInfo.id : null,
-    };
+    }
 
-    console.log('Payload a enviar:', JSON.stringify(payload, null, 2));
+    console.log('Payload a enviar:', JSON.stringify(payload, null, 2))
 
     // Enviar la solicitud
-    const response = await fetch(baseurl+'/api/monitoreo/crear-rendicion-cuentas/', {
+    const response = await fetch(baseurl + '/api/monitoreo/crear-rendicion-cuentas/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
-    });
+    })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.detail || `Error HTTP: ${response.status}`)
     }
 
-    const responseData = await response.json();
-    console.log('Rendición enviada con éxito:', responseData);
+    const responseData = await response.json()
+    console.log('Rendición enviada con éxito:', responseData)
 
     // GUARDAR EL ID DE LA RENDICIÓN CREADA
-    idRendicionCreada.value = responseData.id || responseData.rendicion_id;
+    idRendicionCreada.value = responseData.id || responseData.rendicion_id
 
-    alert('Rendición enviada con éxito');
-    exportToExcel();
-    resetForm();
+    alert('Rendición enviada con éxito')
+    exportToExcel()
+    resetForm()
 
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=2')
     }, 1000)
-
   } catch (error) {
-    console.error('Error completo:', error);
-    alert(`Error: ${error.message}`);
+    console.error('Error completo:', error)
+    alert(`Error: ${error.message}`)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
@@ -1472,12 +1571,14 @@ function resetForm() {
     descripcion_actividad: '',
     lugar_actividad: '',
     fecha_actividad: '',
-    detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
+    detalle_destino_fondos: [
+      { fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 },
+    ],
     idresponsable: null,
     idcoordinador: null,
     idcontador: null,
     idadministrador: null,
-  });
+  })
 }
 
 function exportToExcel() {
@@ -1485,19 +1586,24 @@ function exportToExcel() {
   const mainData = [
     ['FORMULARIO F-02: RENDICION DE CUENTAS', '', '', ''],
     [''],
-      ['Nombre del Solicitante:', formData.value.nombre, formData.value.paterno, formData.value.materno],
-      ['Documento de Identidad:', formData.value.documento_identidad, '', ''],
-      ['Cargo:', formData.value.cargo, '', ''],
-      ['Formulario Número:', formData.value.formulario_numero || '', '', ''],
-      ['Cpte. Diario:', formData.value.cpte_diario, '', ''],
-      ['Fecha de Desembolso:', formData.value.fecha_desembolso, '', ''],
-      ['Monto Asignado (Bs.):', formData.value.monto_solicitado, '', ''],
-      ['Monto Gastado (Bs.):', Number(totalMontoGastado.value), '', ''],
-      ['Saldo por Reembolsar (Bs.):', Number(saldoPorReembolsar.value), '', ''],
-      ['Fuente de Financiamiento:', formData.value.fuente_financiamiento, '', ''],
-      ['Descripcion de Actividad:',formData.value.descripcion_actividad, '', ''],
-      ['Lugar de Actividad:', formData.value.lugar_actividad, '', ''],
-      ['Fecha de Actividad:', formData.value.fecha_actividad, '', ''],
+    [
+      'Nombre del Solicitante:',
+      formData.value.nombre,
+      formData.value.paterno,
+      formData.value.materno,
+    ],
+    ['Documento de Identidad:', formData.value.documento_identidad, '', ''],
+    ['Cargo:', formData.value.cargo, '', ''],
+    ['Formulario Número:', formData.value.formulario_numero || '', '', ''],
+    ['Cpte. Diario:', formData.value.cpte_diario, '', ''],
+    ['Fecha de Desembolso:', formData.value.fecha_desembolso, '', ''],
+    ['Monto Asignado (Bs.):', formData.value.monto_solicitado, '', ''],
+    ['Monto Gastado (Bs.):', Number(totalMontoGastado.value), '', ''],
+    ['Saldo por Reembolsar (Bs.):', Number(saldoPorReembolsar.value), '', ''],
+    ['Fuente de Financiamiento:', formData.value.fuente_financiamiento, '', ''],
+    ['Descripcion de Actividad:', formData.value.descripcion_actividad, '', ''],
+    ['Lugar de Actividad:', formData.value.lugar_actividad, '', ''],
+    ['Fecha de Actividad:', formData.value.fecha_actividad, '', ''],
     ['Responsable:', formData.value.idresponsable, '', ''],
     ['Coordinador:', formData.value.idcoordinador, '', ''],
     ['Contador:', formData.value.idcontador, '', ''],
@@ -1507,7 +1613,13 @@ function exportToExcel() {
   ]
 
   // 2. Encabezados de la tabla de gastos
-  const expensesHeaders = ['Fecha', 'PARTIDA', 'Factura/Recibo', 'DESCRIPCIÓN DEL GASTO', 'MONTO (BS.)']
+  const expensesHeaders = [
+    'Fecha',
+    'PARTIDA',
+    'Factura/Recibo',
+    'DESCRIPCIÓN DEL GASTO',
+    'MONTO (BS.)',
+  ]
 
   // 3. Datos de gastos
   const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
@@ -1682,8 +1794,7 @@ const puedeValidarResponsable = computed(() => {
   const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
   const responsableAsignadoId = formDataRC.value.idresponsable || formData.value.idresponsable
 
-  return usuarioActualId === responsableAsignadoId &&
-         usuarioActualCargo?.includes('responsable')
+  return usuarioActualId === responsableAsignadoId && usuarioActualCargo?.includes('responsable')
 })
 
 const puedeValidarCoordinador = computed(() => {
@@ -1691,8 +1802,7 @@ const puedeValidarCoordinador = computed(() => {
   const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
   const coordinadorAsignadoId = formDataRC.value.idcoordinador || formData.value.idcoordinador
 
-  return usuarioActualId === coordinadorAsignadoId &&
-         usuarioActualCargo?.includes('coordinador')
+  return usuarioActualId === coordinadorAsignadoId && usuarioActualCargo?.includes('coordinador')
 })
 
 const puedeValidarContador = computed(() => {
@@ -1700,8 +1810,8 @@ const puedeValidarContador = computed(() => {
   const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
   const contadorAsignadoId = formDataRC.value.idcontador || formData.value.idcontador
 
-  return usuarioActualId === contadorAsignadoId &&
-         usuarioActualCargo?.includes('contable')
+  //return usuarioActualId === contadorAsignadoId && usuarioActualCargo?.includes('contador')
+  return usuarioActualId === contadorAsignadoId && usuarioActualCargo?.includes('contable')
 })
 
 const puedeValidarAdministrador = computed(() => {
@@ -1709,8 +1819,7 @@ const puedeValidarAdministrador = computed(() => {
   const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
   const administradorAsignadoId = formDataRC.value.idadministrador || formData.value.idadministrador
 
-  return usuarioActualId === administradorAsignadoId &&
-         usuarioActualCargo?.includes('admin')
+  return usuarioActualId === administradorAsignadoId && usuarioActualCargo?.includes('admin')
 })
 
 function getCurrentDate1() {
@@ -1726,10 +1835,8 @@ onMounted(() => {
   cargarDatos()
   cargarRendicionesDeCuenta()
   cargarSolicitudesFondos()
-  getSolicitudFondosInfo(idActividad,idTarea)
-
-});
-
+  getSolicitudFondosInfo(idActividad, idTarea)
+})
 </script>
 
 <style scoped>

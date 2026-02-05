@@ -76,31 +76,49 @@
     </v-tooltip>
 
     <!-- Modales -->
-    <DialogSolicitudFondos v-model="dialogs.solicitudFondos" :actividad-id="props.actividadId" />
-    <DialogSolicitudViaje v-model="dialogs.solicitudViaje" :actividad-id="props.actividadId" />
-    <DialogSolicitudPagoDirecto
+    <DialogSolicitudFondosTarea
+      v-model="dialogs.solicitudFondos"
+      :actividad-id="props.actividadId"
+      :tarea-id="props.tareaId"
+    />
+    <DialogSolicitudViajeTarea
+      v-model="dialogs.solicitudViaje"
+      :actividad-id="props.actividadId"
+      :tarea-id="props.tareaId"
+    />
+    <DialogSolicitudPagoDirectoTarea
       v-model="dialogs.solicitudPagoDirecto"
       :actividad-id="props.actividadId"
+      :tarea-id="props.tareaId"
     />
-    <DialogSolicitudReposicion
+    <DialogSolicitudReposicionTarea
       v-model="dialogs.solicitudReposicion"
       :actividad-id="props.actividadId"
+      :tarea-id="props.tareaId"
     />
-    <DialogRendicionCuentas v-model="dialogs.rendicionCuentas" :actividad-id="props.actividadId" />
+    <DialogRendicionCuentasTarea
+      v-model="dialogs.rendicionCuentas"
+      :actividad-id="props.actividadId"
+      :tarea-id="props.tareaId"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import DialogSolicitudFondos from './partials/DialogSolicitudFondos.vue'
-import DialogSolicitudViaje from './partials/DialogSolicitudViaje.vue'
-import DialogSolicitudPagoDirecto from './partials/DialogSolicitudPagoDirecto.vue'
-import DialogSolicitudReposicion from './partials/DialogSolicitudReposicion.vue'
-import DialogRendicionCuentas from './partials/DialogRendicionCuentas.vue'
+import DialogSolicitudFondosTarea from './partials/DialogSolicitudFondosTarea.vue'
+import DialogSolicitudViajeTarea from './partials/DialogSolicitudViajeTarea.vue'
+import DialogSolicitudPagoDirectoTarea from './partials/DialogSolicitudPagoDirectoTarea.vue'
+import DialogSolicitudReposicionTarea from './partials/DialogSolicitudReposicionTarea.vue'
+import DialogRendicionCuentasTarea from './partials/DialogRendicionCuentasTarea.vue'
 
 // Props
 const props = defineProps({
   actividadId: {
+    type: Number,
+    required: true,
+  },
+  tareaId: {
     type: Number,
     required: true,
   },
