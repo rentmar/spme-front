@@ -17,7 +17,7 @@
           <p class="mt-4 text-h6">Cargando formulario de solicitud...</p>
         </div>
       </v-overlay>
-  
+
       <div v-if="!cargandoGeneral">
         <!--Titulo de la pagina-->
         <PaginaTituloIcono
@@ -34,8 +34,8 @@
           <ActividadInformacion
           v-if="datosFormulario.actividad"
           :actividad-id="idActividad" />
-  
-  
+
+
         <v-row>
           <!-- Panel lateral de información -->
           <v-col cols="12" md="4" lg="3">
@@ -59,7 +59,7 @@
                 </div>
               </v-card-text>
             </v-card>
-  
+
             <!-- Tarjeta de resumen rápido -->
             <v-card elevation="2" rounded="lg" class="mb-4">
               <v-toolbar color="secondary" density="compact">
@@ -88,7 +88,7 @@
               </v-card-text>
             </v-card>
           </v-col>
-  
+
           <!-- Formulario principal -->
           <v-col cols="12" md="8" lg="9">
             <v-card elevation="2" rounded="lg">
@@ -98,7 +98,7 @@
                   Formulario de Solicitud
                 </v-toolbar-title>
               </v-toolbar>
-  
+
               <v-card-text class="pa-4">
                 <v-form ref="form" @submit.prevent="submitForm">
                   <!-- Sección 1: Información del Solicitante -->
@@ -160,9 +160,9 @@
                       </v-col>
                     </v-row>
                   </div>
-  
+
                   <v-divider class="my-4"></v-divider>
-  
+
                   <!-- Sección 2: Información de la Actividad -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
@@ -216,7 +216,7 @@
                       bg-color="grey-lighten-4"
                       readonly
                     ></v-text-field>
-  
+
                     <v-col cols="12" md="4">
                       <!-- "datosSolicitudDeReposicion.fecha_ejecucion" -->
                       <v-text-field
@@ -240,16 +240,16 @@
                       ></v-file-input>
                     </v-col> -->
                   </div>
-  
+
                   <v-divider class="my-4"></v-divider>
-  
+
                   <!-- Sección 3: Detalle de Gastos -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
                       <v-icon color="primary" class="mr-2">mdi-cash</v-icon>
                       Detalle de Gastos Solicitados
                     </h3>
-  
+
                     <div class="d-flex justify-space-between align-center mb-4">
                       <v-btn
                         color="primary"
@@ -264,7 +264,7 @@
                         Monto Total Solicitado (Bs.): {{ totalMontoSolicitado.toLocaleString() }}
                       </v-chip>
                     </div>
-  
+
                     <v-table class="elevation-1 rounded-lg mb-4 users-table">
                       <thead>
                         <tr>
@@ -327,16 +327,16 @@
                       </tbody>
                     </v-table>
                   </div>
-  
+
                   <v-divider class="my-4"></v-divider>
-  
+
                   <!-- Sección 4: Información Adicional -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
                       <v-icon color="primary" class="mr-2">mdi-information</v-icon>
                       Información Adicional
                     </h3>
-  
+
                     <v-row>
                       <v-col cols="12" md="6">
                         <v-text-field
@@ -382,7 +382,7 @@
                         ></v-select>
                       </v-col>
                     </v-row>
-  
+
                     <div v-if="MostrarCamposOtros">
                       <v-row>
                         <v-col cols="12" md="6">
@@ -451,9 +451,9 @@
                       </v-row>
                     </div>
                   </div>
-  
+
                   <v-divider class="my-4"></v-divider>
-  
+
                   <!-- Sección 5: Firmas -->
                   <div class="form-section mb-6">
                     <h3 class="text-h6 mb-4 primary--text">
@@ -520,7 +520,7 @@
                       </v-col>
                     </v-row>
                   </div>
-  
+
                   <!-- Botones de acción -->
                   <div class="d-flex justify-end gap-3 mt-8">
                     <v-btn
@@ -567,7 +567,7 @@
     <!-- <pre>{{ datosSolicitudDeReposicion }}</pre>
     {{ '**********************************' }} -->
   </template>
-  
+
   <script setup>
   import { ref, onMounted, computed, watch, nextTick } from 'vue'
   import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
@@ -576,18 +576,29 @@
   import { useUserStore } from '@/stores/user'
   import * as XLSX from 'xlsx'
   import { useRoute, useRouter } from 'vue-router'
-  
+
   const router = useRouter()
   const route = useRoute()
   const idActividad = route.params.id || null
   const idTarea = route.query.tarea_id || null
   const idSolicitud = route.query.solicitud_id || null
+  console.log('ID Solicitud:', idSolicitud)
   console.log('ID Actividad:', idActividad)
   console.log('ID Tarea:', idTarea)
-  console.log('ID Solicitud:', idSolicitud)
-  
+  //console.log('ID aaaaaaa', JSON.stringify(route,null,2))
+
+  const userStore = useUserStore()
+  const usuario = computed(() => {
+    return {
+      nombre: userStore.usuario,
+      role: userStore.rol,
+      id: userStore.id,
+    }
+  })
+  console.log('ID Usuario:', usuario.value.id)
+
   const baseurl = import.meta.env.VITE_API_BASE
-  
+
   //variables para carga de datos
   const datosFormulario = ref(null)
   const datosFormulario1 = ref(null)
@@ -595,14 +606,14 @@
   //const datosFormularioValidarSR = ref(null)
   const error = ref(null)
   const isLoading = ref(false)
-  
+
   // Estado reactivo
   const cargandoGeneral = ref(true)
   const loading = ref(false)
   const form = ref(null)
   const responsablesList = ref([])
   const coordinadoresList = ref([])
-  
+
   const formData = ref({
     // Campos del usuario (se llenarán automáticamente)
     nombre: '',
@@ -631,14 +642,14 @@
     validacion_coordinador: false,
     idcoordinador: null,
   })
-  
+
   const formDatSF = ref({
     // Propiedades existentes...
     actividad: null,
     usuario: null,
     validadores: [],
     formaPago: [],
-  
+
     // Nuevas propiedades para la solicitud de fondos
     idsf: 0,
     numeroFormulariosf: '',
@@ -656,7 +667,7 @@
     fechaRealizacionActividadsf: '',
     bloquearIconosSolFondossf: true
   })
-  
+
   const datosSolicitudDeReposicion = ref({
   descripcion_actividad: '',
   objetivo_actividad: '',
@@ -672,31 +683,22 @@
   usuario_id: null,
   actividad_id: null,
   })
-  
+
   //datos para abrir Solicitud de Fondos
   const idSolicitudFondos = ref(null)
   const numeroFormularioSF = ref(null)
   // Nuevo estado para controlar el bloqueo
-  
-  const userStore = useUserStore()
-  const usuario = computed(() => {
-    return {
-      nombre: userStore.usuario,
-      role: userStore.rol,
-      id: userStore.userId,
-    }
-  })
-  
+
   const textoProcedencia = computed(() => {
     const fuentes = Array.isArray(formData.value?.fuente_financiamiento)
       ? formData.value.fuente_financiamiento
       : []
-  
+
     return fuentes
       .map(({ nombre = '', monto = 0 } = {}) => `${nombre} : Bs. ${monto}`)
       .join(', ')
   })
-  
+
   const actividadData = ref({
     codigo: 'ACT-2023-005',
     descripcion: 'Capacitación en gestión de proyectos para equipos técnicos',
@@ -707,7 +709,7 @@
     responsable: { nombre: 'María González' },
     presupuesto: 2500,
   })
-  
+
   // Propiedades computadas
   const nombreCoordinadorElegido = computed(() => {
     const coordinador = coordinadoresList.value.find(
@@ -715,39 +717,39 @@
     )
     return coordinador ? getNombreCompleto(coordinador) : ''
   })
-  
+
   const nombreResponsableElegido = computed(() => {
     const responsable = responsablesList.value.find(
       (user) => user.id === formData.value.idresponsable,
     )
     return responsable ? getNombreCompleto(responsable) : ''
   })
-  
+
   const totalMontoSolicitado = computed(() => {
     return formData.value.detalle_destino_fondos.reduce(
       (total, gasto) => total + Number(gasto.monto || 0),
       0,
     )
   })
-  
+
   const nombreCompletoSolicitante = computed(() => {
     return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
   })
-  
+
   // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
   watch(
     datosFormulario,
     (newVal) => {
       if (newVal && newVal.usuario) {
         //console.log('Auto-llenando formulario con datos del usuario:', newVal.usuario)
-  
+
         const usuario = newVal.usuario
-  
+
         // Función helper para manejar valores null/undefined
         const getSafeValue = (value, defaultValue = '') => {
           return value !== null && value !== undefined ? value : defaultValue
         }
-  
+
         // Llenar campos del usuario
         formData.value.nombre = getSafeValue(usuario.nombre)
         formData.value.paterno = getSafeValue(usuario.paterno)
@@ -755,10 +757,10 @@
         formData.value.cargo = getSafeValue(usuario.cargo)
         formData.value.documento_identidad = getSafeValue(usuario.ci)
         formData.value.id_usuario = getSafeValue(usuario.id,0)
-  
+
         // Llenar campos de la actividad si existen
         if (newVal.actividad) {
-  
+
           formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)
           formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)
           formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)
@@ -766,11 +768,11 @@
           formData.value.fecha_ejecucion = getSafeValue(newVal.actividad.fecha_programada)
           formData.value.id_actividad = getSafeValue(newVal.actividad.id,0)
           formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)
-  
+
           if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
             //console.log('Formas de pago disponibles:', newVal.formaPago)
           }
-  
+
           // También actualizar actividadData para el componente ActividadInformacion
           actividadData.value = {
             ...actividadData.value,
@@ -779,7 +781,7 @@
             fecha_cierre: getSafeValue(newVal.actividad.fecha_cierre, actividadData.value.fecha_cierre),
           }
         }
-  
+
         // Llenar lista de validadores si existen
         if (newVal.validadores && Array.isArray(newVal.validadores)) {
           //console.log('Cargando validadores:', newVal.validadores)
@@ -793,7 +795,7 @@
     },
     { deep: true },
   )
-  
+
   // Agrega este watch para actualizar automáticamente cuando cambien los datosFormulario1
   watch(
     datosFormulario1,
@@ -805,14 +807,14 @@
     },
     { deep: true }
   )
-  
+
   const formasPagoOptions = computed(() => {
     if (datosFormulario.value && datosFormulario.value.formaPago) {
       return datosFormulario.value.formaPago
     }
     return []
   })
-  
+
   // Computed property to determine which payment method was selected
   const formaPagoElegido = computed(() => {
     if (formData.value.forma_pago && formasPagoOptions.value.length > 0) {
@@ -821,17 +823,17 @@
     }
     return ''
   })
-  
+
   // Show "Otros" fields when payment method is NOT "Transferencia Bancaria"
   const MostrarCamposOtros = computed(() => {
     return formaPagoElegido.value !== 'Transferencia Bancaria'
   })
-  
+
   // Show "Transferencia" fields when payment method IS "Transferencia Bancaria"
   const MostrarCamposTransferencia = computed(() => {
     return formaPagoElegido.value === 'Transferencia Bancaria'
   })
-  
+
   // 6. Para la función exportToExcel, necesitas obtener el texto de la forma de pago:
   const formasPagoTexto = computed(() => {
     if (formData.value.forma_pago && formasPagoOptions.value.length > 0) {
@@ -840,12 +842,12 @@
     }
     return ''
   })
-  
+
   // Métodos
   function getNombreCompleto(user) {
     return `${user.nombre} ${user.paterno} ${user.materno}`.trim()
   }
-  
+
   function getCurrentDate() {
     const today = new Date()
     const year = today.getFullYear()
@@ -853,7 +855,7 @@
     const day = String(today.getDate()).padStart(2, '0')
     return `${year}-${month}-${day}`
   }
-  
+
   async function cargarDatos() {
     isLoading.value = true
     error.value = null
@@ -868,14 +870,14 @@
           usuario: usuario.value.nombre,
         }),
       })
-  
+
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(
           `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
         )
       }
-  
+
       const rawData = await response.json()
       datosFormulario.value = strictSanitizeData(rawData)
       //console.log('Datos cargados exitosamente:', datosFormulario.value)
@@ -887,34 +889,34 @@
       cargandoGeneral.value = false
     }
   }
-  
+
   function sanitizeData(data) {
     if (data === null || data === undefined) {
       return '';
     }
-  
+
     if (typeof data === 'string') {
       // Limpiar strings: trim y convertir empty strings a ''
       const trimmed = data.trim();
       return trimmed === '' ? '' : trimmed;
     }
-  
+
     if (typeof data === 'number') {
       // Validar que sea un número finito
       return isFinite(data) ? data : 0;
     }
-  
+
     if (typeof data === 'boolean') {
       return data;
     }
-  
+
     if (Array.isArray(data)) {
       // Sanitizar cada elemento del array
       return data.map(item => sanitizeData(item)).filter(item =>
         item !== null && item !== undefined && item !== ''
       );
     }
-  
+
     if (typeof data === 'object') {
       const sanitized = {};
       for (const key in data) {
@@ -928,24 +930,24 @@
       }
       return sanitized;
     }
-  
+
     // Para cualquier otro tipo de dato, retornar string vacío
     return '';
   }
-  
+
   function strictSanitizeData(data) {
     const sanitized = sanitizeData(data);
-  
+
     // Si el resultado es un objeto vacío, retornar string vacío
     if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
       if (Object.keys(sanitized).length === 0) {
         return '';
       }
     }
-  
+
     return sanitized;
   }
-  
+
   // async function cargarSolicitudFondos() {
   //   isLoading.value = true
   //   error.value = null
@@ -956,31 +958,31 @@
   //         'Content-Type': 'application/json',
   //       },
   //     })
-  
+
   //     if (!response.ok) {
   //       throw new Error(`Error en la solicitud: ${response.status}`)
   //     }
-  
+
   //     const data = await response.json()
-  
+
   //     // Filtrar las solicitudes por actividad_id y tarea_id
   //     const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
-  
+
   //       // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
   //       const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
   //       const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
   //       const coincideSolicitud = solicitud.id?.toString() === idSolicitud?.toString()
-  
+
   //       //console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
-  
+
   //       return coincideActividad && coincideTarea && coincideSolicitud
   //     })
-  
+
   //     datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
   //     actualizarDatosFormulario(solicitudesFiltradas[0])
-  
+
   //     //console.log('6666666666:', JSON.stringify(datosFormulario1.value,null,2) )
-  
+
   //   } catch (err) {
   //     error.value = err.message
   //     console.error('Error al cargar solicitudes:', err)
@@ -989,7 +991,7 @@
   //     cargandoGeneral.value = false
   //   }
   // }
-  
+
   async function cargarSolicitudDeReposicion() {
     isLoading.value = true
     error.value = null
@@ -1011,10 +1013,10 @@
       if (!response.ok) {
         throw new Error(`Error en la solicitud: ${response.status}`)
       }
-  
+
       const data = {solicitudes: await response.json()}
       console.log('SoicitudDeReposicion Recibido:', JSON.stringify(data,null,2))
-  
+
       // Filtrar las solicitudes por actividad_id y tarea_id
       const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
         // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
@@ -1024,11 +1026,11 @@
         //console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
         return coincideActividad && coincideTarea && coincideSolicitud
       })
-  
+
       datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
       actualizarDatosFormulario(solicitudesFiltradas[0])
       console.log('datos de formulario:', JSON.stringify(datosFormulario1.value,null,2))
-  
+
     } catch (err) {
       error.value = err.message
       console.error('Error al cargar Reposiciones', err)
@@ -1037,17 +1039,17 @@
       cargandoGeneral.value = false
     }
   }
-  
+
   function addGasto() {
     formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 })
   }
-  
+
   function removeGasto(index) {
     if (formData.value.detalle_destino_fondos.length > 1) {
       formData.value.detalle_destino_fondos.splice(index, 1)
     }
   }
-  
+
   async function submitForm() {
     loading.value = true
     try {
@@ -1088,7 +1090,7 @@
         },
         id_tarea: idTarea || null,
       }
-  
+
       const response = await fetch(baseurl+'/api/monitoreo/crear-solicitud-fondos/', {
         method: 'POST',
         headers: {
@@ -1096,11 +1098,11 @@
         },
         body: JSON.stringify(payload),
       })
-  
+
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`)
       }
-  
+
       const data = await response.json()
       idSolicitudFondos.value = data.id
       numeroFormularioSF.value = data.numero_formulario
@@ -1108,11 +1110,11 @@
       exportToExcel()
       resetForm()
       console.log('Respuesta del servidor:', data)
-  
+
       setTimeout(() => {
         router.push('/pei/listaactividades?showButton=1')
       }, 1000)
-  
+
       return data
     } catch (error) {
       console.error('Error completo:', error.response?.data || error.message)
@@ -1121,7 +1123,7 @@
       loading.value = false
     }
   }
-  
+
   async function validarSolicitud() {
     if (
       (!puedeValidarResponsable.value) &&
@@ -1130,10 +1132,10 @@
       alert('Usted no está autorizado para validar esta solicitud.')
       return
     }
-  
+
     // 1. Determinar qué validación enviar
     let validacionData = {}
-  
+
     if (puedeValidarResponsable.value) {
       // Si el usuario es el Responsable, se envía su validación
       validacionData = {
@@ -1148,14 +1150,14 @@
       alert('No tiene permisos de validación para esta solicitud.')
       return
     }
-  
+
     // 2. Verificar que se haya marcado el checkbox
     const claveValidacion = Object.keys(validacionData)[0]
     if (!validacionData[claveValidacion]) {
       alert('Debe marcar la casilla para realizar la validación.')
       return
     }
-  
+
     // 3. Crear el payload final con el ID de la solicitud
     const payload = {
       id: formDatSF.value.idsf || idSolicitud, // Usar idsf o idSolicitud de la URL
@@ -1163,12 +1165,12 @@
     }
 
     console.log('00000000000000000000000000000', JSON.stringify(payload,null,2) )
-  
+
     if (!payload.id) {
         alert('Error: No se encontró el ID de la solicitud para validar.')
         return
     }
-  
+
     // 4. Ejecutar la llamada PATCH
     loading.value = true
     try {
@@ -1183,7 +1185,7 @@
           body: JSON.stringify(payload),
         },
       )
-  
+
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(
@@ -1193,7 +1195,7 @@
       alert('Solicitud validada exitosamente.')
       // Redireccionar
       router.push('/pei/listaactividadespei?showButton=1')
-  
+
     } catch (err) {
       console.error('Error al validar la solicitud:', err)
       alert(`Error al validar la solicitud: ${err.message}`)
@@ -1201,7 +1203,7 @@
       loading.value = false
     }
   }
-  
+
   function resetForm() {
     Object.assign(formData.value, {
       descripcion_actividad: '',
@@ -1217,7 +1219,7 @@
       idcoordinador: null,
     })
   }
-  
+
   function exportToExcel() {
     // 1. Crear datos principales con formato de formulario
     const mainData = [
@@ -1261,10 +1263,10 @@
       [''],
       ['DETALLE DEL DESTINO DE FONDOS', '', '', ''],
     ]
-  
+
     // 2. Encabezados de la tabla de gastos
     const expensesHeaders = ['PARTIDA', 'DESCRIPCIÓN DEL GASTO', 'MONTO (BS.)', 'OBSERVACIONES']
-  
+
     // 3. Datos de gastos
     const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
       gasto.partida,
@@ -1272,16 +1274,16 @@
       gasto.monto,
       '',
     ])
-  
+
     // 4. Total al final de la tabla
     const totalRow = ['TOTAL', '', totalMontoSolicitado.value, '']
-  
+
     // 5. Crear workbook
     const wb = XLSX.utils.book_new()
-  
+
     // 6. Hoja principal con formato de formulario
     const wsMain = XLSX.utils.aoa_to_sheet([...mainData, expensesHeaders, ...expensesData, totalRow])
-  
+
     // 7. Aplicar estilos y formatos
     applyExcelStyles(
       wsMain,
@@ -1290,12 +1292,12 @@
       formData.value.descripcion_actividad,
       formData.value.objetivo_actividad,
     )
-  
+
     // 8. Agregar hoja al workbook y guardar
     XLSX.utils.book_append_sheet(wb, wsMain, 'Solicitud de Fondos')
     XLSX.writeFile(wb, `Solicitud_Fondos_F-01_${getCurrentDate1()}.xlsx`)
   }
-  
+
   function applyExcelStyles(
     worksheet,
     mainDataRows,
@@ -1304,7 +1306,7 @@
     objetivoActividad,
   ) {
     if (!worksheet['!merges']) worksheet['!merges'] = []
-  
+
     // Fusionar celdas para títulos y secciones
     worksheet['!merges'].push(
       { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
@@ -1314,16 +1316,16 @@
       { s: { r: 18, c: 0 }, e: { r: 18, c: 3 } },
       { s: { r: 21 + mainDataRows, c: 0 }, e: { r: 21 + mainDataRows, c: 3 } },
     )
-  
+
     // Configurar anchos de columnas
     worksheet['!cols'] = [{ wch: 30 }, { wch: 40 }, { wch: 20 }, { wch: 25 }]
-  
+
     // Aplicar formatos a celdas específicas
     Object.keys(worksheet).forEach((cellAddress) => {
       if (cellAddress !== '!ref' && cellAddress !== '!merges' && cellAddress !== '!cols') {
         const cell = worksheet[cellAddress]
         const cellRef = XLSX.utils.decode_cell(cellAddress)
-  
+
         // Estilo para títulos y encabezados de sección
         if (
           cellRef.r === 0 ||
@@ -1339,7 +1341,7 @@
             alignment: { horizontal: 'center', vertical: 'center' },
           }
         }
-  
+
         // Estilo para etiquetas
         else if (cellRef.c === 0 && cellRef.r > 0 && cellRef.r < 21 + mainDataRows) {
           cell.s = {
@@ -1347,7 +1349,7 @@
             fill: { fgColor: { rgb: 'D9E1F2' } },
           }
         }
-  
+
         // Estilo para encabezados de tabla
         else if (cellRef.r === 22 + mainDataRows) {
           cell.s = {
@@ -1356,7 +1358,7 @@
             alignment: { horizontal: 'center' },
           }
         }
-  
+
         // Estilo para la fila total
         else if (cellRef.r === 23 + mainDataRows + expensesRows) {
           cell.s = {
@@ -1364,7 +1366,7 @@
             fill: { fgColor: { rgb: 'F2F2F2' } },
           }
         }
-  
+
         // Formato de moneda para columna de montos (columna C)
         else if (
           cellRef.c === 2 &&
@@ -1373,7 +1375,7 @@
         ) {
           cell.z = '"Bs." #,##0.00'
         }
-  
+
         // Formato de fecha para celdas de fecha
         else if (
           (cell.v && typeof cell.v === 'string' && cell.v.match(/\d{4}-\d{2}-\d{2}/)) ||
@@ -1381,7 +1383,7 @@
         ) {
           cell.z = 'dd/mm/yyyy'
         }
-  
+
         // Estilo específico para la celda de descripción de actividad (B9)
         if (cellRef.r === 8 && cellRef.c === 1) {
           if (!cell.s) cell.s = {}
@@ -1389,7 +1391,7 @@
           cell.s.alignment.wrapText = true
           cell.s.alignment.vertical = 'top'
         }
-  
+
         // Estilo específico para la celda de objetivo de actividad (B11)
         if (cellRef.r === 10 && cellRef.c === 1) {
           if (!cell.s) cell.s = {}
@@ -1399,11 +1401,11 @@
         }
       }
     })
-  
+
     // Agregar bordes a la tabla de gastos
     const tableStartRow = 22 + mainDataRows
     const tableEndRow = 23 + mainDataRows + expensesRows
-  
+
     for (let r = tableStartRow; r <= tableEndRow; r++) {
       for (let c = 0; c < 4; c++) {
         const cellAddress = XLSX.utils.encode_cell({ r, c })
@@ -1417,21 +1419,21 @@
         }
       }
     }
-  
+
     // Ajustar altura de filas para las celdas con texto largo
     if (!worksheet['!rows']) worksheet['!rows'] = []
-  
+
     // Ajustar altura de la fila de descripción (fila 9)
     if (descripcionActividad && descripcionActividad.length > 100) {
       worksheet['!rows'][8] = { hpt: 60 }
     }
-  
+
     // Ajustar altura de la fila de objetivo (fila 11)
     if (objetivoActividad && objetivoActividad.length > 100) {
       worksheet['!rows'][10] = { hpt: 60 }
     }
   }
-  
+
   function getCurrentDate1() {
     const today = new Date()
     const year = today.getFullYear()
@@ -1439,11 +1441,11 @@
     const day = String(today.getDate()).padStart(2, '0')
     return `${day}/${month}/${year}`
   }
-  
+
   // Función para actualizar datosFormulario con los valores de la solicitud
   function actualizarDatosFormulario(solicitud) {
     if (!solicitud) return
-  
+
     // Actualizar las propiedades de datosFormulario con los valores de la solicitud
     formDatSF.value.idsf = solicitud.id || 0
     formDatSF.value.numeroFormulariosf = solicitud.numeroFormulario || ''
@@ -1460,7 +1462,7 @@
     formDatSF.value.actividad_idsf = solicitud.actividad || null
     formDatSF.value.fechaRealizacionActividadsf = solicitud.fechaRealizacionActividad || ''
     formDatSF.value.bloquearIconosSolFondossf = solicitud.bloquearIconosSolFondos || true
-  
+
     // Actualizar descripcion_actividad y objetivo_actividad desde la solicitud
     if (solicitud.descripcion_actividad) {
       formData.value.descripcion_actividad = solicitud.descripcion_actividad
@@ -1471,16 +1473,16 @@
     if (solicitud.fechaRealizacionActividad) {
       formData.value.fecha_ejecucion = solicitud.fechaRealizacionActividad
     }
-  
+
     //console.log('datosFormulario actualizado con los valores de la solicitud:', datosFormulario.value)
-  
+
     actualizarDetalleDestinoFondos(formDatSF.value.detalleDestinoFondossf)
-  
+
     // Actualizar los campos de Información Adicional - pasar solicitud directamente
     actualizarInformacionAdicional(solicitud)
     actualizarValidadores()
   }
-  
+
   // Función para parsear y actualizar el detalle de destino de fondos
   function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
     try {
@@ -1488,7 +1490,7 @@
         formData.value.detalle_destino_fondos = []
         return
       }
-  
+
       // Determinar si es un string JSON o ya un objeto
       let detalleParseado
       if (typeof detalleDestinoFondos === 'string') {
@@ -1496,40 +1498,40 @@
       } else {
         detalleParseado = detalleDestinoFondos
       }
-  
+
       //console.log('Detalle de destino de fondos parseado:', detalleParseado)
-  
+
       // Mapear al formato que espera la tabla
       formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
         partida: item.partida_sf || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
         descripcion_gasto: item.concepto || '',
         monto: item.monto || 0
       }))
-  
+
       //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
     } catch (error) {
       console.error('Error al parsear detalleDestinoFondos:', error)
       formData.value.detalle_destino_fondos = []
     }
   }
-  
+
   // Función para actualizar los campos de Información Adicional
   function actualizarInformacionAdicional(solicitud) {
     // Actualizar forma_pago
     formData.value.forma_pago = formDatSF.value.formaPago_idsf
-  
+
     // Actualizar lugar_solicitud
     formData.value.lugar_solicitud = formDatSF.value.lugarSolicitudsf
-  
+
     // Actualizar fecha_solicitud
     formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
-  
+
     // Actualizar datos_forma_pago desde solicitud directamente
-  
+
     if (solicitud && solicitud.datos_forma_pago) {
       const datosPago = solicitud.datos_forma_pago
-  
-  
+
+
       // Los datos ya vienen en el formato correcto desde el backend
       // Solo necesitamos asignarlos directamente
       if (datosPago.transferencia) {
@@ -1540,34 +1542,34 @@
           tipo_cuenta: datosPago.transferencia.tipo_cuenta || '',
           numero_cuenta: datosPago.transferencia.numero_cuenta || ''
         }
-  
+
       }
-  
+
       if (datosPago.otros) {
         formData.value.datos_forma_pago.otros = {
           nombre_otros: datosPago.otros.nombre_otros || '',
           ci_otros: datosPago.otros.ci_otros || ''
         }
-  
+
       }
-  
+
     }
   }
-  
+
   // Función para extraer y formatear los validadores por ID
   function actualizarValidadores() {
     if (!datosFormulario.value || !datosFormulario.value.validadores) return
-  
+
     // Buscar responsable por ID
     const responsable = datosFormulario.value.validadores.find(
       validador => validador.id === formDatSF.value.responsable_idsf
     )
-  
+
     // Buscar coordinador por ID
     const coordinador = datosFormulario.value.validadores.find(
       validador => validador.id === formDatSF.value.coordinador_idsf
     )
-  
+
     //Actualizar formData con los IDs encontrados
     if (responsable) {
       formData.value.idresponsable = responsable.id
@@ -1575,60 +1577,60 @@
     } else {
       console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
     }
-  
+
     if (coordinador) {
       formData.value.idcoordinador = coordinador.id
       //console.log('Coordinador encontrado:', getNombreCompleto(coordinador))
     } else {
       console.warn('No se encontró coordinador con ID:', formDatSF.value.coordinador_idsf)
     }
-  
+
     // También actualizar las listas de responsables y coordinadores si es necesario
     actualizarListasValidadores()
   }
-  
+
   // Función para actualizar las listas de responsables y coordinadores
   function actualizarListasValidadores() {
     if (!datosFormulario.value || !datosFormulario.value.validadores) return
-  
+
     // Filtrar responsables (puedes ajustar la lógica según el cargo)
     responsablesList.value = datosFormulario.value.validadores.filter(
       validador => validador.cargo && validador.cargo.toLowerCase().includes('contable')
     )
-  
+
     // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
     coordinadoresList.value = datosFormulario.value.validadores.filter(
       validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
     )
-  
+
   }
-  
+
   // Verificación mejorada con roles
   const puedeValidarResponsable = computed(() => {
     const usuarioActualId = datosFormulario.value?.usuario?.id
     const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
     //const responsableAsignadoId = formData.value.idresponsable
     const responsableAsignadoId = datosFormulario1.value?.responsable_id
-  
+
     // El usuario puede validar si:
     // 1. Es el responsable asignado
     // 2. Tiene el cargo correspondiente
     return usuarioActualId === responsableAsignadoId &&
            usuarioActualCargo?.includes('contable')
   })
-  
+
   const puedeValidarCoordinador = computed(() => {
     const usuarioActualId = datosFormulario.value?.usuario?.id
     const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
     const coordinadorAsignadoId = formData.value.idcoordinador
-  
+
     // El usuario puede validar si:
     // 1. Es el coordinador asignado
     // 2. Tiene el cargo correspondiente
     return usuarioActualId === coordinadorAsignadoId &&
            usuarioActualCargo?.includes('coordinador')
   })
-  
+
   // Ciclo de vida
   onMounted(async () => {
     await cargarDatos()
@@ -1636,26 +1638,26 @@
     await textoProcedencia.value
   })
   </script>
-  
+
   <style scoped>
   .solicitud-fondos-container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px 16px;
   }
-  
+
   .v-card {
     border-radius: 8px;
     overflow: hidden;
     transition: all 0.3s ease;
     border: 1px solid rgba(0, 0, 0, 0.12);
   }
-  
+
   .v-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
   }
-  
+
   .form-section {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     padding: 24px;
@@ -1663,7 +1665,7 @@
     margin-bottom: 24px;
     border: 1px solid #e0e0e0;
   }
-  
+
   .form-section h3 {
     color: #1976d2;
     border-bottom: 2px solid #1976d2;
@@ -1673,63 +1675,63 @@
     display: flex;
     align-items: center;
   }
-  
+
   .info-item {
     padding: 8px 0;
   }
-  
+
   .gap-3 {
     gap: 12px;
   }
-  
+
   .users-table {
     width: 100%;
   }
-  
+
   .users-table th {
     background-color: #f5f5f5;
     position: sticky;
     top: 0;
     z-index: 2;
   }
-  
+
   /* Ajustes responsivos */
   @media (max-width: 960px) {
     .solicitud-fondos-container {
       padding: 16px 12px;
     }
-  
+
     .form-section {
       padding: 20px;
       margin-bottom: 20px;
     }
-  
+
     .d-flex.justify-end {
       flex-direction: column;
       gap: 8px;
     }
-  
+
     .d-flex.justify-end .v-btn {
       width: 100%;
     }
   }
-  
+
   @media (max-width: 600px) {
     .v-card {
       margin: 8px 0;
     }
-  
+
     .form-section {
       padding: 16px;
     }
   }
-  
+
   /* Mejora el aspecto de la tabla */
   :deep(.v-table) {
     border-radius: 8px;
     overflow: hidden;
   }
-  
+
   :deep(.v-table th) {
     background-color: #1976d2 !important;
     color: white !important;
@@ -1737,27 +1739,26 @@
     font-size: 14px;
     padding: 16px 12px;
   }
-  
+
   :deep(.v-table td) {
     padding: 12px;
     background-color: #fafafa;
   }
-  
+
   .narrow-column {
     width: 15%;
   }
-  
+
   .wide-column {
     width: 50%;
   }
-  
+
   .action-column {
     width: 15%;
   }
-  
+
   .compact-field {
     font-size: 14px;
     max-width: 100px;
   }
   </style>
-  

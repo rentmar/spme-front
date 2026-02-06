@@ -502,8 +502,8 @@
 {{formData.monto_gastado}} -->
   <!-- {{ "**************************************" }}
 {{ formDataRC.lugar_solicitudRC }} -->
-  <!-- {{ "**************************************" }}
-     <pre>{{ datosRendicionDeCuenta }}</pre> -->
+ <!-- {{ "**************************************" }}
+     <pre>{{ datosRendicionDeCuenta }}</pre>-->
 </template>
 
 <script setup>
@@ -563,9 +563,20 @@ const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 const idSolicitud = route.query.solicitud_id || null
+console.log('ID Solicitud:', idSolicitud)
 console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
-console.log('ID SolFondos:', idSolicitud)
+//console.log('ID aaaaaaa', JSON.stringify(route,null,2))
+
+const userStore = useUserStore()
+const usuario1 = computed(() => {
+  return {
+    nombre: userStore.usuario,
+    role: userStore.rol,
+    id: userStore.id,
+  }
+})
+console.log('ID Usuario:', usuario1.value.id)
 
 const baseurl = import.meta.env.VITE_API_BASE
 
@@ -588,6 +599,7 @@ const loading = ref(false)
 const datosFormulario = ref(null)
 const datosSolicitudDeFondo = ref(null)
 const datosRendicionDeCuenta = ref(null)
+const datosSolicitante = ref([])
 const error = ref(null)
 const isLoading = ref(false)
 
@@ -680,14 +692,6 @@ const formDataRC = ref({
   validacionAdministrador: false,
 })
 
-const userStore = useUserStore()
-const usuario1 = computed(() => {
-  return {
-    nombre: userStore.usuario,
-    role: userStore.rol,
-  }
-})
-
 const fuente_financiamiento0 = ref()
 
 const actividadData = ref({
@@ -733,12 +737,12 @@ watch(
       const usuario = newVal.usuario
 
       // Llenar campos del usuario
-      formData.value.nombre = usuario.nombre || ''
-      formData.value.paterno = usuario.paterno || ''
-      formData.value.materno = usuario.materno || ''
-      formData.value.cargo = usuario.cargo || ''
-      formData.value.documento_identidad = usuario.ci || ''
-      formData.value.id_usuario = usuario.id || 0
+      //formData.value.nombre = usuario.nombre || ''
+      //formData.value.paterno = usuario.paterno || ''
+      //formData.value.materno = usuario.materno || ''
+      //formData.value.cargo = usuario.cargo || ''
+      //formData.value.documento_identidad = usuario.ci || ''
+      //formData.value.id_usuario = usuario.id || 0
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
@@ -1035,6 +1039,16 @@ watch(
   datosRendicionDeCuenta,
   (newVal) => {
     if (newVal) {
+
+      const idSolicitante = newVal.usuario_id
+      console.log('ID Solicitante:', idSolicitante)
+      datosSolicitante.value = datosFormulario.value?.validadores?.find((fp) => fp.id === idSolicitante)
+      console.log('Datos Solicitante:', JSON.stringify(datosSolicitante.value, null, 2))
+      formData.value.nombre = datosSolicitante.value.nombre
+      formData.value.paterno = datosSolicitante.value.paterno
+      formData.value.materno = datosSolicitante.value.materno
+      formData.value.documento_identidad = datosSolicitante.value.ci
+      formData.value.cargo = datosSolicitante.value.cargo
       // Función helper para manejar valores null/undefined
       const getSafeValue = (value, defaultValue = '') => {
         return value !== null && value !== undefined ? value : defaultValue

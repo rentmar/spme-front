@@ -643,9 +643,20 @@ const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 const idSolicitud = route.query.solicitud_id || null
+console.log('ID Solicitud:', idSolicitud)
 console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
-console.log('ID Solicitud:', idSolicitud)
+//console.log('ID aaaaaaa', JSON.stringify(route,null,2))
+
+const userStore = useUserStore()
+const usuario = computed(() => {
+  return {
+    nombre: userStore.usuario,
+    role: userStore.rol,
+    id: userStore.id,
+  }
+})
+console.log('ID Usuario:', usuario.value.id)
 
 const baseurl = import.meta.env.VITE_API_BASE
 
@@ -730,14 +741,6 @@ const idSolicitudFondos = ref(null)
 const numeroFormularioSF = ref(null)
 // Nuevo estado para controlar el bloqueo
 
-const userStore = useUserStore()
-const usuario = computed(() => {
-  return {
-    nombre: userStore.usuario,
-    role: userStore.rol,
-  }
-})
-
 const textoProcedencia = computed(() => {
   const fuentes = Array.isArray(formData.value?.fuente_financiamiento)
     ? formData.value.fuente_financiamiento
@@ -798,12 +801,12 @@ watch(
       }
 
       // Llenar campos del usuario
-      formData.value.nombre = getSafeValue(usuario.nombre)
-      formData.value.paterno = getSafeValue(usuario.paterno)
-      formData.value.materno = getSafeValue(usuario.materno)
-      formData.value.cargo = getSafeValue(usuario.cargo)
-      formData.value.documento_identidad = getSafeValue(usuario.ci)
-      formData.value.id_usuario = getSafeValue(usuario.id, 0)
+      // formData.value.nombre = getSafeValue(usuario.nombre)
+      // formData.value.paterno = getSafeValue(usuario.paterno)
+      // formData.value.materno = getSafeValue(usuario.materno)
+      // formData.value.cargo = getSafeValue(usuario.cargo)
+      // formData.value.documento_identidad = getSafeValue(usuario.ci)
+      // formData.value.id_usuario = getSafeValue(usuario.id, 0)
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
@@ -857,6 +860,22 @@ watch(
     if (newVal && newVal.detalleDestinoFondos) {
       actualizarDetalleDestinoFondos(newVal.detalleDestinoFondos)
     }
+    const getSafeValue = (value, defaultValue = '') => {
+      return value !== null && value !== undefined ? value : defaultValue
+    }
+    const idSolicitante = newVal.usuario_id
+    console.log('uuuuuuuu', idSolicitante)
+    console.log('uuuuuuu9', datosFormulario.value)
+    const datosSolicitante = datosFormulario.value.validadores.find((fp) => fp.id === idSolicitante)
+    console.log('uuuuuu2', JSON.stringify(datosSolicitante,null,2))
+    //return datosSolicitante
+
+    formData.value.nombre = getSafeValue(datosSolicitante.nombre)
+    formData.value.paterno = getSafeValue(datosSolicitante.paterno)
+    formData.value.materno = getSafeValue(datosSolicitante.materno)
+    formData.value.cargo = getSafeValue(datosSolicitante.cargo)
+    formData.value.documento_identidad = getSafeValue(datosSolicitante.ci)
+    formData.value.id_usuario = getSafeValue(datosSolicitante.id, 0)
   },
   { deep: true },
 )

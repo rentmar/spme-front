@@ -56,9 +56,11 @@
               <v-row>
                 <v-col cols="12" md="4">
                   <v-text-field
-                  v-model="formData.nombre"
-                  label="Nombre"
-                  required readonly></v-text-field>
+                    v-model="formData.nombre"
+                    label="Nombre"
+                    required
+                    readonly
+                  ></v-text-field>
                 </v-col>
                 <v-col cols="12" md="4">
                   <v-text-field
@@ -507,12 +509,13 @@
   const snackbar = ref({ show: false, text: '', color: 'success' })
 
   // Variables de estado
-  const loading = ref(false);
+  const loading = ref(false)
 
   //variables para carga de datos
   const datosFormulario = ref(null)
   const datosSolicitudDeFondo = ref(null)
   const datosRendicionDeCuenta = ref(null)
+  const datosSolicitante = ref([])
   const error = ref(null)
   const isLoading = ref(false)
 
@@ -532,8 +535,8 @@
     documento_identidad: '',
     // Campos de la actividad
     descripcion_actividad: '',
-    lugar_actividad:'',
-    fecha_actividad:'',
+    lugar_actividad: '',
+    fecha_actividad: '',
     objetivo_actividad: '',
     fecha_irealizacion: '',
     fecha_frealizacion: '',
@@ -551,11 +554,11 @@
     validacion_coordinador: false,
     idcoordinador: null,
     monto_asignado: 0,
-    formulario_numero:'',
+    formulario_numero: '',
     validacion_contador: false,
     validacion_administrador: false,
     idcontador: null,
-    idadministrador: null
+    idadministrador: null,
   })
 
   const formDatSF = ref({
@@ -580,17 +583,17 @@
     usuario_idsf: null,
     actividad_idsf: null,
     fechaRealizacionActividadsf: '',
-    bloquearIconosSolFondossf: true
+    bloquearIconosSolFondossf: true,
   })
 
   const formDataRC = ref({
     cpte_diario: '',
     fecha_desembolso: '',
     descripcion_actividadRC: '',
-    lugar_actividadRC:'',
-    fecha_actividadRC:'',
+    lugar_actividadRC: '',
+    fecha_actividadRC: '',
 
-    detalle_gastos: [{ fecha:'', partida:'', factura_recibo: '', descripcion: '', monto: 0 }],
+    detalle_gastos: [{ fecha: '', partida: '', factura_recibo: '', descripcion: '', monto: 0 }],
     lugar_solicitudRC: '',
     fecha_solicitudRC: '',
 
@@ -606,13 +609,13 @@
 
   })
 
-   const userStore = useUserStore();
+   const userStore = useUserStore()
    const usuario1 = computed(() => {
    return {
        nombre: userStore.usuario,
        role: userStore.rol,
-     };
-   });
+     }
+   })
 
   const fuente_financiamiento0 = ref()
 
@@ -631,24 +634,23 @@
   const saldoPorReembolsar = computed(() => {
     //const montoAsignado = Number(formData.value.monto_solicitado) || 0;
     //const montoGastado = Number(totalMontoGastado.value) || 0;
-    const montoAsignado = Number(formData.value.monto_asignado) || 0;
-    const montoGastado = Number(formData.value.monto_gastado) || 0;
-    console.log('montoAsignado', montoAsignado);
-    console.log('montoGastado', montoGastado);
-    return (montoAsignado - montoGastado).toFixed(2);
-  });
+    const montoAsignado = Number(formData.value.monto_asignado) || 0
+    const montoGastado = Number(formData.value.monto_gastado) || 0
+    console.log('montoAsignado', montoAsignado)
+    console.log('montoGastado', montoGastado)
+    return (montoAsignado - montoGastado).toFixed(2)
+  })
 
   const totalMontoGastado = computed(() => {
-    return formDataRC.value.detalle_gastos.reduce(
-      (total, gasto) => total + Number(gasto.monto || 0),
-      0
-    ).toFixed(2);
-  });
+    return formDataRC.value.detalle_gastos
+    .reduce((total, gasto) => total + Number(gasto.monto || 0), 0)
+    .toFixed(2)
+  })
 
    //Watcher para actualizar monto_gastado en formData
    watch(totalMontoGastado, (newValue) => {
-     formData.value.monto_gastado = Number(newValue);
-   });
+     formData.value.monto_gastado = Number(newValue)
+   })
 
   // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
   watch(
@@ -660,12 +662,12 @@
         const usuario = newVal.usuario
 
         // Llenar campos del usuario
-        formData.value.nombre = usuario.nombre || ''
-        formData.value.paterno = usuario.paterno || ''
-        formData.value.materno = usuario.materno || ''
-        formData.value.cargo = usuario.cargo || ''
-        formData.value.documento_identidad = usuario.ci || ''
-        formData.value.id_usuario = usuario.id || 0
+        //formData.value.nombre = usuario.nombre || ''
+        //formData.value.paterno = usuario.paterno || ''
+        //formData.value.materno = usuario.materno || ''
+        //formData.value.cargo = usuario.cargo || ''
+        //formData.value.documento_identidad = usuario.ci || ''
+        //formData.value.id_usuario = usuario.id || 0
 
         // Llenar campos de la actividad si existen
         if (newVal.actividad) {
@@ -678,13 +680,15 @@
           formData.value.id_actividad = newVal.actividad.id || 0
 
           if (Array.isArray(newVal.actividad.procedencia_fondos)) {
-            formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(item => item.nombre);
+            formData.value.fuente_financiamiento = newVal.actividad.procedencia_fondos.map(
+              (item) => item.nombre,
+            )
           } else {
             // Si no es un array (es null, undefined, o un objeto), lo inicializa como array vacío.
             // También puedes intentar asignar el valor directamente si es una cadena o un objeto simple:
             // formData.value.fuente_financiamiento = [newVal.actividad.procedencia_fondos];
             // PERO la opción de array vacío es la más segura si esperas una lista de fuentes.
-            formData.value.fuente_financiamiento = [];
+            formData.value.fuente_financiamiento = []
           }
 
           if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
@@ -718,23 +722,27 @@
       Array.isArray(datosFormulario.value.actividad.procedencia_fondos) // <= CAMBIO AQUÍ
     ) {
       fuente_financiamiento0.value = datosFormulario.value.actividad.procedencia_fondos.map(
-        (item) => item.nombre
-      );
+        (item) => item.nombre,
+      )
     } else {
       // Es bueno asegurarse de que siempre sea un array en caso de no encontrar datos
-      fuente_financiamiento0.value = [];
+      fuente_financiamiento0.value = []
     }
-  };
+  }
 
-  watch(datosFormulario, (newVal) => {
-    if (newVal) {
-      filtrarProcedenciaFondos();
+  watch(
+    datosFormulario,
+    (newVal) => {
+      if (newVal) {
+        filtrarProcedenciaFondos()
     }
-  }, { immediate: true });
+  },
+  { immediate: true },
+)
 
   // Métodos
   function getNombreCompleto(user) {
-    return `${user.nombre || ''} ${user.paterno || ''} ${user.materno || ''}`.trim();
+    return `${user.nombre || ''} ${user.paterno || ''} ${user.materno || ''}`.trim()
   }
 
   function getCurrentDate() {
@@ -749,7 +757,7 @@
     isLoading.value = true
     error.value = null
     try {
-      const response = await fetch(baseurl+'api/monitoreo/obtener-datos-formulario-pei/', {
+      const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario-pei/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -785,12 +793,12 @@
     try {
       //console.log('Cargando solicitudes de fondos con fetch...')
 
-      const response = await fetch(baseurl+'/api/solicitud-fondos/', {
+      const response = await fetch(baseurl + '/api/solicitud-fondos/', {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
       })
 
       if (!response.ok) {
@@ -864,7 +872,7 @@
       const data = await response.json()
 
       // Filtrar las solicitudes por actividad_id y tarea_id
-      const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
+      const solicitudesFiltradas = data.solicitudes.filter((solicitud) => {
         // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
         const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
         const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
@@ -875,7 +883,6 @@
 
       datosSolicitudDeFondo.value = strictSanitizeData(solicitudesFiltradas[0])
       actualizarDatosFormulario(solicitudesFiltradas[0])
-
     } catch (err) {
       error.value = err.message
       console.error('Error al cargar solicitudes:', err)
@@ -887,60 +894,60 @@
 
   function sanitizeData(data) {
     if (data === null || data === undefined) {
-      return '';
+      return ''
     }
 
     if (typeof data === 'string') {
       // Limpiar strings: trim y convertir empty strings a ''
-      const trimmed = data.trim();
-      return trimmed === '' ? '' : trimmed;
+      const trimmed = data.trim()
+      return trimmed === '' ? '' : trimmed
     }
 
     if (typeof data === 'number') {
       // Validar que sea un número finito
-      return isFinite(data) ? data : 0;
+      return isFinite(data) ? data : 0
     }
 
     if (typeof data === 'boolean') {
-      return data;
+      return data
     }
 
     if (Array.isArray(data)) {
       // Sanitizar cada elemento del array
-      return data.map(item => sanitizeData(item)).filter(item =>
-        item !== null && item !== undefined && item !== ''
-      );
+      return data
+        .map((item) => sanitizeData(item))
+        .filter((item) => item !== null && item !== undefined && item !== '')
     }
 
     if (typeof data === 'object') {
-      const sanitized = {};
+      const sanitized = {}
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
-          const value = data[key];
+          const value = data[key]
           // Solo incluir propiedades con valores válidos
           if (value !== null && value !== undefined && value !== '') {
-            sanitized[key] = sanitizeData(value);
+            sanitized[key] = sanitizeData(value)
           }
         }
       }
-      return sanitized;
+      return sanitized
     }
 
     // Para cualquier otro tipo de dato, retornar string vacío
-    return '';
+    return ''
   }
 
   function strictSanitizeData(data) {
-    const sanitized = sanitizeData(data);
+    const sanitized = sanitizeData(data)
 
     // Si el resultado es un objeto vacío, retornar string vacío
     if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
       if (Object.keys(sanitized).length === 0) {
-        return '';
+        return ''
       }
     }
 
-    return sanitized;
+    return sanitized
   }
 
   // Agrega este watch para actualizar automáticamente cuando cambien los datosSolicituDeFondo
@@ -951,14 +958,24 @@
         actualizarDetalleDestinoFondos(newVal.detalleDestinoFondos)
       }
     },
-    { deep: true }
+    { deep: true },
   )
 
   watch(
     datosRendicionDeCuenta,
     (newVal) => {
       if (newVal) {
+        console.log('@@@@@@@@@@@@@', JSON.stringify(newVal, null, 2));
 
+        const idSolicitante = newVal.usuario
+        console.log('ID Solicitante:', idSolicitante)
+        datosSolicitante.value = datosFormulario.value?.validadores?.find((fp) => fp.id === idSolicitante)
+        console.log('Datos Solicitante:', JSON.stringify(datosSolicitante.value, null, 2))
+        formData.value.nombre = datosSolicitante.value.nombre
+        formData.value.paterno = datosSolicitante.value.paterno
+        formData.value.materno = datosSolicitante.value.materno
+        formData.value.documento_identidad = datosSolicitante.value.ci
+        formData.value.cargo = datosSolicitante.value.cargo
         // Función helper para manejar valores null/undefined
         const getSafeValue = (value, defaultValue = '') => {
           return value !== null && value !== undefined ? value : defaultValue

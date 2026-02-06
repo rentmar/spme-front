@@ -423,8 +423,8 @@
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
   <!-- {{ '*********************B' }}
     <pre>{{ formData.datos_forma_pago }}</pre> -->
-  <!-- {{ '*********************B' }}
-    {{ formData.id_coordinador }} -->
+   <!-- {{ '*********************B' }}
+    <pre>{{ datosFormulario }}</pre> -->
 </template>
 
 <script setup>
@@ -481,9 +481,10 @@ const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 const idSolicitud = route.query.solicitud_id || null
+console.log('ID Solicitud:', idSolicitud)
 console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
-console.log('ID Solicitud', idSolicitud)
+//console.log('ID aaaaaaa', JSON.stringify(route,null,2))
 
 const userStore = useUserStore()
 const usuario = computed(() => {
@@ -610,12 +611,12 @@ watch(
       }
 
       // Llenar campos del usuario
-      formData.value.nombre = getSafeValue(usuario.nombre)
-      formData.value.paterno = getSafeValue(usuario.paterno)
-      formData.value.materno = getSafeValue(usuario.materno)
-      formData.value.cargo = getSafeValue(usuario.cargo)
-      formData.value.documento_identidad = getSafeValue(usuario.ci)
-      formData.value.id_usuario = getSafeValue(usuario.id, 0)
+      // formData.value.nombre = getSafeValue(usuario.nombre)
+      // formData.value.paterno = getSafeValue(usuario.paterno)
+      // formData.value.materno = getSafeValue(usuario.materno)
+      // formData.value.cargo = getSafeValue(usuario.cargo)
+      // formData.value.documento_identidad = getSafeValue(usuario.ci)
+      // formData.value.id_usuario = getSafeValue(usuario.id, 0)
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
@@ -655,6 +656,7 @@ watch(
   },
   { deep: true },
 )
+
 const formasPagoOptions = computed(() => {
   if (datosFormulario.value && datosFormulario.value.formaPago) {
     return datosFormulario.value.formaPago
@@ -698,7 +700,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -708,7 +710,7 @@ async function cargarDatos() {
         usuario: usuario.value.nombre,
       }),
     })
-    //console.log('Respuesta de la solicitud:', idActividad, usuario)
+    //console.log('Respuesta de la solicitud:', idActividad, usuario.value.nombre)
     if (!response.ok) {
       const errorData = await response.json()
       throw new Error(
@@ -748,20 +750,43 @@ async function cargarFormasDePago() {
   }
 }
 
+// watch(
+//   datosFormulario,
+//   (newVal) => {
+//     if (newVal && newVal.usuario) {
+//       //datosSolicitante.value = newVal.usuario
+//       //console.log('hhhhhhhhhhhh:', JSON.stringify(datosSolicitante.value, null, 2))
+//       if (datosSolicitante.value) {
+//         solicitante.value = getNombreCompleto(datosSolicitante.value)
+//       }
+//     } else {
+//       datosSolicitante.value = []
+//     }
+//   },
+//   { deep: true }, // Si necesitas observar cambios profundos
+// )
+
+//carga usuario que realizo la solicitud
 watch(
-  datosFormulario,
+  datosFormulario1,
   (newVal) => {
-    if (newVal && newVal.usuario) {
-      datosSolicitante.value = newVal.usuario
-      //console.log('hhhhhhhhhhhh:', JSON.stringify(datosSolicitante.value, null, 2))
+    try {
+      const idSolicitante = newVal.usuario_id
+      //console.log('ID Solicitante:', idSolicitante)
+      //console.log('Datos Formulario:', datosFormulario.value)
+
+      datosSolicitante.value = datosFormulario.value?.validadores?.find((fp) => fp.id === idSolicitante)
+      //console.log('Datos Solicitante:', JSON.stringify(datosSolicitante.value, null, 2))
+
       if (datosSolicitante.value) {
         solicitante.value = getNombreCompleto(datosSolicitante.value)
       }
-    } else {
-      datosSolicitante.value = []
+    } catch (error) {
+      console.error('Error en watcher datosFormulario1:', error)
+      // Opcional: mostrar notificación al usuario
     }
   },
-  { deep: true }, // Si necesitas observar cambios profundos
+  { deep: true }
 )
 
 async function cargarUsuarios() {
@@ -772,7 +797,7 @@ async function cargarUsuarios() {
     coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador')
     datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
     if (datosSolicitante.value) {
-      solicitante.value = getNombreCompleto(datosSolicitante.value)
+      //solicitante.value = getNombreCompleto(datosSolicitante.value)
     }
   } catch (error) {
     console.error('Error al cargar la lista de usuarios:', error)
@@ -1464,9 +1489,9 @@ async function validarViaje(tipoValidador) {
 
 onMounted(async () => {
   await cargarUsuarios()
-  cargarDatos()
-  cargarSolicitudesDeViaje()
-  cargarFormasDePago()
+  await cargarDatos()
+  await cargarSolicitudesDeViaje()
+  await cargarFormasDePago()
 })
 </script>
 

@@ -1122,7 +1122,7 @@
         contador: Number(formData.value.idcontador),
         coordinador: Number(formData.value.idcoordinador),
         //idresponsable: Number(formData.value.idresponsable),
-        //idusuarioLogeado: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
+        usuario: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
         actividad: idActividad ? parseInt(idActividad) : null,
         tarea: idTarea ? parseInt(idTarea) : null,
         descripcionActividad: formData.value.descripcion_actividad,
