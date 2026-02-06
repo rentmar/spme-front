@@ -385,9 +385,18 @@
             <div class="d-flex justify-end mt-4">
               <v-btn
                 color="error"
+                variant="outlined"
+                prepend-icon="mdi-cancel"
+                :to="`/pei/listaactividadespei?showButton=1`"
+              >
+                Cancelar
+              </v-btn>
+              <v-btn
+                color="error"
                 class="mr-2"
                 prepend-icon="mdi-backspace-outline"
                 @click="resetForm"
+                disabled
               >
                 Limpiar
               </v-btn>
@@ -396,6 +405,7 @@
                 prepend-icon="mdi-file-document-arrow-right"
                 type="submit"
                 :loading="loading"
+                disabled
               >
                 Enviar Solicitud
               </v-btn>
@@ -1363,11 +1373,11 @@ watch(
     switch (tipoValidador) {
       case 'responsable':
         tienePermiso = puedeValidarResponsable.value
-        claveValidacion = 'validacion_responsable'
+        claveValidacion = 'validacionResponsable'
         break
       case 'coordinador':
         tienePermiso = puedeValidarCoordinador.value
-        claveValidacion = 'validacion_coordinador'
+        claveValidacion = 'validacionCoordinador'
         break
       default:
         alert('Tipo de validador no reconocido.')
@@ -1382,23 +1392,23 @@ watch(
 
      // Crear el payload específico para la validación
     const payload = {
-      id_solicitud_viaje: solicitudDeViaje.value?.id || idSolicitud,
+      //validacionResponsable: solicitudDeViaje.value?.id || idSolicitud,
       [claveValidacion]: true, //validacion_responsable: true o validacion_coordinador: true
     }
     console.log('888888888888888888888', JSON.stringify(payload, null, 2))
 
-    if (!payload.id_solicitud_viaje) {
-      alert('Error: No se encontró el ID de la reposicion para validar.')
-      formData.value[claveValidacion] = false // Revertir
-      return
-    }
+    //if (!payload.id_solicitud_viaje) {
+    //  alert('Error: No se encontró el ID de la reposicion para validar.')
+    //  formData.value[claveValidacion] = false // Revertir
+    //  return
+    //}
 
     // Ejecutar la llamada PATCH
     loading.value = true
     try {
       const response = await fetch(
-        baseurl+'/monitoreo_api/actualizar-validacion-solicitud-viaje/',
-        //baseurl+'/monitoreo_api/actualizar-validacion-solicitud-reembolso/',
+        //baseurl+'/monitoreo_api/actualizar-validacion-solicitud-viaje/',
+        baseurl + 'api/solicitud-viaje-pei/' + idSolicitud + '/',
         {
           method: 'PATCH',
           headers: {

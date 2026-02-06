@@ -268,7 +268,9 @@
                     <v-table class="elevation-1 rounded-lg mb-4 users-table">
                       <thead>
                         <tr>
+                          <th class="fecha-column">Fecha</th>
                           <th class="text-subtitle-2 font-weight-bold">Partida</th>
+                          <th>Factura/Recibo</th>
                           <th class="text-subtitle-2 font-weight-bold">Descripción</th>
                           <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
                           <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
@@ -277,6 +279,18 @@
                       <!-- "(gasto, index) in datosSolicitudDeReposicion.detalleGastos.items" -->
                       <tbody>
                         <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
+                          <td class="fecha-column">
+                            <v-text-field
+                              v-model="gasto.fecha"
+                              type="date"
+                              bg-color="blue-lighten-5"
+                              hide-details
+                              density="compact"
+                              required
+                              class="fecha-input"
+                              readonly
+                            ></v-text-field>
+                          </td>
                           <td class="narrow-column">
                             <v-text-field
                               v-model="gasto.partida"
@@ -285,6 +299,16 @@
                               hide-details
                               placeholder="1.1.1"
                               class="compact-field"
+                              bg-color="blue-lighten-5"
+                              readonly
+                            ></v-text-field>
+                          </td>
+                          <td>
+                            <v-text-field
+                              v-model="gasto.factura_recibo"
+                              bg-color="blue-lighten-5"
+                              hide-details
+                              density="compact"
                               readonly
                             ></v-text-field>
                           </td>
@@ -570,6 +594,7 @@
 
   <script setup>
   import { ref, onMounted, computed, watch, nextTick } from 'vue'
+  import axios from 'axios'
   import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
   import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
   import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
@@ -598,10 +623,13 @@
   console.log('ID Usuario:', usuario.value.id)
 
   const baseurl = import.meta.env.VITE_API_BASE
+  const datosSolicitante = ref([])
+  const solicitante = ref(null)
 
   //variables para carga de datos
   const datosFormulario = ref(null)
   const datosFormulario1 = ref(null)
+  const todosLosUsuarios = ref(null)
   //const solicitudDeReposicion = ref([]) //se carga de la funcion cargarSolicitudDeReposicion
   //const datosFormularioValidarSR = ref(null)
   const error = ref(null)
@@ -633,7 +661,16 @@
     // Resto de campos del formulario
     detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
     forma_pago: null,
-    datos_forma_pago: { otros: {nombre_otros: '', ci_otros: ''}, transferencia: { nombre_transferencia: '', ci_transferencia: '', entidad_bancaria: '', tipo_cuenta: '', numero_cuenta: ''}},
+    datos_forma_pago: {
+      otros: { nombre_otros: '', ci_otros: '' },
+      transferencia: {
+        nombre_transferencia: '',
+        ci_transferencia: '',
+        entidad_bancaria: '',
+        tipo_cuenta: '',
+        numero_cuenta: '',
+      },
+    },
     lugar_solicitud: '',
     fecha_solicitud: getCurrentDate(),
     monto_solicitado: 0,
@@ -751,12 +788,12 @@
         }
 
         // Llenar campos del usuario
-        formData.value.nombre = getSafeValue(usuario.nombre)
-        formData.value.paterno = getSafeValue(usuario.paterno)
-        formData.value.materno = getSafeValue(usuario.materno)
-        formData.value.cargo = getSafeValue(usuario.cargo)
-        formData.value.documento_identidad = getSafeValue(usuario.ci)
-        formData.value.id_usuario = getSafeValue(usuario.id,0)
+        // formData.value.nombre = getSafeValue(usuario.nombre)
+        // formData.value.paterno = getSafeValue(usuario.paterno)
+        // formData.value.materno = getSafeValue(usuario.materno)
+        // formData.value.cargo = getSafeValue(usuario.cargo)
+        // formData.value.documento_identidad = getSafeValue(usuario.ci)
+        // formData.value.id_usuario = getSafeValue(usuario.id,0)
 
         // Llenar campos de la actividad si existen
         if (newVal.actividad) {
@@ -890,6 +927,54 @@
     }
   }
 
+  //carga usuario que realizo la solicitud
+watch(
+  datosFormulario1,
+  (newVal) => {
+    try {
+      const idSolicitante = newVal.usuario
+      console.log('ID Solicitante######:', idSolicitante)
+      //console.log('Datos Formulario:', datosFormulario.value)
+
+      datosSolicitante.value = todosLosUsuarios.value?.find((fp) => fp.id === idSolicitante)
+      console.log('Datos Solicitante######:', JSON.stringify(todosLosUsuarios.value, null, 2))
+
+      formData.value.nombre = datosSolicitante.value.nombre
+      formData.value.paterno = datosSolicitante.value.paterno
+      formData.value.materno = datosSolicitante.value.materno
+      formData.value.documento_identidad = datosSolicitante.value.ci
+      formData.value.cargo = datosSolicitante.value.cargo
+    //   if (datosSolicitante.value) {
+    //    solicitante.value = getNombreCompleto(datosSolicitante.value)
+    //   }
+     } catch (error) {
+       console.error('Error en watcher datosFormulario1:', error)
+       // Opcional: mostrar notificación al usuario
+     }
+  },
+  { deep: true }
+)
+
+    async function cargarUsuarios() {
+    try {
+      const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/');
+      const allUsers = response.data.usuarios;
+      todosLosUsuarios.value = response.data.usuarios
+      //const data = await response.json()
+      console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
+      responsablesList.value = allUsers.filter((user) => user.cargo === 'contable');
+      coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador');
+      // datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
+      // if(datosSolicitante.value){
+      //   solicitante.value = getNombreCompleto(datosSolicitante.value)
+      // }
+      // console.log('usuariosssss:', JSON.stringify(solicitante.value, null, 2))
+    } catch (error) {
+      console.error('Error al cargar la lista de usuarios:', error);
+      alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
+    }
+  }
+
   function sanitizeData(data) {
     if (data === null || data === undefined) {
       return '';
@@ -918,34 +1003,34 @@
     }
 
     if (typeof data === 'object') {
-      const sanitized = {};
+      const sanitized = {}
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
-          const value = data[key];
+          const value = data[key]
           // Solo incluir propiedades con valores válidos
           if (value !== null && value !== undefined && value !== '') {
-            sanitized[key] = sanitizeData(value);
+            sanitized[key] = sanitizeData(value)
           }
         }
       }
-      return sanitized;
+      return sanitized
     }
 
     // Para cualquier otro tipo de dato, retornar string vacío
-    return '';
+    return ''
   }
 
   function strictSanitizeData(data) {
-    const sanitized = sanitizeData(data);
+    const sanitized = sanitizeData(data)
 
     // Si el resultado es un objeto vacío, retornar string vacío
     if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
       if (Object.keys(sanitized).length === 0) {
-        return '';
+        return ''
       }
     }
 
-    return sanitized;
+    return sanitized
   }
 
   // async function cargarSolicitudFondos() {
@@ -1607,10 +1692,11 @@
 
   // Verificación mejorada con roles
   const puedeValidarResponsable = computed(() => {
+    //console.log('datosformulario00000', JSON.stringify(datosFormulario1.value,null,2))
     const usuarioActualId = datosFormulario.value?.usuario?.id
     const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
     //const responsableAsignadoId = formData.value.idresponsable
-    const responsableAsignadoId = datosFormulario1.value?.responsable_id
+    const responsableAsignadoId = datosFormulario1.value?.responsable
 
     // El usuario puede validar si:
     // 1. Es el responsable asignado
@@ -1633,6 +1719,7 @@
 
   // Ciclo de vida
   onMounted(async () => {
+    await cargarUsuarios()
     await cargarDatos()
     await cargarSolicitudDeReposicion()
     await textoProcedencia.value
@@ -1640,6 +1727,16 @@
   </script>
 
   <style scoped>
+  .fecha-column {
+  width: 180px; /* Ancho suficiente para mostrar fecha completa */
+  min-width: 180px;
+  max-width: 200px;
+}
+
+.fecha-input {
+  width: 100%;
+}
+
   .solicitud-fondos-container {
     max-width: 1400px;
     margin: 0 auto;

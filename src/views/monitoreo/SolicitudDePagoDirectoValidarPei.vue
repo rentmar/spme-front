@@ -557,14 +557,15 @@
     <pre>{{ formDatSF.idsf }}</pre> -->
     <!-- {{ '***************************************B' }}
     <pre>{{ datosFormulario }}</pre> -->
-    <!-- {{ '***************************************C - formData.datos_forma_pago' }}
-    <pre>{{ formData.datos_forma_pago }}</pre> -->
-    <!-- {{ '***************************************D - formaPagoElegido' }}
-    <pre>{{ formaPagoElegido }}</pre> -->
+       <!-- {{ '*********************B' }}
+      <pre>{{ datosFormulario1 }}</pre>
+      {{ '*********************B' }}
+      <pre>{{ todosLosUsuarios}}</pre> -->
   </template>
 
   <script setup>
   import { ref, onMounted, computed, watch, nextTick } from 'vue'
+  import axios from 'axios'
   import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
   import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
   import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
@@ -593,10 +594,13 @@
   console.log('ID Usuario:', usuario.value.id)
 
   const baseurl = import.meta.env.VITE_API_BASE
+  const datosSolicitante = ref([])
+  const solicitante = ref(null)
 
   //variables para carga de datos
   const datosFormulario = ref(null)     //viene de funcion cargarDatos y actualiza formData
   const datosFormulario1 = ref(null)    //viene de funcion cargarSolicitudPago y actualiza detalle_destino_fondos
+  const todosLosUsuarios = ref(null)
   const error = ref(null)
   const isLoading = ref(false)
 
@@ -785,18 +789,18 @@
       }
       const idSolicitante = newVal.usuario_id
       console.log('uuuuuuuu', idSolicitante)
-      console.log('uuuuuu2', JSON.stringify(datosFormulario1,null,2))
-      console.log('uuuuuu2', JSON.stringify(datosFormulario,null,2))
+      //console.log('uuuuuu2', JSON.stringify(datosFormulario1,null,2))
+      //console.log('uuuuuu2', JSON.stringify(datosFormulario,null,2))
       const datosSolicitante = datosFormulario.value.validadores.find((fp) => fp.id === idSolicitante)
       console.log('uuuuuu2', JSON.stringify(datosSolicitante,null,2))
       //return datosSolicitante
 
-      formData.value.nombre = getSafeValue(datosSolicitante.nombre)
-      formData.value.paterno = getSafeValue(datosSolicitante.paterno)
-      formData.value.materno = getSafeValue(datosSolicitante.materno)
-      formData.value.cargo = getSafeValue(datosSolicitante.cargo)
-      formData.value.documento_identidad = getSafeValue(datosSolicitante.ci)
-      formData.value.id_usuario = getSafeValue(datosSolicitante.id, 0)
+      // formData.value.nombre = getSafeValue(datosSolicitante.nombre)
+      // formData.value.paterno = getSafeValue(datosSolicitante.paterno)
+      // formData.value.materno = getSafeValue(datosSolicitante.materno)
+      // formData.value.cargo = getSafeValue(datosSolicitante.cargo)
+      // formData.value.documento_identidad = getSafeValue(datosSolicitante.ci)
+      // formData.value.id_usuario = getSafeValue(datosSolicitante.id, 0)
     },
     { deep: true },
   )
@@ -880,6 +884,54 @@
     } finally {
       isLoading.value = false
       cargandoGeneral.value = false
+    }
+  }
+
+  //carga usuario que realizo la solicitud
+watch(
+  datosFormulario1,
+  (newVal) => {
+    try {
+      const idSolicitante = newVal.usuario
+      console.log('ID Solicitante######:', idSolicitante)
+      //console.log('Datos Formulario:', datosFormulario.value)
+
+      datosSolicitante.value = todosLosUsuarios.value?.find((fp) => fp.id === idSolicitante)
+      console.log('Datos Solicitante######:', JSON.stringify(datosSolicitante.value, null, 2))
+
+      formData.value.nombre = datosSolicitante.value.nombre
+      formData.value.paterno = datosSolicitante.value.paterno
+      formData.value.materno = datosSolicitante.value.materno
+      formData.value.documento_identidad = datosSolicitante.value.ci
+      formData.value.cargo = datosSolicitante.value.cargo
+    //   if (datosSolicitante.value) {
+    //    solicitante.value = getNombreCompleto(datosSolicitante.value)
+    //   }
+     } catch (error) {
+       console.error('Error en watcher datosFormulario1:', error)
+       // Opcional: mostrar notificación al usuario
+     }
+  },
+  { deep: true }
+)
+
+    async function cargarUsuarios() {
+    try {
+      const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/');
+      const allUsers = response.data.usuarios;
+      todosLosUsuarios.value = response.data.usuarios
+      //const data = await response.json()
+      console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
+      responsablesList.value = allUsers.filter((user) => user.cargo === 'contable');
+      coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador');
+      // datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
+      // if(datosSolicitante.value){
+      //   solicitante.value = getNombreCompleto(datosSolicitante.value)
+      // }
+      // console.log('usuariosssss:', JSON.stringify(solicitante.value, null, 2))
+    } catch (error) {
+      console.error('Error al cargar la lista de usuarios:', error);
+      alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
     }
   }
 
@@ -1551,11 +1603,12 @@
 
   // Verificación mejorada con roles
   const puedeValidarResponsable = computed(() => {
+    //console.log('datosformulario00000', JSON.stringify(datosFormulario1.value,null,2))
     const usuarioActualId = datosFormulario.value?.usuario?.id
     const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
     //const responsableAsignadoId = formData.value.idresponsable
-    const responsableAsignadoId = datosFormulario1.value?.contador_id
-
+    const responsableAsignadoId = datosFormulario1.value?.contador
+    //console.log('ododod',usuarioActualId, usuarioActualCargo, responsableAsignadoId)
     // El usuario puede validar si:
     // 1. Es el responsable asignado
     // 2. Tiene el cargo correspondiente
@@ -1575,6 +1628,7 @@
 
   // Ciclo de vida
   onMounted(async () => {
+    await cargarUsuarios()
     await cargarDatos()
     await cargarSolicitudPago()
     await textoProcedencia.value
