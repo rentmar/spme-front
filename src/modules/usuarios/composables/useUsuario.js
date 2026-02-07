@@ -104,6 +104,20 @@ export function useUsuario() {
     }
   }
 
+  //Obtener el usuario por su id
+  async function obtenerUsuarioPorId(idusuario) {
+    loading.value = true
+    try {
+      const respuesta = await usuarioServicios.obtenerUsuarioPorId(idusuario)
+      usuario.value = respuesta
+      return respuesta
+    } catch (err) {
+      console.error('Error al cargar el usuario', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   //Obtener el id de un usuario
 
   //Fecth usuarios
@@ -126,5 +140,6 @@ export function useUsuario() {
     obtenerPermisos,
     obtenerListaUsuarios,
     obtenerListaUsuariosCompleta,
+    obtenerUsuarioPorId,
   }
 }
