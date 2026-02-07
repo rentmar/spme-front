@@ -8,6 +8,8 @@ export function useRendicionCuentas() {
   const error = ref(null)
   const listaRendicionCuentasActividad = ref(null)
   const listaRendicionCuentasTarea = ref(null)
+  const listaRendicionCuentasActividadPei = ref(null)
+  const listaRendicionCuentasTareaPei = ref(null)
 
   //Listar Rendicion de cuentas de una Actividad
   async function obtenerListaRendicionCuentasPorIdActividad(idactividad) {
@@ -41,12 +43,48 @@ export function useRendicionCuentas() {
     }
   }
 
+  //Listar Rendicion de cuentas de una Actividad
+  async function obtenerListaRendicionCuentasPorIdActividadPei(idactividad) {
+    loading.value = true
+    try {
+      const respuesta =
+        await rendicionCuentasServicio.solRendicionCuentasPorIdActividadPei(idactividad)
+      listaRendicionCuentasActividadPei.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Listar Rendicion Cuentas de una Tarea
+  async function obtenerListaRendicionCuentasPorIdTareaPei(idactividad, idtarea) {
+    loading.value = true
+    try {
+      const respuesta = await rendicionCuentasServicio.solRendicionCuentasPorIdTareaPei(
+        idactividad,
+        idtarea,
+      )
+      listaRendicionCuentasTareaPei.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
     listaRendicionCuentasActividad,
     listaRendicionCuentasTarea,
+    listaRendicionCuentasActividadPei,
+    listaRendicionCuentasTareaPei,
     obtenerListaRendicionCuentasPorIdActividad,
     obtenerListaRendicionCuentasPorIdTarea,
+    obtenerListaRendicionCuentasPorIdActividadPei,
+    obtenerListaRendicionCuentasPorIdTareaPei,
   }
 }

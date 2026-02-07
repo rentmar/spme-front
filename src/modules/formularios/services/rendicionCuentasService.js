@@ -73,4 +73,27 @@ export const rendicionCuentasServicio = {
       throw error
     }
   },
+  /************************ Solicitud de Fondos Actividad *******************************************/
+  //Solicitudes de fondos por id Actividad
+  solRendicionCuentasPorIdActividadPei: async (idactividad) => {
+    try {
+      const respuesta = await api.get('/rendiciones-cuentas/actividad-pei/' + idactividad + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar la  con id ' + idactividad, error)
+      throw error
+    }
+  },
+  /************************ Solicitud de Fondos Tarea *******************************************/
+  solRendicionCuentasPorIdTareaPei: async (idactividad, idtarea) => {
+    try {
+      const respuesta = await api.get(
+        '/rendiciones-cuentas-pei/actividad/' + idactividad + '/tarea/' + idtarea + '/',
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar la  de tarea con id ' + idtarea)
+      throw error
+    }
+  },
 }

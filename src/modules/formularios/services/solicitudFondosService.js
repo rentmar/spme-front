@@ -77,4 +77,30 @@ export const solicitudDeFondosServico = {
       throw error
     }
   },
+  /************************ Solicitud de Fondos Actividad Pei *******************************************/
+  //Solicitudes de fondos por id Actividad
+  solFondosPorIdActividadPei: async (idactividadpei) => {
+    try {
+      const respuesta = await api.get('/solicitudes-fondos/actividad-pei/' + idactividadpei + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error(
+        'Axios: Error al cargar la sol de fondos de la actividad con id ' + idactividadpei,
+        error,
+      )
+      throw error
+    }
+  },
+  /************************ Solicitud de Fondos Tarea Pei *******************************************/
+  solFondosPorIdtareaPei: async (idactividadpei, idtareapei) => {
+    try {
+      const respuesta = await api.get(
+        '/solicitudes-fondos-pei/actividad/' + idactividadpei + '/tarea/' + idtareapei + '/',
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar la sol de fondos de tarea con id ' + idtareapei)
+      throw error
+    }
+  },
 }

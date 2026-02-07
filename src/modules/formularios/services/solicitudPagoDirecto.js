@@ -74,4 +74,30 @@ export const solicitudPagoDirectoServicio = {
       throw error
     }
   },
+
+  /************************ Solicitud de Pago directo Actividad Pei*******************************************/
+  //Solicitudes de fondos por id Actividad
+  solPagoDirectoPorIdActividadPei: async (idactividad) => {
+    try {
+      const respuesta = await api.get(
+        '/solicitudes-pago-directo/actividad-pei/' + idactividad + '/',
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar la  con id ' + idactividad, error)
+      throw error
+    }
+  },
+  /************************ Solicitud de Pago directo Tarea Pei *******************************************/
+  solPagoDirectoPorIdTareaPei: async (idactividad, idtarea) => {
+    try {
+      const respuesta = await api.get(
+        '/solicitudes-pago-directo-pei/actividad/' + idactividad + '/tarea/' + idtarea + '/',
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar la  de tarea con id ' + idtarea)
+      throw error
+    }
+  },
 }
