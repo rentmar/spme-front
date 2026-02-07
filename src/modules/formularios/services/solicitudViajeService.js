@@ -75,4 +75,32 @@ export const solicitudViajeServicio = {
       throw error
     }
   },
+
+  /************************ Solicitud de Viaje Actividad PEI *******************************************/
+  //Solicitudes de viaje por id Actividad
+  solViajePorIdActividadPei: async (idactividadpei) => {
+    try {
+      const respuesta = await api.get('/solicitudes-viaje/actividad-pei/' + idactividadpei + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error(
+        'Axios: Error al cargar las solicitudes de viaje con id ' + idactividadpei,
+        error,
+      )
+      throw error
+    }
+  },
+  /************************ Solicitud de Viaje Tarea Pei *******************************************/
+  //Solicitude de viaje por id tarea
+  solViajePorIdTareaPei: async (idactividadpei, idtareapei) => {
+    try {
+      const respuesta = await api.get(
+        '/solicitudes-viaje-pei/actividad/' + idactividadpei + '/tarea/' + idtareapei + '/',
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar la  de tarea  peicon id ' + idtareapei)
+      throw error
+    }
+  },
 }

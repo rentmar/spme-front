@@ -7,6 +7,8 @@ export function useSolicitudPagoDirecto() {
   const error = ref(null)
   const listaSolPagoDirectoActividad = ref(null)
   const listaSolPagoDirectoTarea = ref(null)
+  const listaSolPagoDirectoActividadPei = ref(null)
+  const listaSolPagoDirectoTareaPei = ref(null)
 
   //lista de sol de pago directo por id actividad
   async function obtenerListaSolPagoDirectoPorIdActividad(idactividad) {
@@ -39,12 +41,48 @@ export function useSolicitudPagoDirecto() {
     }
   }
 
+  //lista de sol de pago directo por id actividad
+  async function obtenerListaSolPagoDirectoPorIdActividadPei(idactividad) {
+    loading.value = true
+    try {
+      const respuesta =
+        await solicitudPagoDirectoServicio.solPagoDirectoPorIdActividadPei(idactividad)
+      listaSolPagoDirectoActividadPei.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Obtener lista de solicitude de pago directo por id de tarea
+  async function obtenerListaSolPagoDirectoPorIdTareaPei(idactividad, idtarea) {
+    loading.value = true
+    try {
+      const respuesta = await solicitudPagoDirectoServicio.solPagoDirectoPorIdTareaPei(
+        idactividad,
+        idtarea,
+      )
+      listaSolPagoDirectoTareaPei.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
     listaSolPagoDirectoActividad,
     listaSolPagoDirectoTarea,
+    listaSolPagoDirectoActividadPei,
+    listaSolPagoDirectoTareaPei,
     obtenerListaSolPagoDirectoPorIdActividad,
     obtenerListaSolPagoDirectoPorIdTarea,
+    obtenerListaSolPagoDirectoPorIdActividadPei,
+    obtenerListaSolPagoDirectoPorIdTareaPei,
   }
 }

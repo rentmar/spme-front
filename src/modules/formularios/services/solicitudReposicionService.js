@@ -74,4 +74,27 @@ export const solicitudReposicionServicio = {
       throw error
     }
   },
+  /************************ Solicitud de Fondos Actividad *******************************************/
+  //Solicitudes de fondos por id Actividad
+  solReposicionPorIdActividadPei: async (idactividad) => {
+    try {
+      const respuesta = await api.get('/solicitudes-reembolso/actividad-pei/' + idactividad + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar la  con id ' + idactividad, error)
+      throw error
+    }
+  },
+  /************************ Solicitud de Fondos Tarea *******************************************/
+  solReposicionPorIdTareaPei: async (idactividad, idtarea) => {
+    try {
+      const respuesta = await api.get(
+        '/solicitudes-reembolso-pei/actividad/' + idactividad + '/tarea/' + idtarea + '/',
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar la  de tarea con id ' + idtarea)
+      throw error
+    }
+  },
 }

@@ -21,6 +21,9 @@
             <v-icon size="14" color="green">mdi-cash</v-icon>
             {{ formatCurrency(actividad?.presupuesto) }}
           </span>
+          <span>
+            <ValidationPeiBar :actividad-id="actividad.id"></ValidationPeiBar>
+          </span>
         </div>
       </div>
     </div>
@@ -140,6 +143,12 @@
                 <div class="tarea-meta" v-if="tarea.descripcion">
                   <span class="descripcion">{{ truncateText(tarea.descripcion, 80) }}</span>
                 </div>
+                <div>
+                  <ValidationTareaPeiBar
+                    :actividad-id="actividad.id"
+                    :tarea-id="tarea.id"
+                  ></ValidationTareaPeiBar>
+                </div>
                 <div class="tarea-footer">
                   <div class="tarea-fechas">
                     <span v-if="tarea.fecha_limite" class="fecha">
@@ -211,6 +220,9 @@ import { ref, computed, onMounted, watch } from 'vue'
 import DialogTareaPei from './DialogTareaPei.vue'
 import { useInformeActividadPeiStore } from '@/modules/formularios/store/useInformeActividadPeiStore'
 import { peiServicios } from '@/modules/pei/services/peiService'
+//Barras de validacion
+import ValidationPeiBar from '@/modules/formularios/components/ValidationPeiBar.vue'
+import ValidationTareaPeiBar from '@/modules/formularios/components/ValidationTareaPeiBar.vue'
 
 const props = defineProps({
   actividad: {
