@@ -416,14 +416,14 @@
 
   <script setup>
 
-  import { ref, onMounted, computed, watch } from 'vue';
+  import { ref, onMounted, computed, watch } from 'vue'
 
   import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
   import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
   import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
-  import { useUsuario } from '@/modules/usuarios/composables/useUsuario';
-  import {useUserStore} from '@/stores/user';
+  import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
+  import { useUserStore } from '@/stores/user'
   import * as XLSX from 'xlsx'
   import { useRoute, useRouter } from 'vue-router'
   import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
@@ -442,7 +442,7 @@
 
   const baseurl = import.meta.env.VITE_API_BASE
 
-  const { usuario } = useUsuario();
+  const { usuario } = useUsuario()
 
   const idRendicionCreada = ref(null)
 
@@ -1122,7 +1122,7 @@
         contador: Number(formData.value.idcontador),
         coordinador: Number(formData.value.idcoordinador),
         //idresponsable: Number(formData.value.idresponsable),
-        //idusuarioLogeado: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
+        usuario: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
         actividad: idActividad ? parseInt(idActividad) : null,
         tarea: idTarea ? parseInt(idTarea) : null,
         descripcionActividad: formData.value.descripcion_actividad,

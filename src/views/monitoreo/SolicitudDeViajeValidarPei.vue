@@ -385,9 +385,18 @@
             <div class="d-flex justify-end mt-4">
               <v-btn
                 color="error"
+                variant="outlined"
+                prepend-icon="mdi-cancel"
+                :to="`/pei/listaactividadespei?showButton=1`"
+              >
+                Cancelar
+              </v-btn>
+              <v-btn
+                color="error"
                 class="mr-2"
                 prepend-icon="mdi-backspace-outline"
                 @click="resetForm"
+                disabled
               >
                 Limpiar
               </v-btn>
@@ -396,6 +405,7 @@
                 prepend-icon="mdi-file-document-arrow-right"
                 type="submit"
                 :loading="loading"
+                disabled
               >
                 Enviar Solicitud
               </v-btn>
@@ -406,15 +416,15 @@
     </v-container>
      <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
       <!-- {{ '*********************B' }}
-      <pre>{{ formData.datos_forma_pago }}</pre> -->
-      <!-- {{ '*********************B' }}
-      {{ datosFormulario1 }} -->
+      <pre>{{ datosFormulario1 }}</pre>
+      {{ '*********************B' }}
+      <pre>{{ todosLosUsuarios}}</pre> -->
   </template>
 
   <script setup>
-  import * as XLSX from 'xlsx';
-  import { ref, onMounted, computed, nextTick, watch } from 'vue';
-  import axios from 'axios';
+  import * as XLSX from 'xlsx'
+  import { ref, onMounted, computed, nextTick, watch } from 'vue'
+  import axios from 'axios'
   import { useUserStore } from '@/stores/user'
   import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
   import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
@@ -426,9 +436,10 @@
   const idActividad = route.params.id || null
   const idTarea = route.query.tarea_id || null
   const idSolicitud = route.query.solicitud_id || null
+  console.log('ID Solicitud:', idSolicitud)
   console.log('ID Actividad:', idActividad)
   console.log('ID Tarea:', idTarea)
-  console.log('ID Solicitud', idSolicitud)
+  //console.log('ID aaaaaaa', JSON.stringify(route,null,2))
 
   const userStore = useUserStore()
   const usuario = computed(() => {
@@ -442,19 +453,20 @@
 
   const baseurl = import.meta.env.VITE_API_BASE
 
-  const loading = ref(false);
-  const responsablesList = ref([]);
-  const coordinadoresList = ref([]);
+  const loading = ref(false)
+  const responsablesList = ref([])
+  const coordinadoresList = ref([])
   const datosSolicitante = ref([])
   const solicitante = ref(null)
-  const solicitudDeViaje = ref({})  //viene de la funccion cargarSolicitudesDeViaje
+  const solicitudDeViaje = ref({}) //viene de la funccion cargarSolicitudesDeViaje
   const numeroFormulario = ref('')
 
   const cargandoGeneral = ref(true)
 
   //variables para carga de datos
   const datosFormulario = ref(null)
-  const datosFormulario1 = ref(null)    //viene de funcion cargarSolicitudesDeViaje y actualiza detalle_destino_fondos
+  const datosFormulario1 = ref(null) //viene de funcion cargarSolicitudesDeViaje y actualiza detalle_destino_fondos
+  const todosLosUsuarios = ref(null)
   const error = ref(null)
   const isLoading = ref(false)
   const formasPago = ref([])
@@ -465,7 +477,7 @@
     fecha_evento: '',
     lugar_evento: '',
     instituciones_participantes: '',
-    institucion_queinvita: '',//organizador
+    institucion_queinvita: '', //organizador
     quien_cubregastos: '',
     fondos_unitas: '',
     justificacion_asistencia: '',
@@ -483,7 +495,7 @@
     id_responsable: null,
     validacion_coordinador: false,
     id_coordinador: null,
-  });
+  })
 
   const formDatSF = ref({
     // Propiedades existentes...
@@ -507,19 +519,19 @@
     usuario_idsf: null,
     actividad_idsf: null,
     fechaRealizacionActividadsf: '',
-    bloquearIconosSolFondossf: true
+    bloquearIconosSolFondossf: true,
   })
 
   const nombreCoordinadorElegido = computed(() => {
     const coordinador = coordinadoresList.value.find(
-      (user) => user.id === formData.value.id_coordinador
+      (user) => user.id === formData.value.id_coordinador,
     )
     return coordinador ? getNombreCompleto(coordinador) : ''
   })
 
   const nombreResponsableElegido = computed(() => {
     const responsable = responsablesList.value.find(
-      (user) => user.id === formData.value.id_responsable
+      (user) => user.id === formData.value.id_responsable,
     )
     return responsable ? getNombreCompleto(responsable) : ''
   })
@@ -527,9 +539,9 @@
   const totalMontoSolicitado = computed(() => {
     return formData.value.detalle_destino_fondos.reduce(
       (total, gasto) => total + Number(gasto.monto || 0),
-      0
-    );
-  });
+      0,
+    )
+  })
 
   // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
   watch(
@@ -546,12 +558,12 @@
         }
 
         // Llenar campos del usuario
-        formData.value.nombre = getSafeValue(usuario.nombre)
-        formData.value.paterno = getSafeValue(usuario.paterno)
-        formData.value.materno = getSafeValue(usuario.materno)
-        formData.value.cargo = getSafeValue(usuario.cargo)
-        formData.value.documento_identidad = getSafeValue(usuario.ci)
-        formData.value.id_usuario = getSafeValue(usuario.id,0)
+        // formData.value.nombre = getSafeValue(usuario.nombre)
+        // formData.value.paterno = getSafeValue(usuario.paterno)
+        // formData.value.materno = getSafeValue(usuario.materno)
+        // formData.value.cargo = getSafeValue(usuario.cargo)
+        // formData.value.documento_identidad = getSafeValue(usuario.ci)
+        // formData.value.id_usuario = getSafeValue(usuario.id, 0)
 
         // Llenar campos de la actividad si existen
         if (newVal.actividad) {
@@ -561,7 +573,7 @@
           formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)
           formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)
           formData.value.fecha_ejecucion = getSafeValue(newVal.actividad.fecha_programada)
-          formData.value.id_actividad = getSafeValue(newVal.actividad.id,0)
+          formData.value.id_actividad = getSafeValue(newVal.actividad.id, 0)
           formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)
 
           if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
@@ -590,6 +602,7 @@
     },
     { deep: true },
   )
+
   const formasPagoOptions = computed(() => {
     if (datosFormulario.value && datosFormulario.value.formaPago) {
       return datosFormulario.value.formaPago
@@ -617,22 +630,23 @@
   })
 
   function getNombreCompleto(user) {
-    return `${user.nombre} ${user.paterno} ${user.materno}`.trim();
+    return `${user.nombre} ${user.paterno} ${user.materno}`.trim()
   }
 
   function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
-  async function cargarDatos() {      //se carga unicamente para la etiqueta proyectos
+  async function cargarDatos() {
+    //se carga unicamente para la etiqueta proyectos
     isLoading.value = true
     error.value = null
     try {
-      const response = await fetch(baseurl + '/api/monitoreo/obtener-datos-formulario/', {
+      const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -642,7 +656,7 @@
           usuario: usuario.value.nombre,
         }),
       })
-      //console.log('Respuesta de la solicitud:', idActividad, usuario)
+      //console.log('Respuesta de la solicitudqqq:', idActividad, usuario.value.nombre)
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(
@@ -651,7 +665,7 @@
       }
       const data = await response.json()
       datosFormulario.value = data
-      console.log('Datos cargados exitosamente:', datosFormulario.value)
+      console.log('00000000000000000000000000000', JSON.stringify(datosFormulario.value,null,2) )
     } catch (err) {
       error.value = err.message
       console.error('Ha ocurrido un error:', err)
@@ -680,32 +694,59 @@
     }
   }
 
-  watch(
-    datosFormulario,
-    (newVal) => {
-      if (newVal && newVal.usuario) {
-        datosSolicitante.value = newVal.usuario
-        //console.log('hhhhhhhhhhhh:', JSON.stringify(datosSolicitante.value, null, 2))
-        if(datosSolicitante.value){
-        solicitante.value = getNombreCompleto(datosSolicitante.value)
-        }
-      } else {
-        datosSolicitante.value = [];
+  // watch(
+  //   datosFormulario,
+  //   (newVal) => {
+  //     if (newVal && newVal.usuario) {
+  //       datosSolicitante.value = newVal.usuario
+  //       //console.log('hhhhhhhhhhhh:', JSON.stringify(datosSolicitante.value, null, 2))
+  //       if(datosSolicitante.value){
+  //       solicitante.value = getNombreCompleto(datosSolicitante.value)
+  //       }
+  //     } else {
+  //       datosSolicitante.value = [];
+  //     }
+  //   },
+  //   { deep: true } // Si necesitas observar cambios profundos
+  // );
+
+//carga usuario que realizo la solicitud
+watch(
+  datosFormulario1,
+  (newVal) => {
+    try {
+      const idSolicitante = newVal.usuario_id
+      console.log('ID Solicitante:', idSolicitante)
+      //console.log('Datos Formulario:', datosFormulario.value)
+
+      datosSolicitante.value = todosLosUsuarios.value?.find((fp) => fp.id === idSolicitante)
+      console.log('Datos Solicitante:', JSON.stringify(datosSolicitante.value, null, 2))
+
+      if (datosSolicitante.value) {
+       solicitante.value = getNombreCompleto(datosSolicitante.value)
       }
-    },
-    { deep: true } // Si necesitas observar cambios profundos
-  );
+    } catch (error) {
+      console.error('Error en watcher datosFormulario1:', error)
+      // Opcional: mostrar notificación al usuario
+    }
+  },
+  { deep: true }
+)
 
   async function cargarUsuarios() {
     try {
       const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/');
       const allUsers = response.data.usuarios;
+      todosLosUsuarios.value = response.data.usuarios
+      //const data = await response.json()
+      console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
       responsablesList.value = allUsers.filter((user) => user.cargo === 'contable');
       coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador');
-      datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
-      if(datosSolicitante.value){
-        solicitante.value = getNombreCompleto(datosSolicitante.value)
-      }
+      // datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
+      // if(datosSolicitante.value){
+      //   solicitante.value = getNombreCompleto(datosSolicitante.value)
+      // }
+      // console.log('usuariosssss:', JSON.stringify(solicitante.value, null, 2))
     } catch (error) {
       console.error('Error al cargar la lista de usuarios:', error);
       alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
@@ -798,11 +839,13 @@
 
       solicitudDeViaje.value = rawData.solicitudes[0]
 
-      formData.value.detalle_destino_fondos = solicitudDeViaje.value.detalleGasto.items.map(item =>({
+      formData.value.detalle_destino_fondos = solicitudDeViaje.value.detalleGasto.items.map(
+        (item) => ({
         partida: item.partida || '',
         descripcion_gasto: item.concepto || '',
-        monto: item.monto || 0
-      }))
+        monto: item.monto || 0,
+      }),
+    )
       formData.value.forma_pago = solicitudDeViaje.value.formaPago_id
       formData.value.id_responsable = solicitudDeViaje.value.responsable_id
       formData.value.id_coordinador = solicitudDeViaje.value.coordinador_id
@@ -810,7 +853,7 @@
       //console.log('Datos cargados exitosamente:', JSON.stringify(formData.value.detalle_destino_fondos,null,2))
 
       // Filtrar las solicitudes por actividad_id y tarea_id
-      const solicitudesFiltradas = rawData.solicitudes.filter(solicitud => {
+      const solicitudesFiltradas = rawData.solicitudes.filter((solicitud) => {
         // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
         const coincideActividad = solicitud.actividad_id?.toString() === idActividad?.toString()
         const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
@@ -822,6 +865,9 @@
       console.log('Solicitudes filtradas:', JSON.stringify(solicitudesFiltradas,null,2))
       datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
       actualizarDatosFormulario(solicitudesFiltradas[0])
+      const idSolicitante = datosFormulario1.value.usuario_id
+      console.log('ID Solicitante444:', idSolicitante)
+
     } catch (err) {
       error.value = err.message
       console.error('Ha ocurrido un error:', err)
@@ -832,19 +878,18 @@
   }
 
   function addGasto() {
-    formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 });
+    formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 })
   }
 
   function removeGasto(index) {
     if (formData.value.detalle_destino_fondos.length > 1) {
-      formData.value.detalle_destino_fondos.splice(index, 1);
+      formData.value.detalle_destino_fondos.splice(index, 1)
     }
   }
 
   async function submitForm() {
-    loading.value = true;
+    loading.value = true
     try {
-
       const requiredFields = [
         'evento',
         'fecha_evento',
@@ -861,24 +906,24 @@
         'fecha_solicitud',
         'id_responsable',
         'id_coordinador',
-      ];
+      ]
 
       for (const field of requiredFields) {
         if (!formData.value[field]) {
-          throw new Error(`El campo '${field}' es requerido.`);
+          throw new Error(`El campo '${field}' es requerido.`)
         }
       }
 
       if (
         formData.value.detalle_destino_fondos.some(
-          (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0
+          (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0,
         )
       ) {
-        throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.');
+        throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
       }
 
       const payload = {
-        ...formData.value,    //esta linea incluye todas las propiedades de formData
+        ...formData.value, //esta linea incluye todas las propiedades de formData
         id_usuario: usuario.value.id || 0,
         id_actividad: idActividad || 0,
         id_tarea: idTarea || null,
@@ -890,25 +935,25 @@
             monto: Number(gasto.monto),
           })),
         },
-      };
+      }
       //console.log('Payload completo que se enviará:', JSON.stringify(payload,null,2)); // ← Verificar aquí
 
       const response = await axios.post(baseurl + '/monitoreo_api/crearSolicitudViaje/', payload, {
         headers: {
           'Content-Type': 'application/json',
         },
-      });
+      })
 
-      numeroFormulario.value = response.numero_formulario;
+      numeroFormulario.value = response.numero_formulario
 
-      alert('Solicitud enviada con éxito');
-      exportToExcel();
-      resetForm();
+      alert('Solicitud enviada con éxito')
+      exportToExcel()
+      resetForm()
     } catch (error) {
-      console.error('Error completo:', error.response?.data || error.message);
-      alert(`Error: ${error.response?.data?.message || error.message}`);
+      console.error('Error completo:', error.response?.data || error.message)
+      alert(`Error: ${error.response?.data?.message || error.message}`)
     } finally {
-      loading.value = false;
+      loading.value = false
     }
   }
 
@@ -927,21 +972,11 @@
       forma_pago: '',
       lugar_solicitud: '',
       fecha_solicitud: getCurrentDate(),
-      // datos_forma_pago: {
-      //   otros: { nombre_otros: '', ci_otros: '' },
-      //   transferencia: {
-      //     nombre_transferencia: '',
-      //     ci_transferencia: '',
-      //     entidad_bancaria: '',
-      //     tipo_cuenta: '',
-      //     numero_cuenta: '',
-      //   }
-      // },
       id_responsable: null,
       validacion_responsable: false,
       id_coordinador: null,
       validacion_coordinador: false,
-    });
+    })
   }
 
   function exportToExcel() {
@@ -957,7 +992,7 @@
       [''],
       ['INFORMACIÓN DEL SEMINARIO', '', '', ''],
       ['Seminario:', formData.value.evento, '', ''],
-      ['Fecha Evento:', formData.value.fecha_evento,'', ''],
+      ['Fecha Evento:', formData.value.fecha_evento, '', ''],
       ['Lugar de Evento:', formData.value.lugar_evento, '', ''],
       ['Instituciones Participantes:', formData.value.instituciones_participantes, '', ''],
       ['Institución que Invita:', formData.value.institucion_queinvita, '', ''],
@@ -1158,7 +1193,6 @@
     }
   }
 
-
   // Función para actualizar datosFormulario con los valores de la solicitud
   function actualizarDatosFormulario(solicitud) {
     if (!solicitud) return
@@ -1223,7 +1257,7 @@
       formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
         partida: item.partida_sf || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
         descripcion_gasto: item.concepto || '',
-        monto: item.monto || 0
+        monto: item.monto || 0,
       }))
 
       //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
@@ -1249,7 +1283,6 @@
     if (solicitud && solicitud.datos_forma_pago) {
       const datosPago = solicitud.datos_forma_pago
 
-
       // Los datos ya vienen en el formato correcto desde el backend
       // Solo necesitamos asignarlos directamente
       if (datosPago.transferencia) {
@@ -1258,19 +1291,16 @@
           ci_transferencia: datosPago.transferencia.ci_transferencia || '',
           entidad_bancaria: datosPago.transferencia.entidad_bancaria || '',
           tipo_cuenta: datosPago.transferencia.tipo_cuenta || '',
-          numero_cuenta: datosPago.transferencia.numero_cuenta || ''
+          numero_cuenta: datosPago.transferencia.numero_cuenta || '',
         }
-
       }
 
       if (datosPago.otros) {
         formData.value.datos_forma_pago.otros = {
           nombre_otros: datosPago.otros.nombre_otros || '',
-          ci_otros: datosPago.otros.ci_otros || ''
+          ci_otros: datosPago.otros.ci_otros || '',
         }
-
       }
-
     }
   }
 
@@ -1280,12 +1310,12 @@
 
     // Buscar responsable por ID
     const responsable = datosFormulario.value.validadores.find(
-      validador => validador.id === formDatSF.value.responsable_idsf
+      (validador) => validador.id === formDatSF.value.responsable_idsf,
     )
 
     // Buscar coordinador por ID
     const coordinador = datosFormulario.value.validadores.find(
-      validador => validador.id === formDatSF.value.coordinador_idsf
+      (validador) => validador.id === formDatSF.value.coordinador_idsf,
     )
 
     // Actualizar formData con los IDs encontrados
@@ -1313,14 +1343,13 @@
 
     // Filtrar responsables (puedes ajustar la lógica según el cargo)
     responsablesList.value = datosFormulario.value.validadores.filter(
-      validador => validador.cargo && validador.cargo.toLowerCase().includes('contable')
+      (validador) => validador.cargo && validador.cargo.toLowerCase().includes('contable'),
     )
 
     // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
     coordinadoresList.value = datosFormulario.value.validadores.filter(
-      validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
+      (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador'),
     )
-
   }
   const puedeValidarResponsable = computed(() => {
     const idUsuarioLogueado = usuario.value?.id
@@ -1329,6 +1358,8 @@
   })
 
   const puedeValidarCoordinador = computed(() => {
+    console.log('Usuario Logueado ID:', usuario.value?.id)
+    console.log('Coordinador Asignado ID:', solicitudDeViaje.value?.coordinador_id)
     const idUsuarioLogueado = usuario.value?.id
     const idCoordinadorAsignado = solicitudDeViaje.value?.coordinador_id
     return idUsuarioLogueado === idCoordinadorAsignado
@@ -1336,87 +1367,86 @@
 
   async function validarViaje(tipoValidador) {
     // Verificar permisos según el tipo de validador
-    let tienePermiso = false;
-    let claveValidacion = '';
+    let tienePermiso = false
+    let claveValidacion = ''
 
     switch (tipoValidador) {
       case 'responsable':
-        tienePermiso = puedeValidarResponsable.value;
-        claveValidacion = 'validacion_responsable';
-        break;
+        tienePermiso = puedeValidarResponsable.value
+        claveValidacion = 'validacionResponsable'
+        break
       case 'coordinador':
-        tienePermiso = puedeValidarCoordinador.value;
-        claveValidacion = 'validacion_coordinador';
-        break;
+        tienePermiso = puedeValidarCoordinador.value
+        claveValidacion = 'validacionCoordinador'
+        break
       default:
-        alert('Tipo de validador no reconocido.');
-        return;
+        alert('Tipo de validador no reconocido.')
+        return
     }
 
     if (!tienePermiso) {
-      alert('Usted no está autorizado para validar esta rendición como ' + tipoValidador + '.');
-      solicitudDeViaje.value[claveValidacion] = false;
-      return;
+      alert('Usted no está autorizado para validar esta rendición como ' + tipoValidador + '.')
+      solicitudDeViaje.value[claveValidacion] = false
+      return
     }
 
      // Crear el payload específico para la validación
     const payload = {
-      id_solicitud_viaje: solicitudDeViaje.value?.id || idSolicitud,
-      [claveValidacion]: true     //validacion_responsable: true o validacion_coordinador: true
-    };
-    console.log('888888888888888888888', JSON.stringify(payload,null,2))
-
-    if (!payload.id_solicitud_viaje) {
-      alert('Error: No se encontró el ID de la reposicion para validar.');
-      formData.value[claveValidacion] = false; // Revertir
-      return;
+      //validacionResponsable: solicitudDeViaje.value?.id || idSolicitud,
+      [claveValidacion]: true, //validacion_responsable: true o validacion_coordinador: true
     }
+    console.log('888888888888888888888', JSON.stringify(payload, null, 2))
+
+    //if (!payload.id_solicitud_viaje) {
+    //  alert('Error: No se encontró el ID de la reposicion para validar.')
+    //  formData.value[claveValidacion] = false // Revertir
+    //  return
+    //}
 
     // Ejecutar la llamada PATCH
-    loading.value = true;
+    loading.value = true
     try {
       const response = await fetch(
-        baseurl+'/monitoreo_api/actualizar-validacion-solicitud-viaje/',
-        //baseurl+'/monitoreo_api/actualizar-validacion-solicitud-reembolso/',
+        //baseurl+'/monitoreo_api/actualizar-validacion-solicitud-viaje/',
+        baseurl + 'api/solicitud-viaje-pei/' + idSolicitud + '/',
         {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(payload),
-        }
-      );
+        },
+      )
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json()
         throw new Error(
-          `Error al actualizar: ${response.status} - ${errorData.detail || errorData.mensaje || 'Error desconocido'}`
-        );
+          `Error al actualizar: ${response.status} - ${errorData.detail || errorData.mensaje || 'Error desconocido'}`,
+        )
       }
 
       //const result = await response.json();
-      alert('Solicitud de Viaje validada exitosamente.');
+      alert('Solicitud de Viaje validada exitosamente.')
 
       // Recargar los datos para reflejar los cambios
-      await cargarSolicitudesDeViaje();
-
+      await cargarSolicitudesDeViaje()
     } catch (err) {
-      console.error('Error al validar la solicitud:', err);
-      alert(`Error al validar la solicitud: ${err.message}`);
+      console.error('Error al validar la solicitud:', err)
+      alert(`Error al validar la solicitud: ${err.message}`)
 
       // Revertir el cambio en caso de error
-      formData.value[claveValidacion] = false;
+      formData.value[claveValidacion] = false
     } finally {
-      loading.value = false;
+      loading.value = false
     }
   }
 
   onMounted(async () => {
-    await cargarUsuarios();
-    cargarDatos()
-    cargarSolicitudesDeViaje()
-    cargarFormasDePago()
-  });
+    //await cargarDatos()   //carga validadores y se selecciona el solicitante
+    await cargarUsuarios()//carga todos los usuarios y se selecciona el solicitante
+    await cargarSolicitudesDeViaje()//carga datos de la solicitud donde esta id solicitante
+    await cargarFormasDePago()
+  })
   </script>
 
   <style scoped>

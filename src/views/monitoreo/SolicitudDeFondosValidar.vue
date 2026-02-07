@@ -597,7 +597,6 @@
   <pre>{{ datosFormulario1 }}</pre> -->
   <!-- {{ '***************************************B' }}
   <pre>{{ datosFormulario }}</pre> -->
-
   <!-- {{ '***************************************B' }}
   <pre>{{ idSolicitud }}</pre> -->
 </template>
@@ -655,9 +654,20 @@ const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 const idSolicitud = route.query.solicitud_id || null
+console.log('ID Solicitud:', idSolicitud)
 console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
-console.log('ID Solicitud:', idSolicitud)
+//console.log('ID aaaaaaa', JSON.stringify(route,null,2))
+
+const userStore = useUserStore()
+const usuario = computed(() => {
+  return {
+    nombre: userStore.usuario,
+    role: userStore.rol,
+    id: userStore.id,
+  }
+})
+console.log('ID Usuario:', usuario.value.id)
 
 const baseurl = import.meta.env.VITE_API_BASE
 
@@ -749,14 +759,6 @@ const formDatSF = ref({
 const idSolicitudFondos = ref(null)
 const numeroFormularioSF = ref(null)
 // Nuevo estado para controlar el bloqueo
-
-const userStore = useUserStore()
-const usuario = computed(() => {
-  return {
-    nombre: userStore.usuario,
-    role: userStore.rol,
-  }
-})
 
 const textoProcedencia = computed(() => {
   const fuentes = Array.isArray(formData.value?.fuente_financiamiento)
@@ -884,7 +886,7 @@ watch(
     console.log('uuuuuuuu', idSolicitante)
     console.log('uuuuuuu9', datosFormulario.value)
     const datosSolicitante = datosFormulario.value.validadores.find((fp) => fp.id === idSolicitante)
-    console.log('uuuuuu2', datosSolicitante)
+    console.log('uuuuuu2', JSON.stringify(datosSolicitante,null,2))
     //return datosSolicitante
 
     formData.value.nombre = getSafeValue(datosSolicitante.nombre)
