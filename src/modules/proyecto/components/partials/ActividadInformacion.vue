@@ -64,6 +64,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useActividad } from '../../composables/useActividad'
+import { useUserStore } from '@/stores/user'
 
 const props = defineProps({
   actividadId: {
