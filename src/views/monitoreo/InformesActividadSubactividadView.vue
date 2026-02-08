@@ -17,31 +17,13 @@
       <!-- Encabezado -->
       <v-row>
         <v-col cols="12">
-          <div class="d-flex align-center justify-space-between mb-4">
+          <div class="mb-4">
             <div>
               <PaginaTituloIcono
-                :titulo="actividad.nombreCorto"
+                :titulo="'Informes Actividad/Subactividad'"
                 :icon="'mdi-clipboard-text-multiple'"
               />
-              <v-breadcrumbs :items="breadcrumbs" class="px-0 mt-2"></v-breadcrumbs>
-            </div>
-            <div class="d-flex gap-2">
-              <v-btn
-                color="primary"
-                variant="tonal"
-                prepend-icon="mdi-file-document-plus"
-                @click="crearInformeActividad"
-              >
-                Nuevo Informe
-              </v-btn>
-              <v-btn
-                color="secondary"
-                variant="outlined"
-                prepend-icon="mdi-file-pdf-box"
-                @click="exportarInformes"
-              >
-                Exportar
-              </v-btn>
+              <actividad-informacion :actividad-id="route.params.id"></actividad-informacion>
             </div>
           </div>
         </v-col>
@@ -62,69 +44,6 @@
                   <div class="text-caption text-medium-emphasis mt-1">{{ stat.subtitle }}</div>
                 </div>
               </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- Información principal de la actividad -->
-      <v-row class="mb-6">
-        <v-col cols="12">
-          <v-card elevation="2" rounded="lg">
-            <v-toolbar color="primary" density="compact">
-              <v-toolbar-title class="text-white">Información de la Actividad</v-toolbar-title>
-            </v-toolbar>
-            <v-card-text class="pa-4">
-              <v-row>
-                <v-col cols="12" md="3">
-                  <div class="mb-4">
-                    <div class="text-subtitle-2 text-medium-emphasis mb-1">Código</div>
-                    <div class="text-h6 font-weight-bold">{{ actividad.codigo }}</div>
-                  </div>
-                </v-col>
-                <v-col cols="12" md="3">
-                  <div class="mb-4">
-                    <div class="text-subtitle-2 text-medium-emphasis mb-1">Estado</div>
-                    <v-chip :color="getEstadoColor(actividad.estado)" size="small">
-                      {{ actividad.estado }}
-                    </v-chip>
-                  </div>
-                </v-col>
-                <v-col cols="12" md="3">
-                  <div class="mb-4">
-                    <div class="text-subtitle-2 text-medium-emphasis mb-1">Presupuesto Total</div>
-                    <div class="text-h6 font-weight-bold text-primary">
-                      ${{ formatNumber(actividad.presupuesto) }}
-                    </div>
-                  </div>
-                </v-col>
-                <v-col cols="12" md="3">
-                  <div class="mb-4">
-                    <div class="text-subtitle-2 text-medium-emphasis mb-1">Total Reportado</div>
-                    <div class="text-h6 font-weight-bold text-success">
-                      ${{ formatNumber(actividad.totalReportado) }}
-                    </div>
-                  </div>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="12" md="6">
-                  <div>
-                    <div class="text-subtitle-2 text-medium-emphasis mb-1">Período</div>
-                    <div class="text-body-1">
-                      {{ actividad.fecha_inicio }} - {{ actividad.fecha_cierre }}
-                    </div>
-                  </div>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <div>
-                    <div class="text-subtitle-2 text-medium-emphasis mb-1">Grado de Ejecución</div>
-                    <v-chip :color="getGradoEjecucionColor(actividad.gradoEjecucion)" size="small">
-                      {{ actividad.gradoEjecucion }}
-                    </v-chip>
-                  </div>
-                </v-col>
-              </v-row>
             </v-card-text>
           </v-card>
         </v-col>
@@ -152,6 +71,10 @@
               <v-tab value="informacion-general">
                 <v-icon start icon="mdi-information"></v-icon>
                 Información General
+              </v-tab>
+              <v-tab value="busqueda">
+                <v-icon start icon="mdi-magnify"></v-icon>
+                Búsqueda
               </v-tab>
             </v-tabs>
 
@@ -226,7 +149,7 @@
                             <div>
                               <div class="text-caption text-medium-emphasis mb-1">Planificado</div>
                               <div class="text-body-1 font-weight-bold">
-                                ${{ formatNumber(informe.presupuestoPlanificado) }}
+                                Bs{{ formatNumber(informe.presupuestoPlanificado) }}
                               </div>
                             </div>
                           </v-col>
@@ -234,7 +157,7 @@
                             <div>
                               <div class="text-caption text-medium-emphasis mb-1">Ejecutado</div>
                               <div class="text-body-1 font-weight-bold">
-                                ${{ formatNumber(informe.presupuestoEjecutado) }}
+                                Bs{{ formatNumber(informe.presupuestoEjecutado) }}
                               </div>
                             </div>
                           </v-col>
@@ -332,7 +255,7 @@
                             </v-chip>
                             <v-chip size="small" variant="outlined">
                               <v-icon start icon="mdi-cash" size="x-small"></v-icon>
-                              ${{ formatNumber(tarea.presupuesto) }}
+                              Bs{{ formatNumber(tarea.presupuesto) }}
                             </v-chip>
                           </v-col>
                           <v-col cols="12" md="4" class="d-flex align-center justify-end">
@@ -440,13 +363,13 @@
                                   <div>
                                     <div class="text-caption text-medium-emphasis">Planificado</div>
                                     <div class="text-body-2 font-weight-bold">
-                                      ${{ formatNumber(informe.presupuestoPlanificado) }}
+                                      Bs{{ formatNumber(informe.presupuestoPlanificado) }}
                                     </div>
                                   </div>
                                   <div>
                                     <div class="text-caption text-medium-emphasis">Ejecutado</div>
                                     <div class="text-body-2 font-weight-bold">
-                                      ${{ formatNumber(informe.presupuestoEjecutado) }}
+                                      Bs{{ formatNumber(informe.presupuestoEjecutado) }}
                                     </div>
                                   </div>
                                 </div>
@@ -548,7 +471,7 @@
                               Presupuesto Total
                             </v-list-item-title>
                             <v-list-item-subtitle class="text-h6 text-primary">
-                              ${{ formatNumber(actividad.presupuesto) }}
+                              Bs{{ formatNumber(actividad.presupuesto) }}
                             </v-list-item-subtitle>
                           </v-list-item>
                         </v-list>
@@ -708,6 +631,280 @@
                   </v-col>
                 </v-row>
               </v-window-item>
+
+              <!-- Tab: Búsqueda -->
+              <v-window-item value="busqueda">
+                <div class="d-flex justify-space-between align-center mb-4">
+                  <h3 class="text-h5 font-weight-bold">Buscar Informes</h3>
+                  <v-btn
+                    color="primary"
+                    variant="tonal"
+                    prepend-icon="mdi-file-document-plus"
+                    @click="crearInformeActividad"
+                  >
+                    Nuevo Informe
+                  </v-btn>
+                </div>
+
+                <!-- Barra de búsqueda -->
+                <v-card class="mb-6" elevation="2">
+                  <v-card-text class="pa-4">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="searchQuery"
+                          label="Buscar por código o nombre"
+                          placeholder="Ej: INF-001, Reunión de planificación"
+                          prepend-inner-icon="mdi-magnify"
+                          clearable
+                          variant="outlined"
+                          @keyup.enter="realizarBusqueda"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="3">
+                        <v-select
+                          v-model="searchType"
+                          label="Tipo de búsqueda"
+                          :items="tiposBusqueda"
+                          variant="outlined"
+                        ></v-select>
+                      </v-col>
+                      <v-col cols="12" md="3" class="d-flex align-end">
+                        <v-btn
+                          color="primary"
+                          variant="flat"
+                          block
+                          @click="realizarBusqueda"
+                          :loading="searching"
+                        >
+                          <v-icon start icon="mdi-magnify"></v-icon>
+                          Buscar
+                        </v-btn>
+                      </v-col>
+                    </v-row>
+
+                    <!-- Filtros adicionales -->
+                    <v-expansion-panels flat class="mt-2">
+                      <v-expansion-panel>
+                        <v-expansion-panel-title>
+                          <v-icon icon="mdi-filter" class="mr-2"></v-icon>
+                          Filtros avanzados
+                        </v-expansion-panel-title>
+                        <v-expansion-panel-text>
+                          <v-row>
+                            <v-col cols="12" md="4">
+                              <v-select
+                                v-model="filtroEstado"
+                                label="Estado del informe"
+                                :items="estadosInforme"
+                                clearable
+                                variant="outlined"
+                              ></v-select>
+                            </v-col>
+                            <v-col cols="12" md="4">
+                              <v-select
+                                v-model="filtroTipo"
+                                label="Tipo de actividad"
+                                :items="tiposActividad"
+                                clearable
+                                variant="outlined"
+                              ></v-select>
+                            </v-col>
+                            <v-col cols="12" md="4">
+                              <v-menu>
+                                <template v-slot:activator="{ props }">
+                                  <v-text-field
+                                    v-model="filtroFecha"
+                                    label="Fecha de ejecución"
+                                    prepend-inner-icon="mdi-calendar"
+                                    readonly
+                                    variant="outlined"
+                                    v-bind="props"
+                                  ></v-text-field>
+                                </template>
+                                <v-date-picker v-model="filtroFecha"></v-date-picker>
+                              </v-menu>
+                            </v-col>
+                          </v-row>
+                        </v-expansion-panel-text>
+                      </v-expansion-panel>
+                    </v-expansion-panels>
+                  </v-card-text>
+                </v-card>
+
+                <!-- Resultados de búsqueda -->
+                <div>
+                  <div class="d-flex justify-space-between align-center mb-4">
+                    <h4 class="text-h6">Resultados de búsqueda</h4>
+                    <div class="d-flex align-center">
+                      <span class="text-caption text-medium-emphasis mr-2">
+                        {{ resultadosBusqueda.length }} resultado(s) encontrado(s)
+                      </span>
+                      <v-btn
+                        v-if="resultadosBusqueda.length > 0"
+                        color="secondary"
+                        variant="text"
+                        size="small"
+                        @click="limpiarBusqueda"
+                      >
+                        Limpiar búsqueda
+                      </v-btn>
+                    </div>
+                  </div>
+
+                  <v-alert
+                    v-if="resultadosBusqueda.length === 0 && !searchQuery"
+                    type="info"
+                    variant="tonal"
+                    class="mb-4"
+                  >
+                    <template v-slot:prepend>
+                      <v-icon>mdi-information</v-icon>
+                    </template>
+                    Ingresa un término de búsqueda para encontrar informes por código, nombre o
+                    descripción.
+                  </v-alert>
+
+                  <v-alert
+                    v-else-if="resultadosBusqueda.length === 0 && searchQuery"
+                    type="warning"
+                    variant="tonal"
+                    class="mb-4"
+                  >
+                    <template v-slot:prepend>
+                      <v-icon>mdi-alert</v-icon>
+                    </template>
+                    No se encontraron resultados para "{{ searchQuery }}". Intenta con otros
+                    términos.
+                  </v-alert>
+
+                  <!-- Resultados -->
+                  <v-row v-if="resultadosBusqueda.length > 0">
+                    <v-col
+                      v-for="informe in resultadosBusqueda"
+                      :key="informe.id"
+                      cols="12"
+                      md="6"
+                      lg="4"
+                    >
+                      <v-card
+                        elevation="2"
+                        rounded="lg"
+                        class="h-100 informe-card"
+                        :color="getInformeCardColor(informe)"
+                        variant="tonal"
+                      >
+                        <v-card-item>
+                          <div class="d-flex justify-space-between align-start mb-2">
+                            <div>
+                              <v-card-title class="text-h6 pa-0 mb-1">
+                                {{ informe.numeroInforme }}
+                              </v-card-title>
+                              <v-card-subtitle class="pa-0">
+                                <v-icon start icon="mdi-calendar" size="small"></v-icon>
+                                {{ informe.fechaEjecucion }}
+                                <span v-if="informe.tarea" class="ml-2">
+                                  <v-icon icon="mdi-folder" size="small"></v-icon>
+                                  {{ informe.tarea.codigo }}
+                                </span>
+                              </v-card-subtitle>
+                            </div>
+                            <v-chip v-if="informe.tipoActividad" size="small" variant="flat">
+                              {{ informe.tipoActividad }}
+                            </v-chip>
+                          </div>
+                        </v-card-item>
+
+                        <v-card-text>
+                          <div class="mb-3">
+                            <div class="text-caption text-medium-emphasis mb-1">Origen</div>
+                            <div class="text-body-2">
+                              <v-chip size="x-small" :color="informe.tarea ? 'info' : 'primary'">
+                                {{
+                                  informe.tarea
+                                    ? 'Tarea: ' + informe.tarea.titulo
+                                    : 'Actividad Principal'
+                                }}
+                              </v-chip>
+                            </div>
+                          </div>
+
+                          <div class="mb-3">
+                            <div class="text-caption text-medium-emphasis mb-1">Objetivo</div>
+                            <div class="text-body-2 truncate-text">
+                              {{
+                                informe.objetivoActividad ||
+                                informe.objetivoTarea ||
+                                'Sin objetivo especificado'
+                              }}
+                            </div>
+                          </div>
+
+                          <v-divider class="my-3"></v-divider>
+
+                          <v-row>
+                            <v-col cols="6">
+                              <div>
+                                <div class="text-caption text-medium-emphasis mb-1">
+                                  Planificado
+                                </div>
+                                <div class="text-body-1 font-weight-bold">
+                                  Bs{{ formatNumber(informe.presupuestoPlanificado) }}
+                                </div>
+                              </div>
+                            </v-col>
+                            <v-col cols="6">
+                              <div>
+                                <div class="text-caption text-medium-emphasis mb-1">Ejecutado</div>
+                                <div class="text-body-1 font-weight-bold">
+                                  Bs{{ formatNumber(informe.presupuestoEjecutado) }}
+                                </div>
+                              </div>
+                            </v-col>
+                          </v-row>
+
+                          <div v-if="informe.comentariosRecomendaciones" class="mt-4">
+                            <div class="text-caption text-medium-emphasis mb-1">Comentarios</div>
+                            <div class="text-body-2">
+                              {{ truncarTexto(informe.comentariosRecomendaciones, 80) }}
+                            </div>
+                          </div>
+                        </v-card-text>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            color="primary"
+                            variant="text"
+                            size="small"
+                            prepend-icon="mdi-eye"
+                            @click="
+                              informe.tarea
+                                ? verDetalleInformeTarea(informe.id)
+                                : verDetalleInforme(informe.id)
+                            "
+                          >
+                            Ver
+                          </v-btn>
+                          <v-btn
+                            color="secondary"
+                            variant="text"
+                            size="small"
+                            prepend-icon="mdi-pencil"
+                            @click="
+                              informe.tarea
+                                ? editarInformeTarea(informe.id)
+                                : editarInforme(informe.id)
+                            "
+                          >
+                            Editar
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+                </div>
+              </v-window-item>
             </v-window>
           </v-card>
         </v-col>
@@ -725,11 +922,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useInfPrinActTareaListaStore } from '@/modules/formularios/store/useInfPrinActTareaListaStore'
 import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
+import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
 // Store y router
 const storeListasInformes = useInfPrinActTareaListaStore()
@@ -741,14 +939,37 @@ const loading = ref(false)
 const error = ref(null)
 const tabActivo = ref('informes-actividad')
 
+// Estado para búsqueda
+const searchQuery = ref('')
+const searchType = ref('todos')
+const searching = ref(false)
+const filtroEstado = ref(null)
+const filtroTipo = ref(null)
+const filtroFecha = ref(null)
+
+const tiposBusqueda = ref([
+  { title: 'Todos los informes', value: 'todos' },
+  { title: 'Solo actividad principal', value: 'principal' },
+  { title: 'Solo informes de tareas', value: 'tareas' },
+])
+
+const estadosInforme = ref([
+  { title: 'Planificado', value: 'PLAN' },
+  { title: 'En ejecución', value: 'EJEC' },
+  { title: 'Completado', value: 'COMP' },
+  { title: 'Cancelado', value: 'CANC' },
+])
+
+const tiposActividad = ref([
+  { title: 'Reunión', value: 'REUNION' },
+  { title: 'Taller', value: 'TALLER' },
+  { title: 'Capacitación', value: 'CAPACITACION' },
+  { title: 'Visita de campo', value: 'VISITA' },
+  { title: 'Evaluación', value: 'EVALUACION' },
+])
+
 // Computed properties
 const actividad = computed(() => storeListasInformes.actividadDetalles?.data || null)
-
-const breadcrumbs = computed(() => [
-  'Monitoreo',
-  'Actividades',
-  actividad.value?.nombreCorto || 'Cargando...',
-])
 
 const estadisticas = computed(() => [
   {
@@ -788,6 +1009,93 @@ const totalInformesTareas = computed(() => {
   }, 0)
 })
 
+const resultadosBusqueda = computed(() => {
+  if (!searchQuery.value && !filtroEstado.value && !filtroTipo.value && !filtroFecha.value) {
+    return []
+  }
+
+  let todosInformes = []
+
+  // Agregar informes de actividad principal
+  if (actividad.value?.informes_actividad) {
+    todosInformes = todosInformes.concat(
+      actividad.value.informes_actividad.map((informe) => ({
+        ...informe,
+        tarea: null,
+        origen: 'actividad',
+      })),
+    )
+  }
+
+  // Agregar informes de tareas
+  if (actividad.value?.tareas) {
+    actividad.value.tareas.forEach((tarea) => {
+      if (tarea.informes_tarea) {
+        todosInformes = todosInformes.concat(
+          tarea.informes_tarea.map((informe) => ({
+            ...informe,
+            tarea: {
+              id: tarea.id,
+              codigo: tarea.codigo,
+              titulo: tarea.titulo,
+            },
+            origen: 'tarea',
+          })),
+        )
+      }
+    })
+  }
+
+  // Aplicar filtros
+  let resultados = todosInformes
+
+  // Filtro por tipo de búsqueda
+  if (searchType.value === 'principal') {
+    resultados = resultados.filter((informe) => informe.origen === 'actividad')
+  } else if (searchType.value === 'tareas') {
+    resultados = resultados.filter((informe) => informe.origen === 'tarea')
+  }
+
+  // Filtro por texto de búsqueda
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    resultados = resultados.filter((informe) => {
+      return (
+        (informe.numeroInforme && informe.numeroInforme.toLowerCase().includes(query)) ||
+        (informe.objetivoActividad && informe.objetivoActividad.toLowerCase().includes(query)) ||
+        (informe.objetivoTarea && informe.objetivoTarea.toLowerCase().includes(query)) ||
+        (informe.tipoActividad && informe.tipoActividad.toLowerCase().includes(query)) ||
+        (informe.tarea &&
+          informe.tarea.titulo &&
+          informe.tarea.titulo.toLowerCase().includes(query)) ||
+        (informe.tarea &&
+          informe.tarea.codigo &&
+          informe.tarea.codigo.toLowerCase().includes(query))
+      )
+    })
+  }
+
+  // Filtro por estado (simulado ya que no hay campo estado en informes)
+  if (filtroEstado.value) {
+    // Este filtro sería para un campo de estado si existiera
+    // resultados = resultados.filter(informe => informe.estado === filtroEstado.value)
+  }
+
+  // Filtro por tipo de actividad
+  if (filtroTipo.value) {
+    resultados = resultados.filter((informe) => informe.tipoActividad === filtroTipo.value)
+  }
+
+  // Filtro por fecha (simplificado)
+  if (filtroFecha.value) {
+    resultados = resultados.filter(
+      (informe) => informe.fechaEjecucion && informe.fechaEjecucion.includes(filtroFecha.value),
+    )
+  }
+
+  return resultados
+})
+
 // Métodos
 const cargarDatos = async () => {
   loading.value = true
@@ -800,6 +1108,22 @@ const cargarDatos = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const realizarBusqueda = () => {
+  searching.value = true
+  // Simular búsqueda
+  setTimeout(() => {
+    searching.value = false
+  }, 500)
+}
+
+const limpiarBusqueda = () => {
+  searchQuery.value = ''
+  searchType.value = 'todos'
+  filtroEstado.value = null
+  filtroTipo.value = null
+  filtroFecha.value = null
 }
 
 const getEstadoColor = (estado) => {
@@ -884,6 +1208,13 @@ const verDetalleInformeTarea = (informeId) => {
   })
 }
 
+const editarInformeTarea = (informeId) => {
+  router.push({
+    name: 'editar-informe-tarea',
+    params: { id: informeId },
+  })
+}
+
 const verDetalleTarea = (tareaId) => {
   router.push({
     name: 'detalle-tarea',
@@ -898,10 +1229,17 @@ const editarInforme = (informeId) => {
   })
 }
 
-const exportarInformes = () => {
-  console.log('Exportando informes...')
-  // Implementar lógica de exportación
-}
+// const exportarInformes = () => {
+//   console.log('Exportando informes...')
+//   // Implementar lógica de exportación
+// }
+
+// Watch para limpiar filtros cuando se cambia de tab
+watch(tabActivo, (newTab) => {
+  if (newTab !== 'busqueda') {
+    limpiarBusqueda()
+  }
+})
 
 // Hook de ciclo de vida
 onMounted(() => {
