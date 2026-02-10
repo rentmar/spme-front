@@ -21,12 +21,12 @@
         </template>
       </v-list-item>
       <!-- Agregar Actividades -->
-      <v-list-item class="custom-menu-item" @click="agregarActividades">
+      <!-- <v-list-item class="custom-menu-item" @click="agregarActividades">
         <v-list-item-title>Agregar Actividades</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-chart-line-variant'"></v-icon>
         </template>
-      </v-list-item>
+      </v-list-item> -->
     </template>
     <template #handles>
       <Handle type="target" position="top" :id="`source-${id}`" :style="handleStyle" />

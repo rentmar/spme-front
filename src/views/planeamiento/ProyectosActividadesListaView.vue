@@ -1,22 +1,22 @@
 <template>
   <v-container>
-    <!--overlay de carga-->
+    <!-- Overlay de carga -->
     <v-overlay :model-value="cargandoGeneral" class="align-center justify-center">
       <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
       <p class="mt-4 text-h6">Cargando proyecto...</p>
     </v-overlay>
 
-    <!--CONTENIDO-->
+    <!-- CONTENIDO -->
     <v-row v-if="!cargandoGeneral">
-      <!-- Columna principal - Proyectos y Actividades -->
+      <!-- Columna principal - Proyectos y PEI -->
       <v-col cols="12" md="8" lg="9">
         <v-card class="pa-4" elevation="2">
           <v-card-title class="d-flex justify-space-between align-center">
-            <span>Proyectos y Actividades</span>
+            <span>Proyectos y PEI</span>
             <span class="text-caption text-grey">Total: {{ filteredItems.length }}</span>
           </v-card-title>
 
-          <!-- Filtros -->
+          <!-- Filtros simplificados -->
           <v-card-text class="pt-0 pb-4">
             <v-row>
               <v-col cols="12" md="6">
@@ -41,7 +41,7 @@
             </v-row>
           </v-card-text>
 
-          <!-- Lista de proyectos y actividades -->
+          <!-- Lista de PEI y proyectos -->
           <v-list class="py-0">
             <template v-for="item in filteredItems" :key="item.id">
               <!-- Item de PEI -->
@@ -62,9 +62,6 @@
                     <span>Período: {{ item.periodo }}</span>
                   </div>
                   <div class="text-caption mt-1">{{ item.descripcion }}</div>
-                  <div class="d-flex justify-space-between mt-1">
-                    <span class="text-caption">Actividades: {{ item.totalActividades }}</span>
-                  </div>
                 </v-list-item-subtitle>
 
                 <template v-slot:append>
@@ -96,9 +93,9 @@
                 <v-list-item-subtitle class="mt-1">
                   <div class="d-flex align-center">
                     <v-chip small color="primary" text-color="white" class="mr-2">
-                      En Planificación
+                      {{ item.estado || 'En Planificación' }}
                     </v-chip>
-                    <span>Código: {{ item.codigo }}</span>
+                    <span v-if="item.codigo">Código: {{ item.codigo }}</span>
                   </div>
                   <div class="text-caption mt-1">{{ item.descripcion }}</div>
                 </v-list-item-subtitle>
@@ -120,41 +117,6 @@
                 </template>
               </v-list-item>
 
-              <!-- Item de Actividad -->
-              <v-list-item v-else-if="item.tipo === 'actividad'" :value="item" class="mb-2">
-                <template v-slot:prepend>
-                  <v-avatar color="orange" class="mr-4">
-                    <v-icon dark>mdi-checkbox-marked-circle-outline</v-icon>
-                  </v-avatar>
-                </template>
-
-                <v-list-item-title class="font-weight-bold">{{ item.titulo }}</v-list-item-title>
-                <v-list-item-subtitle class="mt-1">
-                  <div class="d-flex align-center">
-                    <v-chip small color="orange" text-color="white" class="mr-2">
-                      {{ item.estado }}
-                    </v-chip>
-                    <span>Código: {{ item.codigo }}</span>
-                  </div>
-                  <div class="text-caption mt-1">{{ item.responsable }}</div>
-                  <v-progress-linear
-                    :model-value="item.avance"
-                    height="8"
-                    color="light-green"
-                    class="mt-2"
-                  ></v-progress-linear>
-                  <div class="d-flex justify-space-between mt-1">
-                    <span class="text-caption">Avance: {{ item.avance }}%</span>
-                    <span class="text-caption">{{ item.fecha }}</span>
-                  </div>
-                </v-list-item-subtitle>
-
-                <template v-slot:append>
-                  <div class="d-flex">
-                    <!-- Botones de actividades -->
-                  </div>
-                </template>
-              </v-list-item>
               <v-divider></v-divider>
             </template>
 
@@ -165,7 +127,7 @@
         </v-card>
       </v-col>
 
-      <!-- Columna lateral - Resumen -->
+      <!-- Columna lateral - Resumen simplificado -->
       <v-col cols="12" md="4" lg="3">
         <!-- Tarjeta de resumen -->
         <v-card elevation="2">
@@ -189,38 +151,8 @@
               <template v-slot:prepend>
                 <v-icon color="primary">mdi-folder</v-icon>
               </template>
-              <v-list-item-title>Proyectos en planificación</v-list-item-title>
+              <v-list-item-title>Proyectos</v-list-item-title>
               <v-list-item-subtitle class="text-right">{{ proyectos.length }}</v-list-item-subtitle>
-            </v-list-item>
-
-            <v-list-item>
-              <template v-slot:prepend>
-                <v-icon color="orange">mdi-checkbox-marked-circle-outline</v-icon>
-              </template>
-              <v-list-item-title>Actividades PEI</v-list-item-title>
-              <v-list-item-subtitle class="text-right">{{
-                actividades.length
-              }}</v-list-item-subtitle>
-            </v-list-item>
-
-            <v-list-item>
-              <template v-slot:prepend>
-                <v-icon color="green">mdi-check-all</v-icon>
-              </template>
-              <v-list-item-title>Actividades completadas</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ actividadesCompletadas }}
-              </v-list-item-subtitle>
-            </v-list-item>
-
-            <v-list-item>
-              <template v-slot:prepend>
-                <v-icon color="blue">mdi-progress-check</v-icon>
-              </template>
-              <v-list-item-title>Avance promedio</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ avancePromedio }}%
-              </v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-card>
@@ -243,7 +175,6 @@ const tiposFiltro = ref([
   { value: 'todos', title: 'Todos' },
   { value: 'pei', title: 'PEI Vigente' },
   { value: 'proyectos', title: 'Solo Proyectos' },
-  { value: 'actividades', title: 'Solo Actividades' },
 ])
 
 // El pei vigente
@@ -269,6 +200,10 @@ const proyectos = computed(() => {
     proyectosRaw.value?.map((p) => ({
       ...p,
       tipo: 'proyecto',
+      titulo: p.nombre || p.titulo || 'Sin título',
+      codigo: p.codigo || `PROY-${p.id}`,
+      descripcion: p.descripcion || 'Sin descripción',
+      estado: p.estado || 'En Planificación',
     })) || []
   )
 })
@@ -280,7 +215,7 @@ const peiItem = computed(() => {
   return {
     id: peiVigente.value.id,
     tipo: 'pei',
-    titulo: peiVigente.value.nombre,
+    titulo: peiVigente.value.nombre || 'PEI Vigente',
     codigo: `PEI-${peiVigente.value.id}`,
     descripcion: peiVigente.value.descripcion || 'Plan Estratégico Institucional vigente',
     periodo: `${formatFecha(peiVigente.value.fecha_inicio)} - ${formatFecha(peiVigente.value.fecha_fin)}`,
@@ -301,14 +236,11 @@ const cargarDatos = async () => {
       obtenerProyectosPlanificacionFiltrados(peiVigente.value.id),
     ])
   } catch (err) {
-    console.log('Error al cargar la informacion stores', err)
+    console.log('Error al cargar la información stores', err)
   }
 }
 
-// Datos dummy para actividades PEI
-const actividades = ref([])
-
-// Items combinados y filtrados
+// Items combinados y filtrados (CORREGIDO)
 const filteredItems = computed(() => {
   let items = []
 
@@ -324,55 +256,40 @@ const filteredItems = computed(() => {
     items = [...items, ...proyectos.value]
   }
 
-  // Agregar actividades si corresponde
-  if (tipoFiltro.value === 'todos' || tipoFiltro.value === 'actividades') {
-    items = [...items, ...actividades.value]
-  }
+  // Aplicar filtro de búsqueda (CORREGIDO - con manejo de valores nulos)
+  if (searchQuery.value && searchQuery.value.trim() !== '') {
+    const query = searchQuery.value.toLowerCase().trim()
+    items = items.filter((item) => {
+      // Verificar que las propiedades existan antes de acceder a toLowerCase()
+      const codigoMatch = item.codigo ? item.codigo.toLowerCase().includes(query) : false
+      const tituloMatch = item.titulo ? item.titulo.toLowerCase().includes(query) : false
+      const descripcionMatch = item.descripcion
+        ? item.descripcion.toLowerCase().includes(query)
+        : false
 
-  // Aplicar filtro de búsqueda
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    items = items.filter(
-      (item) =>
-        item.codigo.toLowerCase().includes(query) ||
-        item.titulo.toLowerCase().includes(query) ||
-        (item.descripcion && item.descripcion.toLowerCase().includes(query)),
-    )
+      return codigoMatch || tituloMatch || descripcionMatch
+    })
   }
 
   return items
 })
 
-// Actividades completadas
-const actividadesCompletadas = computed(() => {
-  return actividades.value.filter((a) => a.avance === 100).length
-})
-
-// Avance promedio
-const avancePromedio = computed(() => {
-  if (actividades.value.length === 0) return 0
-  const total = actividades.value.reduce((sum, a) => sum + a.avance, 0)
-  return Math.round(total / actividades.value.length)
-})
-
 // Función para formatear fechas
 const formatFecha = (fechaString) => {
-  if (!fechaString) return ''
-  const fecha = new Date(fechaString)
-  return fecha.toLocaleDateString('es-ES')
-}
+  if (!fechaString) return 'Sin fecha'
+  try {
+    const fecha = new Date(fechaString)
+    // Verificar si es una fecha válida
+    if (isNaN(fecha.getTime())) return 'Fecha inválida'
 
-// Métodos para el PEI
-const verPlanificacionPEI = (pei) => {
-  console.log('Ver planificación del PEI:', pei)
-  // Navegar a la vista de planificación del PEI
-  // router.push(`/pei/${pei.id}/planificacion`)
-}
-
-const verDocumentacionPEI = (pei) => {
-  console.log('Ver documentación del PEI:', pei)
-  // Navegar a la documentación del PEI
-  // router.push(`/pei/${pei.id}/documentacion`)
+    return fecha.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+  } catch {
+    return 'Fecha inválida'
+  }
 }
 </script>
 
@@ -393,10 +310,6 @@ const verDocumentacionPEI = (pei) => {
 
 .text-right {
   text-align: right;
-}
-
-.v-progress-linear {
-  border-radius: 4px;
 }
 
 .v-avatar {

@@ -56,10 +56,14 @@
               </v-toolbar>
               <v-card-text>
                 <v-card-text>
-                  <SeleccionEstructuraActividad
+                  <!-- <SeleccionEstructuraActividad
                     :proyecto-data="props.proyectoEstructura"
                     @crear-actividad="crearActividadPlan"
-                  ></SeleccionEstructuraActividad>
+                  ></SeleccionEstructuraActividad> -->
+                  <SeleccionEstructuraActividadV2
+                    :proyecto-data="props.proyectoEstructura"
+                    @crear-actividad="crearActividadPlan"
+                  ></SeleccionEstructuraActividadV2>
                 </v-card-text>
               </v-card-text>
             </v-card>
@@ -394,6 +398,7 @@ import { useProyectoStore } from '@/modules/proyecto/store/proyectoStore'
 import { usePlanificacionStore } from '../store/usePlanificacionStore'
 //Encabezados
 import SeleccionEstructuraProyecto from './parciales/SeleccionEstructuraProyecto.vue'
+import SeleccionEstructuraActividadV2 from './parciales/SeleccionEstructuraActividadV2.vue'
 import ActividadRelacionEstructura from './parciales/ActividadRelacionEstructura.vue'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 import ListaTareasActividad from './parciales/ListaTareasActividad.vue'

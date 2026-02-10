@@ -1,5 +1,5 @@
 <template>
-  <BaseNodo :id="id" :data="data" :show-delete="true" v-bind="$attrs">
+  <BaseNodo :id="id" :data="data" :show-menu="false" :show-delete="true" v-bind="$attrs">
     <!-- Contenido del nodo -->
     <template #default>
       <div class="text-body-2">
@@ -12,8 +12,8 @@
     <!-- Menú contextual -->
     <template #menu>
       <!-- Agregar Producto Objetivo General -->
-      <v-list-item class="custom-menu-item" @click="agregarActividad">
-        <v-list-item-title>Agregar Actividad</v-list-item-title>
+      <v-list-item class="custom-menu-item">
+        <v-list-item-title>Sin acciones</v-list-item-title>
         <template v-slot:prepend>
           <v-icon :icon="'mdi-clock-outline'"></v-icon>
         </template>
@@ -63,29 +63,6 @@ const emit = defineEmits(['addActividadProcesoResOG'])
 /* Funciones */
 //Editar el nodo
 const agregarActividad = async () => {
-  // const act = {
-  //   codigo: 'ACT',
-  //   descripcion: '',
-  //   supuestos: '',
-  //   riesgos: '',
-  //   objetivo_de_actividad: '',
-  //   descripcion_evaluacion: '',
-  //   fecha_programada: null,
-  //   fecha_inicio: null,
-  //   fecha_cierre: null,
-  //   presupuesto: null,
-  //   presupuestoGlobal: null,
-  //   procedencia_fondos: null,
-  //   estado: 'PLAN',
-  //   responsable: null,
-  //   proceso: idCurrentNode,
-  //   resultado_og: null,
-  //   resultado_oe: null,
-  //   producto_oe: null,
-  //   objetivo_pei: null,
-  //   indicador_pei: null,
-  //   tipo: [],
-  // }
   const act = {
     codigo: 'ACT',
     descripcion: '',

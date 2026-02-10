@@ -105,7 +105,7 @@ export function useIndicadores() {
     }
   }
 
-  /*********** Indicadores Resultado Objetivo General *************/
+  /*********** Indicadores obejtivo Especifico *************/
   //cargar por id
   async function cargarIndicadorObjEspecifico(id) {
     loading.value = true
