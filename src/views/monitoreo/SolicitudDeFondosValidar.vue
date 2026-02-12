@@ -171,7 +171,7 @@
                     label="Descripción de la Actividad"
                     variant="outlined"
                     rows="3"
-                    readonly
+                    :readonly="soloLectura"
                   ></v-textarea>
                   <v-row>
                     <v-col cols="12" md="4">
@@ -202,7 +202,7 @@
                     label="Objetivo de la Actividad"
                     variant="outlined"
                     rows="3"
-                    readonly
+                    :readonly="soloLectura"
                   ></v-textarea>
                   <v-text-field
                     v-model="textoProcedencia"
@@ -220,7 +220,7 @@
                       type="date"
                       variant="outlined"
                       density="compact"
-                      readonly
+                      :readonly="soloLectura"
                     ></v-text-field>
                   </v-col>
                   <!-- <v-col cols="12">
@@ -251,7 +251,7 @@
                       variant="outlined"
                       prepend-icon="mdi-plus"
                       @click="addGasto"
-                      disabled
+                      :disabled="soloLectura"
                     >
                       Agregar Item
                     </v-btn>
@@ -279,7 +279,7 @@
                             hide-details
                             placeholder="1.1.1"
                             class="compact-field"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </td>
                         <td class="wide-column">
@@ -289,7 +289,7 @@
                             density="compact"
                             hide-details
                             placeholder="Descripción del gasto"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
@@ -301,7 +301,7 @@
                             hide-details
                             placeholder="0.00"
                             class="compact-field"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </td>
                         <td class="text-center action-column">
@@ -311,7 +311,7 @@
                             size="small"
                             variant="text"
                             @click="removeGasto(index)"
-                            disabled
+                            :disabled="soloLectura"
                           >
                             <v-icon>mdi-delete</v-icon>
                           </v-btn>
@@ -336,7 +336,7 @@
                         v-model="formData.lugar_solicitud"
                         label="Lugar de la Solicitud"
                         variant="outlined"
-                        readonly
+                        :readonly="soloLectura"
                       ></v-text-field>
                       <!-- <v-select
                         v-model="formData.forma_pago"
@@ -370,7 +370,7 @@
                         label="Forma de Pago"
                         variant="outlined"
                         bg-color="blue-lighten-5"
-                        readonly
+                        :readonly="soloLectura"
                       ></v-select>
                     </v-col>
                   </v-row>
@@ -382,7 +382,7 @@
                           v-model="formData.datos_forma_pago.otros.nombre_otros"
                           label="Nombre a quien se realiza el pago"
                           variant="outlined"
-                          readonly
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" md="6">
@@ -390,7 +390,7 @@
                           v-model="formData.datos_forma_pago.otros.ci_otros"
                           label="Documento de Identidad C.I."
                           variant="outlined"
-                          readonly
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                     </v-row>
@@ -402,7 +402,7 @@
                           v-model="formData.datos_forma_pago.transferencia.nombre_transferencia"
                           label="Nombre completo a quien se realiza la transferencia"
                           variant="outlined"
-                          readonly
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" md="6">
@@ -410,7 +410,7 @@
                           v-model="formData.datos_forma_pago.transferencia.ci_transferencia"
                           label="Documento de Identidad C.I."
                           variant="outlined"
-                          readonly
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" md="6">
@@ -418,7 +418,7 @@
                           v-model="formData.datos_forma_pago.transferencia.entidad_bancaria"
                           label="Nombre de Entidad Bancaria"
                           variant="outlined"
-                          readonly
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" md="6">
@@ -427,7 +427,7 @@
                           :items="['Ahorro', 'Corriente']"
                           label="Tipo de Cuenta (Ahorro/ Corriente)"
                           variant="outlined"
-                          readonly
+                          :readonly="soloLectura"
                         ></v-select>
                       </v-col>
                       <v-col cols="12" md="6">
@@ -435,7 +435,7 @@
                           v-model="formData.datos_forma_pago.transferencia.numero_cuenta"
                           label="Número de Cuenta Bancaria"
                           variant="outlined"
-                          readonly
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                     </v-row>
@@ -460,7 +460,7 @@
                         item-value="id"
                         label="Contador"
                         variant="outlined"
-                        readonly
+                        :readonly="soloLectura"
                       ></v-select>
                     </v-col>
                     <v-col cols="12" md="6" class="d-flex align-center">
@@ -491,7 +491,7 @@
                         item-value="id"
                         label="Coordinador"
                         variant="outlined"
-                        readonly
+                        :readonly="soloLectura"
                       ></v-select>
                     </v-col>
                     <v-col cols="12" md="6" class="d-flex align-center">
@@ -581,6 +581,17 @@
                     disabled
                   >
                     Enviar Solicitud
+                  </v-btn>
+                  <v-btn
+                    color="primary"
+                    variant="flat"
+                    size="large"
+                    prepend-icon="mdi-update"
+                    type="submit"
+                    :loading="loading"
+                    :disabled="soloLectura"
+                  >
+                    Actualizar
                   </v-btn>
                 </div>
               </v-form>
@@ -683,6 +694,7 @@ const loading = ref(false)
 const form = ref(null)
 const responsablesList = ref([])
 const coordinadoresList = ref([])
+const soloLectura = ref(false)
 
 // const {
 //   generarPdfSolicitudFondos,
@@ -898,6 +910,37 @@ watch(
   },
   { deep: true },
 )
+
+// borra los campos no seleccionados en "forma de pago"
+// ejemplo, si seleccionas "otros", se borran los campos "transferencia_bancaria"
+watch(
+  () => formData.value.forma_pago,
+  (newVal, oldVal) => {
+    if (newVal === oldVal) return; // No hacer nada si no cambió
+
+    // Obtener el nombre de la forma de pago seleccionada
+    const formaPagoSeleccionada = formasPagoOptions.value.find(fp => fp.id === newVal);
+    const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.formaPago : '';
+
+    // Resetear campos según la opción seleccionada
+    if (nombreFormaPago === 'Transferencia Bancaria') {
+      // Si seleccionó Transferencia, resetear campos de Otros
+      formData.value.datos_forma_pago.otros = {
+        nombre_otros: '',
+        ci_otros: ''
+      };
+    } else {
+      // Si seleccionó cualquier otra opción, resetear campos de Transferencia
+      formData.value.datos_forma_pago.transferencia = {
+        nombre_transferencia: '',
+        ci_transferencia: '',
+        entidad_bancaria: '',
+        tipo_cuenta: '',
+        numero_cuenta: ''
+      };
+    }
+  }
+);
 
 const formasPagoOptions = computed(() => {
   if (datosFormulario.value && datosFormulario.value.formaPago) {
@@ -1220,34 +1263,65 @@ async function submitForm() {
     if (totalMontoSolicitado.value <= 0) {
       throw new Error('El monto total solicitado debe ser mayor a cero.')
     }
-    // Transformar los datos al formato esperado por el endpoint
+    // // Transformar los datos al formato esperado por el endpoint
+    // const payload = {
+    //   detalle_destino_fondos: JSON.stringify({
+    //     items: formData.value.detalle_destino_fondos.map((gasto) => ({
+    //       concepto: gasto.descripcion_gasto,
+    //       monto: Number(gasto.monto),
+    //     })),
+    //   }),
+    //   forma_pago: formData.value.forma_pago,
+    //   lugar_solicitud: formData.value.lugar_solicitud,
+    //   fecha_solicitud: formData.value.fecha_solicitud,
+    //   fecha_realizacion_actividad: formData.value.fecha_ejecucion,
+    //   monto_solicitado: totalMontoSolicitado.value,
+    //   validacion_responsable: formData.value.validacion_responsable,
+    //   id_responsable: formData.value.idresponsable,
+    //   validacion_coordinador: formData.value.validacion_coordinador,
+    //   id_coordinador: formData.value.idcoordinador,
+    //   id_usuario: formData.value.id_usuario,
+    //   actividad: {
+    //     id_actividad: formData.value.id_actividad,
+    //     descripcion_actividad: formData.value.descripcion_actividad,
+    //     objetivo_actividad: formData.value.objetivo_actividad,
+    //   },
+    //   id_tarea: idTarea || null,
+    // }
+
     const payload = {
-      detalle_destino_fondos: JSON.stringify({
+      // detalle_destino_fondos should be an object, not a stringified JSON
+      detalleDestinoFondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida_sf: gasto.partida, // Changed from 'partida' to 'partida_sf'
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
-      }),
-      forma_pago: formData.value.forma_pago,
-      lugar_solicitud: formData.value.lugar_solicitud,
-      fecha_solicitud: formData.value.fecha_solicitud,
-      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
-      monto_solicitado: totalMontoSolicitado.value,
-      validacion_responsable: formData.value.validacion_responsable,
-      id_responsable: formData.value.idresponsable,
-      validacion_coordinador: formData.value.validacion_coordinador,
-      id_coordinador: formData.value.idcoordinador,
-      id_usuario: formData.value.id_usuario,
-      actividad: {
-        id_actividad: formData.value.id_actividad,
-        descripcion_actividad: formData.value.descripcion_actividad,
-        objetivo_actividad: formData.value.objetivo_actividad,
       },
-      id_tarea: idTarea || null,
+      formaPago: formData.value.forma_pago,
+      lugarSolicitud: formData.value.lugar_solicitud,
+      fechaSolicitud: formData.value.fecha_solicitud,
+      fechaRealizacionActividad: formData.value.fecha_ejecucion,
+      montoSolicitado: totalMontoSolicitado.value,
+      validacionResponsable: formData.value.validacion_contador,
+      contador: formData.value.idcontador,
+      validacionCoordinador: formData.value.validacion_coordinador,
+      coordinador: formData.value.idcoordinador,
+      usuario: formData.value.id_usuario,
+      actividad: formData.value.id_actividad,
+      descripcion_actividad: formData.value.descripcion_actividad,
+      objetivo_actividad: formData.value.objetivo_actividad,
+      // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
+      ...(formData.value.id_tarea && formData.value.id_tarea > 0 && { tarea: formData.value.id_tarea }),
+      datos_forma_pago: formData.value.datos_forma_pago,
+      bloquearIconosSolFondos: true,
+      //codigo_actividad: formData.value.codigo_actividad,
     }
 
-    const response = await fetch(baseurl + '/api/monitoreo/crear-solicitud-fondos/', {
-      method: 'POST',
+    console.log('payload enviado', JSON.stringify(payload,null,2))
+    //const response = await fetch(baseurl + '/api/monitoreo/crear-solicitud-fondos/', {
+    const response = await fetch(baseurl + 'api/solicitud-fondos-crud/' + idSolicitud + '/', {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },

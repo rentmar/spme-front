@@ -13,8 +13,7 @@
         ></ProyectoIdHeader>
 
          <br /> -->
-        <ActividadInformacion v-if="idActividad" :actividad-id="3"
-        ></ActividadInformacion>
+        <ActividadInformacion v-if="idActividad" :actividad-id="3"></ActividadInformacion>
         <br />
 
         <v-card-text>
@@ -25,7 +24,7 @@
                 label="Nombre del Seminario, curso, taller o reunión"
                 bg-color="blue-lighten-5"
                 required
-                readonly
+                :readonly="soloLectura"
               ></v-text-field>
 
               <v-row>
@@ -36,12 +35,11 @@
                     bg-color="blue-lighten-5"
                     type="date"
                     required
-                    readonly
+                    :readonly="soloLectura"
                     :max="formData.fecha_fin"
                   ></v-text-field>
                 </v-col>
-                <v-col cols="12" sm="6">
-                </v-col>
+                <v-col cols="12" sm="6"> </v-col>
               </v-row>
 
               <v-text-field
@@ -49,7 +47,7 @@
                 label="Lugar de realización"
                 bg-color="blue-lighten-5"
                 required
-                readonly
+                :readonly="soloLectura"
               ></v-text-field>
 
               <v-text-field
@@ -57,7 +55,7 @@
                 label="Organizaciones Participantes"
                 bg-color="blue-lighten-5"
                 required
-                readonly
+                :readonly="soloLectura"
               ></v-text-field>
 
               <v-text-field
@@ -65,7 +63,7 @@
                 label="Institución que invita"
                 bg-color="blue-lighten-5"
                 required
-                readonly
+                :readonly="soloLectura"
               ></v-text-field>
 
               <v-text-field
@@ -73,7 +71,7 @@
                 label="Quien cubre los gastos de estadía, transporte y viáticos"
                 bg-color="blue-lighten-5"
                 required
-                readonly
+                :readonly="soloLectura"
               ></v-text-field>
 
               <v-text-field
@@ -81,7 +79,7 @@
                 label="Fondos UNITAS"
                 bg-color="blue-lighten-5"
                 required
-                readonly
+                :readonly="soloLectura"
               ></v-text-field>
 
               <v-text-field
@@ -96,7 +94,7 @@
                 bg-color="blue-lighten-5"
                 rows="3"
                 required
-                readonly
+                :readonly="soloLectura"
               ></v-textarea>
 
               <v-textarea
@@ -105,7 +103,7 @@
                 bg-color="blue-lighten-5"
                 rows="3"
                 required
-                readonly
+                :readonly="soloLectura"
               ></v-textarea>
             </div>
 
@@ -120,6 +118,7 @@
                   rounded="lg"
                   :elevation="3"
                   @click="addGasto"
+                  :disabled="soloLectura"
                 >
                   Agregar Gasto
                 </v-btn>
@@ -144,7 +143,7 @@
                         bg-color="blue-lighten-5"
                         hide-details
                         density="compact"
-                        readonly
+                        :readonly="soloLectura"
                       ></v-text-field>
                     </td>
                     <td>
@@ -153,7 +152,7 @@
                         bg-color="blue-lighten-5"
                         hide-details
                         density="compact"
-                        readonly
+                        :readonly="soloLectura"
                       ></v-text-field>
                     </td>
                     <td>
@@ -164,7 +163,7 @@
                         hide-details
                         density="compact"
                         min="0"
-                        readonly
+                        :readonly="soloLectura"
                       ></v-text-field>
                     </td>
                     <td>
@@ -173,6 +172,7 @@
                         icon
                         color="error"
                         @click="removeGasto(index)"
+                        :disabled="soloLectura"
                       >
                         <v-icon>mdi-delete</v-icon>
                       </v-btn>
@@ -200,7 +200,7 @@
                           variant="outlined"
                           bg-color="blue-lighten-5"
                           required
-                          readonly
+                          :readonly="soloLectura"
                         ></v-text-field>
                         <!-- <v-select
                           v-model="formData.forma_pago"
@@ -237,7 +237,7 @@
                           variant="outlined"
                           bg-color="blue-lighten-5"
                           required
-                          readonly
+                          :readonly="soloLectura"
                         ></v-select>
                       </v-col>
                     </v-row>
@@ -250,7 +250,7 @@
                             label="Nombre a quien se realiza el pago"
                             variant="outlined"
                             bg-color="blue-lighten-5"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </v-col>
                         <v-col cols="12" md="6">
@@ -259,7 +259,7 @@
                             label="Documento de Identidad C.I."
                             variant="outlined"
                             bg-color="blue-lighten-5"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </v-col>
                       </v-row>
@@ -272,7 +272,7 @@
                             label="Nombre completo a quien se realiza la transferencia"
                             variant="outlined"
                             bg-color="blue-lighten-5"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </v-col>
                         <v-col cols="12" md="6">
@@ -281,7 +281,7 @@
                             label="Documento de Identidad C.I."
                             variant="outlined"
                             bg-color="blue-lighten-5"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </v-col>
                         <v-col cols="12" md="6">
@@ -290,7 +290,7 @@
                             label="Nombre de Entidad Bancaria"
                             variant="outlined"
                             bg-color="blue-lighten-5"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </v-col>
                         <v-col cols="12" md="6">
@@ -300,7 +300,7 @@
                             label="Tipo de Cuenta (Ahorro/ Corriente)"
                             variant="outlined"
                             bg-color="blue-lighten-5"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-select>
                         </v-col>
                         <v-col cols="12" md="6">
@@ -309,7 +309,7 @@
                             label="Número de Cuenta Bancaria"
                             variant="outlined"
                             bg-color="blue-lighten-5"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </v-col>
                       </v-row>
@@ -330,7 +330,7 @@
                     item-value="id"
                     label="Contador"
                     required
-                    readonly
+                    :readonly="soloLectura"
                   ></v-select>
                 </v-col>
                 <v-col cols="12" md="6" class="d-flex align-center">
@@ -340,13 +340,15 @@
                           :disabled="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
                           :readonly="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
                           :color="puedeValidarResponsable ? 'primary' : 'grey'"
-                          @update:modelValue="(newValue) => {
-                            if (newValue) {
-                              nextTick(() => {
-                                validarViaje('responsable');
-                              });
+                          @update:modelValue="
+                            (newValue) => {
+                              if (newValue) {
+                                nextTick(() => {
+                                  validarViaje('responsable')
+                              })
                             }
-                          }"
+                          }
+                          "
                         ></v-checkbox>
                 </v-col>
               </v-row>
@@ -360,7 +362,7 @@
                     item-value="id"
                     label="Coordinador"
                     required
-                    readonly
+                    :readonly="soloLectura"
                   ></v-select>
                 </v-col>
                 <v-col cols="12" md="6" class="d-flex align-center">
@@ -370,13 +372,15 @@
                     :disabled="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
                     :readonly="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
                     :color="puedeValidarCoordinador ? 'primary' : 'grey'"
-                    @update:modelValue="(newValue) => {
-                      if (newValue) {
-                        nextTick(() => {
-                          validarViaje('coordinador');
-                        });
+                    @update:modelValue="
+                      (newValue) => {
+                        if (newValue) {
+                          nextTick(() => {
+                            validarViaje('coordinador')
+                          })
+                        }
                       }
-                    }"
+                      "
                   ></v-checkbox>
                 </v-col>
               </v-row>
@@ -402,6 +406,7 @@
               </v-btn>
               <v-btn
                 color="primary"
+
                 prepend-icon="mdi-file-document-arrow-right"
                 type="submit"
                 :loading="loading"
@@ -409,16 +414,30 @@
               >
                 Enviar Solicitud
               </v-btn>
+              <v-btn
+                color="primary"
+                variant="flat"
+                size="large"
+                prepend-icon="mdi-update"
+                type="submit"
+                :loading="loading"
+                :disabled="soloLectura"
+              >
+                Actualizar
+              </v-btn>
             </div>
           </v-form>
         </v-card-text>
       </v-card>
     </v-container>
+
      <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
       <!-- {{ '*********************B' }}
-      <pre>{{ datosFormulario1 }}</pre>
-      {{ '*********************B' }}
-      <pre>{{ todosLosUsuarios}}</pre> -->
+    <pre>{{ solicitudDeViaje }}</pre> -->
+    <!-- {{ '*********************B' }}
+    <pre>{{ formData.otros }}</pre> -->
+        <!-- {{ '*********************B' }}
+    <pre>{{ formData.datos_forma_pago }}</pre> -->
   </template>
 
   <script setup>
@@ -456,6 +475,7 @@
   const loading = ref(false)
   const responsablesList = ref([])
   const coordinadoresList = ref([])
+  const soloLectura = ref(false)
   const datosSolicitante = ref([])
   const solicitante = ref(null)
   const solicitudDeViaje = ref({}) //viene de la funccion cargarSolicitudesDeViaje
@@ -487,7 +507,17 @@
     id_usuario: 0,
     detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
     forma_pago: null,
-    datos_forma_pago: { otros: {nombre_otros: '', ci_otros: ''}, transferencia: { nombre_transferencia: '', ci_transferencia: '', entidad_bancaria: '', tipo_cuenta: '', numero_cuenta: ''}},
+    formaPago: null,
+    datos_forma_pago: {
+      otros: { nombre_otros: '', ci_otros: '' },
+      transferencia: {
+        nombre_transferencia: '',
+        ci_transferencia: '',
+        entidad_bancaria: '',
+        tipo_cuenta: '',
+        numero_cuenta: '',
+      },
+    },
     lugar_solicitud: '',
     fecha_solicitud: getCurrentDate(),
     monto_solicitado: 0,
@@ -592,8 +622,10 @@
         // Llenar lista de validadores si existen
         if (newVal.validadores && Array.isArray(newVal.validadores)) {
           //console.log('Cargando validadores:', newVal.validadores)
-          responsablesList.value = newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
-          coordinadoresList.value = newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
+          responsablesList.value =
+            newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
+          coordinadoresList.value =
+            newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
         } else {
           responsablesList.value = []
           coordinadoresList.value = []
@@ -612,11 +644,14 @@
 
   // Computed property to determine which payment method was selected
   const formaPagoElegido = computed(() => {
-    if (formData.value.forma_pago && formasPagoOptions.value.length > 0) {
-      const formaPago = formasPagoOptions.value.find((fp) => fp.id === formData.value.forma_pago)
-      return formaPago ? formaPago.formaPago : ''
-    }
-    return ''
+    console.log('forma de pato', formData.value.forma_pago)
+    // if (formData.value.forma_pago && formasPagoOptions.value.length > 0) {
+    //   const formaPago = formasPagoOptions.value.find((fp) => fp.id === formData.value.forma_pago)
+    //   return formaPago ? formaPago.formaPago : ''
+    // }
+    const formaPago = formasPago.value.find((fp) => fp.id === formData.value.forma_pago)
+    return formaPago ? formaPago.formaPago : ''
+    //return ''
   })
 
   // Show "Otros" fields when payment method is NOT "Transferencia Bancaria"
@@ -656,7 +691,7 @@
           usuario: usuario.value.nombre,
         }),
       })
-      //console.log('Respuesta de la solicitudqqq:', idActividad, usuario.value.nombre)
+      console.log('Respuesta de la solicitudqqq:', idActividad, usuario.value.nombre)
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(
@@ -677,7 +712,7 @@
 
   async function cargarFormasDePago() {
     try {
-      const response = await fetch(baseurl+'/monitoreo_api/obtenerFormasPago/', {
+      const response = await fetch(baseurl + '/monitoreo_api/obtenerFormasPago/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -687,7 +722,9 @@
 
       const data = await response.json()
       formasPago.value = data.formasPago // Asignar directamente el array
-      formaPago.value = formasPago.value.find((user) => user.id === solicitudDeViaje.value.formaPago_id)
+      formaPago.value = formasPago.value.find(
+        (user) => user.id === solicitudDeViaje.value.formaPago_id,
+      )
       //console.log('Formas de pago cargadas:', formasPago.value)
     } catch (err) {
       console.error('Error:', err)
@@ -733,90 +770,120 @@ watch(
   { deep: true }
 )
 
+// borra los campos no seleccionados en "forma de pago"
+// ejemplo, si seleccionas "otros", se borran los campos "transferencia_bancaria"
+watch(
+  () => formData.value.forma_pago,
+  (newVal, oldVal) => {
+    if (newVal === oldVal) return; // No hacer nada si no cambió
+
+    // Obtener el nombre de la forma de pago seleccionada
+    const formaPagoSeleccionada = formasPago.value.find(fp => fp.id === newVal);
+    const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.formaPago : '';
+
+    // Resetear campos según la opción seleccionada
+    if (nombreFormaPago === 'Transferencia Bancaria') {
+      // Si seleccionó Transferencia, resetear campos de Otros
+      formData.value.datos_forma_pago.otros = {
+        nombre_otros: '',
+        ci_otros: ''
+      };
+    } else {
+      // Si seleccionó cualquier otra opción, resetear campos de Transferencia
+      formData.value.datos_forma_pago.transferencia = {
+        nombre_transferencia: '',
+        ci_transferencia: '',
+        entidad_bancaria: '',
+        tipo_cuenta: '',
+        numero_cuenta: ''
+      };
+    }
+  }
+);
+
   async function cargarUsuarios() {
     try {
-      const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/');
-      const allUsers = response.data.usuarios;
+      const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/')
+      const allUsers = response.data.usuarios
       todosLosUsuarios.value = response.data.usuarios
       //const data = await response.json()
       console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
-      responsablesList.value = allUsers.filter((user) => user.cargo === 'contable');
-      coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador');
+      responsablesList.value = allUsers.filter((user) => user.cargo === 'contable')
+      coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador')
       // datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
       // if(datosSolicitante.value){
       //   solicitante.value = getNombreCompleto(datosSolicitante.value)
       // }
       // console.log('usuariosssss:', JSON.stringify(solicitante.value, null, 2))
     } catch (error) {
-      console.error('Error al cargar la lista de usuarios:', error);
-      alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.');
+      console.error('Error al cargar la lista de usuarios:', error)
+      alert('No se pudieron cargar los usuarios para las firmas. Por favor recargue la página.')
     }
   }
 
   function sanitizeData(data) {
     if (data === null || data === undefined) {
-      return '';
+      return ''
     }
 
     if (typeof data === 'string') {
       // Limpiar strings: trim y convertir empty strings a ''
-      const trimmed = data.trim();
-      return trimmed === '' ? '' : trimmed;
+      const trimmed = data.trim()
+      return trimmed === '' ? '' : trimmed
     }
 
     if (typeof data === 'number') {
       // Validar que sea un número finito
-      return isFinite(data) ? data : 0;
+      return isFinite(data) ? data : 0
     }
 
     if (typeof data === 'boolean') {
-      return data;
+      return data
     }
 
     if (Array.isArray(data)) {
       // Sanitizar cada elemento del array
-      return data.map(item => sanitizeData(item)).filter(item =>
-        item !== null && item !== undefined && item !== ''
-      );
+      return data
+        .map((item) => sanitizeData(item))
+        .filter((item) => item !== null && item !== undefined && item !== '')
     }
 
     if (typeof data === 'object') {
-      const sanitized = {};
+      const sanitized = {}
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
-          const value = data[key];
+          const value = data[key]
           // Solo incluir propiedades con valores válidos
           if (value !== null && value !== undefined && value !== '') {
-            sanitized[key] = sanitizeData(value);
+            sanitized[key] = sanitizeData(value)
           }
         }
       }
-      return sanitized;
+      return sanitized
     }
 
     // Para cualquier otro tipo de dato, retornar string vacío
-    return '';
+    return ''
   }
 
   function strictSanitizeData(data) {
-    const sanitized = sanitizeData(data);
+    const sanitized = sanitizeData(data)
 
     // Si el resultado es un objeto vacío, retornar string vacío
     if (typeof sanitized === 'object' && !Array.isArray(sanitized)) {
       if (Object.keys(sanitized).length === 0) {
-        return '';
+        return ''
       }
     }
 
-    return sanitized;
+    return sanitized
   }
 
   async function cargarSolicitudesDeViaje() {
     isLoading.value = true
     error.value = null
     try {
-      //const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudesViaje/', {
-      const response = await fetch(baseurl+'api/monitoreo/obtener-solicitudes-viaje-pei/', {
+      const response = await fetch(baseurl + 'api/monitoreo/obtener-solicitudes-viaje-pei/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -835,17 +902,27 @@ watch(
       }
 
       const rawData = await response.json()
-      console.log('SoicitudDeViaje Recibido@@@@@@@@@@@@@@:', JSON.stringify(rawData,null,2))
+      //console.log('SoicitudDeViaje Recibido@@@@@@@@@@@@@@:', JSON.stringify(rawData,null,2))
 
       solicitudDeViaje.value = rawData.solicitudes[0]
+
+      formData.value.evento = solicitudDeViaje.value.evento || ''
+      formData.value.fecha_evento = solicitudDeViaje.value.fechaEvento || ''
+      formData.value.lugar_evento = solicitudDeViaje.value.lugarEvento || ''
+      formData.value.instituciones_participantes = solicitudDeViaje.value.institucionesParticipantes || ''
+      formData.value.institucion_queinvita = solicitudDeViaje.value.organizador || ''
+      formData.value.quien_cubregastos = solicitudDeViaje.value.quienCubreGastos || ''
+      formData.value.fondos_unitas = solicitudDeViaje.value.fondosUnitas || ''
+      formData.value.justificacion_asistencia = solicitudDeViaje.value.justificacionAsistencia || ''
+      formData.value.tareas_previas = solicitudDeViaje.value.tareasPrevias || ''
 
       formData.value.detalle_destino_fondos = solicitudDeViaje.value.detalleGasto.items.map(
         (item) => ({
         partida: item.partida || '',
         descripcion_gasto: item.concepto || '',
         monto: item.monto || 0,
-      }),
-    )
+        }),
+      )
       formData.value.forma_pago = solicitudDeViaje.value.formaPago_id
       formData.value.id_responsable = solicitudDeViaje.value.responsable_id
       formData.value.id_coordinador = solicitudDeViaje.value.coordinador_id
@@ -865,8 +942,8 @@ watch(
       console.log('Solicitudes filtradas:', JSON.stringify(solicitudesFiltradas,null,2))
       datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
       actualizarDatosFormulario(solicitudesFiltradas[0])
-      const idSolicitante = datosFormulario1.value.usuario_id
-      console.log('ID Solicitante444:', idSolicitante)
+      //const idSolicitante = datosFormulario1.value.usuario_id
+      //console.log('ID Solicitante444:', idSolicitante)
 
     } catch (err) {
       error.value = err.message
@@ -922,6 +999,8 @@ watch(
         throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
       }
 
+      formData.value.formaPago = formData.value.forma_pago
+
       const payload = {
         ...formData.value, //esta linea incluye todas las propiedades de formData
         id_usuario: usuario.value.id || 0,
@@ -936,19 +1015,26 @@ watch(
           })),
         },
       }
-      //console.log('Payload completo que se enviará:', JSON.stringify(payload,null,2)); // ← Verificar aquí
+      console.log('Payload completo que se enviará:', JSON.stringify(payload, null, 2))
 
-      const response = await axios.post(baseurl + '/monitoreo_api/crearSolicitudViaje/', payload, {
+      //const response = await axios.post(baseurl + '/monitoreo_api/crearSolicitudViaje/', payload, {
+      const response = await fetch(baseurl + 'api/solicitud-viaje-pei/' + idSolicitud + '/', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(payload),
       })
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`)
+      }
 
       numeroFormulario.value = response.numero_formulario
 
       alert('Solicitud enviada con éxito')
       exportToExcel()
-      resetForm()
+      //resetForm()
     } catch (error) {
       console.error('Error completo:', error.response?.data || error.message)
       alert(`Error: ${error.response?.data?.message || error.message}`)
@@ -1444,8 +1530,9 @@ watch(
   onMounted(async () => {
     //await cargarDatos()   //carga validadores y se selecciona el solicitante
     await cargarUsuarios()//carga todos los usuarios y se selecciona el solicitante
-    await cargarSolicitudesDeViaje()//carga datos de la solicitud donde esta id solicitante
+    //await cargarDatos()
     await cargarFormasDePago()
+    await cargarSolicitudesDeViaje()//carga datos de la solicitud donde esta id solicitante
   })
   </script>
 

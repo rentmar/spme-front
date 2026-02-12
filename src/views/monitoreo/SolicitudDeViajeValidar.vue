@@ -23,7 +23,7 @@
               label="Nombre del Seminario, curso, taller o reunión"
               bg-color="blue-lighten-5"
               required
-              readonly
+              :readonly="soloLectura"
             ></v-text-field>
 
             <v-row>
@@ -34,7 +34,7 @@
                   bg-color="blue-lighten-5"
                   type="date"
                   required
-                  readonly
+                  :readonly="soloLectura"
                   :max="formData.fecha_fin"
                 ></v-text-field>
               </v-col>
@@ -46,7 +46,7 @@
               label="Lugar de realización"
               bg-color="blue-lighten-5"
               required
-              readonly
+              :readonly="soloLectura"
             ></v-text-field>
 
             <v-text-field
@@ -54,7 +54,7 @@
               label="Organizaciones Participantes"
               bg-color="blue-lighten-5"
               required
-              readonly
+              :readonly="soloLectura"
             ></v-text-field>
 
             <v-text-field
@@ -62,7 +62,7 @@
               label="Institución que invita"
               bg-color="blue-lighten-5"
               required
-              readonly
+              :readonly="soloLectura"
             ></v-text-field>
 
             <v-text-field
@@ -70,7 +70,7 @@
               label="Quien cubre los gastos de estadía, transporte y viáticos"
               bg-color="blue-lighten-5"
               required
-              readonly
+              :readonly="soloLectura"
             ></v-text-field>
 
             <v-text-field
@@ -78,7 +78,7 @@
               label="Fondos UNITAS"
               bg-color="blue-lighten-5"
               required
-              readonly
+              :readonly="soloLectura"
             ></v-text-field>
 
             <v-text-field
@@ -93,7 +93,7 @@
               bg-color="blue-lighten-5"
               rows="3"
               required
-              readonly
+              :readonly="soloLectura"
             ></v-textarea>
 
             <v-textarea
@@ -102,7 +102,7 @@
               bg-color="blue-lighten-5"
               rows="3"
               required
-              readonly
+              :readonly="soloLectura"
             ></v-textarea>
           </div>
 
@@ -117,6 +117,7 @@
                 rounded="lg"
                 :elevation="3"
                 @click="addGasto"
+                :disabled="soloLectura"
               >
                 Agregar Gasto
               </v-btn>
@@ -141,7 +142,7 @@
                       bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
-                      readonly
+                      :readonly="soloLectura"
                     ></v-text-field>
                   </td>
                   <td>
@@ -150,7 +151,7 @@
                       bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
-                      readonly
+                      :readonly="soloLectura"
                     ></v-text-field>
                   </td>
                   <td>
@@ -161,11 +162,17 @@
                       hide-details
                       density="compact"
                       min="0"
-                      readonly
+                      :readonly="soloLectura"
                     ></v-text-field>
                   </td>
                   <td>
-                    <v-btn variant="text" icon color="error" @click="removeGasto(index)">
+                    <v-btn
+                      variant="text"
+                      icon
+                      color="error"
+                      @click="removeGasto(index)"
+                      :disabled="soloLectura"
+                    >
                       <v-icon>mdi-delete</v-icon>
                     </v-btn>
                   </td>
@@ -191,7 +198,7 @@
                   variant="outlined"
                   bg-color="blue-lighten-5"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-text-field>
                 <!-- <v-select
                         v-model="formData.forma_pago"
@@ -228,7 +235,7 @@
                   variant="outlined"
                   bg-color="blue-lighten-5"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-select>
               </v-col>
             </v-row>
@@ -241,7 +248,7 @@
                     label="Nombre a quien se realiza el pago"
                     variant="outlined"
                     bg-color="blue-lighten-5"
-                    readonly
+                    :readonly="soloLectura"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12" md="6">
@@ -250,7 +257,7 @@
                     label="Documento de Identidad C.I."
                     variant="outlined"
                     bg-color="blue-lighten-5"
-                    readonly
+                    :readonly="soloLectura"
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -263,7 +270,7 @@
                     label="Nombre completo a quien se realiza la transferencia"
                     variant="outlined"
                     bg-color="blue-lighten-5"
-                    readonly
+                    :readonly="soloLectura"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12" md="6">
@@ -272,7 +279,7 @@
                     label="Documento de Identidad C.I."
                     variant="outlined"
                     bg-color="blue-lighten-5"
-                    readonly
+                    :readonly="soloLectura"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12" md="6">
@@ -281,7 +288,7 @@
                     label="Nombre de Entidad Bancaria"
                     variant="outlined"
                     bg-color="blue-lighten-5"
-                    readonly
+                    :readonly="soloLectura"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12" md="6">
@@ -291,7 +298,7 @@
                     label="Tipo de Cuenta (Ahorro/ Corriente)"
                     variant="outlined"
                     bg-color="blue-lighten-5"
-                    readonly
+                    :readonly="soloLectura"
                   ></v-select>
                 </v-col>
                 <v-col cols="12" md="6">
@@ -300,7 +307,7 @@
                     label="Número de Cuenta Bancaria"
                     variant="outlined"
                     bg-color="blue-lighten-5"
-                    readonly
+                    :readonly="soloLectura"
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -321,7 +328,7 @@
                   item-value="id"
                   label="Contador"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
@@ -353,7 +360,7 @@
                   item-value="id"
                   label="Coordinador"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
@@ -404,16 +411,30 @@
               class="mr-2"
               prepend-icon="mdi-backspace-outline"
               @click="resetForm"
+              disabled
             >
               Limpiar
             </v-btn>
             <v-btn
               color="primary"
+
               prepend-icon="mdi-file-document-arrow-right"
               type="submit"
               :loading="loading"
+              disabled
             >
               Enviar Solicitud
+            </v-btn>
+            <v-btn
+              color="primary"
+              variant="flat"
+              size="large"
+              prepend-icon="mdi-update"
+              type="submit"
+              :loading="loading"
+              :disabled="soloLectura"
+            >
+              Actualizar
             </v-btn>
           </div>
         </v-form>
@@ -422,9 +443,9 @@
   </v-container>
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
   <!-- {{ '*********************B' }}
-    <pre>{{ formData.datos_forma_pago }}</pre> -->
-   <!-- {{ '*********************B' }}
-    <pre>{{ datosFormulario }}</pre> -->
+    <pre>{{ solicitudDeViaje }}</pre> -->
+    {{ '*********************B' }}
+    <pre>{{ formaPago }}</pre>
 </template>
 
 <script setup>
@@ -501,6 +522,7 @@ const baseurl = import.meta.env.VITE_API_BASE
 const loading = ref(false)
 const responsablesList = ref([])
 const coordinadoresList = ref([])
+const soloLectura = ref(false)
 const datosSolicitante = ref([])
 const solicitante = ref(null)
 const solicitudDeViaje = ref({}) //viene de la funccion cargarSolicitudesDeViaje
@@ -531,6 +553,7 @@ const formData = ref({
   id_usuario: 0,
   detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
   forma_pago: null,
+  formaPago: null,
   datos_forma_pago: {
     otros: { nombre_otros: '', ci_otros: '' },
     transferencia: {
@@ -789,6 +812,37 @@ watch(
   { deep: true }
 )
 
+// borra los campos no seleccionados en "forma de pago"
+// ejemplo, si seleccionas "otros", se borran los campos "transferencia_bancaria"
+watch(
+  () => formData.value.forma_pago,
+  (newVal, oldVal) => {
+    if (newVal === oldVal) return; // No hacer nada si no cambió
+
+    // Obtener el nombre de la forma de pago seleccionada
+    const formaPagoSeleccionada = formasPagoOptions.value.find(fp => fp.id === newVal);
+    const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.formaPago : '';
+
+    // Resetear campos según la opción seleccionada
+    if (nombreFormaPago === 'Transferencia Bancaria') {
+      // Si seleccionó Transferencia, resetear campos de Otros
+      formData.value.datos_forma_pago.otros = {
+        nombre_otros: '',
+        ci_otros: ''
+      };
+    } else {
+      // Si seleccionó cualquier otra opción, resetear campos de Transferencia
+      formData.value.datos_forma_pago.transferencia = {
+        nombre_transferencia: '',
+        ci_transferencia: '',
+        entidad_bancaria: '',
+        tipo_cuenta: '',
+        numero_cuenta: ''
+      };
+    }
+  }
+);
+
 async function cargarUsuarios() {
   try {
     const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/')
@@ -887,8 +941,17 @@ async function cargarSolicitudesDeViaje() {
 
     const rawData = await response.json()
     //console.log('SoicitudDeViaje Recibido@@@@@@@@@@@@@@:', JSON.stringify(rawData,null,2))
-
     solicitudDeViaje.value = rawData.solicitudes[0]
+
+    formData.value.evento = solicitudDeViaje.value.evento || ''
+    formData.value.fecha_evento = solicitudDeViaje.value.fechaEvento || ''
+    formData.value.lugar_evento = solicitudDeViaje.value.lugarEvento || ''
+    formData.value.instituciones_participantes = solicitudDeViaje.value.institucionesParticipantes || ''
+    formData.value.institucion_queinvita = solicitudDeViaje.value.organizador || ''
+    formData.value.quien_cubregastos = solicitudDeViaje.value.quienCubreGastos || ''
+    formData.value.fondos_unitas = solicitudDeViaje.value.fondosUnitas || ''
+    formData.value.justificacion_asistencia = solicitudDeViaje.value.justificacionAsistencia || ''
+    formData.value.tareas_previas = solicitudDeViaje.value.tareasPrevias || ''
 
     formData.value.detalle_destino_fondos = solicitudDeViaje.value.detalleGasto.items.map(
       (item) => ({
@@ -937,6 +1000,55 @@ function removeGasto(index) {
 
 async function submitForm() {
   loading.value = true
+  // try {
+  //   const requiredFields = [
+  //     'evento',
+  //     'fecha_evento',
+  //     'lugar_evento',
+  //     'instituciones_participantes',
+  //     'institucion_queinvita',
+  //     'quien_cubregastos',
+  //     'fondos_unitas',
+  //     'justificacion_asistencia',
+  //     'tareas_previas',
+  //     'detalle_destino_fondos',
+  //     'forma_pago',
+  //     'lugar_solicitud',
+  //     'fecha_solicitud',
+  //     'id_responsable',
+  //     'id_coordinador',
+  //   ]
+
+  //   for (const field of requiredFields) {
+  //     if (!formData.value[field]) {
+  //       throw new Error(`El campo '${field}' es requerido.`)
+  //     }
+  //   }
+
+  //   if (
+  //     formData.value.detalle_destino_fondos.some(
+  //       (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0,
+  //     )
+  //   ) {
+  //     throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
+  //   }
+
+  //   const payload = {
+  //     ...formData.value, //esta linea incluye todas las propiedades de formData
+  //     id_usuario: usuario.value.id || 0,
+  //     id_actividad: idActividad || 0,
+  //     id_tarea: idTarea || null,
+  //     monto_solicitado: totalMontoSolicitado.value,
+  //     detalle_destino_fondos: {
+  //       items: formData.value.detalle_destino_fondos.map((gasto) => ({
+  //         partida: gasto.partida,
+  //         concepto: gasto.descripcion_gasto,
+  //         monto: Number(gasto.monto),
+  //       })),
+  //     },
+  //   }
+  //   //console.log('Payload completo que se enviará:', JSON.stringify(payload,null,2)); // ← Verificar aquí
+
   try {
     const requiredFields = [
       'evento',
@@ -952,8 +1064,8 @@ async function submitForm() {
       'forma_pago',
       'lugar_solicitud',
       'fecha_solicitud',
-      'id_responsable',
-      'id_coordinador',
+      //'id_responsable',
+      //'id_coordinador',
     ]
 
     for (const field of requiredFields) {
@@ -970,6 +1082,22 @@ async function submitForm() {
       throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
     }
 
+    // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+    const coordinadorSeleccionado = coordinadoresList.value.find(
+      (coordinador) => coordinador.id === formData.value.id_coordinador,
+    )
+    const contadorSeleccionado = responsablesList.value.find(
+      (contador) => contador.id === formData.value.id_responsable,
+    )
+
+    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+    const correoContadorActual = contadorSeleccionado?.correo || ''
+
+    // Actualizar los valores en formData
+    formData.value.correo_coordinador = correoCoordinadorActual
+    formData.value.correo_contador = correoContadorActual
+    formData.value.formaPago = formData.value.forma_pago // Asegurar que forma_pago esté actualizada
+
     const payload = {
       ...formData.value, //esta linea incluye todas las propiedades de formData
       id_usuario: usuario.value.id || 0,
@@ -984,19 +1112,25 @@ async function submitForm() {
         })),
       },
     }
-    //console.log('Payload completo que se enviará:', JSON.stringify(payload,null,2)); // ← Verificar aquí
+    console.log('Payload completo que se enviará:', JSON.stringify(payload, null, 2))
 
-    const response = await axios.post(baseurl + '/monitoreo_api/crearSolicitudViaje/', payload, {
+    const response = await fetch(baseurl + 'api/solicitud-viaje/' + idSolicitud + '/', {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify(payload),
     })
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
 
     numeroFormulario.value = response.numero_formulario
 
     alert('Solicitud enviada con éxito')
     exportToExcel()
-    resetForm()
+    //resetForm()
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message)
     alert(`Error: ${error.response?.data?.message || error.message}`)

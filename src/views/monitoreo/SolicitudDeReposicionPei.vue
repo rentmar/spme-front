@@ -268,7 +268,9 @@
                     <v-table class="elevation-1 rounded-lg mb-4 users-table">
                       <thead>
                         <tr>
+                          <th class="fecha-column">Fecha</th>
                           <th class="text-subtitle-2 font-weight-bold">Partida</th>
+                          <th>Factura/Recibo</th>
                           <th class="text-subtitle-2 font-weight-bold">Descripción</th>
                           <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
                           <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
@@ -276,6 +278,17 @@
                       </thead>
                       <tbody>
                         <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
+                          <td class="fecha-column">
+                            <v-text-field
+                              v-model="gasto.fecha"
+                              type="date"
+                              bg-color="blue-lighten-5"
+                              hide-details
+                              density="compact"
+                              required
+                              class="fecha-input"
+                            ></v-text-field>
+                          </td>
                           <td class="narrow-column">
                             <v-text-field
                               v-model="gasto.partida"
@@ -288,6 +301,16 @@
                               required
                             ></v-text-field>
                           </td>
+                          <td>
+                          <v-text-field
+                            v-model="gasto.factura_recibo"
+                            bg-color="blue-lighten-5"
+                            hide-details
+                            density="compact"
+                            required
+                          ></v-text-field>
+                        </td>
+
                           <td class="wide-column">
                             <v-text-field
                               v-model="gasto.descripcion_gasto"
@@ -615,7 +638,7 @@
     id_tarea: 0,
     id_usuario: 0,
     // Resto de campos del formulario
-    detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+    detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
     monto_solicitado: 0,
     lugar_solicitud: '',
     fecha_solicitud: getCurrentDate(),
@@ -1082,7 +1105,9 @@
       const payload = {
         detalleDestinoFondos: {
           items: formData.value.detalle_destino_fondos.map((gasto) => ({
+            fecha: gasto.fecha || '',
             partida: gasto.partida,
+            factura_recibo: gasto.factura_recibo || '',
             concepto: gasto.descripcion_gasto,
             monto: Number(gasto.monto),
           })),
@@ -1295,7 +1320,9 @@
 
     // 3. Datos de gastos
     const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
+      gasto.fecha,
       gasto.partida,
+      gasto.factura_recibo,
       gasto.descripcion_gasto,
       gasto.monto,
       '',
@@ -1507,16 +1534,18 @@
       }
 
       // Parsear el JSON string
-      const detalleParseado = JSON.parse(detalleDestinoFondos)
+      // const detalleParseado = JSON.parse(detalleDestinoFondos)
+      const detalleParseado = detalleDestinoFondos
+
 
       // Mapear al formato que espera la tabla
       formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
         partida: `${index + 1}.${index + 1}.${index + 1}`, // Generar partida automáticamente o usar una lógica específica
         descripcion_gasto: item.concepto || '',
-        monto: item.monto || 0
+        monto: item.monto || 0,
       }))
 
-      console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
+      //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)
     } catch (error) {
       console.error('Error al parsear detalleDestinoFondos:', error)
       formData.value.detalle_destino_fondos = []
@@ -1588,8 +1617,8 @@
       validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
     )
 
-    console.log('Responsables list:', responsablesList.value)
-    console.log('Coordinadores list:', coordinadoresList.value)
+    //console.log('Responsables list:', responsablesList.value)
+    //console.log('Coordinadores list:', coordinadoresList.value)
   }
 
   // Verificación mejorada con roles
@@ -1623,6 +1652,16 @@
   </script>
 
   <style scoped>
+  .fecha-column {
+  width: 180px; /* Ancho suficiente para mostrar fecha completa */
+  min-width: 180px;
+  max-width: 200px;
+}
+
+.fecha-input {
+  width: 100%;
+}
+
   .solicitud-fondos-container {
     max-width: 1400px;
     margin: 0 auto;

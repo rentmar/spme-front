@@ -585,7 +585,7 @@
         </v-row>
       </div>
     </v-container>
-  <!-- <pre>{{ formData }}</pre> -->
+  <!-- <pre>{{ datosFormulario1 }}</pre> -->
     <!-- {{ '***************************************B' }}
     <pre>{{ datosFormulario1 }}</pre> -->
     <!-- <pre>{{ datosSolicitudDeReposicion }}</pre>
@@ -1584,13 +1584,15 @@ watch(
         detalleParseado = detalleDestinoFondos
       }
 
-      //console.log('Detalle de destino de fondos parseado:', detalleParseado)
+      console.log('Detalle de destino de fondos parseado:', detalleParseado)
 
       // Mapear al formato que espera la tabla
       formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
-        partida: item.partida_sf || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
+        fecha: item.fecha || '',
+        partida: item.partida || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
+        factura_recibo: item.factura_recibo || '',
         descripcion_gasto: item.concepto || '',
-        monto: item.monto || 0
+        monto: item.monto || 0,
       }))
 
       //console.log('Detalle de destino de fondos actualizado:', formData.value.detalle_destino_fondos)

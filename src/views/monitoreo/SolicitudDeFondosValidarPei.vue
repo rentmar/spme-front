@@ -31,7 +31,7 @@
         ></ProyectoIdHeader>
         <br /> -->
       <!--Encabezado de la Actividad-->
-      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
+      <ActividadInformacionPei v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
       <v-row>
         <!-- Panel lateral de información -->
@@ -576,6 +576,7 @@
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 //import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
+import ActividadInformacionPei from '@/modules/pei/components/formularios/ActividadInformacionPei.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
