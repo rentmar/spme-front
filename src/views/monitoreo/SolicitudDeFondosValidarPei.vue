@@ -171,7 +171,7 @@
                     label="Descripción de la Actividad"
                     variant="outlined"
                     rows="3"
-                    readonly
+                    :readonly="soloLectura"
                   ></v-textarea>
                   <v-row>
                     <v-col cols="12" md="4">
@@ -202,7 +202,7 @@
                     label="Objetivo de la Actividad"
                     variant="outlined"
                     rows="3"
-                    readonly
+                    :readonly="soloLectura"
                   ></v-textarea>
                   <v-text-field
                     v-model="textoProcedencia"
@@ -220,7 +220,7 @@
                       type="date"
                       variant="outlined"
                       density="compact"
-                      readonly
+                      :readonly="soloLectura"
                     ></v-text-field>
                   </v-col>
                   <!-- <v-col cols="12">
@@ -251,7 +251,7 @@
                       variant="outlined"
                       prepend-icon="mdi-plus"
                       @click="addGasto"
-                      disabled
+                      :disabled="soloLectura"
                     >
                       Agregar Item
                     </v-btn>
@@ -279,7 +279,7 @@
                             hide-details
                             placeholder="1.1.1"
                             class="compact-field"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </td>
                         <td class="wide-column">
@@ -289,7 +289,7 @@
                             density="compact"
                             hide-details
                             placeholder="Descripción del gasto"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
@@ -301,7 +301,7 @@
                             hide-details
                             placeholder="0.00"
                             class="compact-field"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </td>
                         <td class="text-center action-column">
@@ -311,7 +311,7 @@
                             size="small"
                             variant="text"
                             @click="removeGasto(index)"
-                            disabled
+                            :disabled="soloLectura"
                           >
                             <v-icon>mdi-delete</v-icon>
                           </v-btn>
@@ -336,7 +336,7 @@
                         v-model="formData.lugar_solicitud"
                         label="Lugar de la Solicitud"
                         variant="outlined"
-                        readonly
+                        :readonly="soloLectura"
                       ></v-text-field>
                       <!-- <v-select
                           v-model="formData.forma_pago"
@@ -370,7 +370,7 @@
                         label="Forma de Pago"
                         variant="outlined"
                         bg-color="blue-lighten-5"
-                        readonly
+                        :readonly="soloLectura"
                       ></v-select>
                     </v-col>
                   </v-row>
