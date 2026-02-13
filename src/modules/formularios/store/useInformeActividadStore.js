@@ -17,6 +17,8 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
   const listaInformeActividad = ref([]) //Lista de informes de una actividad
   const listaInformeTareas = ref([]) //Lista de informes de una tarea
   const listaInformes = ref([]) //Lista conjunta de los informes
+  //Estructura de procedencia
+  const datosProcedencia = ref(null)
 
   //Iniciar composables
   const { actividadInfo, obtenerActidadPorId } = useActividad() //manejo de actividades

@@ -219,12 +219,13 @@
                             </div>
                           </v-alert>
 
-                          <RegistroAvanceIndicadores
+                          <!-- <RegistroAvanceIndicadores
                             v-if="storeInfActividad.actividad"
                             :idactividad="storeInfActividad.actividad?.id"
                             :datos-existente="formData.avanceIndicadores"
                             @todos-los-registros-enviados="manejarRegistrosIndicadores"
-                          ></RegistroAvanceIndicadores>
+                          ></RegistroAvanceIndicadores> -->
+                          <RegistroAvanceIndicadoresV2></RegistroAvanceIndicadoresV2>
                         </v-col>
                       </v-row>
                     </div>
@@ -393,7 +394,7 @@ import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vu
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
-import RegistroAvanceIndicadores from '@/modules/reportes/components/RegistroAvanceIndicadores.vue'
+import RegistroAvanceIndicadoresV2 from '@/modules/reportes/components/RegistroAvanceIndicadoresV2.vue'
 import InformacionCuantitativaV2 from '@/modules/formularios/components/InformacionCuantitativaV2.vue'
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
 import ProcedenciaFondosPresupuesto from '@/modules/procedenciaFondos/components/ProcedenciaFondosPresupuesto.vue'
