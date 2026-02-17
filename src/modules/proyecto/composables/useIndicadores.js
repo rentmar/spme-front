@@ -9,6 +9,10 @@ const indicadorObjGeneral = ref(null)
 const indicadorObjetivoEspecifico = ref(null)
 const indicadorResultadoObjGeneral = ref(null)
 const indicadorResultadoObjEspecifico = ref(null)
+const listaIndicadoresOg = ref(null)
+const listaIndicadoresRog = ref(null)
+const listaIndicadoresOe = ref(null)
+const listaIndicadoresRoe = ref(null)
 const loading = ref(null)
 const error = ref(null)
 
@@ -45,6 +49,19 @@ export function useIndicadores() {
     loading.value = true
     try {
       const respuesta = await indicadoresServicios.updateIndicadorOg(id, data)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Cargar una lista de Indicadores OG
+  async function cargarIndicadoresOgporIds(dataArrayId) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.fetchIndicadoresOgPorIds(dataArrayId)
       return respuesta
     } catch (err) {
       error.value = err
@@ -105,6 +122,19 @@ export function useIndicadores() {
     }
   }
 
+  //Cargar una lista de Indicadores OG
+  async function cargarIndicadoresResultadoOgPorIds(dataArrayId) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.fetchIndicadoresRogPorIds(dataArrayId)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   /*********** Indicadores obejtivo Especifico *************/
   //cargar por id
   async function cargarIndicadorObjEspecifico(id) {
@@ -149,6 +179,18 @@ export function useIndicadores() {
     loading.value = true
     try {
       const respuesta = await indicadoresServicios.deleteIndicadorObjEspec(id)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+  //Cargar una lista de Indicadores OE
+  async function cargarIndicadoresOePorIds(dataArrayId) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.fetchIndicadoresOePorIds(dataArrayId)
       return respuesta
     } catch (err) {
       error.value = err
@@ -208,6 +250,20 @@ export function useIndicadores() {
       loading.value = false
     }
   }
+
+  //Cargar una lista de Indicadores OE
+  async function cargarIndicadoresResultadoOePorIds(dataArrayId) {
+    loading.value = true
+    try {
+      const respuesta = await indicadoresServicios.fetchIndicadoresRoePorIds(dataArrayId)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     indicadorObjGeneral, //ref
     indicadorObjetivoEspecifico, //ref
@@ -215,6 +271,10 @@ export function useIndicadores() {
     indicadorResultadoObjEspecifico, //ref
     loading, //ref
     error, //ref
+    listaIndicadoresOg,
+    listaIndicadoresRog,
+    listaIndicadoresOe,
+    listaIndicadoresRoe,
     // Ind Objj General
     cargarIndicadorObjGeneralPorId, //func
     crearIndicadorObjetivoGeneral, //func
@@ -234,5 +294,10 @@ export function useIndicadores() {
     crearIndicadorResultadoObjEspecifico,
     updateIndicadorResultadoObjEspecifico,
     delIndicadorResultadoObjEspecifico,
+    //fectch indicadores
+    cargarIndicadoresOgporIds,
+    cargarIndicadoresResultadoOgPorIds,
+    cargarIndicadoresOePorIds,
+    cargarIndicadoresResultadoOePorIds,
   }
 }

@@ -1,4 +1,5 @@
 import api from '@/services/axios'
+import { apiRep } from '@/services/axios'
 
 export const indicadoresServicios = {
   /******************* Indicadores Objetivo General *************************/
@@ -47,6 +48,15 @@ export const indicadoresServicios = {
       console.error('Axios: no se pudo elimir indicador og con id ' + id, error)
     }
   },
+  /* Carga una lista de indicadore og,  por IDs */
+  fetchIndicadoresOgPorIds: async (dataArrayIds) => {
+    try {
+      const respuesta = await apiRep.post('/indicador-og/by-ids/', dataArrayIds)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al cargar la lista de indicadores og: ' + dataArrayIds, error)
+    }
+  },
   /******************* Indicadores de Resultado OG *************************/
   /* Todos los indicadores */
   indicadorResultadoOg: async () => {
@@ -91,6 +101,15 @@ export const indicadoresServicios = {
       return respuesta
     } catch (error) {
       console.error('Axios: no se pudo elimir indicador res og con id ' + id, error)
+    }
+  },
+  /* Carga una lista de indicadore og,  por IDs */
+  fetchIndicadoresRogPorIds: async (dataArrayIds) => {
+    try {
+      const respuesta = await apiRep.post('/indicador-rog/by-ids/', dataArrayIds)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al cargar la lista de indicadores rog: ' + dataArrayIds, error)
     }
   },
   /******************* Indicadores de Objetivo Especifico *************************/
@@ -144,6 +163,15 @@ export const indicadoresServicios = {
       throw error
     }
   },
+  /* Carga una lista de indicadores oe,  por IDs */
+  fetchIndicadoresOePorIds: async (dataArrayIds) => {
+    try {
+      const respuesta = await apiRep.post('/indicador-oe/by-ids/', dataArrayIds)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al cargar la lista de indicadores oe: ' + dataArrayIds, error)
+    }
+  },
   /******************* Indicadores de Resultado Objetivo Especifico *************************/
   /* Todos los indicadores */
   indicadorResultadoObjEspec: async () => {
@@ -193,6 +221,15 @@ export const indicadoresServicios = {
     } catch (error) {
       console.error('Axios: Error al eliminar el Indicador Resultado OE con ID ' + id, error)
       throw error
+    }
+  },
+  /* Carga una lista de indicadores oe,  por IDs */
+  fetchIndicadoresRoePorIds: async (dataArrayIds) => {
+    try {
+      const respuesta = await apiRep.post('/indicador-roe/by-ids/', dataArrayIds)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al cargar la lista de indicadores roe: ' + dataArrayIds, error)
     }
   },
 }

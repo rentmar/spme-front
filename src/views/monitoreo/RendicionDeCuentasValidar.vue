@@ -502,7 +502,7 @@
 {{formData.monto_gastado}} -->
   <!-- {{ "**************************************" }}
 {{ formDataRC.lugar_solicitudRC }} -->
- <!-- {{ "**************************************" }}
+  <!-- {{ "**************************************" }}
      <pre>{{ datosRendicionDeCuenta }}</pre>-->
 </template>
 
@@ -832,7 +832,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -868,7 +868,7 @@ const cargarSolicitudesFondos = async () => {
   try {
     //console.log('Cargando solicitudes de fondos con fetch...')
 
-    const response = await fetch(baseurl + '/api/solicitud-fondos/', {
+    const response = await fetch(baseurl + 'api/solicitud-fondos/', {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -895,7 +895,7 @@ async function cargarRendicionesDeCuenta() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerRendicionDeCuentas/', {
+    const response = await fetch(baseurl + 'monitoreo_api/obtenerRendicionDeCuentas/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -932,7 +932,7 @@ async function cargarSolicitudFondos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudFondos/', {
+    const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudFondos/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -1039,10 +1039,11 @@ watch(
   datosRendicionDeCuenta,
   (newVal) => {
     if (newVal) {
-
       const idSolicitante = newVal.usuario_id
       console.log('ID Solicitante:', idSolicitante)
-      datosSolicitante.value = datosFormulario.value?.validadores?.find((fp) => fp.id === idSolicitante)
+      datosSolicitante.value = datosFormulario.value?.validadores?.find(
+        (fp) => fp.id === idSolicitante,
+      )
       console.log('Datos Solicitante:', JSON.stringify(datosSolicitante.value, null, 2))
       formData.value.nombre = datosSolicitante.value.nombre
       formData.value.paterno = datosSolicitante.value.paterno
