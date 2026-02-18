@@ -1014,7 +1014,7 @@ async function submitForm() {
       throw new Error('El monto total solicitado debe ser mayor a cero.')
     }
 
-        // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+    // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
     const coordinadorSeleccionado = coordinadoresList.value.find(
      (coordinador) => coordinador.id === formData.value.idcoordinador
     )

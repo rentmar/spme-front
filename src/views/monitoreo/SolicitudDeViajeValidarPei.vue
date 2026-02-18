@@ -475,7 +475,7 @@
   const loading = ref(false)
   const responsablesList = ref([])
   const coordinadoresList = ref([])
-  const soloLectura = ref(false)
+  //const soloLectura = ref(false)
   const datosSolicitante = ref([])
   const solicitante = ref(null)
   const solicitudDeViaje = ref({}) //viene de la funccion cargarSolicitudesDeViaje
@@ -550,6 +550,18 @@
     actividad_idsf: null,
     fechaRealizacionActividadsf: '',
     bloquearIconosSolFondossf: true,
+  })
+
+  // Agrega esta propiedad computada
+  const soloLectura = computed(() => {
+    // Si no hay datos del formulario o no hay usuario actual, por defecto true por seguridad
+    if (!datosFormulario1.value || !usuario.value?.id) {
+      return true
+    }
+
+    // Si el usuario actual es el creador de la solicitud, puede editar (soloLectura = false)
+    // Si NO es el creador, solo lectura (soloLectura = true)
+    return datosFormulario1.value.usuario_id !== usuario.value.id
   })
 
   const nombreCoordinadorElegido = computed(() => {

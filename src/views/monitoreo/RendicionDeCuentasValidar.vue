@@ -111,7 +111,7 @@
                   label="Cpte. Diario"
                   bg-color="blue-lighten-5"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6" md="4">
@@ -121,7 +121,7 @@
                   bg-color="blue-lighten-5"
                   type="date"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-text-field>
               </v-col>
 
@@ -132,7 +132,7 @@
                   bg-color="blue-lighten-5"
                   rows="3"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-textarea>
               </v-col>
               <v-col cols="12">
@@ -149,7 +149,7 @@
                   label="Lugar donde se realizo la Actividad"
                   bg-color="blue-lighten-5"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6" md="4">
@@ -159,7 +159,7 @@
                   bg-color="blue-lighten-5"
                   type="date"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -200,7 +200,7 @@
                 rounded="lg"
                 :elevation="3"
                 @click="agregarGasto"
-                disabled
+                :disabled="soloLectura"
               >
                 Agregar Gasto
               </v-btn>
@@ -229,7 +229,7 @@
                       hide-details
                       density="compact"
                       required
-                      readonly
+                      :readonly="soloLectura"
                     ></v-text-field>
                   </td>
                   <td>
@@ -238,7 +238,7 @@
                       hide-details
                       density="compact"
                       required
-                      readonly
+                      :readonly="soloLectura"
                     ></v-text-field>
                   </td>
                   <td>
@@ -247,7 +247,7 @@
                       hide-details
                       density="compact"
                       required
-                      readonly
+                      :readonly="soloLectura"
                     ></v-text-field>
                   </td>
                   <td>
@@ -256,7 +256,7 @@
                       hide-details
                       density="compact"
                       required
-                      readonly
+                      :readonly="soloLectura"
                     ></v-text-field>
                   </td>
                   <td>
@@ -266,11 +266,17 @@
                       hide-details
                       density="compact"
                       required
-                      readonly
+                      :readonly="soloLectura"
                     ></v-text-field>
                   </td>
                   <td>
-                    <v-btn variant="text" icon color="error" @click="eliminarGasto(index)" disabled>
+                    <v-btn
+                      icon
+                      color="error"
+                      variant="text"
+                      @click="eliminarGasto(index)"
+                      :disabled="soloLectura"
+                    >
                       <v-icon>mdi-delete</v-icon>
                     </v-btn>
                   </td>
@@ -292,7 +298,7 @@
                   v-model="formData.lugar_solicitud"
                   label="Lugar donde se realiza la Rendición de Cuentas"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" md="6">
@@ -350,7 +356,7 @@
                   item-value="id"
                   label="Coordinador"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6">
@@ -382,7 +388,7 @@
                   item-value="id"
                   label="Contador"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6">
@@ -414,7 +420,7 @@
                   item-value="id"
                   label="Administrador"
                   required
-                  readonly
+                  :readonly="soloLectura"
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6">
@@ -483,44 +489,47 @@
             <v-btn
               color="primary"
               prepend-icon="mdi-file-document-arrow-right"
-              @click="submitForm"
+
               :loading="loading"
               disabled
             >
               Enviar Rendicion
+            </v-btn>
+            <v-btn
+              color="primary"
+
+
+              prepend-icon="mdi-update"
+              type="submit"
+              :loading="loading"
+              :disabled="soloLectura"
+            >
+              Actualizar
             </v-btn>
           </div>
         </form>
       </div>
     </div>
   </div>
-
-  <!-- {{ saldoPorReembolsar }}
-  {{ "**************************************" }} -->
-  <!-- <pre>{{ formData.monto_asignado }}</pre>
-{{ "**************************************" }}
-{{formData.monto_gastado}} -->
-  <!-- {{ "**************************************" }}
-{{ formDataRC.lugar_solicitudRC }} -->
+  <!-- <pre>{{ soloLectura }}</pre> -->
  <!-- {{ "**************************************" }}
-     <pre>{{ datosRendicionDeCuenta }}</pre>-->
+<pre>{{datosRendicionDeCuenta}}</pre> -->
 </template>
 
 <script setup>
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
-
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
-
+import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
+import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
 
-//Composable de impresion
-import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
-
+//Inicar Composable
+const { enviarMensajeAutomatico } = useNotificaciones()
 //Inicializar el composable
 const { generarPdfRendicionCuentas, generarPdfRendicionCuentasTareas } = useImpresionFormularios()
 /*************************** Generar PDFs *******************************************/
@@ -599,6 +608,7 @@ const loading = ref(false)
 const datosFormulario = ref(null)
 const datosSolicitudDeFondo = ref(null)
 const datosRendicionDeCuenta = ref(null)
+const numeroFormularioSF = ref(null)
 const datosSolicitante = ref([])
 const error = ref(null)
 const isLoading = ref(false)
@@ -628,7 +638,7 @@ const formData = ref({
   id_actividad: 0,
   id_usuario: 0,
   // Resto de campos del formulario
-  detalle_destino_fondos: [{ factura_recibo: '', descripcion: '', monto: 0 }],
+  detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion: '', monto: 0 }],
   forma_pago: null,
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
@@ -685,6 +695,7 @@ const formDataRC = ref({
   idcoordinador: null,
   idcontador: null,
   idadministrador: null,
+  usuario_id: null,
 
   validacionResponsable: false,
   validacionCoordinador: false,
@@ -693,6 +704,17 @@ const formDataRC = ref({
 })
 
 const fuente_financiamiento0 = ref()
+// Agrega esta propiedad computada
+const soloLectura = computed(() => {
+  // Si no hay datos del formulario o no hay usuario actual, por defecto true por seguridad
+  if (!datosRendicionDeCuenta.value || !usuario1.value?.id) {
+    return true
+  }
+
+  // Si el usuario actual es el creador de la solicitud, puede editar (soloLectura = false)
+  // Si NO es el creador, solo lectura (soloLectura = true)
+  return datosRendicionDeCuenta.value.usuario_id !== usuario1.value.id
+})
 
 const actividadData = ref({
   codigo: 'ACT-2023-005',
@@ -720,6 +742,10 @@ const totalMontoGastado = computed(() => {
   return formDataRC.value.detalle_gastos
     .reduce((total, gasto) => total + Number(gasto.monto || 0), 0)
     .toFixed(2)
+})
+
+const nombreCompletoSolicitante = computed(() => {
+  return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
 })
 
 //Watcher para actualizar monto_gastado en formData
@@ -918,7 +944,7 @@ async function cargarRendicionesDeCuenta() {
 
     const rawData = await response.json()
     datosRendicionDeCuenta.value = strictSanitizeData(rawData.rendiciones)[0]
-    console.log('Datos cargados exitosamenteqqqqqqqqqqqqqqqqqqq:', rawData)
+    //console.log('Datos Solicitante:', JSON.stringify(rawData, null, 2))
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -1057,10 +1083,13 @@ watch(
       formDataRC.value.idadministrador = newVal.administrador_id
 
       formDataRC.value.cpte_diario = getSafeValue(newVal.cpteDiario)
+      formData.value.cpte_diario = getSafeValue(newVal.cpteDiario)
       formDataRC.value.fecha_desembolso = getSafeValue(newVal.fechaDesembolso)
       formDataRC.value.descripcion_actividadRC = getSafeValue(newVal.descripcionActividad)
       formDataRC.value.lugar_actividadRC = getSafeValue(newVal.lugarActividad)
       formDataRC.value.fecha_actividadRC = getSafeValue(newVal.fechaActividad)
+      formDataRC.value.lugar_solicitudRC = getSafeValue(newVal.lugarRendicion)
+      formDataRC.value.fecha_solicitudRC = getSafeValue(newVal.fechaRendicion)
 
       // Asignar detalles de gastos
       if (newVal.detalleDestinoFondos) {
@@ -1087,6 +1116,10 @@ watch(
       if (newVal.administrador_id) {
         formDataRC.value.idadministrador = getSafeValue(newVal.administrador_id)
         formData.value.idadministrador = getSafeValue(newVal.administrador_id)
+      }
+      if (newVal.usuario_id) {
+        formDataRC.value.usuario_id = getSafeValue(newVal.usuario_id)
+        formData.value.usuario = getSafeValue(newVal.usuario_id)
       }
     }
   },
@@ -1460,37 +1493,37 @@ async function submitForm() {
     const requiredFields = [
       'cpte_diario',
       'fecha_desembolso',
-      'descripcion_actividad',
-      'lugar_actividad',
-      'fecha_actividad',
-      'idresponsable',
-      'idcoordinador',
-      'idcontador',
-      'idadministrador',
+      'descripcion_actividadRC',
+      'lugar_actividadRC',
+      'fecha_actividadRC',
+      //'idresponsable',
+      //'idcoordinador',
+      //'idcontador',
+      //'idadministrador',
     ]
+    console.log('ppppppppppppppppppp:', JSON.stringify(formDataRC.value, null, 2))
 
     for (const field of requiredFields) {
-      if (!formData.value[field]) {
+      if (!formDataRC.value[field]) {
         throw new Error(`El campo '${field}' es requerido.`)
       }
     }
 
     if (
-      !formData.value.detalle_destino_fondos ||
-      formData.value.detalle_destino_fondos.length === 0
+      !formDataRC.value.detalle_gastos ||
+      formDataRC.value.detalle_gastos.length === 0
     ) {
       throw new Error('Debe agregar al menos un gasto.')
     }
-
     if (
-      formData.value.detalle_destino_fondos.some(
-        (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0,
+      formDataRC.value.detalle_gastos.some(
+        (gasto) => !gasto.fecha || !gasto.partida || !gasto.factura_recibo || !gasto.descripcion_gasto || gasto.monto <= 0,
       )
     ) {
       throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
     }
 
-    const hasInvalidGasto = formData.value.detalle_destino_fondos.some(
+    const hasInvalidGasto = formDataRC.value.detalle_gastos.some(
       (gasto) =>
         !gasto.fecha || // <--- AÑADIR: Verifica que la fecha exista
         !gasto.partida ||
@@ -1508,32 +1541,55 @@ async function submitForm() {
     // Obtener información de la solicitud de fondos
     const solicitudInfo = getSolicitudFondosInfo(idActividad, idTarea)
 
+    // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+    const coordinadorSeleccionado = coordinadoresList.value.find(
+     (coordinador) => coordinador.id === formDataRC.value.idcoordinador
+    )
+    const contadorSeleccionado = contadoresList.value.find(
+     (contador) => contador.id === formDataRC.value.idcontador
+    )
+    const administradorSeleccionado = administradoresList.value.find(
+     (responsable) => responsable.id === formDataRC.value.idadministrador
+    )
+    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+    const correoContadorActual = contadorSeleccionado?.correo || ''
+    const correoAdministradorActual = administradorSeleccionado?.correo || ''
+
+    // Actualizar los valores en formData
+    formData.value.correo_coordinador = correoCoordinadorActual
+    formData.value.correo_contador = correoContadorActual
+    formData.value.correo_administrador = correoAdministradorActual
+
     // Preparar payload para la rendición de cuentas
     const payload = {
-      numeroFormulario: formData.value.formulario_numero || '',
+      //numeroFormulario: formData.value.formulario_numero || '',
       montoDescargado: Number(totalMontoGastado.value),
       cpteDiario: formData.value.cpte_diario,
       fechaDesembolso: formData.value.fecha_desembolso,
       saldo: Number(saldoPorReembolsar.value),
-      detalleDestinoFondos: formData.value.detalle_destino_fondos.map((gasto) => ({
+      detalleDestinoFondos: formDataRC.value.detalle_gastos.map((gasto) => ({
+        fecha: gasto.fecha,
+        partida: gasto.partida,
         factura_recibo: gasto.factura_recibo || '',
-        descripcion: gasto.descripcion_gasto || '',
+        descripcion: gasto.descripcion_gasto || '', //descripcion
         monto: Number(gasto.monto) || 0,
       })),
       validacionResponsable: Boolean(formData.value.validacion_responsable),
       validacionCoordinador: Boolean(formData.value.validacion_coordinador),
       validacionContador: Boolean(formData.value.validacion_contador),
       validacionAdministrador: Boolean(formData.value.validacion_administrador),
-      idadministrador: Number(formData.value.idadministrador),
-      idcontador: Number(formData.value.idcontador),
-      idcoordinador: Number(formData.value.idcoordinador),
-      idresponsable: Number(formData.value.idresponsable),
-      idusuarioLogeado: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
+      idadministrador: Number(formDataRC.value.idadministrador),
+      idcontador: Number(formDataRC.value.idcontador),
+      idcoordinador: Number(formDataRC.value.idcoordinador),
+      //idresponsable: Number(formData.value.idresponsable),
+      idusuarioLogeado: formDataRC.value.usuario_id || (usuario.value ? usuario.value.id : null),
       idActividad: idActividad ? parseInt(idActividad) : null,
       idTarea: idTarea ? parseInt(idTarea) : null,
-      descripcionActividad: formData.value.descripcion_actividad,
-      lugarActividad: formData.value.lugar_actividad,
-      fechaActividad: formData.value.fecha_actividad,
+      descripcionActividad: formDataRC.value.descripcion_actividadRC,
+      lugarActividad: formDataRC.value.lugar_actividadRC,
+      fechaActividad: formDataRC.value.fecha_actividadRC,
+      lugarRendicion: formData.value.lugar_solicitudRC,
+      fechaRendicion: formData.value.fecha_solicitudRC,
       bloquearIconoRC: true,
       idSolicitudReembolso: null,
       idSolicitudViaje: null,
@@ -1544,8 +1600,8 @@ async function submitForm() {
     console.log('Payload a enviar:', JSON.stringify(payload, null, 2))
 
     // Enviar la solicitud
-    const response = await fetch(baseurl + '/api/monitoreo/crear-rendicion-cuentas/', {
-      method: 'POST',
+    const response = await fetch(baseurl + 'api/rendicion-cuentas/' + idSolicitud + '/', {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -1558,17 +1614,81 @@ async function submitForm() {
     }
 
     const responseData = await response.json()
-    console.log('Rendición enviada con éxito:', responseData)
+    //console.log('Rendición enviada con éxito:', responseData)
 
     // GUARDAR EL ID DE LA RENDICIÓN CREADA
     idRendicionCreada.value = responseData.id || responseData.rendicion_id
+    numeroFormularioSF.value = responseData.numero_formulario
 
-    alert('Rendición enviada con éxito')
+    const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${responseData.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
+    const cuerpoMensaje = {
+      destinatario_id: payload.idcoordinador,
+      asunto: 'Rendicion de Cuentas - Coordinador',
+      contenido: 'Rendicion de cuentas pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    const cuerpoMensaje2 = {
+      destinatario_id: payload.idcontador,
+      asunto: 'Rendicion de Cuentas - Contador',
+      contenido: 'Rendicion de Cuentas pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje2)
+
+    const cuerpoMensaje3 = {
+      destinatario_id: payload.idadministrador,
+      asunto: 'Rendicion de Cuentas - Administrador',
+      contenido: 'Rendicion de Cuentas pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+    }
+
     exportToExcel()
     resetForm()
 
+    await enviarMensajeAutomatico(cuerpoMensaje3)
+
+    ///////// Enviar notificación por correo al coordinador y al contador//////////
+    try {
+      const emailPayload = {
+        emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter(email => email),
+        datos_solicitud: {
+          codigo: numeroFormularioSF.value || 'SOL-PROV',
+          titulo: 'Rendicion de Cuentas',
+          solicitante: nombreCompletoSolicitante.value,
+          tipo: 'Rendicion de Actividad',
+          prioridad: 'alta',
+          descripcion: formData.value.descripcion_actividad || 'Rendicion de Cuentas para actividad',
+          url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${responseData.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+        },
+      }
+      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailPayload),
+      })
+
+      if (emailResponse.ok) {
+        console.log('Correo de notificación enviado exitosamente')
+      } else {
+        console.warn('No se pudo enviar el correo de notificación')
+      }
+    } catch (emailError) {
+      console.error('Error al enviar correo de notificación:', emailError)
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+
+    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
+    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_coordinador, null, 2))
+    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_contador, null, 2))
+
     setTimeout(() => {
-      router.push('/pei/listaactividades?showButton=2')
+      //router.push('/pei/listaactividades?showButton=2')
     }, 1000)
   } catch (error) {
     console.error('Error completo:', error)

@@ -19,7 +19,7 @@
         <v-form @submit.prevent="submitForm">
           <div class="form-section">
             <v-text-field
-              v-model="solicitudDeViaje.evento"
+              v-model="formData.evento"
               label="Nombre del Seminario, curso, taller o reunión"
               bg-color="blue-lighten-5"
               required
@@ -29,7 +29,7 @@
             <v-row>
               <v-col cols="12" sm="6">
                 <v-text-field
-                  v-model="solicitudDeViaje.fechaEvento"
+                  v-model="formData.fecha_evento"
                   label="Fecha de Evento"
                   bg-color="blue-lighten-5"
                   type="date"
@@ -42,7 +42,7 @@
             </v-row>
 
             <v-text-field
-              v-model="solicitudDeViaje.lugarEvento"
+              v-model="formData.lugar_evento"
               label="Lugar de realización"
               bg-color="blue-lighten-5"
               required
@@ -50,7 +50,7 @@
             ></v-text-field>
 
             <v-text-field
-              v-model="solicitudDeViaje.institucionesParticipantes"
+              v-model="formData.instituciones_participantes"
               label="Organizaciones Participantes"
               bg-color="blue-lighten-5"
               required
@@ -58,7 +58,7 @@
             ></v-text-field>
 
             <v-text-field
-              v-model="solicitudDeViaje.organizador"
+              v-model="formData.organizador"
               label="Institución que invita"
               bg-color="blue-lighten-5"
               required
@@ -66,7 +66,7 @@
             ></v-text-field>
 
             <v-text-field
-              v-model="solicitudDeViaje.quienCubreGastos"
+              v-model="formData.quien_cubregastos"
               label="Quien cubre los gastos de estadía, transporte y viáticos"
               bg-color="blue-lighten-5"
               required
@@ -74,7 +74,7 @@
             ></v-text-field>
 
             <v-text-field
-              v-model="solicitudDeViaje.fondosUnitas"
+              v-model="formData.fondos_unitas"
               label="Fondos UNITAS"
               bg-color="blue-lighten-5"
               required
@@ -88,7 +88,7 @@
             ></v-text-field>
 
             <v-textarea
-              v-model="solicitudDeViaje.justificacionAsistencia"
+              v-model="formData.justificacion_asistencia"
               label="Justificación de la importancia de asistir al evento y su relación con el trabajo que desarrolla"
               bg-color="blue-lighten-5"
               rows="3"
@@ -97,7 +97,7 @@
             ></v-textarea>
 
             <v-textarea
-              v-model="solicitudDeViaje.tareasPrevias"
+              v-model="formData.tareas_previas"
               label="Tareas previas que debe cumplir para asistir al evento"
               bg-color="blue-lighten-5"
               rows="3"
@@ -193,7 +193,7 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-text-field
-                  v-model="solicitudDeViaje.lugarSolicitud"
+                  v-model="formData.lugar_solicitud"
                   label="Lugar de la Solicitud"
                   variant="outlined"
                   bg-color="blue-lighten-5"
@@ -384,7 +384,7 @@
             </v-row>
           </div>
 
-          <div class="d-flex justify-end mt-4">
+          <div class="d-flex justify-end gap-3 mt-8">
             <v-btn
               v-if="idActividad && !idTarea"
               color="info"
@@ -408,6 +408,8 @@
             </v-btn>
             <v-btn
               color="error"
+              variant="outlined"
+              size="large"
               class="mr-2"
               prepend-icon="mdi-backspace-outline"
               @click="resetForm"
@@ -417,8 +419,9 @@
             </v-btn>
             <v-btn
               color="primary"
-
-              prepend-icon="mdi-file-document-arrow-right"
+              variant="flat"
+              size="large"
+              prepend-icon="mdi-send"
               type="submit"
               :loading="loading"
               disabled
@@ -444,23 +447,27 @@
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
   <!-- {{ '*********************B' }}
     <pre>{{ solicitudDeViaje }}</pre> -->
-    {{ '*********************B' }}
-    <pre>{{ formaPago }}</pre>
+    <!-- {{ '*********************B' }}
+    <pre>{{ formData }}</pre> -->
 </template>
 
 <script setup>
-import * as XLSX from 'xlsx'
 import { ref, onMounted, computed, nextTick, watch } from 'vue'
-import axios from 'axios'
-import { useUserStore } from '@/stores/user'
+
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
-import { useRoute } from 'vue-router'
+import axios from 'axios'
+import { useUserStore } from '@/stores/user'
+import * as XLSX from 'xlsx'
+import { useRoute, useRouter } from 'vue-router'
 //Composable de impresion
 import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
+import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
 
+//Inicar Composable
+const { enviarMensajeAutomatico } = useNotificaciones()
 //Inicializar el composable
 const { generarPdfSolicitudViaje, generarPdfSolicitudViajeTareas } = useImpresionFormularios()
 /*************************** Generar PDFs *******************************************/
@@ -522,7 +529,7 @@ const baseurl = import.meta.env.VITE_API_BASE
 const loading = ref(false)
 const responsablesList = ref([])
 const coordinadoresList = ref([])
-const soloLectura = ref(false)
+//const soloLectura = ref(false)
 const datosSolicitante = ref([])
 const solicitante = ref(null)
 const solicitudDeViaje = ref({}) //viene de la funccion cargarSolicitudesDeViaje
@@ -543,7 +550,7 @@ const formData = ref({
   fecha_evento: '',
   lugar_evento: '',
   instituciones_participantes: '',
-  institucion_queinvita: '', //organizador
+  organizador: '', //organizador
   quien_cubregastos: '',
   fondos_unitas: '',
   justificacion_asistencia: '',
@@ -598,6 +605,18 @@ const formDatSF = ref({
   bloquearIconosSolFondossf: true,
 })
 
+// Agrega esta propiedad computada
+const soloLectura = computed(() => {
+  // Si no hay datos del formulario o no hay usuario actual, por defecto true por seguridad
+  if (!datosFormulario1.value || !usuario.value?.id) {
+    return true
+  }
+
+  // Si el usuario actual es el creador de la solicitud, puede editar (soloLectura = false)
+  // Si NO es el creador, solo lectura (soloLectura = true)
+  return datosFormulario1.value.usuario_id !== usuario.value.id
+})
+
 const nombreCoordinadorElegido = computed(() => {
   const coordinador = coordinadoresList.value.find(
     (user) => user.id === formData.value.id_coordinador,
@@ -643,13 +662,13 @@ watch(
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
-        formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)
-        formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)
-        formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)
-        formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)
-        formData.value.fecha_ejecucion = getSafeValue(newVal.actividad.fecha_programada)
+        //formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)
+        //formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)
+        //formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)
+        //formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)
+        //formData.value.fecha_ejecucion = getSafeValue(newVal.actividad.fecha_programada)
         formData.value.id_actividad = getSafeValue(newVal.actividad.id, 0)
-        formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)
+        //formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
           //console.log('Formas de pago disponibles:', newVal.formaPago)
@@ -947,7 +966,7 @@ async function cargarSolicitudesDeViaje() {
     formData.value.fecha_evento = solicitudDeViaje.value.fechaEvento || ''
     formData.value.lugar_evento = solicitudDeViaje.value.lugarEvento || ''
     formData.value.instituciones_participantes = solicitudDeViaje.value.institucionesParticipantes || ''
-    formData.value.institucion_queinvita = solicitudDeViaje.value.organizador || ''
+    formData.value.organizador = solicitudDeViaje.value.organizador || ''
     formData.value.quien_cubregastos = solicitudDeViaje.value.quienCubreGastos || ''
     formData.value.fondos_unitas = solicitudDeViaje.value.fondosUnitas || ''
     formData.value.justificacion_asistencia = solicitudDeViaje.value.justificacionAsistencia || ''
@@ -1055,7 +1074,7 @@ async function submitForm() {
       'fecha_evento',
       'lugar_evento',
       'instituciones_participantes',
-      'institucion_queinvita',
+      'organizador',
       'quien_cubregastos',
       'fondos_unitas',
       'justificacion_asistencia',
@@ -1099,18 +1118,48 @@ async function submitForm() {
     formData.value.formaPago = formData.value.forma_pago // Asegurar que forma_pago esté actualizada
 
     const payload = {
-      ...formData.value, //esta linea incluye todas las propiedades de formData
-      id_usuario: usuario.value.id || 0,
-      id_actividad: idActividad || 0,
-      id_tarea: idTarea || null,
-      monto_solicitado: totalMontoSolicitado.value,
-      detalle_destino_fondos: {
+      //...formData.value, //esta linea incluye todas las propiedades de formData
+      "evento": formData.value.evento,
+      "lugarEvento": formData.value.lugar_evento,
+      "institucionesParticipantes": formData.value.instituciones_participantes,
+      "organizador": formData.value.organizador,
+      "quienCubreGastos": formData.value.quien_cubregastos || '',
+      "justificacionAsistencia": formData.value.justificacion_asistencia || '',
+      "fondosUnitas": formData.value.fondos_unitas || '',
+      "tareasPrevias": formData.value.tareas_previas || '',
+      "bloquearIconos": true,
+      "lugarSolicitud": formData.value.lugar_solicitud || '',
+      "fechaSolicitud": formData.value.fecha_solicitud || '',
+      "fechaEvento": formData.value.fecha_evento || '',
+      "detalleGasto": {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida: gasto.partida,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
-        })),
+        }))
       },
+      "validacionResponsable": false,
+      "validacionCoordinador": false,
+      "datos_forma_pago": {
+        "otros": {
+          "nombre_otros": formData.value.datos_forma_pago.otros.nombre_otros,
+          "ci_otros": formData.value.datos_forma_pago.otros.ci_otros || ''
+        },
+        "transferencia": {
+          "nombre_transferencia": formData.value.datos_forma_pago.transferencia.nombre_transferencia || '',
+          "ci_transferencia": formData.value.datos_forma_pago.transferencia.ci_transferencia || '',
+          "entidad_bancaria": formData.value.datos_forma_pago.transferencia.entidad_bancaria || '',
+          "tipo_cuenta": formData.value.datos_forma_pago.transferencia.tipo_cuenta || '',
+          "numero_cuenta": formData.value.datos_forma_pago.transferencia.numero_cuenta || ''
+        }
+      },
+      "formaPago": formData.value.forma_pago || '',
+      "responsable": formData.value.id_responsable || null,
+      "coordinador": formData.value.id_coordinador || null,
+      "usuario": usuario.value.id || 0,
+      "actividad": idActividad || 0,
+      "tarea": idTarea || null,
+      "montoSolicitado": totalMontoSolicitado.value,
     }
     console.log('Payload completo que se enviará:', JSON.stringify(payload, null, 2))
 
@@ -1127,10 +1176,68 @@ async function submitForm() {
     }
 
     numeroFormulario.value = response.numero_formulario
+    console.log('hhhhhhhhhhhhhhhhhhhidSOLICITUD:', JSON.stringify(idSolicitud, null, 2))
+
+    const urlForm = `${window.location.origin}/monitoreo/formulario055/${idActividad}?solicitud_id=${idSolicitud}${idTarea ? `&tarea_id=${idTarea}` : ''}`;
+    const cuerpoMensaje = {
+      destinatario_id: payload.coordinador,
+      asunto: 'Solicitud de Viaje',
+      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+      // accion_url: '',
+      // accion_texto: '',
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    const cuerpoMensaje2 = {
+      destinatario_id: payload.responsable,
+      asunto: 'Solicitud de Viaje',
+      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+    }
 
     alert('Solicitud enviada con éxito')
     exportToExcel()
     //resetForm()
+    await enviarMensajeAutomatico(cuerpoMensaje2)
+
+        ///////// Enviar notificación por correo al coordinador y al contador//////////
+    try {
+      const emailPayload = {
+        emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
+        datos_solicitud: {
+          codigo: numeroFormulario.value || 'SOL-PROV',
+          titulo: 'Formulario Sol. Viaje',
+          solicitante: solicitante.value,
+          tipo: 'Solicitud de Actividad',
+          prioridad: 'alta',
+          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
+          url_revision: `${window.location.origin}/monitoreo/formulario055/${idActividad}?solicitud_id=${idSolicitud}${idTarea ? `&tarea_id=${idTarea}` : ''}`,
+        },
+      }
+
+      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailPayload),
+      })
+
+      if (emailResponse.ok) {
+        console.log('Correo de notificación enviado exitosamente')
+      } else {
+        console.warn('No se pudo enviar el correo de notificación')
+      }
+    } catch (emailError) {
+      console.error('Error al enviar correo de notificación:', emailError)
+      // No detenemos el flujo si falla el envío del correo
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+
+    console.log('Respuesta del servidor:', JSON.stringify(response, null, 2))
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message)
     alert(`Error: ${error.response?.data?.message || error.message}`)
@@ -1145,7 +1252,7 @@ function resetForm() {
     fecha_evento: '',
     lugar_evento: '',
     instituciones_participantes: '',
-    institucion_queinvita: '',
+    //institucion_queinvita: '',
     quien_cubregastos: '',
     fondos_unitas: '',
     justificacion_asistencia: '',
@@ -1630,8 +1737,125 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.v-card {
-  max-width: 900px;
+.solicitud-fondos-container {
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 20px 16px;
+}
+
+.v-card {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.v-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border: 1px solid #e0e0e0;
+}
+
+.form-section h3 {
+  color: #1976d2;
+  border-bottom: 2px solid #1976d2;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.info-item {
+  padding: 8px 0;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.users-table {
+  width: 100%;
+}
+
+.users-table th {
+  background-color: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 960px) {
+  .solicitud-fondos-container {
+    padding: 16px 12px;
+  }
+
+  .form-section {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .d-flex.justify-end {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .d-flex.justify-end .v-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .v-card {
+    margin: 8px 0;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+}
+
+/* Mejora el aspecto de la tabla */
+:deep(.v-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.v-table th) {
+  background-color: #1976d2 !important;
+  color: white !important;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 16px 12px;
+}
+
+:deep(.v-table td) {
+  padding: 12px;
+  background-color: #fafafa;
+}
+
+.narrow-column {
+  width: 15%;
+}
+
+.wide-column {
+  width: 50%;
+}
+
+.action-column {
+  width: 15%;
+}
+
+.compact-field {
+  font-size: 14px;
+  max-width: 100px;
 }
 </style>

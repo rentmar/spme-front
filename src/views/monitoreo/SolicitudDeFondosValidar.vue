@@ -279,6 +279,7 @@
                             hide-details
                             placeholder="1.1.1"
                             class="compact-field"
+                            bg-color="blue-lighten-5"
                             :readonly="soloLectura"
                           ></v-text-field>
                         </td>
@@ -390,6 +391,7 @@
                           v-model="formData.datos_forma_pago.otros.ci_otros"
                           label="Documento de Identidad C.I."
                           variant="outlined"
+                          bg-color="grey-lighten-4"
                           :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
@@ -604,12 +606,6 @@
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
   <!-- {{ '***************************************B' }}
   <pre>{{ formData.datos_forma_pago }}</pre> -->
-  <!-- {{ '***************************************B' }}
-  <pre>{{ datosFormulario1 }}</pre> -->
-  <!-- {{ '***************************************B' }}
-  <pre>{{ datosFormulario }}</pre> -->
-  <!-- {{ '***************************************B' }}
-  <pre>{{ idSolicitud }}</pre> -->
 </template>
 
 <script setup>
@@ -621,7 +617,10 @@ import { useImpresionFormularios } from '@/modules/impresiones/composables/useIm
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
+import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
 
+//Inicar Composable
+const { enviarMensajeAutomatico } = useNotificaciones()
 /*************************** Generar PDFs *******************************************/
 const loadingPdfSolicitud = ref(false)
 const loadingPdfSubactividad = ref(false)
@@ -694,7 +693,7 @@ const loading = ref(false)
 const form = ref(null)
 const responsablesList = ref([])
 const coordinadoresList = ref([])
-const soloLectura = ref(false)
+//const soloLectura = ref(false)
 
 // const {
 //   generarPdfSolicitudFondos,
@@ -765,6 +764,18 @@ const formDatSF = ref({
   actividad_idsf: null,
   fechaRealizacionActividadsf: '',
   bloquearIconosSolFondossf: true,
+})
+
+// Agrega esta propiedad computada
+const soloLectura = computed(() => {
+  // Si no hay datos del formulario o no hay usuario actual, por defecto true por seguridad
+  if (!datosFormulario1.value || !usuario.value?.id) {
+    return true
+  }
+
+  // Si el usuario actual es el creador de la solicitud, puede editar (soloLectura = false)
+  // Si NO es el creador, solo lectura (soloLectura = true)
+  return datosFormulario1.value.usuario_id !== usuario.value.id
 })
 
 //datos para abrir Solicitud de Fondos
@@ -1263,6 +1274,21 @@ async function submitForm() {
     if (totalMontoSolicitado.value <= 0) {
       throw new Error('El monto total solicitado debe ser mayor a cero.')
     }
+
+    // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+    const coordinadorSeleccionado = coordinadoresList.value.find(
+     (coordinador) => coordinador.id === formData.value.idcoordinador
+    )
+    const contadorSeleccionado = responsablesList.value.find(
+     (contador) => contador.id === formData.value.idresponsable
+    )
+
+    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+    const correoContadorActual = contadorSeleccionado?.correo || ''
+
+    // Actualizar los valores en formData
+    formData.value.correo_coordinador = correoCoordinadorActual
+    formData.value.correo_contador = correoContadorActual
     // // Transformar los datos al formato esperado por el endpoint
     // const payload = {
     //   detalle_destino_fondos: JSON.stringify({
@@ -1303,9 +1329,9 @@ async function submitForm() {
       fechaSolicitud: formData.value.fecha_solicitud,
       fechaRealizacionActividad: formData.value.fecha_ejecucion,
       montoSolicitado: totalMontoSolicitado.value,
-      validacionResponsable: formData.value.validacion_contador,
+      validacionResponsable: false, //formData.value.validacion_contador,
       contador: formData.value.idcontador,
-      validacionCoordinador: formData.value.validacion_coordinador,
+      validacionCoordinador: false, //formData.value.validacion_coordinador,
       coordinador: formData.value.idcoordinador,
       usuario: formData.value.id_usuario,
       actividad: formData.value.id_actividad,
@@ -1335,13 +1361,67 @@ async function submitForm() {
     const data = await response.json()
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
-    //bloquearIconoSF.value = true;
+
+    //const urlForm = `${baseurl}/api/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+    const urlForm = `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
+    const cuerpoMensaje = {
+      destinatario_id: payload.coordinador,
+      asunto: 'Solicitud de Fondos - Coordinado',
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    const cuerpoMensaje2 = {
+      destinatario_id: payload.contador,
+      asunto: 'Solicitud de Fondos - Contador',
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+    }
+
     exportToExcel()
     resetForm()
-    console.log('Respuesta del servidor:', data)
 
+    await enviarMensajeAutomatico(cuerpoMensaje2)
+
+    ///////// Enviar notificación por correo al coordinador y al contador//////////
+    try {
+      const emailPayload = {
+        emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
+        datos_solicitud: {
+          codigo: numeroFormularioSF.value || 'SOL-PROV',
+          titulo: 'Formulario Sol. Fondos',
+          solicitante: nombreCompletoSolicitante.value,
+          tipo: 'Solicitud de Actividad',
+          prioridad: 'alta',
+          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
+          url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+        },
+      }
+      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailPayload),
+      })
+
+      if (emailResponse.ok) {
+        console.log('Correo de notificación enviado exitosamente')
+      } else {
+        console.warn('No se pudo enviar el correo de notificación')
+      }
+    } catch (emailError) {
+      console.error('Error al enviar correo de notificación:', emailError)
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+
+    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
+    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_coordinador, null, 2))
+    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_contador, null, 2))
     setTimeout(() => {
-      router.push('/pei/listaactividades?showButton=1')
+      //router.push('/pei/listaactividades?showButton=1')
     }, 1000)
 
     return data
