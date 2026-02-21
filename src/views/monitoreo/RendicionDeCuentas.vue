@@ -431,9 +431,9 @@
   <!-- {{ '*******************' }}
   <pre>{{ coordinadoresList }}</pre> -->
   <!-- {{ '*******************' }}
-  <pre>{{ contadoresList }}</pre> -->
+  <pre>{{ solicitudesFondos }}</pre> -->
   <!-- {{ '*******************' }}
-  <pre>{{ administradoresList }}</pre> -->
+  <pre>{{ solicitud }}</pre> -->
 </template>
 
 <script setup>

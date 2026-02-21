@@ -577,6 +577,20 @@ console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
 //console.log('ID aaaaaaa', JSON.stringify(route,null,2))
 
+const userStore = useUserStore()
+const usuario = computed(() => {
+  return {
+    nombre: userStore.usuario,
+    paterno: userStore.userData.user.paterno,
+    materno: userStore.userData.user.materno,
+    ci: userStore.userData.user.ci,
+    role: userStore.rol,
+    cargo: userStore.rol,
+    id: userStore.id,
+  }
+})
+console.log('ID Usuario:', JSON.stringify(usuario.value.id, null, 2)) //.value.id)
+
 const baseurl = import.meta.env.VITE_API_BASE
 
 //variables para carga de datos
@@ -644,20 +658,6 @@ const formData = ref({
 const idSolicitudFondos = ref(null)
 const numeroFormularioSF = ref(null)
 // Nuevo estado para controlar el bloqueo
-
-const userStore = useUserStore()
-const usuario = computed(() => {
-  return {
-    nombre: userStore.usuario,
-    paterno: userStore.userData.user.paterno,
-    materno: userStore.userData.user.materno,
-    ci: userStore.userData.user.ci,
-    role: userStore.rol,
-    cargo: userStore.rol,
-    id: userStore.id,
-  }
-})
-console.log('ID Usuario:', JSON.stringify(usuario.value.id, null, 2)) //.value.id)
 
 const textoProcedencia = computed(() => {
   const fuentes = Array.isArray(formData.value?.fuente_financiamiento)

@@ -31,7 +31,7 @@
         ></ProyectoIdHeader>
         <br /> -->
       <!--Encabezado de la Actividad-->
-      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
+      <ActividadInformacionPei v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
       <v-row>
         <!-- Panel lateral de información -->
@@ -171,7 +171,8 @@
                     label="Descripción de la Actividad"
                     variant="outlined"
                     rows="3"
-                    readonly
+                    bg-color="blue-lighten-5"
+                    :readonly="soloLectura"
                   ></v-textarea>
                   <v-row>
                     <v-col cols="12" md="4">
@@ -202,7 +203,8 @@
                     label="Objetivo de la Actividad"
                     variant="outlined"
                     rows="3"
-                    readonly
+                    bg-color="blue-lighten-5"
+                    :readonly="soloLectura"
                   ></v-textarea>
                   <v-text-field
                     v-model="textoProcedencia"
@@ -220,10 +222,11 @@
                       type="date"
                       variant="outlined"
                       density="compact"
-                      readonly
+                      bg-color="blue-lighten-5"
+                      :readonly="soloLectura"
                     ></v-text-field>
                   </v-col>
-                  <!-- <v-col cols="12">
+                  <v-col cols="12">
                       <v-file-input
                         v-model="formData.medios_archivos"
                         label="Adjuntar Medios de verificacion"
@@ -233,7 +236,7 @@
                         :accept="acceptedFormats.medios"
                         prepend-icon="mdi-paperclip"
                       ></v-file-input>
-                    </v-col> -->
+                    </v-col>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -245,13 +248,21 @@
                     Detalle de Gastos Solicitados
                   </h3>
 
+                  <v-alert type="info" variant="tonal" class="mb-4">
+                    <template v-slot:prepend>
+                      <v-icon color="info">mdi-information</v-icon>
+                    </template>
+                    Agregue todos los gastos asociados a la actividad. Especifique partida,
+                    descripción y monto.
+                  </v-alert>
+
                   <div class="d-flex justify-space-between align-center mb-4">
                     <v-btn
                       color="primary"
                       variant="outlined"
                       prepend-icon="mdi-plus"
                       @click="addGasto"
-                      disabled
+                      :disabled="soloLectura"
                     >
                       Agregar Item
                     </v-btn>
@@ -277,9 +288,10 @@
                             variant="outlined"
                             density="compact"
                             hide-details
+                            bg-color="blue-lighten-5"
                             placeholder="1.1.1"
                             class="compact-field"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </td>
                         <td class="wide-column">
@@ -288,8 +300,9 @@
                             variant="outlined"
                             density="compact"
                             hide-details
+                            bg-color="blue-lighten-5"
                             placeholder="Descripción del gasto"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
@@ -299,9 +312,10 @@
                             variant="outlined"
                             density="compact"
                             hide-details
+                            bg-color="blue-lighten-5"
                             placeholder="0.00"
                             class="compact-field"
-                            readonly
+                            :readonly="soloLectura"
                           ></v-text-field>
                         </td>
                         <td class="text-center action-column">
@@ -311,7 +325,7 @@
                             size="small"
                             variant="text"
                             @click="removeGasto(index)"
-                            disabled
+                            :disabled="soloLectura"
                           >
                             <v-icon>mdi-delete</v-icon>
                           </v-btn>
@@ -336,7 +350,8 @@
                         v-model="formData.lugar_solicitud"
                         label="Lugar de la Solicitud"
                         variant="outlined"
-                        readonly
+                        bg-color="blue-lighten-5"
+                        :readonly="soloLectura"
                       ></v-text-field>
                       <!-- <v-select
                           v-model="formData.forma_pago"
@@ -370,7 +385,7 @@
                         label="Forma de Pago"
                         variant="outlined"
                         bg-color="blue-lighten-5"
-                        readonly
+                        :readonly="soloLectura"
                       ></v-select>
                     </v-col>
                   </v-row>
@@ -382,7 +397,8 @@
                           v-model="formData.datos_forma_pago.otros.nombre_otros"
                           label="Nombre a quien se realiza el pago"
                           variant="outlined"
-                          readonly
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" md="6">
@@ -390,11 +406,13 @@
                           v-model="formData.datos_forma_pago.otros.ci_otros"
                           label="Documento de Identidad C.I."
                           variant="outlined"
-                          readonly
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                     </v-row>
                   </div>
+
                   <div v-if="MostrarCamposTransferencia">
                     <v-row>
                       <v-col cols="12" md="6">
@@ -402,7 +420,8 @@
                           v-model="formData.datos_forma_pago.transferencia.nombre_transferencia"
                           label="Nombre completo a quien se realiza la transferencia"
                           variant="outlined"
-                          readonly
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" md="6">
@@ -410,7 +429,8 @@
                           v-model="formData.datos_forma_pago.transferencia.ci_transferencia"
                           label="Documento de Identidad C.I."
                           variant="outlined"
-                          readonly
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" md="6">
@@ -418,7 +438,8 @@
                           v-model="formData.datos_forma_pago.transferencia.entidad_bancaria"
                           label="Nombre de Entidad Bancaria"
                           variant="outlined"
-                          readonly
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" md="6">
@@ -427,7 +448,8 @@
                           :items="['Ahorro', 'Corriente']"
                           label="Tipo de Cuenta (Ahorro/ Corriente)"
                           variant="outlined"
-                          readonly
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
                         ></v-select>
                       </v-col>
                       <v-col cols="12" md="6">
@@ -435,7 +457,8 @@
                           v-model="formData.datos_forma_pago.transferencia.numero_cuenta"
                           label="Número de Cuenta Bancaria"
                           variant="outlined"
-                          readonly
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
                         ></v-text-field>
                       </v-col>
                     </v-row>
@@ -450,17 +473,18 @@
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
                   </h3>
+
                   <v-row>
                     <v-col cols="12" md="6">
                       <v-select
                         v-model="formData.idresponsable"
-                        bg-color="blue-lighten-5"
                         :items="responsablesList"
                         :item-title="getNombreCompleto"
                         item-value="id"
                         label="Contador"
                         variant="outlined"
-                        readonly
+                        bg-color="blue-lighten-5"
+                        :readonly="soloLectura"
                       ></v-select>
                     </v-col>
                     <v-col cols="12" md="6" class="d-flex align-center">
@@ -491,7 +515,8 @@
                         item-value="id"
                         label="Coordinador"
                         variant="outlined"
-                        readonly
+                        bg-color="blue-lighten-5"
+                        :readonly="soloLectura"
                       ></v-select>
                     </v-col>
                     <v-col cols="12" md="6" class="d-flex align-center">
@@ -551,11 +576,20 @@
                     variant="flat"
                     size="large"
                     prepend-icon="mdi-send"
-                    type="submit"
-                    :loading="loading"
                     disabled
                   >
                     Enviar Solicitud
+                  </v-btn>
+                  <v-btn
+                    color="primary"
+                    variant="flat"
+                    size="large"
+                    prepend-icon="mdi-update"
+                    type="submit"
+                    :loading="loading"
+                    :disabled="soloLectura"
+                  >
+                    Actualizar
                   </v-btn>
                 </div>
               </v-form>
@@ -565,11 +599,9 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ formData }}</pre> -->
+   <!-- <pre>{{ datosFormulario1 }}</pre> -->
   <!-- {{ '***************************************A' }}
-    <pre>{{ formDatSF }}</pre> -->
-  <!-- {{ '***************************************B' }}
-    <pre>{{ datosFormulario1 }}</pre> -->
+    <pre>{{ correoContadorActual }}</pre> -->
 </template>
 
 <script setup>
@@ -577,10 +609,15 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 //import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import ActividadInformacionPei from '@/modules/pei/components/formularios/ActividadInformacionPei.vue'
+
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
+import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
 
+//Inicar Composable
+const { enviarMensajeAutomatico } = useNotificaciones()
 const router = useRouter()
 const route = useRoute()
 const idActividad = route.params.id || null
@@ -615,6 +652,9 @@ const loading = ref(false)
 const form = ref(null)
 const responsablesList = ref([])
 const coordinadoresList = ref([])
+const acceptedFormats = ref({
+  medios: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx',
+})
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)
@@ -679,6 +719,18 @@ const formDatSF = ref({
   bloquearIconosSolFondossf: true,
 })
 
+// Agrega esta propiedad computada
+const soloLectura = computed(() => {
+  // Si no hay datos del formulario o no hay usuario actual, por defecto true por seguridad
+  if (!datosFormulario1.value || !usuario.value?.id) {
+    return true
+  }
+
+  // Si el usuario actual es el creador de la solicitud, puede editar (soloLectura = false)
+  // Si NO es el creador, solo lectura (soloLectura = true)
+  return datosFormulario1.value.usuario !== usuario.value.id
+})
+
 //datos para abrir Solicitud de Fondos
 const idSolicitudFondos = ref(null)
 const numeroFormularioSF = ref(null)
@@ -712,9 +764,7 @@ const nombreCoordinadorElegido = computed(() => {
 })
 
 const nombreResponsableElegido = computed(() => {
-  const responsable = responsablesList.value.find(
-    (user) => user.id === formData.value.idresponsable,
-  )
+  const responsable = responsablesList.value.find((user) => user.id === formData.value.idresponsable)
   return responsable ? getNombreCompleto(responsable) : ''
 })
 
@@ -807,10 +857,10 @@ watch(
       return value !== null && value !== undefined ? value : defaultValue
     }
     const idSolicitante = newVal.usuario
-    console.log('uuuuuuuu', idSolicitante)
-    console.log('uuuuuuu9', datosFormulario.value)
+    //console.log('uuuuuuuu', idSolicitante)
+    //console.log('uuuuuuu9', datosFormulario.value)
     const datosSolicitante = datosFormulario.value.validadores.find((fp) => fp.id === idSolicitante)
-    console.log('uuuuuu2', JSON.stringify(datosSolicitante, null, 2))
+    //console.log('uuuuuu2', JSON.stringify(datosSolicitante, null, 2))
     //return datosSolicitante
 
     formData.value.nombre = getSafeValue(datosSolicitante.nombre)
@@ -822,6 +872,37 @@ watch(
   },
   { deep: true },
 )
+
+// borra los campos no seleccionados en "forma de pago"
+// ejemplo, si seleccionas "otros", se borran los campos "transferencia_bancaria"
+watch(
+  () => formData.value.forma_pago,
+  (newVal, oldVal) => {
+    if (newVal === oldVal) return; // No hacer nada si no cambió
+
+    // Obtener el nombre de la forma de pago seleccionada
+    const formaPagoSeleccionada = formasPagoOptions.value.find(fp => fp.id === newVal);
+    const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.formaPago : '';
+
+    // Resetear campos según la opción seleccionada
+    if (nombreFormaPago === 'Transferencia Bancaria') {
+      // Si seleccionó Transferencia, resetear campos de Otros
+      formData.value.datos_forma_pago.otros = {
+        nombre_otros: '',
+        ci_otros: ''
+      };
+    } else {
+      // Si seleccionó cualquier otra opción, resetear campos de Transferencia
+      formData.value.datos_forma_pago.transferencia = {
+        nombre_transferencia: '',
+        ci_transferencia: '',
+        entidad_bancaria: '',
+        tipo_cuenta: '',
+        numero_cuenta: ''
+      };
+    }
+  }
+);
 
 const formasPagoOptions = computed(() => {
   if (datosFormulario.value && datosFormulario.value.formaPago) {
@@ -906,7 +987,7 @@ function getCurrentDate() {
 // }
 
 async function cargarDatos() {
-  console.log('Iniciando cargarDatos...')
+  //console.log('Iniciando cargarDatos...')
 
   isLoading.value = true
   error.value = null
@@ -917,14 +998,14 @@ async function cargarDatos() {
       throw new Error('Faltan datos requeridos para cargar el formulario')
     }
 
-    console.log('Enviando solicitud con:', {
-      id_actividad: idActividad,
-      usuario: usuario.value.nombre,
-    })
+    // console.log('Enviando solicitud con:', {
+    //   id_actividad: idActividad,
+    //   usuario: usuario.value.nombre,
+    // })
 
     // Usar URL completa para debugging
     const url = baseurl + 'api/monitoreo/obtener-datos-formulario-pei/'
-    console.log('URL completa:', url)
+    //console.log('URL completa:', url)
 
     const response = await fetch(url, {
       method: 'POST',
@@ -937,7 +1018,7 @@ async function cargarDatos() {
       }),
     })
 
-    console.log('Respuesta cargarDatos:', response.status, response.statusText)
+    //console.log('Respuesta cargarDatos:', response.status, response.statusText)
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -950,10 +1031,10 @@ async function cargarDatos() {
     }
 
     const rawData = await response.json()
-    console.log('Datos recibidos en cargarDatos:', rawData)
+    //console.log('Datos recibidos en cargarDatos:', rawData)
 
     datosFormulario.value = rawData
-    console.log('DatosFormulario asignado exitosamente')
+    //console.log('DatosFormulario asignado exitosamente')
   } catch (err) {
     console.error('Error en cargarDatos:', err)
     error.value = err.message
@@ -962,7 +1043,7 @@ async function cargarDatos() {
     throw err
   } finally {
     isLoading.value = false
-    console.log('cargarDatos - isLoading establecido en:', isLoading.value)
+    //console.log('cargarDatos - isLoading establecido en:', isLoading.value)
   }
 }
 
@@ -1067,13 +1148,12 @@ async function cargarDatos() {
 // }
 
 async function cargarSolicitudFondos() {
-  console.log('Iniciando cargarSolicitudFondos...')
+  //console.log('Iniciando cargarSolicitudFondos...')
 
   isLoading.value = true
   error.value = null
 
   try {
-    //const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudFondos/', {
     const response = await fetch(baseurl + 'api/solicitud-fondos-pei/', {
       method: 'GET',
       headers: {
@@ -1081,14 +1161,14 @@ async function cargarSolicitudFondos() {
       },
     })
 
-    console.log('Respuesta recibida:', response.status, response.ok)
+    //console.log('Respuesta recibida:', response.status, response.ok)
 
     if (!response.ok) {
       throw new Error(`Error HTTP ${response.status}`)
     }
 
     const data = { solicitudes: await response.json() }
-    console.log('Datos recibidos de la tabla solicitudfondosactpei:', JSON.stringify(data, null, 2))
+    //console.log('Datos recibidos de la tabla solicitudfondosactpei:', JSON.stringify(data, null, 2))
 
     // Validar que la respuesta tenga el formato correcto
     if (!data || !data.solicitudes || !Array.isArray(data.solicitudes)) {
@@ -1100,7 +1180,7 @@ async function cargarSolicitudFondos() {
       (solicitud) => solicitud.id?.toString() === idSolicitud?.toString(),
     )
 
-    console.log('Solicitud encontrada:', solicitudEncontrada)
+    //console.log('Solicitud encontrada:', solicitudEncontrada)
 
     if (!solicitudEncontrada) {
       throw new Error(`No se encontró la solicitud con ID: ${idSolicitud}`)
@@ -1109,14 +1189,14 @@ async function cargarSolicitudFondos() {
     datosFormulario1.value = solicitudEncontrada
     actualizarDatosFormulario(solicitudEncontrada)
 
-    console.log('cargarSolicitudFondos completado exitosamente')
+    //console.log('cargarSolicitudFondos completado exitosamente')
   } catch (err) {
     console.error('Error en cargarSolicitudFondos:', err)
     error.value = err.message
     throw err // Re-lanzar el error para que onMounted lo capture
   } finally {
     isLoading.value = false
-    console.log('cargarSolicitudFondos - isLoading establecido en:', isLoading.value)
+    //console.log('cargarSolicitudFondos - isLoading establecido en:', isLoading.value)
   }
 }
 
@@ -1133,11 +1213,10 @@ function removeGasto(index) {
 async function submitForm() {
   loading.value = true
   try {
-    // Validar si el formulario está completo
+    //Validar si el formulario está completo
     if (
       !formData.value.lugar_solicitud ||
       !formData.value.forma_pago ||
-      !formData.value.idresponsable ||
       !formData.value.idcoordinador
     ) {
       throw new Error('Por favor, completa todos los campos obligatorios del formulario.')
@@ -1145,34 +1224,54 @@ async function submitForm() {
     if (totalMontoSolicitado.value <= 0) {
       throw new Error('El monto total solicitado debe ser mayor a cero.')
     }
-    // Transformar los datos al formato esperado por el endpoint
+
+    // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+    const coordinadorSeleccionado = coordinadoresList.value.find(
+      (coordinador) => coordinador.id === formData.value.idcoordinador
+    )
+    const contadorSeleccionado = responsablesList.value.find(
+      (contador) => contador.id === formData.value.idresponsable
+    )
+
+    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+    const correoContadorActual = contadorSeleccionado?.correo || ''
+
+    // Actualizar los valores en formData
+    formData.value.correo_coordinador = correoCoordinadorActual
+    formData.value.correo_contador = correoContadorActual
+
     const payload = {
-      detalle_destino_fondos: JSON.stringify({
+      // detalle_destino_fondos should be an object, not a stringified JSON
+      detalleDestinoFondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida_sf: gasto.partida, // Changed from 'partida' to 'partida_sf'
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
-      }),
-      forma_pago: formData.value.forma_pago,
-      lugar_solicitud: formData.value.lugar_solicitud,
-      fecha_solicitud: formData.value.fecha_solicitud,
-      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
-      monto_solicitado: totalMontoSolicitado.value,
-      validacion_responsable: formData.value.validacion_responsable,
-      id_responsable: formData.value.idresponsable,
-      validacion_coordinador: formData.value.validacion_coordinador,
-      id_coordinador: formData.value.idcoordinador,
-      id_usuario: formData.value.id_usuario,
-      actividad: {
-        id_actividad: formData.value.id_actividad,
-        descripcion_actividad: formData.value.descripcion_actividad,
-        objetivo_actividad: formData.value.objetivo_actividad,
       },
-      id_tarea: idTarea || null,
+      formaPago: formData.value.forma_pago,
+      lugarSolicitud: formData.value.lugar_solicitud,
+      fechaSolicitud: formData.value.fecha_solicitud,
+      fechaRealizacionActividad: formData.value.fecha_ejecucion,
+      montoSolicitado: totalMontoSolicitado.value,
+      validacionResponsable: false, //formData.value.validacion_contador,
+      contador: formData.value.idresponsable,
+      validacionCoordinador: false, //formData.value.validacion_coordinador,
+      coordinador: formData.value.idcoordinador,
+      usuario: formData.value.id_usuario,
+      actividad: formData.value.id_actividad,
+      descripcion_actividad: formData.value.descripcion_actividad,
+      objetivo_actividad: formData.value.objetivo_actividad,
+      // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
+      ...(formData.value.id_tarea && formData.value.id_tarea > 0 && { tarea: formData.value.id_tarea }),
+      datos_forma_pago: formData.value.datos_forma_pago,
+      bloquearIconosSolFondos: true,
+      //codigo_actividad: formData.value.codigo_actividad,
     }
 
-    const response = await fetch(baseurl + '/api/monitoreo/crear-solicitud-fondos/', {
-      method: 'POST',
+    //console.log('payload enviado', JSON.stringify(payload, null, 2))
+    const response = await fetch(baseurl + 'api/solicitud-fondos-pei/' + idSolicitud + '/', {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -1186,13 +1285,65 @@ async function submitForm() {
     const data = await response.json()
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
-    //bloquearIconoSF.value = true;
+
+    const urlForm = `${window.location.origin}/monitoreo/pei/formulariopei011/${idActividad}?solicitud_id=${data.id}${idTarea ? `&tarea_id=${idTarea}` : ''}`;
+    const cuerpoMensaje = {
+      destinatario_id: payload.coordinador,
+      asunto: 'Solicitud de Fondos - Coordinado',
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    const cuerpoMensaje2 = {
+      destinatario_id: payload.contador,
+      asunto: 'Solicitud de Fondos - Contador',
+      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+    }
+
     exportToExcel()
     resetForm()
-    console.log('Respuesta del servidor:', data)
+
+    await enviarMensajeAutomatico(cuerpoMensaje2)
+
+    ///////// Enviar notificación por correo al coordinador y al contador//////////
+    try {
+      const emailPayload = {
+        emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
+        datos_solicitud: {
+          codigo: numeroFormularioSF.value || 'SOL-PROV',
+          titulo: 'Formulario Sol. Fondos PEI',
+          solicitante: nombreCompletoSolicitante.value,
+          tipo: 'Solicitud de Actividad',
+          prioridad: 'alta',
+          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad PEI',
+          url_revision: urlForm,
+        },
+      }
+      //console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailPayload),
+      })
+
+      if (emailResponse.ok) {
+        console.log('Correo de notificación enviado exitosamente')
+      } else {
+        console.warn('No se pudo enviar el correo de notificación')
+      }
+    } catch (emailError) {
+      console.error('Error al enviar correo de notificación:', emailError)
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+
+    //console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
 
     setTimeout(() => {
-      router.push('/pei/listaactividades?showButton=1')
+      router.push('/pei/listaactividadespei?showButton=1')
     }, 1000)
 
     return data
@@ -1299,7 +1450,7 @@ function exportToExcel() {
   const mainData = [
     ['FORMULARIO F-01: SOLICITUD DE FONDOS EN AVANCE CON CARGO A RENDICIÓN DE CUENTA', '', '', ''],
     [''],
-    ['FORMULARIO Nro:', numeroFormularioSF, '', ''],
+    ['FORMULARIO Nro:', numeroFormularioSF.value, '', ''],
     ['INFORMACIÓN DEL SOLICITANTE', '', '', ''],
     ['Nombre Completo:', nombreCompletoSolicitante.value, '', ''],
     ['Documento de Identidad:', formData.value.documento_identidad, '', ''],
@@ -1705,7 +1856,7 @@ const puedeValidarCoordinador = computed(() => {
 
 // Ciclo de vida
 onMounted(async () => {
-  console.log('Iniciando carga del formulario...', { idActividad, idSolicitud, idTarea })
+  //console.log('Iniciando carga del formulario...', { idActividad, idSolicitud, idTarea })
 
   // Verificar parámetros mínimos
   if (!idActividad || !idSolicitud) {
@@ -1715,7 +1866,7 @@ onMounted(async () => {
   }
 
   try {
-    console.log('1. Cargando datos del formulario...')
+    //console.log('1. Cargando datos del formulario...')
     await cargarDatos()
 
     // Si cargarDatos falla, no continuar
@@ -1724,12 +1875,12 @@ onMounted(async () => {
     }
 
     await nextTick()
-    console.log('2. Datos del formulario cargados:', datosFormulario.value ? 'OK' : 'ERROR')
+    //console.log('2. Datos del formulario cargados:', datosFormulario.value ? 'OK' : 'ERROR')
 
-    console.log('3. Cargando solicitud de fondos...')
+    //console.log('3. Cargando solicitud de fondos...')
     await cargarSolicitudFondos()
 
-    console.log('4. Carga completa. Mostrando formulario...')
+    //console.log('4. Carga completa. Mostrando formulario...')
   } catch (error) {
     console.error('Error durante la carga:', error)
     // Redirigir si hay error
@@ -1738,7 +1889,7 @@ onMounted(async () => {
     // Siempre ocultar el overlay de carga después de 3 segundos máximo
     cargandoGeneral.value = false
     loading.value = false
-    console.log('5. Estado final - cargandoGeneral:', cargandoGeneral.value)
+    //console.log('5. Estado final - cargandoGeneral:', cargandoGeneral.value)
   }
 })
 </script>
