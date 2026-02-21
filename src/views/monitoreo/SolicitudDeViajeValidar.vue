@@ -10,7 +10,6 @@
         v-if="datosFormulario"
         :proyecto-id="datosFormulario.actividad?.proyecto"
       ></ProyectoIdHeader>
-
       <br />
       <ActividadInformacion v-if="idActividad" :actividad-id="idActividad"></ActividadInformacion>
       <br />
@@ -388,6 +387,7 @@
             <v-btn
               v-if="idActividad && !idTarea"
               color="info"
+              size="large"
               prepend-icon="mdi-file-pdf-box"
               @click="generarPdfSolicitudFondosFunc"
               :loading="loadingPdfSolicitud"
@@ -422,8 +422,6 @@
               variant="flat"
               size="large"
               prepend-icon="mdi-send"
-              type="submit"
-              :loading="loading"
               disabled
             >
               Enviar Solicitud
@@ -447,8 +445,6 @@
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
   <!-- {{ '*********************B' }}
     <pre>{{ solicitudDeViaje }}</pre> -->
-    <!-- {{ '*********************B' }}
-    <pre>{{ formData }}</pre> -->
 </template>
 
 <script setup>
@@ -1161,7 +1157,7 @@ async function submitForm() {
       "tarea": idTarea || null,
       "montoSolicitado": totalMontoSolicitado.value,
     }
-    console.log('Payload completo que se enviará:', JSON.stringify(payload, null, 2))
+    //console.log('Payload completo que se enviará:', JSON.stringify(payload, null, 2))
 
     const response = await fetch(baseurl + 'api/solicitud-viaje/' + idSolicitud + '/', {
       method: 'PUT',
@@ -1176,7 +1172,7 @@ async function submitForm() {
     }
 
     numeroFormulario.value = response.numero_formulario
-    console.log('hhhhhhhhhhhhhhhhhhhidSOLICITUD:', JSON.stringify(idSolicitud, null, 2))
+    //console.log('hhhhhhhhhhhhhhhhhhhidSOLICITUD:', JSON.stringify(idSolicitud, null, 2))
 
     const urlForm = `${window.location.origin}/monitoreo/formulario055/${idActividad}?solicitud_id=${idSolicitud}${idTarea ? `&tarea_id=${idTarea}` : ''}`;
     const cuerpoMensaje = {
@@ -1218,7 +1214,7 @@ async function submitForm() {
         },
       }
 
-      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+      //console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
       const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1237,7 +1233,7 @@ async function submitForm() {
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:', JSON.stringify(response, null, 2))
+    //console.log('Respuesta del servidor:', JSON.stringify(response, null, 2))
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message)
     alert(`Error: ${error.response?.data?.message || error.message}`)
@@ -1693,10 +1689,7 @@ async function validarViaje(tipoValidador) {
   // Ejecutar la llamada PATCH
   loading.value = true
   try {
-    const response = await fetch(
-      baseurl + '/monitoreo_api/actualizar-validacion-solicitud-viaje/',
-      //baseurl+'/monitoreo_api/actualizar-validacion-solicitud-reembolso/',
-      {
+    const response = await fetch(baseurl + '/monitoreo_api/actualizar-validacion-solicitud-viaje/', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

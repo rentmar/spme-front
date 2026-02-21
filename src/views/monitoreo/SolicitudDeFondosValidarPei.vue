@@ -576,8 +576,6 @@
                     variant="flat"
                     size="large"
                     prepend-icon="mdi-send"
-                    type="submit"
-                    :loading="loading"
                     disabled
                   >
                     Enviar Solicitud
@@ -601,7 +599,7 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ correoCoordinadorActual }}</pre> -->
+   <!-- <pre>{{ datosFormulario1 }}</pre> -->
   <!-- {{ '***************************************A' }}
     <pre>{{ correoContadorActual }}</pre> -->
 </template>
@@ -653,9 +651,7 @@ const cargandoGeneral = ref(true)
 const loading = ref(false)
 const form = ref(null)
 const responsablesList = ref([])
-const contadoresList = ref([])
 const coordinadoresList = ref([])
-//const soloLectura = ref(false)
 const acceptedFormats = ref({
   medios: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx',
 })
@@ -732,7 +728,7 @@ const soloLectura = computed(() => {
 
   // Si el usuario actual es el creador de la solicitud, puede editar (soloLectura = false)
   // Si NO es el creador, solo lectura (soloLectura = true)
-  return datosFormulario1.value.usuario_id !== usuario.value.id
+  return datosFormulario1.value.usuario !== usuario.value.id
 })
 
 //datos para abrir Solicitud de Fondos
@@ -861,10 +857,10 @@ watch(
       return value !== null && value !== undefined ? value : defaultValue
     }
     const idSolicitante = newVal.usuario
-    console.log('uuuuuuuu', idSolicitante)
-    console.log('uuuuuuu9', datosFormulario.value)
+    //console.log('uuuuuuuu', idSolicitante)
+    //console.log('uuuuuuu9', datosFormulario.value)
     const datosSolicitante = datosFormulario.value.validadores.find((fp) => fp.id === idSolicitante)
-    console.log('uuuuuu2', JSON.stringify(datosSolicitante, null, 2))
+    //console.log('uuuuuu2', JSON.stringify(datosSolicitante, null, 2))
     //return datosSolicitante
 
     formData.value.nombre = getSafeValue(datosSolicitante.nombre)
@@ -991,7 +987,7 @@ function getCurrentDate() {
 // }
 
 async function cargarDatos() {
-  console.log('Iniciando cargarDatos...')
+  //console.log('Iniciando cargarDatos...')
 
   isLoading.value = true
   error.value = null
@@ -1002,14 +998,14 @@ async function cargarDatos() {
       throw new Error('Faltan datos requeridos para cargar el formulario')
     }
 
-    console.log('Enviando solicitud con:', {
-      id_actividad: idActividad,
-      usuario: usuario.value.nombre,
-    })
+    // console.log('Enviando solicitud con:', {
+    //   id_actividad: idActividad,
+    //   usuario: usuario.value.nombre,
+    // })
 
     // Usar URL completa para debugging
     const url = baseurl + 'api/monitoreo/obtener-datos-formulario-pei/'
-    console.log('URL completa:', url)
+    //console.log('URL completa:', url)
 
     const response = await fetch(url, {
       method: 'POST',
@@ -1022,7 +1018,7 @@ async function cargarDatos() {
       }),
     })
 
-    console.log('Respuesta cargarDatos:', response.status, response.statusText)
+    //console.log('Respuesta cargarDatos:', response.status, response.statusText)
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -1035,10 +1031,10 @@ async function cargarDatos() {
     }
 
     const rawData = await response.json()
-    console.log('Datos recibidos en cargarDatos:', rawData)
+    //console.log('Datos recibidos en cargarDatos:', rawData)
 
     datosFormulario.value = rawData
-    console.log('DatosFormulario asignado exitosamente')
+    //console.log('DatosFormulario asignado exitosamente')
   } catch (err) {
     console.error('Error en cargarDatos:', err)
     error.value = err.message
@@ -1047,7 +1043,7 @@ async function cargarDatos() {
     throw err
   } finally {
     isLoading.value = false
-    console.log('cargarDatos - isLoading establecido en:', isLoading.value)
+    //console.log('cargarDatos - isLoading establecido en:', isLoading.value)
   }
 }
 
@@ -1152,13 +1148,12 @@ async function cargarDatos() {
 // }
 
 async function cargarSolicitudFondos() {
-  console.log('Iniciando cargarSolicitudFondos...')
+  //console.log('Iniciando cargarSolicitudFondos...')
 
   isLoading.value = true
   error.value = null
 
   try {
-    //const response = await fetch(baseurl+'/monitoreo_api/obtenerSolicitudFondos/', {
     const response = await fetch(baseurl + 'api/solicitud-fondos-pei/', {
       method: 'GET',
       headers: {
@@ -1166,14 +1161,14 @@ async function cargarSolicitudFondos() {
       },
     })
 
-    console.log('Respuesta recibida:', response.status, response.ok)
+    //console.log('Respuesta recibida:', response.status, response.ok)
 
     if (!response.ok) {
       throw new Error(`Error HTTP ${response.status}`)
     }
 
     const data = { solicitudes: await response.json() }
-    console.log('Datos recibidos de la tabla solicitudfondosactpei:', JSON.stringify(data, null, 2))
+    //console.log('Datos recibidos de la tabla solicitudfondosactpei:', JSON.stringify(data, null, 2))
 
     // Validar que la respuesta tenga el formato correcto
     if (!data || !data.solicitudes || !Array.isArray(data.solicitudes)) {
@@ -1185,7 +1180,7 @@ async function cargarSolicitudFondos() {
       (solicitud) => solicitud.id?.toString() === idSolicitud?.toString(),
     )
 
-    console.log('Solicitud encontrada:', solicitudEncontrada)
+    //console.log('Solicitud encontrada:', solicitudEncontrada)
 
     if (!solicitudEncontrada) {
       throw new Error(`No se encontró la solicitud con ID: ${idSolicitud}`)
@@ -1194,14 +1189,14 @@ async function cargarSolicitudFondos() {
     datosFormulario1.value = solicitudEncontrada
     actualizarDatosFormulario(solicitudEncontrada)
 
-    console.log('cargarSolicitudFondos completado exitosamente')
+    //console.log('cargarSolicitudFondos completado exitosamente')
   } catch (err) {
     console.error('Error en cargarSolicitudFondos:', err)
     error.value = err.message
     throw err // Re-lanzar el error para que onMounted lo capture
   } finally {
     isLoading.value = false
-    console.log('cargarSolicitudFondos - isLoading establecido en:', isLoading.value)
+    //console.log('cargarSolicitudFondos - isLoading establecido en:', isLoading.value)
   }
 }
 
@@ -1260,7 +1255,7 @@ async function submitForm() {
       fechaRealizacionActividad: formData.value.fecha_ejecucion,
       montoSolicitado: totalMontoSolicitado.value,
       validacionResponsable: false, //formData.value.validacion_contador,
-      contador: formData.value.idcontador,
+      contador: formData.value.idresponsable,
       validacionCoordinador: false, //formData.value.validacion_coordinador,
       coordinador: formData.value.idcoordinador,
       usuario: formData.value.id_usuario,
@@ -1274,7 +1269,7 @@ async function submitForm() {
       //codigo_actividad: formData.value.codigo_actividad,
     }
 
-    console.log('Payload enviado al servidor:', JSON.stringify(payload, null, 2))
+    //console.log('payload enviado', JSON.stringify(payload, null, 2))
     const response = await fetch(baseurl + 'api/solicitud-fondos-pei/' + idSolicitud + '/', {
       method: 'PUT',
       headers: {
@@ -1290,7 +1285,6 @@ async function submitForm() {
     const data = await response.json()
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
-    //bloquearIconoSF.value = true;
 
     const urlForm = `${window.location.origin}/monitoreo/pei/formulariopei011/${idActividad}?solicitud_id=${data.id}${idTarea ? `&tarea_id=${idTarea}` : ''}`;
     const cuerpoMensaje = {
@@ -1326,10 +1320,10 @@ async function submitForm() {
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
           descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad PEI',
-          url_revision: `${window.location.origin}/monitoreo/pei/formulariopei011/${formData.value.id_actividad}?solicitud_id=${data.id}${idTarea ? `&tarea_id=${idTarea}` : ''}`,
+          url_revision: urlForm,
         },
       }
-      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+      //console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
       const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1346,10 +1340,10 @@ async function submitForm() {
     }
     ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
+    //console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
 
     setTimeout(() => {
-      //router.push('/pei/listaactividadespei?showButton=1')
+      router.push('/pei/listaactividadespei?showButton=1')
     }, 1000)
 
     return data
@@ -1862,7 +1856,7 @@ const puedeValidarCoordinador = computed(() => {
 
 // Ciclo de vida
 onMounted(async () => {
-  console.log('Iniciando carga del formulario...', { idActividad, idSolicitud, idTarea })
+  //console.log('Iniciando carga del formulario...', { idActividad, idSolicitud, idTarea })
 
   // Verificar parámetros mínimos
   if (!idActividad || !idSolicitud) {
@@ -1872,7 +1866,7 @@ onMounted(async () => {
   }
 
   try {
-    console.log('1. Cargando datos del formulario...')
+    //console.log('1. Cargando datos del formulario...')
     await cargarDatos()
 
     // Si cargarDatos falla, no continuar
@@ -1881,12 +1875,12 @@ onMounted(async () => {
     }
 
     await nextTick()
-    console.log('2. Datos del formulario cargados:', datosFormulario.value ? 'OK' : 'ERROR')
+    //console.log('2. Datos del formulario cargados:', datosFormulario.value ? 'OK' : 'ERROR')
 
-    console.log('3. Cargando solicitud de fondos...')
+    //console.log('3. Cargando solicitud de fondos...')
     await cargarSolicitudFondos()
 
-    console.log('4. Carga completa. Mostrando formulario...')
+    //console.log('4. Carga completa. Mostrando formulario...')
   } catch (error) {
     console.error('Error durante la carga:', error)
     // Redirigir si hay error
@@ -1895,7 +1889,7 @@ onMounted(async () => {
     // Siempre ocultar el overlay de carga después de 3 segundos máximo
     cargandoGeneral.value = false
     loading.value = false
-    console.log('5. Estado final - cargandoGeneral:', cargandoGeneral.value)
+    //console.log('5. Estado final - cargandoGeneral:', cargandoGeneral.value)
   }
 })
 </script>

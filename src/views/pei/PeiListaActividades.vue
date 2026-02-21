@@ -1740,7 +1740,7 @@ async function cargarRendicionesDeCuenta() {
     //const rawData = { rendiciones: await response.json() }
     //console.log('Datos recibidos para RC:', JSON.stringify(rawData, null, 2))
     //datosFormularioValidarRC.value = strictSanitizeData(rawData)
-    console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarRC.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
+    //console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarRC.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)

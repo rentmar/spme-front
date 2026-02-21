@@ -11,9 +11,8 @@
           v-if="datosFormulario"
           :proyecto-id="datosFormulario.actividad?.proyecto"
         ></ProyectoIdHeader>
-
          <br /> -->
-        <ActividadInformacion v-if="idActividad" :actividad-id="3"></ActividadInformacion>
+        <ActividadInformacion v-if="idActividad" :actividad-id="idActividad"></ActividadInformacion>
         <br />
 
         <v-card-text>
@@ -193,7 +192,6 @@
 
                     <v-row>
                       <v-col cols="12" md="6">
-
                         <v-text-field
                           v-model="solicitudDeViaje.lugarSolicitud"
                           label="Lugar de la Solicitud"
@@ -406,10 +404,7 @@
               </v-btn>
               <v-btn
                 color="primary"
-
-                prepend-icon="mdi-file-document-arrow-right"
-                type="submit"
-                :loading="loading"
+                prepend-icon="mdi-send"
                 disabled
               >
                 Enviar Solicitud
@@ -417,7 +412,6 @@
               <v-btn
                 color="primary"
                 variant="flat"
-                size="large"
                 prepend-icon="mdi-update"
                 type="submit"
                 :loading="loading"
@@ -434,22 +428,27 @@
      <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
       <!-- {{ '*********************B' }}
     <pre>{{ solicitudDeViaje }}</pre> -->
-    <!-- {{ '*********************B' }}
-    <pre>{{ formData.otros }}</pre> -->
-        <!-- {{ '*********************B' }}
-    <pre>{{ formData.datos_forma_pago }}</pre> -->
   </template>
 
   <script setup>
-  import * as XLSX from 'xlsx'
   import { ref, onMounted, computed, nextTick, watch } from 'vue'
-  import axios from 'axios'
-  import { useUserStore } from '@/stores/user'
+
   import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
   import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
   import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 
-  import { useRoute } from 'vue-router'
+  import axios from 'axios'
+  import { useUserStore } from '@/stores/user'
+  import * as XLSX from 'xlsx'
+  import { useRoute, useRouter } from 'vue-router'
+  //Composable de impresion
+  import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
+  import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+
+  //Inicar Composable
+  const { enviarMensajeAutomatico } = useNotificaciones()
+  //Inicializar el composable
+  const { generarPdfSolicitudViaje, generarPdfSolicitudViajeTareas } = useImpresionFormularios()
 
   const route = useRoute()
   const idActividad = route.params.id || null
@@ -497,7 +496,7 @@
     fecha_evento: '',
     lugar_evento: '',
     instituciones_participantes: '',
-    institucion_queinvita: '', //organizador
+    organizador: '', //organizador
     quien_cubregastos: '',
     fondos_unitas: '',
     justificacion_asistencia: '',
@@ -915,14 +914,13 @@ watch(
 
       const rawData = await response.json()
       //console.log('SoicitudDeViaje Recibido@@@@@@@@@@@@@@:', JSON.stringify(rawData,null,2))
-
       solicitudDeViaje.value = rawData.solicitudes[0]
 
       formData.value.evento = solicitudDeViaje.value.evento || ''
       formData.value.fecha_evento = solicitudDeViaje.value.fechaEvento || ''
       formData.value.lugar_evento = solicitudDeViaje.value.lugarEvento || ''
       formData.value.instituciones_participantes = solicitudDeViaje.value.institucionesParticipantes || ''
-      formData.value.institucion_queinvita = solicitudDeViaje.value.organizador || ''
+      formData.value.organizador = solicitudDeViaje.value.organizador || ''
       formData.value.quien_cubregastos = solicitudDeViaje.value.quienCubreGastos || ''
       formData.value.fondos_unitas = solicitudDeViaje.value.fondosUnitas || ''
       formData.value.justificacion_asistencia = solicitudDeViaje.value.justificacionAsistencia || ''
@@ -951,12 +949,9 @@ watch(
         return coincideActividad && coincideTarea && coincideSolicitud
       })
 
-      console.log('Solicitudes filtradas:', JSON.stringify(solicitudesFiltradas,null,2))
+      //console.log('Solicitudes filtradas:', JSON.stringify(solicitudesFiltradas,null,2))
       datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
       actualizarDatosFormulario(solicitudesFiltradas[0])
-      //const idSolicitante = datosFormulario1.value.usuario_id
-      //console.log('ID Solicitante444:', idSolicitante)
-
     } catch (err) {
       error.value = err.message
       console.error('Ha ocurrido un error:', err)
@@ -984,7 +979,7 @@ watch(
         'fecha_evento',
         'lugar_evento',
         'instituciones_participantes',
-        'institucion_queinvita',
+        'organizador',
         'quien_cubregastos',
         'fondos_unitas',
         'justificacion_asistencia',
@@ -1061,7 +1056,7 @@ watch(
       fecha_evento: '',
       lugar_evento: '',
       instituciones_participantes: '',
-      institucion_queinvita: '',
+      organizador: '',
       quien_cubregastos: '',
       fondos_unitas: '',
       justificacion_asistencia: '',
@@ -1093,7 +1088,7 @@ watch(
       ['Fecha Evento:', formData.value.fecha_evento, '', ''],
       ['Lugar de Evento:', formData.value.lugar_evento, '', ''],
       ['Instituciones Participantes:', formData.value.instituciones_participantes, '', ''],
-      ['Institución que Invita:', formData.value.institucion_queinvita, '', ''],
+      ['Institución que Invita:', formData.value.organizador, '', ''],
       ['Quien Cubre los Gastos:', formData.value.quien_cubregastos, '', ''],
       ['Fondos UNITAS:', formData.value.fondos_unitas, '', ''],
       ['Justificación de Asistencia:', formData.value.justificacion_asistencia, '', ''],
@@ -1504,10 +1499,7 @@ watch(
     // Ejecutar la llamada PATCH
     loading.value = true
     try {
-      const response = await fetch(
-        //baseurl+'/monitoreo_api/actualizar-validacion-solicitud-viaje/',
-        baseurl + 'api/solicitud-viaje-pei/' + idSolicitud + '/',
-        {
+      const response = await fetch(baseurl + 'api/solicitud-viaje-pei/' + idSolicitud + '/', {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -1540,17 +1532,134 @@ watch(
   }
 
   onMounted(async () => {
-    //await cargarDatos()   //carga validadores y se selecciona el solicitante
-    await cargarUsuarios()//carga todos los usuarios y se selecciona el solicitante
+    await cargarUsuarios()
     //await cargarDatos()
+    await cargarSolicitudesDeViaje()
     await cargarFormasDePago()
-    await cargarSolicitudesDeViaje()//carga datos de la solicitud donde esta id solicitante
+
   })
   </script>
 
-  <style scoped>
-  .v-card {
-    max-width: 900px;
-    margin: 0 auto;
+<style scoped>
+.solicitud-fondos-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+.v-card {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.v-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border: 1px solid #e0e0e0;
+}
+
+.form-section h3 {
+  color: #1976d2;
+  border-bottom: 2px solid #1976d2;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.info-item {
+  padding: 8px 0;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.users-table {
+  width: 100%;
+}
+
+.users-table th {
+  background-color: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 960px) {
+  .solicitud-fondos-container {
+    padding: 16px 12px;
   }
-  </style>
+
+  .form-section {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .d-flex.justify-end {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .d-flex.justify-end .v-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .v-card {
+    margin: 8px 0;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+}
+
+/* Mejora el aspecto de la tabla */
+:deep(.v-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.v-table th) {
+  background-color: #1976d2 !important;
+  color: white !important;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 16px 12px;
+}
+
+:deep(.v-table td) {
+  padding: 12px;
+  background-color: #fafafa;
+}
+
+.narrow-column {
+  width: 15%;
+}
+
+.wide-column {
+  width: 50%;
+}
+
+.action-column {
+  width: 15%;
+}
+
+.compact-field {
+  font-size: 14px;
+  max-width: 100px;
+}
+</style>
