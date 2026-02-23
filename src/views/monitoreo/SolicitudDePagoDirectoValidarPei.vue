@@ -543,8 +543,6 @@
                       variant="flat"
                       size="large"
                       prepend-icon="mdi-send"
-                      type="submit"
-                      :loading="loading"
                       disabled
                     >
                       Enviar Solicitud
@@ -568,9 +566,9 @@
         </v-row>
       </div>
     </v-container>
-    <!-- <pre>{{ soloLectura }}</pre> -->
-     {{ '***************************************B' }}
-    <pre>{{ datosFormulario1 }}</pre>
+    <!-- <pre>{{ responsablesList }}</pre>
+     {{ '***solicitudesFiltradas************************************B' }}
+    <pre>{{ datosFormulario1 }}</pre> -->
   </template>
 
   <script setup>
@@ -610,11 +608,10 @@ const { enviarMensajeAutomatico } = useNotificaciones()
 
   const baseurl = import.meta.env.VITE_API_BASE
   const datosSolicitante = ref([])
-  const solicitante = ref(null)
 
   //variables para carga de datos
-  const datosFormulario = ref(null)     //viene de funcion cargarDatos y actualiza formData
-  const datosFormulario1 = ref(null)    //viene de funcion cargarSolicitudPago y actualiza detalle_destino_fondos
+  const datosFormulario = ref(null) //viene de funcion cargarDatos y actualiza formData
+  const datosFormulario1 = ref(null) //viene de funcion cargarSolicitudPago y actualiza detalle_destino_fondos
   const todosLosUsuarios = ref(null)
   const error = ref(null)
   const isLoading = ref(false)
@@ -711,9 +708,7 @@ const soloLectura = computed(() => {
       ? formData.value.fuente_financiamiento
       : []
 
-    return fuentes
-      .map(({ nombre = '', monto = 0 } = {}) => `${nombre} : Bs. ${monto}`)
-      .join(', ')
+    return fuentes.map(({ nombre = '', monto = 0 } = {}) => `${nombre} : Bs. ${monto}`).join(', ')
   })
 
   const actividadData = ref({
@@ -767,13 +762,13 @@ const soloLectura = computed(() => {
           return value !== null && value !== undefined ? value : defaultValue
         }
 
-      //  // Llenar campos del usuario
-      //  formData.value.nombre = getSafeValue(usuario.nombre)
-      //  formData.value.paterno = getSafeValue(usuario.paterno)
-      //  formData.value.materno = getSafeValue(usuario.materno)
-      //  formData.value.cargo = getSafeValue(usuario.cargo)
-      //  formData.value.documento_identidad = getSafeValue(usuario.ci)
-      //  formData.value.id_usuario = getSafeValue(usuario.id,0)
+      // Llenar campos del usuario
+      // formData.value.nombre = getSafeValue(usuario.nombre)
+      // formData.value.paterno = getSafeValue(usuario.paterno)
+      // formData.value.materno = getSafeValue(usuario.materno)
+      // formData.value.cargo = getSafeValue(usuario.cargo)
+      // formData.value.documento_identidad = getSafeValue(usuario.ci)
+      // formData.value.id_usuario = getSafeValue(usuario.id, 0)
 
         // Llenar campos de la actividad si existen
         if (newVal.actividad) {
@@ -831,11 +826,10 @@ const soloLectura = computed(() => {
         return value !== null && value !== undefined ? value : defaultValue
       }
       const idSolicitante = newVal.usuario_id
-      console.log('uuuuuuuu', idSolicitante)
-      //console.log('uuuuuu2', JSON.stringify(datosFormulario1,null,2))
-      //console.log('uuuuuu2', JSON.stringify(datosFormulario,null,2))
+      //console.log('uuuuuuuu', idSolicitante)
+      //console.log('uuuuuuu9', datosFormulario.value)
       const datosSolicitante = datosFormulario.value.validadores.find((fp) => fp.id === idSolicitante)
-      console.log('uuuuuu2', JSON.stringify(datosSolicitante,null,2))
+      //console.log('uuuuuu2', JSON.stringify(datosSolicitante,null,2))
       //return datosSolicitante
 
       // formData.value.nombre = getSafeValue(datosSolicitante.nombre)
@@ -928,13 +922,13 @@ const soloLectura = computed(() => {
   }
 
   async function cargarDatos() {
-    console.log('Iniciando cargarDatos...')
+    //console.log('Iniciando cargarDatos...')
 
     isLoading.value = true
     error.value = null
 
     try {
-      const response = await fetch(baseurl+'api/monitoreo/obtener-datos-formulario-pei/', {
+      const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario-pei/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -953,8 +947,8 @@ const soloLectura = computed(() => {
       }
 
       const rawData = await response.json()
-      datosFormulario.value = strictSanitizeData(rawData)   //datosFormulario extrae datos de Actividad
-      console.log('Datos cargados exitosamenteQQQQQQQQQQQQQQQQ:', datosFormulario.value)
+      datosFormulario.value = strictSanitizeData(rawData) //datosFormulario extrae datos de Actividad
+      //console.log('Datos cargados exitosamente:', datosFormulario.value)
     } catch (err) {
       error.value = err.message
       console.error('Ha ocurrido un error:', err)
@@ -970,11 +964,11 @@ watch(
   (newVal) => {
     try {
       const idSolicitante = newVal.usuario
-      console.log('ID Solicitante######:', idSolicitante)
+      //console.log('ID Solicitante######:', idSolicitante)
       //console.log('Datos Formulario:', datosFormulario.value)
 
       datosSolicitante.value = todosLosUsuarios.value?.find((fp) => fp.id === idSolicitante)
-      console.log('Datos Solicitante######:', JSON.stringify(datosSolicitante.value, null, 2))
+      //console.log('Datos Solicitante######:', JSON.stringify(datosSolicitante.value, null, 2))
 
       formData.value.nombre = datosSolicitante.value.nombre
       formData.value.paterno = datosSolicitante.value.paterno
@@ -998,7 +992,7 @@ watch(
       const allUsers = response.data.usuarios;
       todosLosUsuarios.value = response.data.usuarios
       //const data = await response.json()
-      console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
+      //console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
       responsablesList.value = allUsers.filter((user) => user.cargo === 'contable');
       coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador');
       // datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
@@ -1034,9 +1028,9 @@ watch(
 
     if (Array.isArray(data)) {
       // Sanitizar cada elemento del array
-      return data.map(item => sanitizeData(item)).filter(item =>
-        item !== null && item !== undefined && item !== ''
-      )
+      return data
+        .map((item) => sanitizeData(item))
+        .filter((item) => item !== null && item !== undefined && item !== '')
     }
 
     if (typeof data === 'object') {
@@ -1070,11 +1064,12 @@ watch(
     return sanitized
   }
 
-  async function cargarSolicitudPago() {    //endpoint que obtiene datos de la tabla spme_monitoreo_solicitudpagodirecto
+  async function cargarSolicitudPago() {
+    //endpoint que obtiene datos de la tabla spme_monitoreo_solicitudpagodirecto
     isLoading.value = true
     error.value = null
     try {
-      const response = await fetch(baseurl+'api/solicitud-pago-directo-pei/', {
+      const response = await fetch(baseurl + 'api/solicitud-pago-directo-pei/', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -1086,10 +1081,10 @@ watch(
       }
 
       const data = {solicitudes: await response.json()}
-      console.log('hhhhhhhhhhhhhhhhhh:', JSON.stringify(data,null,2))
+      //console.log('hhhhhhhhhhhhhhhhhh:', JSON.stringify(data,null,2))
 
       // Filtrar las solicitudes por actividad_id y tarea_id
-      const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
+      const solicitudesFiltradas = data.solicitudes.filter((solicitud) => {
         // Convertir a string para comparación segura, o comparar convirtiendo ambos al mismo tipo
         const coincideActividad = solicitud.actividad?.toString() === idActividad?.toString()
         const coincideTarea = solicitud.tarea?.toString() === idTarea?.toString()
@@ -1100,7 +1095,7 @@ watch(
 
       datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
       actualizarDatosFormulario(solicitudesFiltradas[0])
-      console.log('datosformulario', JSON.stringify(solicitudesFiltradas,null,2))
+      //console.log('datosformulario', JSON.stringify(solicitudesFiltradas,null,2))
 
     } catch (err) {
       error.value = err.message
@@ -1165,20 +1160,22 @@ watch(
         fechaSolicitud: formData.value.fecha_solicitud,
         fechaRealizacionActividad: formData.value.fecha_ejecucion,
         montoSolicitado: totalMontoSolicitado.value,
-        validacionResponsable: formData.value.validacion_responsable,
-        contador: formData.value.idcontador,
-        validacionCoordinador: formData.value.validacion_coordinador,
+        validacionResponsable: false, //formData.value.validacion_responsable,
+        contador: formData.value.idresponsable, //idcontador,
+        validacionCoordinador: false, //formData.value.validacion_coordinador,
         coordinador: formData.value.idcoordinador,
-        usuario: formData.value.id_usuario,
+        usuario: datosSolicitante.value.id,  //formData.value.id_usuario,
         actividad: formData.value.id_actividad,
         descripcion_actividad: formData.value.descripcion_actividad,
         objetivo_actividad: formData.value.objetivo_actividad,
 
-        ...(formData.value.id_tarea && formData.value.id_tarea > 0 && { tarea: formData.value.id_tarea }),
+        ...(formData.value.id_tarea && formData.value.id_tarea > 0 && { tarea: idTarea}), //formData.value.id_tarea }),
         datos_forma_pago: formData.value.datos_forma_pago,
+        bloquear_icono_sf: true,
       }
 
       console.log('Payload enviado:', JSON.stringify(payload, null, 2))
+
       const response = await fetch(baseurl + 'api/solicitud-pago-directo-pei/' + idSolicitud + '/', {
         method: 'PUT',
         headers: {
@@ -1194,12 +1191,11 @@ watch(
       const data = await response.json()
       idSolicitudFondos.value = data.id
       numeroFormularioSF.value = data.numero_formulario
-      //console.log('ididididididid', numeroFormularioSF.value)
 
       //const urlForm = `${baseurl}/api/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
-      const urlForm = `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
+      const urlForm = `${window.location.origin}/monitoreo/pei/formulariopei088/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
       const cuerpoMensaje = {
-        destinatario_id: payload.id_coordinador,
+        destinatario_id: payload.coordinador,
         asunto: 'Solicitud de Fondos - Coordinado',
         contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
         tipo: 'sistema',
@@ -1231,10 +1227,10 @@ watch(
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
           descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+          url_revision: urlForm,
         },
       }
-      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+      //console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
       const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1251,9 +1247,7 @@ watch(
     }
     ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
-    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_coordinador, null, 2))
-    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_contador, null, 2))
+    //console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
       setTimeout(() => {
         //router.push('/pei/listaactividades?showButton=1')
       }, 1000)
@@ -1268,10 +1262,7 @@ watch(
   }
 
   async function validarSolicitud() {
-    if (
-      (!puedeValidarResponsable.value) &&
-      (!puedeValidarCoordinador.value)
-    ) {
+    if (!puedeValidarResponsable.value && !puedeValidarCoordinador.value) {
       alert('Usted no está autorizado para validar esta solicitud.')
       return
     }
@@ -1339,7 +1330,6 @@ watch(
 
       // Redireccionar
       router.push('/pei/listaactividadespei?showButton=1')
-
     } catch (err) {
       console.error('Error al validar la solicitud:', err)
       alert(`Error al validar la solicitud: ${err.message}`)
@@ -1648,7 +1638,7 @@ watch(
 
       // Mapear al formato que espera la tabla
       formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
-        partida: item.partida_sf || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
+        partida: item.partida, // || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
         descripcion_gasto: item.concepto || '',
         monto: item.monto || 0,
       }))
@@ -1703,12 +1693,12 @@ watch(
 
     // Buscar responsable por ID
     const responsable = datosFormulario.value.validadores.find(
-      validador => validador.id === formDatSF.value.responsable_idsf
+      (validador) => validador.id === formDatSF.value.responsable_idsf
     )
 
     // Buscar coordinador por ID
     const coordinador = datosFormulario.value.validadores.find(
-      validador => validador.id === formDatSF.value.coordinador_idsf
+      (validador) => validador.id === formDatSF.value.coordinador_idsf
     )
 
     //Actualizar formData con los IDs encontrados
@@ -1736,18 +1726,17 @@ watch(
 
     // Filtrar responsables (puedes ajustar la lógica según el cargo)
     responsablesList.value = datosFormulario.value.validadores.filter(
-      validador => validador.cargo && validador.cargo.toLowerCase().includes('contable')
+      (validador) => validador.cargo && validador.cargo.toLowerCase().includes('contable')
     )
 
     // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
     coordinadoresList.value = datosFormulario.value.validadores.filter(
-      validador => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
+      (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
     )
   }
 
   // Verificación mejorada con roles
   const puedeValidarResponsable = computed(() => {
-    //console.log('datosformulario00000', JSON.stringify(datosFormulario1.value,null,2))
     const usuarioActualId = datosFormulario.value?.usuario?.id
     const usuarioActualCargo = datosFormulario.value?.usuario?.cargo?.toLowerCase()
     //const responsableAsignadoId = formData.value.idresponsable

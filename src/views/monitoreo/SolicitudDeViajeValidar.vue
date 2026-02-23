@@ -1015,55 +1015,6 @@ function removeGasto(index) {
 
 async function submitForm() {
   loading.value = true
-  // try {
-  //   const requiredFields = [
-  //     'evento',
-  //     'fecha_evento',
-  //     'lugar_evento',
-  //     'instituciones_participantes',
-  //     'institucion_queinvita',
-  //     'quien_cubregastos',
-  //     'fondos_unitas',
-  //     'justificacion_asistencia',
-  //     'tareas_previas',
-  //     'detalle_destino_fondos',
-  //     'forma_pago',
-  //     'lugar_solicitud',
-  //     'fecha_solicitud',
-  //     'id_responsable',
-  //     'id_coordinador',
-  //   ]
-
-  //   for (const field of requiredFields) {
-  //     if (!formData.value[field]) {
-  //       throw new Error(`El campo '${field}' es requerido.`)
-  //     }
-  //   }
-
-  //   if (
-  //     formData.value.detalle_destino_fondos.some(
-  //       (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0,
-  //     )
-  //   ) {
-  //     throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
-  //   }
-
-  //   const payload = {
-  //     ...formData.value, //esta linea incluye todas las propiedades de formData
-  //     id_usuario: usuario.value.id || 0,
-  //     id_actividad: idActividad || 0,
-  //     id_tarea: idTarea || null,
-  //     monto_solicitado: totalMontoSolicitado.value,
-  //     detalle_destino_fondos: {
-  //       items: formData.value.detalle_destino_fondos.map((gasto) => ({
-  //         partida: gasto.partida,
-  //         concepto: gasto.descripcion_gasto,
-  //         monto: Number(gasto.monto),
-  //       })),
-  //     },
-  //   }
-  //   //console.log('Payload completo que se enviará:', JSON.stringify(payload,null,2)); // ← Verificar aquí
-
   try {
     const requiredFields = [
       'evento',
@@ -1079,8 +1030,6 @@ async function submitForm() {
       'forma_pago',
       'lugar_solicitud',
       'fecha_solicitud',
-      //'id_responsable',
-      //'id_coordinador',
     ]
 
     for (const field of requiredFields) {
