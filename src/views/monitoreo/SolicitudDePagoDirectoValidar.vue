@@ -565,8 +565,6 @@
                     variant="flat"
                     size="large"
                     prepend-icon="mdi-send"
-                    type="submit"
-                    :loading="loading"
                     disabled
                   >
                     Enviar Solicitud
@@ -590,9 +588,9 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ datosFormulario1 }}</pre> -->
-  <!-- {{ '***************************************B' }}
-  <pre>{{ datosFormulario1 }}</pre> -->
+   <!-- <pre>{{ formData.idresponsable }}</pre>
+   {{ '***************************************B' }} -->
+ <!-- <pre>{{ datosFormulario1 }}</pre> -->
 </template>
 
 <script setup>
@@ -682,7 +680,6 @@ const loading = ref(false)
 const form = ref(null)
 const responsablesList = ref([])
 const coordinadoresList = ref([])
-//const soloLectura = ref(false)
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)
@@ -887,10 +884,10 @@ watch(
       return value !== null && value !== undefined ? value : defaultValue
     }
     const idSolicitante = newVal.usuario_id
-    console.log('uuuuuuuu', idSolicitante)
-    console.log('uuuuuuu9', datosFormulario.value)
+    //console.log('uuuuuuuu', idSolicitante)
+    //console.log('uuuuuuu9', datosFormulario.value)
     const datosSolicitante = datosFormulario.value.validadores.find((fp) => fp.id === idSolicitante)
-    console.log('uuuuuu2', JSON.stringify(datosSolicitante,null,2))
+    //console.log('uuuuuu2', JSON.stringify(datosSolicitante,null,2))
     //return datosSolicitante
 
     formData.value.nombre = getSafeValue(datosSolicitante.nombre)
@@ -983,7 +980,7 @@ function getCurrentDate() {
 }
 
 async function cargarDatos() {
-  console.log('Iniciando cargarDatos...')
+  //console.log('Iniciando cargarDatos...')
 
   isLoading.value = true
   error.value = null
@@ -1018,6 +1015,34 @@ async function cargarDatos() {
     cargandoGeneral.value = false
   }
 }
+
+  //carga usuario que realizo la solicitud
+watch(
+  datosFormulario1,
+  (newVal) => {
+    try {
+      const idSolicitante = newVal.usuario
+      console.log('ID Solicitante######:', idSolicitante)
+      //console.log('Datos Formulario:', datosFormulario.value)
+
+      datosSolicitante.value = todosLosUsuarios.value?.find((fp) => fp.id === idSolicitante)
+      console.log('Datos Solicitante######:', JSON.stringify(datosSolicitante.value, null, 2))
+
+      formData.value.nombre = datosSolicitante.value.nombre
+      formData.value.paterno = datosSolicitante.value.paterno
+      formData.value.materno = datosSolicitante.value.materno
+      formData.value.documento_identidad = datosSolicitante.value.ci
+      formData.value.cargo = datosSolicitante.value.cargo
+    //   if (datosSolicitante.value) {
+    //    solicitante.value = getNombreCompleto(datosSolicitante.value)
+    //   }
+     } catch (error) {
+       console.error('Error en watcher datosFormulario1:', error)
+       // Opcional: mostrar notificación al usuario
+     }
+  },
+  { deep: true }
+)
 
 function sanitizeData(data) {
   if (data === null || data === undefined) {
@@ -1199,9 +1224,9 @@ async function submitForm() {
       fechaSolicitud: formData.value.fecha_solicitud,
       fechaRealizacionActividad: formData.value.fecha_ejecucion,
       montoSolicitado: totalMontoSolicitado.value,
-      validacionResponsable: formData.value.validacion_responsable,
-      contador: formData.value.idcontador,
-      validacionCoordinador: formData.value.validacion_coordinador,
+      validacionResponsable: false, //formData.value.validacion_responsable,
+      contador: formData.value.idresponsable,
+      validacionCoordinador: false, //formData.value.validacion_coordinador,
       coordinador: formData.value.idcoordinador,
       usuario: formData.value.id_usuario,
       actividad: formData.value.id_actividad,
@@ -1213,7 +1238,7 @@ async function submitForm() {
       bloquear_icono_sf: true,
     }
 
-    console.log('Payload enviado:', JSON.stringify(payload, null, 2))
+    //console.log('Payload enviado:', JSON.stringify(payload, null, 2))
 
     const response = await fetch(baseurl + 'api/solicitud-pago-directo/' + idSolicitud + '/', {
       method: 'PUT',
@@ -1232,7 +1257,7 @@ async function submitForm() {
     numeroFormularioSF.value = data.numero_formulario
 
     //const urlForm = `${baseurl}/api/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
-    const urlForm = `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
+    const urlForm = `${window.location.origin}/monitoreo/formulario088/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
     const cuerpoMensaje = {
       destinatario_id: payload.coordinador,
       asunto: 'Solicitud de Fondos - Coordinado',
@@ -1269,7 +1294,7 @@ async function submitForm() {
           url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
-      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+      //console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
       const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1286,11 +1311,9 @@ async function submitForm() {
     }
     ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
-    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_coordinador, null, 2))
-    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_contador, null, 2))
+    //console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
     setTimeout(() => {
-      //router.push('/pei/listaactividades?showButton=1')
+      router.push('/pei/listaactividades?showButton=1')
     }, 1000)
 
     return data
@@ -1732,12 +1755,12 @@ function actualizarValidadores() {
 
   // Buscar responsable por ID
   const responsable = datosFormulario.value.validadores.find(
-    (validador) => validador.id === formDatSF.value.responsable_idsf,
+    (validador) => validador.id === formDatSF.value.responsable_idsf
   )
 
   // Buscar coordinador por ID
   const coordinador = datosFormulario.value.validadores.find(
-    (validador) => validador.id === formDatSF.value.coordinador_idsf,
+    (validador) => validador.id === formDatSF.value.coordinador_idsf
   )
 
   //Actualizar formData con los IDs encontrados
@@ -1765,12 +1788,12 @@ function actualizarListasValidadores() {
 
   // Filtrar responsables (puedes ajustar la lógica según el cargo)
   responsablesList.value = datosFormulario.value.validadores.filter(
-    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('contable'),
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('contable')
   )
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
   coordinadoresList.value = datosFormulario.value.validadores.filter(
-    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador'),
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
   )
 }
 
