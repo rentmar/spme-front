@@ -1391,7 +1391,7 @@ const abrirDialogValidar = async (actividadId, tareaId) => {
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
   solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId) //es usado para habilitar iconos
-  console.log('55555555555555555SOLFONDOS', JSON.stringify(actividadIdParaValidar, null, 2))
+  //console.log('55555555555555555SOLFONDOS', JSON.stringify(actividadIdParaValidar, null, 2))
 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   try {
@@ -1399,7 +1399,7 @@ const abrirDialogValidar = async (actividadId, tareaId) => {
     if (datosFormulario.value) {
       await cargarSolicitudFondos()
     }
-    console.log('se carga dato:')
+    //console.log('se carga dato:')
   } catch (error) {
     console.error('Error al cargar datos iniciales:', error)
     mostrarSnackbar('Error al cargar datos iniciales', 'error')
@@ -1455,7 +1455,7 @@ const abrirDialogViajeValidar = async (actividadId, tareaId) => {
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
   solicitudSeleccionada.value = getSolicitudFondosInfo(actividadId, tareaId)
-  console.log('55555555555555555VIAJE', JSON.stringify(actividadIdParaValidar.value, null, 2))
+  //console.log('55555555555555555VIAJE', JSON.stringify(actividadIdParaValidar.value, null, 2))
 
   // Cargar datos iniciales al abrir el diálogo usando los IDs capturados
   await cargarSolicitudDeViaje()
@@ -1650,7 +1650,7 @@ async function cargarSolicitudFondos() {
       throw new Error(`Error en la solicitud: ${response.status}`)
     }
     const data = { solicitudes: await response.json() }
-    console.log('Datos recibidoswwwwwwwwwwwwwwwww:', JSON.stringify(data,null,2))
+    //console.log('Datos recibidoswwwwwwwwwwwwwwwww:', JSON.stringify(data,null,2))
 
     // Filtrar las solicitudes por actividad_id y tarea_id
     const solicitudesFiltradas = data.solicitudes.filter((solicitud) => {
@@ -1675,7 +1675,7 @@ async function cargarSolicitudFondos() {
       solicitudes: solicitudesFiltradasParaRC,
     }
 
-    console.log('Solicitudes filtradas:', JSON.stringify(datosFormulario1.value,null,2), actividadIdParaValidar.value, tareaIdParaValidar.value)
+    //console.log('Solicitudes filtradas:', JSON.stringify(datosFormulario1.value,null,2), actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
     console.error('Error al cargar solicitudes:', err)
@@ -1770,7 +1770,7 @@ async function cargarRendicionesDeCuenta() {
     }
 
     const rawData = await response.json()
-    console.log('00000000000000000000000000000', JSON.stringify(rawData,null,2) )
+    //console.log('00000000000000000000000000000', JSON.stringify(rawData,null,2) )
 
     // Filtrar las solicitudes por actividad_id y tarea_id
     const solicitudesFiltradas = rawData.filter((solicitud) => {
@@ -1783,7 +1783,7 @@ async function cargarRendicionesDeCuenta() {
     //const rawData = { rendiciones: await response.json() }
     //console.log('Datos recibidos para RC:', JSON.stringify(rawData, null, 2))
     //datosFormularioValidarRC.value = strictSanitizeData(rawData)
-    console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarRC.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
+    //console.log('Datos cargados exitosamente:', JSON.stringify(datosFormularioValidarRC.value,null,2),actividadIdParaValidar.value, tareaIdParaValidar.value)
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -1810,7 +1810,7 @@ async function cargarSolicitudDeReposicion() {
       }),
     })
     //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
-    console.log('popopopopop', actividadIdParaValidar.value, tareaIdParaValidar.value)
+    //console.log('popopopopop', actividadIdParaValidar.value, tareaIdParaValidar.value)
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -1858,11 +1858,11 @@ async function cargarSolicitudDeViaje() {
       }),
     })
 
-    console.log(
-      '00000000000000000000000000000',
-      JSON.stringify(actividadIdParaValidar.value, null, 2),
-    )
-    console.log('00000000000000000000000000000', JSON.stringify(tareaIdParaValidar.value, null, 2))
+    // console.log(
+    //   '00000000000000000000000000000',
+    //   JSON.stringify(actividadIdParaValidar.value, null, 2),
+    // )
+    //console.log('00000000000000000000000000000', JSON.stringify(tareaIdParaValidar.value, null, 2))
 
     if (!response.ok) {
       const errorData = await response.json()

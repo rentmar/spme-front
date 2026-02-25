@@ -501,6 +501,7 @@ const generarPdfSolicitudSubactividadFunc = async () => {
 }
 /*************************** Fin Generar PDFs *******************************************/
 
+const router = useRouter()
 const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
@@ -1143,7 +1144,7 @@ async function submitForm() {
       prioridad: 3,
     }
 
-    alert('Solicitud enviada con éxito')
+    alert('Solicitud actualizada con éxito')
     exportToExcel()
     //resetForm()
     await enviarMensajeAutomatico(cuerpoMensaje2)
@@ -1183,6 +1184,9 @@ async function submitForm() {
     ///////////////////////////////////////////////////////////////////////////////
 
     //console.log('Respuesta del servidor:', JSON.stringify(response, null, 2))
+    setTimeout(() => {
+      router.push('/pei/listaactividades?showButton=1')
+    }, 1000)
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message)
     alert(`Error: ${error.response?.data?.message || error.message}`)

@@ -1017,32 +1017,32 @@ async function cargarDatos() {
 }
 
   //carga usuario que realizo la solicitud
-watch(
-  datosFormulario1,
-  (newVal) => {
-    try {
-      const idSolicitante = newVal.usuario
-      console.log('ID Solicitante######:', idSolicitante)
-      //console.log('Datos Formulario:', datosFormulario.value)
+// watch(
+//   datosFormulario1,
+//   (newVal) => {
+//     try {
+//       const idSolicitante = newVal.usuario
+//       //console.log('ID Solicitante######:', idSolicitante)
+//       //console.log('Datos Formulario:', datosFormulario.value)
 
-      datosSolicitante.value = todosLosUsuarios.value?.find((fp) => fp.id === idSolicitante)
-      console.log('Datos Solicitante######:', JSON.stringify(datosSolicitante.value, null, 2))
+//       datosSolicitante.value = todosLosUsuarios.value?.find((fp) => fp.id === idSolicitante)
+//       //console.log('Datos Solicitante######:', JSON.stringify(datosSolicitante.value, null, 2))
 
-      formData.value.nombre = datosSolicitante.value.nombre
-      formData.value.paterno = datosSolicitante.value.paterno
-      formData.value.materno = datosSolicitante.value.materno
-      formData.value.documento_identidad = datosSolicitante.value.ci
-      formData.value.cargo = datosSolicitante.value.cargo
-    //   if (datosSolicitante.value) {
-    //    solicitante.value = getNombreCompleto(datosSolicitante.value)
-    //   }
-     } catch (error) {
-       console.error('Error en watcher datosFormulario1:', error)
-       // Opcional: mostrar notificación al usuario
-     }
-  },
-  { deep: true }
-)
+//       formData.value.nombre = datosSolicitante.value.nombre
+//       formData.value.paterno = datosSolicitante.value.paterno
+//       formData.value.materno = datosSolicitante.value.materno
+//       formData.value.documento_identidad = datosSolicitante.value.ci
+//       formData.value.cargo = datosSolicitante.value.cargo
+//     //   if (datosSolicitante.value) {
+//     //    solicitante.value = getNombreCompleto(datosSolicitante.value)
+//     //   }
+//      } catch (error) {
+//        console.error('Error en watcher datosFormulario1:', error)
+//        // Opcional: mostrar notificación al usuario
+//      }
+//   },
+//   { deep: true }
+// )
 
 function sanitizeData(data) {
   if (data === null || data === undefined) {

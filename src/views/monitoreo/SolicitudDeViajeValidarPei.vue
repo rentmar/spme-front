@@ -450,6 +450,7 @@
   //Inicializar el composable
   const { generarPdfSolicitudViaje, generarPdfSolicitudViajeTareas } = useImpresionFormularios()
 
+  const router = useRouter()
   const route = useRoute()
   const idActividad = route.params.id || null
   const idTarea = route.query.tarea_id || null
@@ -654,7 +655,7 @@
 
   // Computed property to determine which payment method was selected
   const formaPagoElegido = computed(() => {
-    console.log('forma de pato', formData.value.forma_pago)
+    //console.log('forma de pago', formData.value.forma_pago)
     if (formData.value.forma_pago && formasPagoOptions.value.length > 0) {
       const formaPago = formasPagoOptions.value.find((fp) => fp.id === formData.value.forma_pago)
       return formaPago ? formaPago.formaPago : ''
@@ -763,11 +764,11 @@ watch(
   (newVal) => {
     try {
       const idSolicitante = newVal.usuario_id
-      console.log('ID Solicitante:', idSolicitante)
+      //console.log('ID Solicitante:', idSolicitante)
       //console.log('Datos Formulario:', datosFormulario.value)
 
       datosSolicitante.value = todosLosUsuarios.value?.find((fp) => fp.id === idSolicitante)
-      console.log('Datos Solicitante:', JSON.stringify(datosSolicitante.value, null, 2))
+      //console.log('Datos Solicitante:', JSON.stringify(datosSolicitante.value, null, 2))
 
       if (datosSolicitante.value) {
        solicitante.value = getNombreCompleto(datosSolicitante.value)
@@ -817,7 +818,7 @@ watch(
       const allUsers = response.data.usuarios
       todosLosUsuarios.value = response.data.usuarios
       //const data = await response.json()
-      console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
+      //console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
       responsablesList.value = allUsers.filter((user) => user.cargo === 'contable')
       coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador')
       // datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
@@ -1100,7 +1101,7 @@ watch(
         prioridad: 3,
       }
 
-      alert('Solicitud enviada con éxito')
+      alert('Solicitud actualizada con éxito')
       exportToExcel()
       //resetForm()
       await enviarMensajeAutomatico(cuerpoMensaje2)
@@ -1140,6 +1141,9 @@ watch(
       ///////////////////////////////////////////////////////////////////////////////
 
       //console.log('Respuesta del servidor:', JSON.stringify(response, null, 2))
+      setTimeout(() => {
+        router.push('/pei/listaactividades?showButton=1')
+      }, 1000)
     } catch (error) {
       console.error('Error completo:', error.response?.data || error.message)
       alert(`Error: ${error.response?.data?.message || error.message}`)
@@ -1549,8 +1553,8 @@ watch(
   })
 
   const puedeValidarCoordinador = computed(() => {
-    console.log('Usuario Logueado ID:', usuario.value?.id)
-    console.log('Coordinador Asignado ID:', solicitudDeViaje.value?.coordinador_id)
+    //console.log('Usuario Logueado ID:', usuario.value?.id)
+    //console.log('Coordinador Asignado ID:', solicitudDeViaje.value?.coordinador_id)
     const idUsuarioLogueado = usuario.value?.id
     const idCoordinadorAsignado = solicitudDeViaje.value?.coordinador_id
     return idUsuarioLogueado === idCoordinadorAsignado

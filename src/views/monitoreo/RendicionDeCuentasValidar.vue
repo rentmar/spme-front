@@ -1680,7 +1680,7 @@ async function submitForm() {
     // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_contador, null, 2))
 
     setTimeout(() => {
-      //router.push('/pei/listaactividades?showButton=2')
+      router.push('/pei/listaactividades?showButton=2')
       //router.go(0)
     }, 1000)
   } catch (error) {
