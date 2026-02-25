@@ -789,22 +789,6 @@ async function cargarFormasDePago() {
   }
 }
 
-// watch(
-//   datosFormulario,
-//   (newVal) => {
-//     if (newVal && newVal.usuario) {
-//       //datosSolicitante.value = newVal.usuario
-//       //console.log('hhhhhhhhhhhh:', JSON.stringify(datosSolicitante.value, null, 2))
-//       if (datosSolicitante.value) {
-//         solicitante.value = getNombreCompleto(datosSolicitante.value)
-//       }
-//     } else {
-//       datosSolicitante.value = []
-//     }
-//   },
-//   { deep: true }, // Si necesitas observar cambios profundos
-// )
-
 //carga usuario que realizo la solicitud
 watch(
   datosFormulario1,

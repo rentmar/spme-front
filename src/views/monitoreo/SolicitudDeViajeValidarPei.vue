@@ -424,10 +424,9 @@
         </v-card-text>
       </v-card>
     </v-container>
-
-     <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
+     <!-- <pre>{{ MostrarCamposTransferencia }}</pre> -->
       <!-- {{ '*********************B' }}
-    <pre>{{ solicitudDeViaje }}</pre> -->
+    <pre>{{ formaPagoElegido }}</pre> -->
   </template>
 
   <script setup>
@@ -609,13 +608,13 @@
 
         // Llenar campos de la actividad si existen
         if (newVal.actividad) {
-          // formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)
-          // formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)
-          // formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)
-          // formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)
-          // formData.value.fecha_ejecucion = getSafeValue(newVal.actividad.fecha_programada)
+          //formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)
+          //formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)
+          //formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)
+          //formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)
+          //formData.value.fecha_ejecucion = getSafeValue(newVal.actividad.fecha_programada)
           formData.value.id_actividad = getSafeValue(newVal.actividad.id, 0)
-          // formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)
+          //formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)
 
           if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
             //console.log('Formas de pago disponibles:', newVal.formaPago)
@@ -692,7 +691,7 @@
     isLoading.value = true
     error.value = null
     try {
-      const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
+      const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario-pei/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -702,7 +701,7 @@
           usuario: usuario.value.nombre,
         }),
       })
-      console.log('Respuesta de la solicitudqqq:', idActividad, usuario.value.nombre)
+      //console.log('Respuesta de la solicitudqqq:', idActividad, usuario.value.nombre)
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(
@@ -711,7 +710,7 @@
       }
       const data = await response.json()
       datosFormulario.value = data
-      console.log('00000000000000000000000000000', JSON.stringify(datosFormulario.value,null,2) )
+      //console.log('00000000000000000000000000000', JSON.stringify(datosFormulario.value,null,2) )
     } catch (err) {
       error.value = err.message
       console.error('Ha ocurrido un error:', err)
@@ -741,22 +740,6 @@
       console.error('Error:', err)
     }
   }
-
-  // watch(
-  //   datosFormulario,
-  //   (newVal) => {
-  //     if (newVal && newVal.usuario) {
-  //       datosSolicitante.value = newVal.usuario
-  //       //console.log('hhhhhhhhhhhh:', JSON.stringify(datosSolicitante.value, null, 2))
-  //       if(datosSolicitante.value){
-  //       solicitante.value = getNombreCompleto(datosSolicitante.value)
-  //       }
-  //     } else {
-  //       datosSolicitante.value = [];
-  //     }
-  //   },
-  //   { deep: true } // Si necesitas observar cambios profundos
-  // );
 
 //carga usuario que realizo la solicitud
 watch(
@@ -1635,7 +1618,7 @@ watch(
 
   onMounted(async () => {
     await cargarUsuarios()
-    //await cargarDatos()
+    await cargarDatos()
     await cargarSolicitudesDeViaje()
     await cargarFormasDePago()
 
