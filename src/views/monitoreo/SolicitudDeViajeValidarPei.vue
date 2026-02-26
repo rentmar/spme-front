@@ -1551,11 +1551,11 @@ watch(
     switch (tipoValidador) {
       case 'responsable':
         tienePermiso = puedeValidarResponsable.value
-        claveValidacion = 'validacion_responsable'
+        claveValidacion = 'validacionResponsable'
         break
       case 'coordinador':
         tienePermiso = puedeValidarCoordinador.value
-        claveValidacion = 'validacion_coordinador'
+        claveValidacion = 'validacionCoordinador'
         break
       default:
         alert('Tipo de validador no reconocido.')

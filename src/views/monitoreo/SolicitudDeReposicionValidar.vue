@@ -1273,7 +1273,7 @@ async function submitForm() {
       datos_forma_pago: formData.value.datos_forma_pago,
     }
 
-    console.log('payload enviado', JSON.stringify(payload,null,2))
+    //console.log('payload enviado', JSON.stringify(payload,null,2))
     const response = await fetch(baseurl + 'api/solicitud-reembolso/' + idSolicitud + '/', {
       method: 'PUT',
       headers: {
@@ -1327,7 +1327,7 @@ async function submitForm() {
           url_revision: `${window.location.origin}/monitoreo/formulario033/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
-      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+      //console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
       const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1344,7 +1344,7 @@ async function submitForm() {
     }
     ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
+    //console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
     // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_coordinador, null, 2))
     // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_contador, null, 2))
     setTimeout(() => {

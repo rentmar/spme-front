@@ -1419,12 +1419,12 @@ async function validarSolicitud() {
   if (puedeValidarResponsable.value) {
     // Si el usuario es el Responsable, se envía su validación
     validacionData = {
-      validacion_responsable: formDatSF.value.validacionResponsablesf,
+      validacionResponsable: formDatSF.value.validacionResponsablesf,
     }
   } else if (puedeValidarCoordinador.value) {
     // Si el usuario es el Coordinador, se envía su validación
     validacionData = {
-      validacion_coordinador: formDatSF.value.validacionCoordinadorsf,
+      validacionCoordinador: formDatSF.value.validacionCoordinadorsf,
     }
   } else {
     alert('No tiene permisos de validación para esta solicitud.')
@@ -1450,9 +1450,10 @@ async function validarSolicitud() {
   // }
 
   // 4. Ejecutar la llamada PATCH
+  //console.log('payload enviado', JSON.stringify(payload, null, 2))
   loading.value = true
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/actualizar-validacion-solicitud-fondos/', {
+    const response = await fetch(baseurl + 'api/solicitud-fondos-crud/' + idSolicitud + '/', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -1208,7 +1208,7 @@ async function validarRendicion(tipoValidador) {
   //   return
   // }
 
-  console.log('Payload Validar:', JSON.stringify(payload, null, 2))
+  //console.log('Payload Validar:', JSON.stringify(payload, null, 2))
 
   // Ejecutar la llamada PATCH
   loading.value = true
