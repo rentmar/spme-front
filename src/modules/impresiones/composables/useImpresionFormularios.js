@@ -125,10 +125,130 @@ export function useImpresionFormularios() {
     }
   }
 
-  //
+  /********************************** SOLIC PEI *************************************************/
+  //Generar pdf solicitud de fondos
+  async function generarPdfSolicitudFondosPei(idsolfondos) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirSolFondosPei(idsolfondos)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Generar pd solicitud de viaje
+  async function generarPdfSolicitudViajePei(idsolviaje) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirSolViajePei(idsolviaje)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Generar pd solicitud de Pago directo
+  async function generarPdfSolicitudPagoDirectoPei(idsolpagodirecto) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirSolPagoDirectoPei(idsolpagodirecto)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Generar pd solicitud de Pago directo
+  async function generarPdfSolicitudReposicionPei(idsolreposicion) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirSolReposicionPei(idsolreposicion)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Generar pdf Rendicion de cuentas
+  async function generarPdfRendicionCuentasPei(idsolrendicioncuentas) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirRendCuentasPei(idsolrendicioncuentas)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Generar pdf Rendicion de cuentas
+  async function generarPdfSolicitudFondosTareasPei(idsoltareas) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirSolFondosTareasPei(idsoltareas)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Generar pd solicitud de viaje tareas
+  async function generarPdfSolicitudViajeTareasPei(idsolviaje) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirSolViajeTareasPei(idsolviaje)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Generar pd solicitud de Pago directo
+  async function generarPdfSolicitudPagoDirectoTareasPei(idsolpagodirectotarea) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirSolPagoDirectoTareasPei(idsolpagodirectotarea)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Generar pdf Rendicion de cuentas
+  async function generarPdfRendicionCuentasTareasPei(idsolrendicioncuentas) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirRendCuentasTareasPei(idsolrendicioncuentas)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function generarPdfSolicitudReposicionTareasPei(idsolreposicion) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirSolReposicionTareasPei(idsolreposicion)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
+    //PROYECTO
     generarPdfSolicitudFondos,
     generarPdfSolicitudViaje,
     generarPdfSolicitudPagoDirecto,
@@ -139,5 +259,16 @@ export function useImpresionFormularios() {
     generarPdfSolicitudPagoDirectoTareas,
     generarPdfRendicionCuentasTareas,
     generarPdfSolicitudReposicionTareas,
+    //PEI
+    generarPdfSolicitudFondosPei,
+    generarPdfSolicitudViajePei,
+    generarPdfSolicitudPagoDirectoPei,
+    generarPdfSolicitudReposicionPei,
+    generarPdfRendicionCuentasPei,
+    generarPdfSolicitudFondosTareasPei,
+    generarPdfSolicitudViajeTareasPei,
+    generarPdfSolicitudPagoDirectoTareasPei,
+    generarPdfRendicionCuentasTareasPei,
+    generarPdfSolicitudReposicionTareasPei,
   }
 }

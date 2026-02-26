@@ -107,7 +107,7 @@
                     color="primary"
                     size="small"
                     :to="{
-                      path: `/monitoreo/formulario011/${props.actividadId}`,
+                      path: `/monitoreo/pei/formulariopei011/${props.actividadId}`,
                       query: { solicitud_id: solicitud.id },
                     }"
                     @click.stop

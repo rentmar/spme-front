@@ -516,4 +516,541 @@ export const impresionFormulariosServicio = {
       throw error
     }
   },
+  /******************************** IMPRESION FORMULARIOS PEI *********************************/
+  //Formularios Proyectos
+  imprimirSolFondosPei: async (idsolfondos, descargar = true) => {
+    try {
+      const respuesta = await apiPrint.get(
+        '/solicitud-fondos-actividad-pei/' + idsolfondos + '/pdf/',
+        {
+          responseType: 'blob',
+        },
+      )
+
+      const blob = respuesta.data
+
+      // Extraer el nombre del archivo del header Content-Disposition
+      let nombreArchivo = `solicitud-fondos-${idsolfondos}-act-pei.pdf`
+
+      const contentDisposition = respuesta.headers['content-disposition']
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(
+          /filename\*?=["']?(?:UTF-\d["']*)?([^;\n"]*)["']?/i,
+        )
+
+        if (fileNameMatch && fileNameMatch[1]) {
+          // Decodificar si tiene codificación especial
+          nombreArchivo = decodeURIComponent(fileNameMatch[1])
+        } else {
+          // Intentar con formato simple: filename="archivo.pdf"
+          const simpleMatch = contentDisposition.match(/filename=["']?([^"\n;]+)["']?/i)
+          if (simpleMatch && simpleMatch[1]) {
+            nombreArchivo = simpleMatch[1]
+          }
+        }
+      }
+
+      if (descargar) {
+        // Descargar automáticamente
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', nombreArchivo)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
+
+      return {
+        blob,
+        nombreArchivo,
+        headers: respuesta.headers,
+      }
+    } catch (error) {
+      console.error('Axios: Error al generar PDF', error)
+      throw error
+    }
+  },
+  imprimirSolViajePei: async (idsolfondos, descargar = true) => {
+    try {
+      const respuesta = await apiPrint.get(
+        '/solicitud-viaje-actividad-pei/' + idsolfondos + '/pdf/',
+        {
+          responseType: 'blob',
+        },
+      )
+
+      const blob = respuesta.data
+
+      // Extraer el nombre del archivo del header Content-Disposition
+      let nombreArchivo = `solicitud-viaje-${idsolfondos}-act-pei.pdf`
+
+      const contentDisposition = respuesta.headers['content-disposition']
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(
+          /filename\*?=["']?(?:UTF-\d["']*)?([^;\n"]*)["']?/i,
+        )
+
+        if (fileNameMatch && fileNameMatch[1]) {
+          // Decodificar si tiene codificación especial
+          nombreArchivo = decodeURIComponent(fileNameMatch[1])
+        } else {
+          // Intentar con formato simple: filename="archivo.pdf"
+          const simpleMatch = contentDisposition.match(/filename=["']?([^"\n;]+)["']?/i)
+          if (simpleMatch && simpleMatch[1]) {
+            nombreArchivo = simpleMatch[1]
+          }
+        }
+      }
+
+      if (descargar) {
+        // Descargar automáticamente
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', nombreArchivo)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
+
+      return {
+        blob,
+        nombreArchivo,
+        headers: respuesta.headers,
+      }
+    } catch (error) {
+      console.error('Axios: Error al generar PDF', error)
+      throw error
+    }
+  },
+  imprimirSolPagoDirectoPei: async (idsolfondos, descargar = true) => {
+    try {
+      const respuesta = await apiPrint.get(
+        '/solicitud-pago-directo-actividad-pei/' + idsolfondos + '/pdf/',
+        {
+          responseType: 'blob',
+        },
+      )
+
+      const blob = respuesta.data
+
+      // Extraer el nombre del archivo del header Content-Disposition
+      let nombreArchivo = `solicitud-pago-directo-${idsolfondos}-act-pei.pdf`
+
+      const contentDisposition = respuesta.headers['content-disposition']
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(
+          /filename\*?=["']?(?:UTF-\d["']*)?([^;\n"]*)["']?/i,
+        )
+
+        if (fileNameMatch && fileNameMatch[1]) {
+          // Decodificar si tiene codificación especial
+          nombreArchivo = decodeURIComponent(fileNameMatch[1])
+        } else {
+          // Intentar con formato simple: filename="archivo.pdf"
+          const simpleMatch = contentDisposition.match(/filename=["']?([^"\n;]+)["']?/i)
+          if (simpleMatch && simpleMatch[1]) {
+            nombreArchivo = simpleMatch[1]
+          }
+        }
+      }
+
+      if (descargar) {
+        // Descargar automáticamente
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', nombreArchivo)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
+
+      return {
+        blob,
+        nombreArchivo,
+        headers: respuesta.headers,
+      }
+    } catch (error) {
+      console.error('Axios: Error al generar PDF', error)
+      throw error
+    }
+  },
+  imprimirSolReposicionPei: async (idsolfondos, descargar = true) => {
+    try {
+      const respuesta = await apiPrint.get(
+        '/solicitud-reembolso-actividad-pei/' + idsolfondos + '/pdf/',
+        {
+          responseType: 'blob',
+        },
+      )
+
+      const blob = respuesta.data
+
+      // Extraer el nombre del archivo del header Content-Disposition
+      let nombreArchivo = `solicitud-reposicion-${idsolfondos}-act-pei.pdf`
+
+      const contentDisposition = respuesta.headers['content-disposition']
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(
+          /filename\*?=["']?(?:UTF-\d["']*)?([^;\n"]*)["']?/i,
+        )
+
+        if (fileNameMatch && fileNameMatch[1]) {
+          // Decodificar si tiene codificación especial
+          nombreArchivo = decodeURIComponent(fileNameMatch[1])
+        } else {
+          // Intentar con formato simple: filename="archivo.pdf"
+          const simpleMatch = contentDisposition.match(/filename=["']?([^"\n;]+)["']?/i)
+          if (simpleMatch && simpleMatch[1]) {
+            nombreArchivo = simpleMatch[1]
+          }
+        }
+      }
+
+      if (descargar) {
+        // Descargar automáticamente
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', nombreArchivo)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
+
+      return {
+        blob,
+        nombreArchivo,
+        headers: respuesta.headers,
+      }
+    } catch (error) {
+      console.error('Axios: Error al generar PDF', error)
+      throw error
+    }
+  },
+  imprimirRendCuentasPei: async (idsolfondos, descargar = true) => {
+    try {
+      const respuesta = await apiPrint.get(
+        '/rendicion-cuentas-actividad-pei/' + idsolfondos + '/pdf/',
+        {
+          responseType: 'blob',
+        },
+      )
+
+      const blob = respuesta.data
+
+      // Extraer el nombre del archivo del header Content-Disposition
+      let nombreArchivo = `rendicion-cuentas-${idsolfondos}-act-pei.pdf`
+
+      const contentDisposition = respuesta.headers['content-disposition']
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(
+          /filename\*?=["']?(?:UTF-\d["']*)?([^;\n"]*)["']?/i,
+        )
+
+        if (fileNameMatch && fileNameMatch[1]) {
+          // Decodificar si tiene codificación especial
+          nombreArchivo = decodeURIComponent(fileNameMatch[1])
+        } else {
+          // Intentar con formato simple: filename="archivo.pdf"
+          const simpleMatch = contentDisposition.match(/filename=["']?([^"\n;]+)["']?/i)
+          if (simpleMatch && simpleMatch[1]) {
+            nombreArchivo = simpleMatch[1]
+          }
+        }
+      }
+
+      if (descargar) {
+        // Descargar automáticamente
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', nombreArchivo)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
+
+      return {
+        blob,
+        nombreArchivo,
+        headers: respuesta.headers,
+      }
+    } catch (error) {
+      console.error('Axios: Error al generar PDF', error)
+      throw error
+    }
+  },
+  //formularios tareas
+  imprimirSolFondosTareasPei: async (idsolfondos, descargar = true) => {
+    try {
+      const respuesta = await apiPrint.get('/solicitud-fondos-tarea-pei/' + idsolfondos + '/pdf/', {
+        responseType: 'blob',
+      })
+
+      const blob = respuesta.data
+
+      // Extraer el nombre del archivo del header Content-Disposition
+      let nombreArchivo = `solicitud-fondos-tareas-${idsolfondos}-pei.pdf`
+
+      const contentDisposition = respuesta.headers['content-disposition']
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(
+          /filename\*?=["']?(?:UTF-\d["']*)?([^;\n"]*)["']?/i,
+        )
+
+        if (fileNameMatch && fileNameMatch[1]) {
+          // Decodificar si tiene codificación especial
+          nombreArchivo = decodeURIComponent(fileNameMatch[1])
+        } else {
+          // Intentar con formato simple: filename="archivo.pdf"
+          const simpleMatch = contentDisposition.match(/filename=["']?([^"\n;]+)["']?/i)
+          if (simpleMatch && simpleMatch[1]) {
+            nombreArchivo = simpleMatch[1]
+          }
+        }
+      }
+
+      if (descargar) {
+        // Descargar automáticamente
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', nombreArchivo)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
+
+      return {
+        blob,
+        nombreArchivo,
+        headers: respuesta.headers,
+      }
+    } catch (error) {
+      console.error('Axios: Error al generar PDF', error)
+      throw error
+    }
+  },
+  imprimirSolViajeTareasPei: async (idsolviaje, descargar = true) => {
+    try {
+      const respuesta = await apiPrint.get('/solicitud-viaje-tarea-pei/' + idsolviaje + '/pdf/', {
+        responseType: 'blob',
+      })
+
+      const blob = respuesta.data
+
+      // Extraer el nombre del archivo del header Content-Disposition
+      let nombreArchivo = `solicitud-viaje-tareas-${idsolviaje}-pei.pdf`
+
+      const contentDisposition = respuesta.headers['content-disposition']
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(
+          /filename\*?=["']?(?:UTF-\d["']*)?([^;\n"]*)["']?/i,
+        )
+
+        if (fileNameMatch && fileNameMatch[1]) {
+          // Decodificar si tiene codificación especial
+          nombreArchivo = decodeURIComponent(fileNameMatch[1])
+        } else {
+          // Intentar con formato simple: filename="archivo.pdf"
+          const simpleMatch = contentDisposition.match(/filename=["']?([^"\n;]+)["']?/i)
+          if (simpleMatch && simpleMatch[1]) {
+            nombreArchivo = simpleMatch[1]
+          }
+        }
+      }
+
+      if (descargar) {
+        // Descargar automáticamente
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', nombreArchivo)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
+
+      return {
+        blob,
+        nombreArchivo,
+        headers: respuesta.headers,
+      }
+    } catch (error) {
+      console.error('Axios: Error al generar PDF', error)
+      throw error
+    }
+  },
+  imprimirSolPagoDirectoTareasPei: async (idsolfondos, descargar = true) => {
+    try {
+      const respuesta = await apiPrint.get(
+        '/solicitud-pago-directo-tarea-pei/' + idsolfondos + '/pdf/',
+        {
+          responseType: 'blob',
+        },
+      )
+
+      const blob = respuesta.data
+
+      // Extraer el nombre del archivo del header Content-Disposition
+      let nombreArchivo = `solicitud-pago-directo-tareas-${idsolfondos}-pei.pdf`
+
+      const contentDisposition = respuesta.headers['content-disposition']
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(
+          /filename\*?=["']?(?:UTF-\d["']*)?([^;\n"]*)["']?/i,
+        )
+
+        if (fileNameMatch && fileNameMatch[1]) {
+          // Decodificar si tiene codificación especial
+          nombreArchivo = decodeURIComponent(fileNameMatch[1])
+        } else {
+          // Intentar con formato simple: filename="archivo.pdf"
+          const simpleMatch = contentDisposition.match(/filename=["']?([^"\n;]+)["']?/i)
+          if (simpleMatch && simpleMatch[1]) {
+            nombreArchivo = simpleMatch[1]
+          }
+        }
+      }
+
+      if (descargar) {
+        // Descargar automáticamente
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', nombreArchivo)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
+
+      return {
+        blob,
+        nombreArchivo,
+        headers: respuesta.headers,
+      }
+    } catch (error) {
+      console.error('Axios: Error al generar PDF', error)
+      throw error
+    }
+  },
+  imprimirSolReposicionTareasPei: async (idsolfondos, descargar = true) => {
+    try {
+      const respuesta = await apiPrint.get(
+        '/solicitud-reembolso-tarea-pei/' + idsolfondos + '/pdf/',
+        {
+          responseType: 'blob',
+        },
+      )
+
+      const blob = respuesta.data
+
+      // Extraer el nombre del archivo del header Content-Disposition
+      let nombreArchivo = `solicitud-reposicion-tareas-${idsolfondos}-pei.pdf`
+
+      const contentDisposition = respuesta.headers['content-disposition']
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(
+          /filename\*?=["']?(?:UTF-\d["']*)?([^;\n"]*)["']?/i,
+        )
+
+        if (fileNameMatch && fileNameMatch[1]) {
+          // Decodificar si tiene codificación especial
+          nombreArchivo = decodeURIComponent(fileNameMatch[1])
+        } else {
+          // Intentar con formato simple: filename="archivo.pdf"
+          const simpleMatch = contentDisposition.match(/filename=["']?([^"\n;]+)["']?/i)
+          if (simpleMatch && simpleMatch[1]) {
+            nombreArchivo = simpleMatch[1]
+          }
+        }
+      }
+
+      if (descargar) {
+        // Descargar automáticamente
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', nombreArchivo)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
+
+      return {
+        blob,
+        nombreArchivo,
+        headers: respuesta.headers,
+      }
+    } catch (error) {
+      console.error('Axios: Error al generar PDF', error)
+      throw error
+    }
+  },
+  imprimirRendCuentasTareasPei: async (idsolfondos, descargar = true) => {
+    try {
+      const respuesta = await apiPrint.get(
+        '/rendicion-cuentas-tarea-pei/' + idsolfondos + '/pdf/',
+        {
+          responseType: 'blob',
+        },
+      )
+
+      const blob = respuesta.data
+
+      // Extraer el nombre del archivo del header Content-Disposition
+      let nombreArchivo = `rendicion-cuentas-tareas-${idsolfondos}.pdf`
+
+      const contentDisposition = respuesta.headers['content-disposition']
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(
+          /filename\*?=["']?(?:UTF-\d["']*)?([^;\n"]*)["']?/i,
+        )
+
+        if (fileNameMatch && fileNameMatch[1]) {
+          // Decodificar si tiene codificación especial
+          nombreArchivo = decodeURIComponent(fileNameMatch[1])
+        } else {
+          // Intentar con formato simple: filename="archivo.pdf"
+          const simpleMatch = contentDisposition.match(/filename=["']?([^"\n;]+)["']?/i)
+          if (simpleMatch && simpleMatch[1]) {
+            nombreArchivo = simpleMatch[1]
+          }
+        }
+      }
+
+      if (descargar) {
+        // Descargar automáticamente
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', nombreArchivo)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
+
+      return {
+        blob,
+        nombreArchivo,
+        headers: respuesta.headers,
+      }
+    } catch (error) {
+      console.error('Axios: Error al generar PDF', error)
+      throw error
+    }
+  },
 }

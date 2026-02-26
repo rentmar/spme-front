@@ -109,14 +109,13 @@
                     color="deep-purple"
                     size="small"
                     :to="{
-                      path: `/monitoreo/formulario055/${props.actividadId}`,
+                      path: `/monitoreo/pei/formulariopei055/${props.actividadId}`,
                       query: { solicitud_id: solicitud.id },
                     }"
                     @click.stop
                   >
                     Ver
                   </v-btn>
-
                   <div v-if="getValidationText(solicitud) === 'Validado'" class="text-center mt-1">
                     <v-icon color="success" size="16">mdi-check</v-icon>
                     <div class="text-caption text-success">Validado</div>

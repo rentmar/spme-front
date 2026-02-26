@@ -227,16 +227,16 @@
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12">
-                      <v-file-input
-                        v-model="formData.medios_archivos"
-                        label="Adjuntar Medios de verificacion"
-                        multiple
-                        chips
-                        show-size
-                        :accept="acceptedFormats.medios"
-                        prepend-icon="mdi-paperclip"
-                      ></v-file-input>
-                    </v-col>
+                    <v-file-input
+                      v-model="formData.medios_archivos"
+                      label="Adjuntar Medios de verificacion"
+                      multiple
+                      chips
+                      show-size
+                      :accept="acceptedFormats.medios"
+                      prepend-icon="mdi-paperclip"
+                    ></v-file-input>
+                  </v-col>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -562,6 +562,31 @@
                     Cancelar
                   </v-btn>
                   <v-btn
+                    v-if="idActividad && !idTarea"
+                    color="info"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-file-pdf-box"
+                    @click="generarPdfSolicitudFondosFunc"
+                    :loading="loadingPdfSolicitud"
+                    :disabled="!idActividad || loadingPdfSolicitud"
+                  >
+                    SF
+                  </v-btn>
+
+                  <v-btn
+                    v-if="idActividad && idTarea"
+                    color="info"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-file-pdf-box"
+                    @click="generarPdfSolicitudSubactividadFunc"
+                    :loading="loadingPdfSolicitud"
+                    :disabled="!idActividad || !idTarea || loadingPdfSubactividad"
+                  >
+                    SFS
+                  </v-btn>
+                  <v-btn
                     color="secondary"
                     variant="outlined"
                     size="large"
@@ -599,7 +624,7 @@
       </v-row>
     </div>
   </v-container>
-   <!-- <pre>{{ datosFormulario1 }}</pre> -->
+  <!-- <pre>{{ datosFormulario1 }}</pre> -->
   <!-- {{ '***************************************A' }}
     <pre>{{ correoContadorActual }}</pre> -->
 </template>
@@ -615,9 +640,48 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
+/*************************** Generar PDFs *******************************************/
+const loadingPdfSolicitud = ref(false)
+const loadingPdfSubactividad = ref(false)
+
+//Inicializar el composable
+const { generarPdfSolicitudFondosPei, generarPdfSolicitudFondosTareasPei } =
+  useImpresionFormularios()
+
+const generarPdfSolicitudFondosFunc = async () => {
+  if (!idActividad) return
+
+  loadingPdfSolicitud.value = true
+  try {
+    // Aquí iría tu lógica para generar el PDF de solicitud de fondos
+    console.log('Generando PDF Solicitud de Fondos para actividad:', idActividad)
+    await generarPdfSolicitudFondosPei(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Solicitud de Fondos:', error)
+    alert('Error al generar el PDF: ' + error.message)
+  } finally {
+    loadingPdfSolicitud.value = false
+  }
+}
+
+const generarPdfSolicitudSubactividadFunc = async () => {
+  if (!idActividad || !idTarea) return
+
+  loadingPdfSubactividad.value = true
+  try {
+    await generarPdfSolicitudFondosTareasPei(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Subactividad:', error)
+    alert('Error al generar el PDF de subactividad: ' + error.message)
+  } finally {
+    loadingPdfSubactividad.value = false
+  }
+}
+/*************************** Fin Generar PDFs *******************************************/
 const router = useRouter()
 const route = useRoute()
 const idActividad = route.params.id || null
@@ -764,7 +828,9 @@ const nombreCoordinadorElegido = computed(() => {
 })
 
 const nombreResponsableElegido = computed(() => {
-  const responsable = responsablesList.value.find((user) => user.id === formData.value.idresponsable)
+  const responsable = responsablesList.value.find(
+    (user) => user.id === formData.value.idresponsable,
+  )
   return responsable ? getNombreCompleto(responsable) : ''
 })
 
@@ -878,19 +944,19 @@ watch(
 watch(
   () => formData.value.forma_pago,
   (newVal, oldVal) => {
-    if (newVal === oldVal) return; // No hacer nada si no cambió
+    if (newVal === oldVal) return // No hacer nada si no cambió
 
     // Obtener el nombre de la forma de pago seleccionada
-    const formaPagoSeleccionada = formasPagoOptions.value.find(fp => fp.id === newVal);
-    const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.formaPago : '';
+    const formaPagoSeleccionada = formasPagoOptions.value.find((fp) => fp.id === newVal)
+    const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.formaPago : ''
 
     // Resetear campos según la opción seleccionada
     if (nombreFormaPago === 'Transferencia Bancaria') {
       // Si seleccionó Transferencia, resetear campos de Otros
       formData.value.datos_forma_pago.otros = {
         nombre_otros: '',
-        ci_otros: ''
-      };
+        ci_otros: '',
+      }
     } else {
       // Si seleccionó cualquier otra opción, resetear campos de Transferencia
       formData.value.datos_forma_pago.transferencia = {
@@ -898,11 +964,11 @@ watch(
         ci_transferencia: '',
         entidad_bancaria: '',
         tipo_cuenta: '',
-        numero_cuenta: ''
-      };
+        numero_cuenta: '',
+      }
     }
-  }
-);
+  },
+)
 
 const formasPagoOptions = computed(() => {
   if (datosFormulario.value && datosFormulario.value.formaPago) {
@@ -1227,10 +1293,10 @@ async function submitForm() {
 
     // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
     const coordinadorSeleccionado = coordinadoresList.value.find(
-      (coordinador) => coordinador.id === formData.value.idcoordinador
+      (coordinador) => coordinador.id === formData.value.idcoordinador,
     )
     const contadorSeleccionado = responsablesList.value.find(
-      (contador) => contador.id === formData.value.idresponsable
+      (contador) => contador.id === formData.value.idresponsable,
     )
 
     const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
@@ -1263,7 +1329,8 @@ async function submitForm() {
       descripcion_actividad: formData.value.descripcion_actividad,
       objetivo_actividad: formData.value.objetivo_actividad,
       // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
-      ...(formData.value.id_tarea && formData.value.id_tarea > 0 && { tarea: formData.value.id_tarea }),
+      ...(formData.value.id_tarea &&
+        formData.value.id_tarea > 0 && { tarea: formData.value.id_tarea }),
       datos_forma_pago: formData.value.datos_forma_pago,
       bloquearIconosSolFondos: true,
       //codigo_actividad: formData.value.codigo_actividad,
@@ -1286,11 +1353,15 @@ async function submitForm() {
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
 
-    const urlForm = `${window.location.origin}/monitoreo/pei/formulariopei011/${idActividad}?solicitud_id=${data.id}${idTarea ? `&tarea_id=${idTarea}` : ''}`;
+    const urlForm = `${window.location.origin}/monitoreo/pei/formulariopei011/${idActividad}?solicitud_id=${data.id}${idTarea ? `&tarea_id=${idTarea}` : ''}`
     const cuerpoMensaje = {
       destinatario_id: payload.coordinador,
       asunto: 'Solicitud de Fondos - Coordinado',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Fondos pediente del formulario ' +
+        numeroFormularioSF.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1299,7 +1370,11 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.contador,
       asunto: 'Solicitud de Fondos - Contador',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Fondos pediente del formulario ' +
+        numeroFormularioSF.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1312,14 +1387,15 @@ async function submitForm() {
     ///////// Enviar notificación por correo al coordinador y al contador//////////
     try {
       const emailPayload = {
-        emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
+        emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Fondos PEI',
           solicitante: nombreCompletoSolicitante.value,
           tipo: 'Solicitud de Actividad',
           prioridad: 'alta',
-          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad PEI',
+          descripcion:
+            formData.value.descripcion_actividad || 'Solicitud de fondos para actividad PEI',
           url_revision: urlForm,
         },
       }

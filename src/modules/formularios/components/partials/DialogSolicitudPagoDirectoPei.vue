@@ -137,7 +137,7 @@
                     color="blue-darken-2"
                     size="small"
                     :to="{
-                      path: `/monitoreo/formulario088/${props.actividadId}`,
+                      path: `/monitoreo/pei/formulariopei088/${props.actividadId}`,
                       query: { solicitud_id: solicitud.id },
                     }"
                     @click.stop
