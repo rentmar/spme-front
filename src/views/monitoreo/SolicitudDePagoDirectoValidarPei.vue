@@ -1249,7 +1249,7 @@ watch(
 
     //console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
       setTimeout(() => {
-        //router.push('/pei/listaactividades?showButton=1')
+        router.push('/pei/listaactividades?showButton=1')
       }, 1000)
 
       return data

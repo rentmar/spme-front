@@ -1018,11 +1018,11 @@ watch(
   (newVal) => {
     try {
       const idSolicitante = newVal.usuario
-      console.log('ID Solicitante######:', idSolicitante)
+      //console.log('ID Solicitante######:', idSolicitante)
       //console.log('Datos Formulario:', datosFormulario.value)
 
       datosSolicitante.value = todosLosUsuarios.value?.find((fp) => fp.id === idSolicitante)
-      console.log('Datos Solicitante######:', JSON.stringify(todosLosUsuarios.value, null, 2))
+      //console.log('Datos Solicitante######:', JSON.stringify(todosLosUsuarios.value, null, 2))
 
       formData.value.nombre = datosSolicitante.value.nombre
       formData.value.paterno = datosSolicitante.value.paterno
@@ -1046,7 +1046,7 @@ watch(
       const allUsers = response.data.usuarios;
       todosLosUsuarios.value = response.data.usuarios
       //const data = await response.json()
-      console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
+      //console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
       responsablesList.value = allUsers.filter((user) => user.cargo === 'contable');
       coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador');
       // datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
@@ -1186,7 +1186,7 @@ watch(
       }
 
       const data = {solicitudes: await response.json()}
-      console.log('SoicitudDeReposicion Recibido:', JSON.stringify(data,null,2))
+      //console.log('SoicitudDeReposicion Recibido:', JSON.stringify(data,null,2))
 
       // Filtrar las solicitudes por actividad_id y tarea_id
       const solicitudesFiltradas = data.solicitudes.filter(solicitud => {
@@ -1200,7 +1200,7 @@ watch(
 
       datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
       actualizarDatosFormulario(solicitudesFiltradas[0])
-      console.log('datos de formulario:', JSON.stringify(datosFormulario1.value,null,2))
+      //console.log('datos de formulario:', JSON.stringify(datosFormulario1.value,null,2))
 
     } catch (err) {
       error.value = err.message
@@ -1355,7 +1355,7 @@ watch(
     // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_coordinador, null, 2))
     // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_contador, null, 2))
       setTimeout(() => {
-        //router.push('/pei/listaactividades?showButton=1')
+        router.push('/pei/listaactividades?showButton=1')
       }, 1000)
 
       return data
@@ -1742,7 +1742,7 @@ watch(
         detalleParseado = detalleDestinoFondos
       }
 
-      console.log('Detalle de destino de fondos parseado:', detalleParseado)
+      //console.log('Detalle de destino de fondos parseado:', detalleParseado)
 
       // Mapear al formato que espera la tabla
       formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({

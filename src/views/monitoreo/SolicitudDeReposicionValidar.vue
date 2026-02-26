@@ -929,10 +929,10 @@ watch(
       return value !== null && value !== undefined ? value : defaultValue
     }
     const idSolicitante = newVal.usuario_id
-    console.log('uuuuuuuu', idSolicitante)
-    console.log('uuuuuuu9', datosFormulario.value)
+    //console.log('uuuuuuuu', idSolicitante)
+    //console.log('uuuuuuu9', datosFormulario.value)
     const datosSolicitante = datosFormulario.value.validadores.find((fp) => fp.id === idSolicitante)
-    console.log('uuuuuu2', JSON.stringify(datosSolicitante,null,2))
+    //console.log('uuuuuu2', JSON.stringify(datosSolicitante,null,2))
     //return datosSolicitante
 
     formData.value.nombre = getSafeValue(datosSolicitante.nombre)
@@ -1180,7 +1180,7 @@ async function cargarSolicitudDeReposicion() {
     }
 
     const data = await response.json()
-    console.log('SoicitudDeReposicion Recibido:', JSON.stringify(data, null, 2))
+    //console.log('SoicitudDeReposicion Recibido:', JSON.stringify(data, null, 2))
 
     // Filtrar las solicitudes por actividad_id y tarea_id
     const solicitudesFiltradas = data.solicitudes.filter((solicitud) => {
@@ -1194,7 +1194,7 @@ async function cargarSolicitudDeReposicion() {
 
     datosFormulario1.value = strictSanitizeData(solicitudesFiltradas[0])
     actualizarDatosFormulario(solicitudesFiltradas[0])
-    console.log('datos de formulario:', JSON.stringify(datosFormulario1.value, null, 2))
+    //console.log('datos de formulario:', JSON.stringify(datosFormulario1.value, null, 2))
   } catch (err) {
     error.value = err.message
     console.error('Error al cargar Reposiciones', err)
@@ -1732,7 +1732,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
       detalleParseado = detalleDestinoFondos
     }
 
-    console.log('Detalle de destino de fondos parseado:', detalleParseado)
+    //console.log('Detalle de destino de fondos parseado:', detalleParseado)
 
     // Mapear al formato que espera la tabla
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
@@ -1806,7 +1806,7 @@ function actualizarValidadores() {
     formData.value.idresponsable = responsable.id
     //console.log('Responsable encontrado:', getNombreCompleto(responsable))
   } else {
-    console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
+    //console.warn('No se encontró responsable con ID:', formDatSF.value.responsable_idsf)
   }
 
   if (coordinador) {

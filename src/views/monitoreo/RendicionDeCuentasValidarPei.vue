@@ -1356,7 +1356,7 @@ watch(
 
         // console.log('Monto solicitado asignado:', formData.value.monto_solicitado)
       } else {
-        console.log('No se encontró solicitud para actividad:', idActividad, 'tarea:', idTarea)
+        //console.log('No se encontró solicitud para actividad:', idActividad, 'tarea:', idTarea)
       }
     }
   },
@@ -1623,7 +1623,7 @@ async function submitForm() {
     // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_contador, null, 2))
 
     setTimeout(() => {
-      //router.push('/pei/listaactividades?showButton=2')
+      router.push('/pei/listaactividades?showButton=2')
       //router.go(0)
     }, 1000)
   } catch (error) {
