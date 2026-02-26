@@ -246,7 +246,7 @@
                     color="red-darken-2"
                     size="small"
                     :to="{
-                      path: `/monitoreo/formulario022/${props.actividadId}`,
+                      path: `/monitoreo/pei/formulariopei022/${props.actividadId}`,
                       query: {
                         solicitud_id: rendicion.id,
                         tarea_id: props.tareaId,

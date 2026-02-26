@@ -249,7 +249,7 @@
                     color="amber-darken-3"
                     size="small"
                     :to="{
-                      path: `/monitoreo/formulario033/${props.actividadId}`,
+                      path: `/monitoreo/pei/formulariopei033/${props.actividadId}`,
                       query: {
                         solicitud_id: solicitud.id,
                         tarea_id: props.tareaId,

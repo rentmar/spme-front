@@ -11,7 +11,11 @@
           :proyecto-id="datosFormulario.actividad?.proyecto"
         ></ProyectoIdHeader>
          <br /> -->
-      <ActividadInformacion v-if="idActividad" :actividad-id="idActividad"></ActividadInformacion>
+      <!-- <ActividadInformacion v-if="idActividad" :actividad-id="idActividad"></ActividadInformacion> -->
+      <ActividadPeiInformacion
+        v-if="idActividad"
+        :actividadPeiId="idActividad"
+      ></ActividadPeiInformacion>
       <br />
 
       <v-card-text>
@@ -393,6 +397,27 @@
               Cancelar
             </v-btn>
             <v-btn
+              v-if="idActividad && !idTarea"
+              color="info"
+              prepend-icon="mdi-file-pdf-box"
+              @click="generarPdfSolicitudFondosFunc"
+              :loading="loadingPdfSolicitud"
+              :disabled="!idActividad || loadingPdfSolicitud"
+            >
+              SV
+            </v-btn>
+
+            <v-btn
+              v-if="idActividad && idTarea"
+              color="info"
+              prepend-icon="mdi-file-pdf-box"
+              @click="generarPdfSolicitudSubactividadFunc"
+              :loading="loadingPdfSubactividad"
+              :disabled="!idActividad || !idTarea || loadingPdfSubactividad"
+            >
+              SVS
+            </v-btn>
+            <v-btn
               color="error"
               class="mr-2"
               prepend-icon="mdi-backspace-outline"
@@ -436,11 +461,46 @@ import { useRoute, useRouter } from 'vue-router'
 //Composable de impresion
 import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+import ActividadPeiInformacion from '@/modules/pei/components/partials/ActividadPeiInformacion.vue'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
 //Inicializar el composable
-const { generarPdfSolicitudViaje, generarPdfSolicitudViajeTareas } = useImpresionFormularios()
+const { generarPdfSolicitudViajePei, generarPdfSolicitudViajeTareasPei } = useImpresionFormularios()
+/*************************** Generar PDFs *******************************************/
+const loadingPdfSolicitud = ref(false)
+const loadingPdfSubactividad = ref(false)
+
+const generarPdfSolicitudFondosFunc = async () => {
+  if (!idActividad) return
+
+  loadingPdfSolicitud.value = true
+  try {
+    // Aquí iría tu lógica para generar el PDF de solicitud de fondos
+    console.log('Generando PDF Solicitud de Fondos para actividad:', idActividad)
+    await generarPdfSolicitudViajePei(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Solicitud de Fondos:', error)
+    alert('Error al generar el PDF: ' + error.message)
+  } finally {
+    loadingPdfSolicitud.value = false
+  }
+}
+
+const generarPdfSolicitudSubactividadFunc = async () => {
+  if (!idActividad || !idTarea) return
+
+  loadingPdfSubactividad.value = true
+  try {
+    await generarPdfSolicitudViajeTareasPei(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Subactividad:', error)
+    alert('Error al generar el PDF de subactividad: ' + error.message)
+  } finally {
+    loadingPdfSubactividad.value = false
+  }
+}
+/*************************** Fin Generar PDFs *******************************************/
 
 const router = useRouter()
 const route = useRoute()

@@ -28,7 +28,11 @@
         :proyecto-id="datosFormulario.actividad?.proyecto ?? '999999'"
       ></ProyectoIdHeader>
       <br /> -->
-      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
+      <!-- <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" /> -->
+      <ActividadPeiInformacion
+        v-if="datosFormulario.actividad"
+        :actividadPeiId="idActividad"
+      ></ActividadPeiInformacion>
 
       <br />
       <!-- <v-form ref="form" v-model="valid" lazy-validation>
@@ -455,6 +459,29 @@
               Cancelar
             </v-btn>
             <v-btn
+              v-if="idActividad && !idTarea"
+              color="info"
+              variant="outlined"
+              prepend-icon="mdi-file-pdf-box"
+              @click="generarPdfSolicitudFondosFunc"
+              :loading="loadingPdfSolicitud"
+              :disabled="!idActividad || loadingPdfSolicitud"
+            >
+              SF
+            </v-btn>
+
+            <v-btn
+              v-if="idActividad && idTarea"
+              color="info"
+              variant="outlined"
+              prepend-icon="mdi-file-pdf-box"
+              @click="generarPdfSolicitudSubactividadFunc"
+              :loading="loadingPdfSolicitud"
+              :disabled="!idActividad || !idTarea || loadingPdfSubactividad"
+            >
+              SFS
+            </v-btn>
+            <v-btn
               color="error"
               prepend-icon="mdi-backspace-outline"
               @click="resetForm"
@@ -463,17 +490,11 @@
             >
               Limpiar
             </v-btn>
-            <v-btn
-              color="primary"
-              prepend-icon="mdi-file-document-arrow-right"
-              disabled
-            >
+            <v-btn color="primary" prepend-icon="mdi-file-document-arrow-right" disabled>
               Enviar Rendicion
             </v-btn>
             <v-btn
               color="primary"
-
-
               prepend-icon="mdi-update"
               type="submit"
               :loading="loading"
@@ -502,11 +523,47 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+import ActividadPeiInformacion from '@/modules/pei/components/partials/ActividadPeiInformacion.vue'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
 //Inicializar el composable
-const { generarPdfRendicionCuentas, generarPdfRendicionCuentasTareas } = useImpresionFormularios()
+const { generarPdfRendicionCuentasPei, generarPdfRendicionCuentasTareasPei } =
+  useImpresionFormularios()
+/*************************** Generar PDFs *******************************************/
+const loadingPdfSolicitud = ref(false)
+const loadingPdfSubactividad = ref(false)
+
+const generarPdfSolicitudFondosFunc = async () => {
+  if (!idActividad) return
+
+  loadingPdfSolicitud.value = true
+  try {
+    // Aquí iría tu lógica para generar el PDF de solicitud de fondos
+    console.log('Generando PDF Solicitud de Fondos para actividad:', idActividad)
+    await generarPdfRendicionCuentasPei(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Solicitud de Fondos:', error)
+    alert('Error al generar el PDF: ' + error.message)
+  } finally {
+    loadingPdfSolicitud.value = false
+  }
+}
+
+const generarPdfSolicitudSubactividadFunc = async () => {
+  if (!idActividad || !idTarea) return
+
+  loadingPdfSubactividad.value = true
+  try {
+    await generarPdfRendicionCuentasTareasPei(idSolicitud)
+  } catch (error) {
+    console.error('Error al generar PDF Subactividad:', error)
+    alert('Error al generar el PDF de subactividad: ' + error.message)
+  } finally {
+    loadingPdfSubactividad.value = false
+  }
+}
+/*************************** Fin Generar PDFs *******************************************/
 
 const router = useRouter()
 const route = useRoute()
@@ -578,7 +635,9 @@ const formData = ref({
   id_actividad: 0,
   id_usuario: 0,
   // Resto de campos del formulario
-  detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion: '', monto: 0 }],
+  detalle_destino_fondos: [
+    { fecha: '', partida: '', factura_recibo: '', descripcion: '', monto: 0 },
+  ],
   forma_pago: null,
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
@@ -1002,15 +1061,19 @@ watch(
       //console.log('@@@@@@@@@@@@@', JSON.stringify(newVal, null, 2));
       const idSolicitante = newVal.usuario
       //console.log('ID Solicitante:', idSolicitante)
-      datosSolicitante.value = datosFormulario.value?.validadores?.find((fp) => fp.id === idSolicitante)
+      datosSolicitante.value = datosFormulario.value?.validadores?.find(
+        (fp) => fp.id === idSolicitante,
+      )
       //console.log('Datos Solicitante:', JSON.stringify(datosSolicitante.value, null, 2))
-      if(datosSolicitante.value) {
+      if (datosSolicitante.value) {
         formData.value.nombre = datosSolicitante.value.nombre
         formData.value.paterno = datosSolicitante.value.paterno
         formData.value.materno = datosSolicitante.value.materno
         formData.value.documento_identidad = datosSolicitante.value.ci
         formData.value.cargo = datosSolicitante.value.cargo
-      }else{console.warn('No se encontró el solicitante con ID:', idSolicitante)}
+      } else {
+        console.warn('No se encontró el solicitante con ID:', idSolicitante)
+      }
       // Función helper para manejar valores null/undefined
       const getSafeValue = (value, defaultValue = '') => {
         return value !== null && value !== undefined ? value : defaultValue
@@ -1444,15 +1507,17 @@ async function submitForm() {
       }
     }
 
-    if (
-      !formDataRC.value.detalle_gastos ||
-      formDataRC.value.detalle_gastos.length === 0
-    ) {
+    if (!formDataRC.value.detalle_gastos || formDataRC.value.detalle_gastos.length === 0) {
       throw new Error('Debe agregar al menos un gasto.')
     }
     if (
       formDataRC.value.detalle_gastos.some(
-        (gasto) => !gasto.fecha || !gasto.partida || !gasto.factura_recibo || !gasto.descripcion_gasto || gasto.monto <= 0,
+        (gasto) =>
+          !gasto.fecha ||
+          !gasto.partida ||
+          !gasto.factura_recibo ||
+          !gasto.descripcion_gasto ||
+          gasto.monto <= 0,
       )
     ) {
       throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
@@ -1478,13 +1543,13 @@ async function submitForm() {
 
     // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
     const coordinadorSeleccionado = coordinadoresList.value.find(
-      (coordinador) => coordinador.id === formDataRC.value.idcoordinador
+      (coordinador) => coordinador.id === formDataRC.value.idcoordinador,
     )
     const contadorSeleccionado = contadoresList.value.find(
-      (contador) => contador.id === formDataRC.value.idcontador
+      (contador) => contador.id === formDataRC.value.idcontador,
     )
     const administradorSeleccionado = administradoresList.value.find(
-      (responsable) => responsable.id === formDataRC.value.idadministrador
+      (responsable) => responsable.id === formDataRC.value.idadministrador,
     )
     const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
     const correoContadorActual = contadorSeleccionado?.correo || ''
@@ -1559,7 +1624,11 @@ async function submitForm() {
     const cuerpoMensaje = {
       destinatario_id: payload.coordinador,
       asunto: 'Rendicion de Cuentas - Coordinador',
-      contenido: 'Rendicion de cuentas pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      contenido:
+        'Rendicion de cuentas pediente del formulario ' +
+        numeroFormularioSF.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1568,7 +1637,11 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.contador,
       asunto: 'Rendicion de Cuentas - Contador',
-      contenido: 'Rendicion de Cuentas pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      contenido:
+        'Rendicion de Cuentas pediente del formulario ' +
+        numeroFormularioSF.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1577,7 +1650,11 @@ async function submitForm() {
     const cuerpoMensaje3 = {
       destinatario_id: payload.administrador,
       asunto: 'Rendicion de Cuentas - Administrador',
-      contenido: 'Rendicion de Cuentas pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      contenido:
+        'Rendicion de Cuentas pediente del formulario ' +
+        numeroFormularioSF.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1590,14 +1667,17 @@ async function submitForm() {
     ///////// Enviar notificación por correo al coordinador y al contador//////////
     try {
       const emailPayload = {
-        emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter((email) => email),
+        emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter(
+          (email) => email,
+        ),
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Rendicion de Cuentas',
           solicitante: nombreCompletoSolicitante.value,
           tipo: 'Rendicion de Actividad',
           prioridad: 'alta',
-          descripcion: formData.value.descripcion_actividad || 'Rendicion de Cuentas para actividad',
+          descripcion:
+            formData.value.descripcion_actividad || 'Rendicion de Cuentas para actividad',
           url_revision: urlForm,
         },
       }

@@ -195,7 +195,7 @@
                     color="deep-purple"
                     size="small"
                     :to="{
-                      path: `/monitoreo/formulario055/${props.actividadId}`,
+                      path: `/monitoreo/pei/formulariopei055/${props.actividadId}`,
                       query: {
                         solicitud_id: solicitud.id,
                         tarea_id: props.tareaId,
