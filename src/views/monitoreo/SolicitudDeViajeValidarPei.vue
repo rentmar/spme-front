@@ -11,11 +11,7 @@
           :proyecto-id="datosFormulario.actividad?.proyecto"
         ></ProyectoIdHeader>
          <br /> -->
-      <ActividadPeiInformacion
-        v-if="idActividad"
-        :actividadPeiId="idActividad"
-      ></ActividadPeiInformacion>
-      <!-- <ActividadInformacion v-if="idActividad" :actividad-id="idActividad"></ActividadInformacion> -->
+      <ActividadInformacion v-if="idActividad" :actividad-id="idActividad"></ActividadInformacion>
       <br />
 
       <v-card-text>
@@ -397,27 +393,6 @@
               Cancelar
             </v-btn>
             <v-btn
-              v-if="idActividad && !idTarea"
-              color="info"
-              prepend-icon="mdi-file-pdf-box"
-              @click="generarPdfSolicitudFondosFunc"
-              :loading="loadingPdfSolicitud"
-              :disabled="!idActividad || loadingPdfSolicitud"
-            >
-              SV
-            </v-btn>
-
-            <v-btn
-              v-if="idActividad && idTarea"
-              color="info"
-              prepend-icon="mdi-file-pdf-box"
-              @click="generarPdfSolicitudSubactividadFunc"
-              :loading="loadingPdfSubactividad"
-              :disabled="!idActividad || !idTarea || loadingPdfSubactividad"
-            >
-              SVS
-            </v-btn>
-            <v-btn
               color="error"
               class="mr-2"
               prepend-icon="mdi-backspace-outline"
@@ -442,10 +417,9 @@
       </v-card-text>
     </v-card>
   </v-container>
-
-  <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
+  <!-- <pre>{{ MostrarCamposTransferencia }}</pre> -->
   <!-- {{ '*********************B' }}
-    <pre>{{ solicitudDeViaje }}</pre> -->
+    <pre>{{ formaPagoElegido }}</pre> -->
 </template>
 
 <script setup>
@@ -462,47 +436,13 @@ import { useRoute, useRouter } from 'vue-router'
 //Composable de impresion
 import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
-import ActividadPeiInformacion from '@/modules/pei/components/partials/ActividadPeiInformacion.vue'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
 //Inicializar el composable
-const { generarPdfSolicitudViajePei, generarPdfSolicitudViajeTareasPei } = useImpresionFormularios()
-/*************************** Generar PDFs *******************************************/
-const loadingPdfSolicitud = ref(false)
-const loadingPdfSubactividad = ref(false)
+const { generarPdfSolicitudViaje, generarPdfSolicitudViajeTareas } = useImpresionFormularios()
 
-const generarPdfSolicitudFondosFunc = async () => {
-  if (!idActividad) return
-
-  loadingPdfSolicitud.value = true
-  try {
-    // Aquí iría tu lógica para generar el PDF de solicitud de fondos
-    console.log('Generando PDF Solicitud de Fondos para actividad:', idActividad)
-    await generarPdfSolicitudViajePei(idSolicitud)
-  } catch (error) {
-    console.error('Error al generar PDF Solicitud de Fondos:', error)
-    alert('Error al generar el PDF: ' + error.message)
-  } finally {
-    loadingPdfSolicitud.value = false
-  }
-}
-
-const generarPdfSolicitudSubactividadFunc = async () => {
-  if (!idActividad || !idTarea) return
-
-  loadingPdfSubactividad.value = true
-  try {
-    await generarPdfSolicitudViajeTareasPei(idSolicitud)
-  } catch (error) {
-    console.error('Error al generar PDF Subactividad:', error)
-    alert('Error al generar el PDF de subactividad: ' + error.message)
-  } finally {
-    loadingPdfSubactividad.value = false
-  }
-}
-/*************************** Fin Generar PDFs *******************************************/
-
+const router = useRouter()
 const route = useRoute()
 const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
@@ -661,13 +601,13 @@ watch(
 
       // Llenar campos de la actividad si existen
       if (newVal.actividad) {
-        // formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)
-        // formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)
-        // formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)
-        // formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)
-        // formData.value.fecha_ejecucion = getSafeValue(newVal.actividad.fecha_programada)
+        //formData.value.descripcion_actividad = getSafeValue(newVal.actividad.descripcion)
+        //formData.value.objetivo_actividad = getSafeValue(newVal.actividad.objetivo_de_actividad)
+        //formData.value.fecha_irealizacion = getSafeValue(newVal.actividad.fecha_inicio)
+        //formData.value.fecha_frealizacion = getSafeValue(newVal.actividad.fecha_cierre)
+        //formData.value.fecha_ejecucion = getSafeValue(newVal.actividad.fecha_programada)
         formData.value.id_actividad = getSafeValue(newVal.actividad.id, 0)
-        // formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)
+        //formData.value.fuente_financiamiento = getSafeValue(newVal.actividad.procedencia_fondos)
 
         if (newVal.formaPago && Array.isArray(newVal.formaPago)) {
           //console.log('Formas de pago disponibles:', newVal.formaPago)
@@ -707,7 +647,7 @@ const formasPagoOptions = computed(() => {
 
 // Computed property to determine which payment method was selected
 const formaPagoElegido = computed(() => {
-  console.log('forma de pato', formData.value.forma_pago)
+  //console.log('forma de pago', formData.value.forma_pago)
   if (formData.value.forma_pago && formasPagoOptions.value.length > 0) {
     const formaPago = formasPagoOptions.value.find((fp) => fp.id === formData.value.forma_pago)
     return formaPago ? formaPago.formaPago : ''
@@ -744,7 +684,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario-pei/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -754,7 +694,7 @@ async function cargarDatos() {
         usuario: usuario.value.nombre,
       }),
     })
-    console.log('Respuesta de la solicitudqqq:', idActividad, usuario.value.nombre)
+    //console.log('Respuesta de la solicitudqqq:', idActividad, usuario.value.nombre)
     if (!response.ok) {
       const errorData = await response.json()
       throw new Error(
@@ -763,7 +703,7 @@ async function cargarDatos() {
     }
     const data = await response.json()
     datosFormulario.value = data
-    console.log('00000000000000000000000000000', JSON.stringify(datosFormulario.value, null, 2))
+    //console.log('00000000000000000000000000000', JSON.stringify(datosFormulario.value,null,2) )
   } catch (err) {
     error.value = err.message
     console.error('Ha ocurrido un error:', err)
@@ -775,7 +715,7 @@ async function cargarDatos() {
 
 async function cargarFormasDePago() {
   try {
-    const response = await fetch(baseurl + 'monitoreo_api/obtenerFormasPago/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerFormasPago/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
@@ -794,33 +734,17 @@ async function cargarFormasDePago() {
   }
 }
 
-// watch(
-//   datosFormulario,
-//   (newVal) => {
-//     if (newVal && newVal.usuario) {
-//       datosSolicitante.value = newVal.usuario
-//       //console.log('hhhhhhhhhhhh:', JSON.stringify(datosSolicitante.value, null, 2))
-//       if(datosSolicitante.value){
-//       solicitante.value = getNombreCompleto(datosSolicitante.value)
-//       }
-//     } else {
-//       datosSolicitante.value = [];
-//     }
-//   },
-//   { deep: true } // Si necesitas observar cambios profundos
-// );
-
 //carga usuario que realizo la solicitud
 watch(
   datosFormulario1,
   (newVal) => {
     try {
       const idSolicitante = newVal.usuario_id
-      console.log('ID Solicitante:', idSolicitante)
+      //console.log('ID Solicitante:', idSolicitante)
       //console.log('Datos Formulario:', datosFormulario.value)
 
       datosSolicitante.value = todosLosUsuarios.value?.find((fp) => fp.id === idSolicitante)
-      console.log('Datos Solicitante:', JSON.stringify(datosSolicitante.value, null, 2))
+      //console.log('Datos Solicitante:', JSON.stringify(datosSolicitante.value, null, 2))
 
       if (datosSolicitante.value) {
         solicitante.value = getNombreCompleto(datosSolicitante.value)
@@ -866,11 +790,11 @@ watch(
 
 async function cargarUsuarios() {
   try {
-    const response = await axios.get(baseurl + 'autenticacion_api/listaUsuarios/')
+    const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/')
     const allUsers = response.data.usuarios
     todosLosUsuarios.value = response.data.usuarios
     //const data = await response.json()
-    console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
+    //console.log('todosLosUsuarios:', JSON.stringify(response, null, 2))
     responsablesList.value = allUsers.filter((user) => user.cargo === 'contable')
     coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador')
     // datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
@@ -1163,7 +1087,7 @@ async function submitForm() {
       prioridad: 3,
     }
 
-    alert('Solicitud enviada con éxito')
+    alert('Solicitud actualizada con éxito')
     exportToExcel()
     //resetForm()
     await enviarMensajeAutomatico(cuerpoMensaje2)
@@ -1203,6 +1127,9 @@ async function submitForm() {
     ///////////////////////////////////////////////////////////////////////////////
 
     //console.log('Respuesta del servidor:', JSON.stringify(response, null, 2))
+    setTimeout(() => {
+      router.push('/pei/listaactividades?showButton=1')
+    }, 1000)
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message)
     alert(`Error: ${error.response?.data?.message || error.message}`)
@@ -1612,8 +1539,8 @@ const puedeValidarResponsable = computed(() => {
 })
 
 const puedeValidarCoordinador = computed(() => {
-  console.log('Usuario Logueado ID:', usuario.value?.id)
-  console.log('Coordinador Asignado ID:', solicitudDeViaje.value?.coordinador_id)
+  //console.log('Usuario Logueado ID:', usuario.value?.id)
+  //console.log('Coordinador Asignado ID:', solicitudDeViaje.value?.coordinador_id)
   const idUsuarioLogueado = usuario.value?.id
   const idCoordinadorAsignado = solicitudDeViaje.value?.coordinador_id
   return idUsuarioLogueado === idCoordinadorAsignado
@@ -1693,7 +1620,7 @@ async function validarViaje(tipoValidador) {
 
 onMounted(async () => {
   await cargarUsuarios()
-  //await cargarDatos()
+  await cargarDatos()
   await cargarSolicitudesDeViaje()
   await cargarFormasDePago()
 })

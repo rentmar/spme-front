@@ -31,11 +31,7 @@
         ></ProyectoIdHeader>
         <br /> -->
       <!--Encabezado de la Actividad-->
-      <!-- <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" /> -->
-      <ActividadPeiInformacion
-        v-if="datosFormulario.actividad"
-        :actividadPeiId="idActividad"
-      ></ActividadPeiInformacion>
+      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
       <v-row>
         <!-- Panel lateral de información -->
@@ -530,31 +526,6 @@
                     Cancelar
                   </v-btn>
                   <v-btn
-                    v-if="idActividad && !idTarea"
-                    color="info"
-                    variant="outlined"
-                    size="large"
-                    prepend-icon="mdi-file-pdf-box"
-                    @click="generarPdfSolicitudFondosFunc"
-                    :loading="loadingPdfSolicitud"
-                    :disabled="!idActividad || loadingPdfSolicitud"
-                  >
-                    SPD
-                  </v-btn>
-
-                  <v-btn
-                    v-if="idActividad && idTarea"
-                    color="info"
-                    variant="outlined"
-                    size="large"
-                    prepend-icon="mdi-file-pdf-box"
-                    @click="generarPdfSolicitudSubactividadFunc"
-                    :loading="loadingPdfSolicitud"
-                    :disabled="!idActividad || !idTarea || loadingPdfSubactividad"
-                  >
-                    SPDS
-                  </v-btn>
-                  <v-btn
                     color="secondary"
                     variant="outlined"
                     size="large"
@@ -608,48 +579,9 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
-import ActividadPeiInformacion from '@/modules/pei/components/partials/ActividadPeiInformacion.vue'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
-
-//Inicializar el composable
-const { generarPdfSolicitudPagoDirectoPei, generarPdfSolicitudPagoDirectoTareasPei } =
-  useImpresionFormularios()
-/*************************** Generar PDFs *******************************************/
-const loadingPdfSolicitud = ref(false)
-const loadingPdfSubactividad = ref(false)
-
-const generarPdfSolicitudFondosFunc = async () => {
-  if (!idActividad) return
-
-  loadingPdfSolicitud.value = true
-  try {
-    // Aquí iría tu lógica para generar el PDF de solicitud de fondos
-    console.log('Generando PDF Solicitud de Fondos para actividad:', idActividad)
-    await generarPdfSolicitudPagoDirectoPei(idSolicitud)
-  } catch (error) {
-    console.error('Error al generar PDF Solicitud de Fondos:', error)
-    alert('Error al generar el PDF: ' + error.message)
-  } finally {
-    loadingPdfSolicitud.value = false
-  }
-}
-
-const generarPdfSolicitudSubactividadFunc = async () => {
-  if (!idActividad || !idTarea) return
-
-  loadingPdfSubactividad.value = true
-  try {
-    await generarPdfSolicitudPagoDirectoTareasPei(idSolicitud)
-  } catch (error) {
-    console.error('Error al generar PDF Subactividad:', error)
-    alert('Error al generar el PDF de subactividad: ' + error.message)
-  } finally {
-    loadingPdfSubactividad.value = false
-  }
-}
-/*************************** Fin Generar PDFs *******************************************/
 
 const router = useRouter()
 const route = useRoute()
@@ -1321,7 +1253,7 @@ async function submitForm() {
 
     //console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
     setTimeout(() => {
-      //router.push('/pei/listaactividades?showButton=1')
+      router.push('/pei/listaactividades?showButton=1')
     }, 1000)
 
     return data
