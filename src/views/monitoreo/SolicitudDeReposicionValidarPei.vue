@@ -21,7 +21,7 @@
     <div v-if="!cargandoGeneral">
       <!--Titulo de la pagina-->
       <PaginaTituloIcono
-        :titulo="'Validar Solicitud de Reposición PEI 666'"
+        :titulo="'Validar Solicitud de Reposición PEI'"
         :icon="'mdi-cash-check'"
       ></PaginaTituloIcono>
       <!--Encabezado del Proyecto-->
