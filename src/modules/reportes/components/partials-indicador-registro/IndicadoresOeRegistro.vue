@@ -458,11 +458,9 @@ const totalSolicitados = computed(() => props.datos?.total_solicitados || 0)
 const totalEncontrados = computed(() => props.datos?.total_encontrados || 0)
 const idsNoEncontrados = computed(() => props.datos?.ids_no_encontrados || [])
 
-// Total de registros en bitácora
+// ✅ CAMBIO 1: Total de registros en bitácora (ahora cuenta objetos directamente)
 const totalRegistrosBitacora = computed(() => {
-  return Object.values(registrosLocales.value).reduce((total, registros) => {
-    return total + (registros?.length || 0)
-  }, 0)
+  return Object.keys(registrosLocales.value).length
 })
 
 // Estados locales
@@ -478,19 +476,19 @@ const rules = {
   },
 }
 
-// Función para verificar si un indicador tiene registro
+// ✅ CAMBIO 2: Función para verificar si un indicador tiene registro (versión objeto)
 const tieneRegistro = (indicadorId) => {
-  return registrosLocales.value[indicadorId] && registrosLocales.value[indicadorId].length > 0
+  return !!registrosLocales.value[indicadorId]
 }
 
-// Función para obtener el registro de un indicador
+// ✅ CAMBIO 3: Función para obtener el registro de un indicador (versión objeto)
 const obtenerRegistro = (indicadorId) => {
-  return registrosLocales.value[indicadorId]?.[0] || null
+  return registrosLocales.value[indicadorId] || null
 }
 
-// Función para obtener registros por indicador
+// ✅ CAMBIO 4: Función para obtener registros por indicador (devuelve array para la bitácora)
 const obtenerRegistrosPorIndicador = (indicadorId) => {
-  return registrosLocales.value[indicadorId] || []
+  return registrosLocales.value[indicadorId] ? [registrosLocales.value[indicadorId]] : []
 }
 
 // Función para toggle expandido
@@ -528,7 +526,7 @@ const formularioValido = (indicador) => {
   }
 }
 
-// Submit registro
+// ✅ CAMBIO 5: Submit registro (guardar como OBJETO, no array)
 const submitRegistro = async (indicador) => {
   // Verificar si ya existe un registro
   if (tieneRegistro(indicador.id)) {
@@ -541,7 +539,7 @@ const submitRegistro = async (indicador) => {
   // Preparar datos según tipo
   const registroData = {
     id: Date.now(), // ID único temporal
-    tipo_indicador: 'indicadoroe',
+    tipo_indicador: 'indicadoroe', // ✅ ESTÁ BIEN
     tipo_dato: indicador.tipo,
     id_indicador: indicador.id,
     fecha_registro: form.fecha_registro,
@@ -571,11 +569,8 @@ const submitRegistro = async (indicador) => {
     await new Promise((resolve) => setTimeout(resolve, 800))
     console.log('Registro OE guardado:', registroData)
 
-    // Guardar en registros locales
-    if (!registrosLocales.value[indicador.id]) {
-      registrosLocales.value[indicador.id] = []
-    }
-    registrosLocales.value[indicador.id] = [registroData] // Solo un registro
+    // ✅ Guardar como OBJETO directamente, no como array
+    registrosLocales.value[indicador.id] = registroData
 
     // Emitir evento
     emit('registro-guardado', {
@@ -599,7 +594,7 @@ const submitRegistro = async (indicador) => {
   }
 }
 
-// Eliminar registro
+// ✅ CAMBIO 6: Eliminar registro (ahora elimina objeto, igual que antes)
 const eliminarRegistro = async (registroId, indicadorId) => {
   if (!confirm('¿Está seguro de eliminar este registro?')) return
 
@@ -622,7 +617,7 @@ const eliminarRegistro = async (registroId, indicadorId) => {
   }
 }
 
-// Editar registro
+// ✅ CAMBIO 7: Editar registro (ahora recibe objeto directamente)
 const editarRegistro = (registro, indicador) => {
   if (!registro) return
 
@@ -641,7 +636,7 @@ const editarRegistro = (registro, indicador) => {
   }
 }
 
-// Funciones auxiliares
+// Funciones auxiliares (sin cambios)
 const getTipoDatoColor = (tipo) => {
   const colores = {
     'A-Z': 'purple',

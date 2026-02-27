@@ -11,52 +11,38 @@
       <div v-else-if="tieneIndicadores">
         <!-- Indicador OG -->
         <div v-if="indicadorog" class="mb-4">
-          <!-- <h3>Indicadores OG:</h3>
-        <pre>{{ JSON.stringify(indicadorog, null, 2) }}</pre> -->
           <indicadores-og-registro
             :datos="indicadorog"
-            @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'og')"
-            @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'og')"
-          ></indicadores-og-registro>
+            @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadorog')"
+            @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadorog')"
+          />
         </div>
 
         <!-- Indicador OE -->
         <div v-if="indicadoroe" class="mb-4">
-          <!-- <h3>Indicadores OE:</h3>
-        <pre>{{ JSON.stringify(indicadoroe, null, 2) }}</pre> -->
           <indicadores-oe-registro
             :datos="indicadoroe"
-            @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'oe')"
-            @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'oe')"
-          ></indicadores-oe-registro>
+            @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadoroe')"
+            @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadoroe')"
+          />
         </div>
 
         <!-- Indicador ROG -->
         <div v-if="indicadorrog" class="mb-4">
-          <!-- <h3>Indicadores ROG:</h3>
-        <pre>{{ JSON.stringify(indicadorrog, null, 2) }}</pre> -->
           <indicadores-rog-registro
             :datos="indicadorrog"
-            @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'rog')"
-            @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'rog')"
-          ></indicadores-rog-registro>
+            @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadorrog')"
+            @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadorrog')"
+          />
         </div>
 
         <!-- Indicador ROE -->
         <div v-if="indicadorroe" class="mb-4">
-          <!-- <h3>Indicadores ROE:</h3>
-        <pre>{{ JSON.stringify(indicadorroe, null, 2) }}</pre> -->
           <indicadores-roe-registro
             :datos="indicadorroe"
-            @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'roe')"
-            @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'roe')"
-          ></indicadores-roe-registro>
-        </div>
-
-        <!-- IDs de indicadores -->
-        <div v-if="indicadoresIds" class="mb-4">
-          <!-- <h3>IDs de Indicadores:</h3>
-        <pre>{{ JSON.stringify(indicadoresIds, null, 2) }}</pre> -->
+            @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadorroe')"
+            @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadorroe')"
+          />
         </div>
       </div>
 
@@ -77,8 +63,12 @@ import IndicadoresOgRegistro from './partials-indicador-registro/IndicadoresOgRe
 import IndicadoresOeRegistro from './partials-indicador-registro/IndicadoresOeRegistro.vue'
 import IndicadoresRogRegistro from './partials-indicador-registro/IndicadoresRogRegistro.vue'
 import IndicadoresRoeRegistro from './partials-indicador-registro/IndicadoresRoeRegistro.vue'
+
 // Store
 const store = useInformeActividadStore()
+
+// Emits
+const emit = defineEmits(['indicadores-cargados', 'indicadores-actualizados'])
 
 // Estados computados que se sincronizan automáticamente con el store
 const loading = computed(() => store.loading)
@@ -98,19 +88,15 @@ watch(
   [indicadorog, indicadoroe, indicadorrog, indicadorroe],
   ([newOg, newOe, newRog, newRoe]) => {
     if (newOg || newOe || newRog || newRoe) {
-      console.log('Indicadores cargados en el hijo:')
+      console.log('Indicadores cargados:')
       console.log('- OG:', newOg)
       console.log('- OE:', newOe)
       console.log('- ROG:', newRog)
       console.log('- ROE:', newRoe)
-      console.log('- IDs:', indicadoresIds.value)
     }
   },
   { immediate: true, deep: true },
 )
-
-// También podemos emitir los datos al padre si es necesario
-const emit = defineEmits(['indicadores-cargados'])
 
 // Cuando los indicadores estén disponibles, emitir al padre
 watch(
@@ -129,32 +115,42 @@ watch(
   { immediate: true },
 )
 
-// Opcional: Si necesitas acceder a los datos de forma reactiva localmente
-// (aunque ya lo haces con computed)
-const datosLocales = ref({
-  indicadorog: null,
-  indicadoroe: null,
-  indicadorrog: null,
-  indicadorroe: null,
-})
+/**
+ * Manejador para registros guardados - PASA AL STORE
+ */
+const manejarRegistroIndicador = (payload, tipo) => {
+  console.log(`📝 Registro ${tipo} recibido:`, payload)
 
-// Sincronizar datos locales con el store (si necesitas manipularlos)
-watch(
-  [indicadorog, indicadoroe, indicadorrog, indicadorroe],
-  ([og, oe, rog, roe]) => {
-    datosLocales.value = {
-      indicadorog: og,
-      indicadoroe: oe,
-      indicadorrog: rog,
-      indicadorroe: roe,
-    }
-  },
-  { immediate: true, deep: true },
-)
+  // Guardar en el store
+  store.guardarRegistroIndicador(tipo, payload.indicadorId, payload.registro)
 
-// Método para recargar manualmente si es necesario
+  // Emitir evento de actualización
+  emit('indicadores-actualizados', {
+    tipo,
+    accion: 'guardado',
+    indicadorId: payload.indicadorId,
+  })
+}
+
+/**
+ * Manejador para eliminaciones - PASA AL STORE
+ */
+const manejarEliminacionIndicador = (payload, tipo) => {
+  console.log(`🗑️ Eliminación ${tipo} recibida:`, payload)
+
+  // Eliminar del store
+  store.eliminarRegistroIndicador(tipo, payload.indicadorId)
+
+  // Emitir evento de actualización
+  emit('indicadores-actualizados', {
+    tipo,
+    accion: 'eliminado',
+    indicadorId: payload.indicadorId,
+  })
+}
+
+// Método para recargar manualmente
 const recargarIndicadores = async () => {
-  // No necesitas hacer nada, los computed se actualizan automáticamente
   console.log('Indicadores actuales:', {
     og: indicadorog.value,
     oe: indicadoroe.value,
@@ -163,10 +159,21 @@ const recargarIndicadores = async () => {
   })
 }
 
-// Exponer métodos al padre si es necesario
+// ✅ NUEVO: Obtener el JSON completo para enviar al backend
+const obtenerJSONIndicadores = () => {
+  return store.indicadoresParaAPI
+}
+
+// ✅ NUEVO: Resetear todos los registros
+const resetearRegistros = () => {
+  store.resetearRegistrosIndicadores()
+}
+
+// Exponer métodos al padre
 defineExpose({
   recargarIndicadores,
-  datosLocales,
+  obtenerJSONIndicadores,
+  resetearRegistros,
 })
 </script>
 

@@ -219,14 +219,12 @@
                             </div>
                           </v-alert>
 
-                          <!-- <RegistroAvanceIndicadores
-                            v-if="storeInfActividad.actividad"
-                            :idactividad="storeInfActividad.actividad?.id"
-                            :datos-existente="formData.avanceIndicadores"
-                            @todos-los-registros-enviados="manejarRegistrosIndicadores"
-                          ></RegistroAvanceIndicadores> -->
-                          <!-- <RegistroAvanceIndicadoresV2></RegistroAvanceIndicadoresV2> -->
-                          <RegistroAvanceIndicadoresV3></RegistroAvanceIndicadoresV3>
+                          <!-- COMPONENTE DE INDICADORES CON REF Y EVENTOS -->
+                          <RegistroAvanceIndicadoresV3
+                            ref="indicadoresComponent"
+                            @indicadores-cargados="manejarIndicadoresCargados"
+                            @indicadores-actualizados="manejarIndicadoresActualizados"
+                          />
                         </v-col>
                       </v-row>
                     </div>
@@ -383,7 +381,6 @@
       </v-row>
     </div>
   </v-container>
-  {{ formData }}
 </template>
 
 <script setup>
@@ -395,7 +392,6 @@ import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vu
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
-import RegistroAvanceIndicadoresV2 from '@/modules/reportes/components/RegistroAvanceIndicadoresV2.vue'
 import RegistroAvanceIndicadoresV3 from '@/modules/reportes/components/RegistroAvanceIndicadoresV3.vue'
 import InformacionCuantitativaV2 from '@/modules/formularios/components/InformacionCuantitativaV2.vue'
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
@@ -414,6 +410,9 @@ const storeInfActividad = useInformeActividadStore()
 
 // Composables
 const { successMsg } = useSnackbar()
+
+// ✅ REFERENCIA AL COMPONENTE DE INDICADORES
+const indicadoresComponent = ref(null)
 
 // Estados reactivos
 const cargandoGeneral = ref(false)
@@ -444,8 +443,7 @@ const formData = ref({
 // Watcher para activar automáticamente la sección si hay datos de indicadores
 watch(
   () => formData.value.avanceIndicadores,
-  (nuevoValor, viejoValor) => {
-    // Activar automáticamente la sección si hay datos de indicadores
+  (nuevoValor) => {
     if (nuevoValor && Object.keys(nuevoValor).length > 0) {
       habilitarIndicadores.value = true
     }
@@ -453,26 +451,44 @@ watch(
   { immediate: true },
 )
 
-/***************** METODOS *******************************/
+/***************** MÉTODOS DE INDICADORES *****************/
+/**
+ * Manejador cuando los indicadores se cargan inicialmente
+ */
+const manejarIndicadoresCargados = (payload) => {
+  console.log('📊 Indicadores cargados inicialmente:', payload)
+}
+
+/**
+ * Manejador cuando hay actualizaciones (guardado/eliminado)
+ */
+const manejarIndicadoresActualizados = (payload) => {
+  console.log('🔄 Indicadores actualizados:', payload)
+}
+
+/**
+ * Obtiene el JSON completo de indicadores del componente
+ */
+const obtenerJSONIndicadores = () => {
+  if (!indicadoresComponent.value) return null
+  return indicadoresComponent.value.obtenerJSONIndicadores()
+}
+
+/**
+ * Resetea todos los registros de indicadores
+ */
+const resetearIndicadores = () => {
+  if (indicadoresComponent.value) {
+    indicadoresComponent.value.resetearRegistros()
+    formData.value.avanceIndicadores = null
+  }
+}
+
+/***************** MÉTODOS EXISTENTES *****************/
 //Contribucion al proyecto
 const recibirDatosContribucion = (payload) => {
   console.log('Datos contribucion recibidos: ', payload)
   formData.value.contribucionProyecto = payload
-}
-
-//Registro de indicadores
-const manejarRegistrosIndicadores = (payload) => {
-  console.log('Avance de indicadores recibido: ', payload)
-
-  // Solo guardar si la sección está habilitada
-  if (habilitarIndicadores.value) {
-    formData.value.avanceIndicadores = payload
-    successMsg('Avance Indicadores registrados')
-  } else {
-    // Si la sección está deshabilitada, limpiar los datos
-    formData.value.avanceIndicadores = null
-    console.log('Sección de indicadores deshabilitada, datos no guardados')
-  }
 }
 
 //Informacion cuantitativa
@@ -516,6 +532,7 @@ const resetForm = () => {
     actividad: idactividad,
   }
   habilitarIndicadores.value = false
+  resetearIndicadores() // Resetear también los indicadores
 }
 
 //Cancelar
@@ -523,43 +540,40 @@ const cancelar = () => {
   router.push('/actividades/informe/')
 }
 
-//Enviar Formulario
+// ✅ MODIFICADO: Enviar Formulario con indicadores
 const submitForm = async () => {
   loading.value = true
   try {
     // Preparar datos finales
     const datosParaEnviar = { ...formData.value }
 
-    // Si la sección de indicadores está deshabilitada, no enviar datos de indicadores
-    if (!habilitarIndicadores.value) {
+    // Obtener indicadores del componente si la sección está habilitada
+    if (habilitarIndicadores.value && indicadoresComponent.value) {
+      const jsonIndicadores = indicadoresComponent.value.obtenerJSONIndicadores()
+
+      // Solo incluir si hay registros
+      if (jsonIndicadores && jsonIndicadores.metadatos?.total_general > 0) {
+        datosParaEnviar.avanceIndicadores = jsonIndicadores
+        console.log('✅ JSON de indicadores incluido:', jsonIndicadores)
+      } else {
+        datosParaEnviar.avanceIndicadores = null
+        console.log('ℹ️ No hay registros de indicadores')
+      }
+    } else {
       datosParaEnviar.avanceIndicadores = null
     }
 
-    // Si no hay datos de indicadores o está deshabilitado, eliminar la propiedad
-    if (
-      !datosParaEnviar.avanceIndicadores ||
-      (datosParaEnviar.avanceIndicadores &&
-        Object.keys(datosParaEnviar.avanceIndicadores).length === 0)
-    ) {
+    // Si no hay datos de indicadores, eliminar la propiedad
+    if (!datosParaEnviar.avanceIndicadores) {
       delete datosParaEnviar.avanceIndicadores
     }
 
-    console.log('Enviando informe:', datosParaEnviar)
+    console.log('📦 Enviando informe:', datosParaEnviar)
 
-    // Nota al usuario
-    if (!habilitarIndicadores.value) {
-      console.log('Sección de indicadores deshabilitada - No se enviarán datos de indicadores')
-    }
-
-    // Validaciones básicas
-    // if (!formData.value.objetivoActividad || !formData.value.informeObjetivoActividad) {
-    //   throw new Error('Por favor, complete los campos obligatorios del formulario.')
-    // }
-
-    // Aquí iría la lógica para enviar al backend
+    // Enviar al backend
     await formulariosServico.creaInformeActividadPrincipal(datosParaEnviar)
 
-    alert('Informe enviado exitosamente')
+    successMsg('Informe enviado exitosamente')
     router.push('/actividades/informe/')
   } catch (error) {
     console.error('Error al enviar el informe:', error)
@@ -580,17 +594,13 @@ const cargarDatos = async () => {
       formData.value.objetivoActividad = storeInfActividad.actividad.objetivo || ''
       formData.value.tipoActividad = storeInfActividad.actividad.tipo_actividad || ''
 
-      // Si la actividad tiene fecha de ejecución, usarla como valor por defecto
       if (storeInfActividad.actividad.tipo_info) {
-        //Cargar la informacion en el formulario
         const tipoActividadInf =
           storeInfActividad.actividad.tipo_info.sigla +
           ' - ' +
           storeInfActividad.actividad.tipo_info.tipo_actividad
-
         formData.value.tipoActividad = tipoActividadInf
       }
-      //Cargar los valores de los indicadores
     }
   } catch (err) {
     console.error('Error al cargar la información de la Actividad:', err)
