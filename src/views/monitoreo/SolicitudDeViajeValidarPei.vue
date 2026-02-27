@@ -453,7 +453,7 @@ import { ref, onMounted, computed, nextTick, watch } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
-
+import ActividadPeiInformacion from '@/modules/pei/components/partials/ActividadPeiInformacion.vue'
 import axios from 'axios'
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
@@ -461,7 +461,6 @@ import { useRoute, useRouter } from 'vue-router'
 //Composable de impresion
 import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
-import ActividadPeiInformacion from '@/modules/pei/components/partials/ActividadPeiInformacion.vue'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
@@ -1614,11 +1613,11 @@ async function validarViaje(tipoValidador) {
   switch (tipoValidador) {
     case 'responsable':
       tienePermiso = puedeValidarResponsable.value
-      claveValidacion = 'validacion_responsable'
+      claveValidacion = 'validacionResponsable'
       break
     case 'coordinador':
       tienePermiso = puedeValidarCoordinador.value
-      claveValidacion = 'validacion_coordinador'
+      claveValidacion = 'validacionCoordinador'
       break
     default:
       alert('Tipo de validador no reconocido.')

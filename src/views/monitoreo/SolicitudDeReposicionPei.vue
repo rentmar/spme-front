@@ -1044,7 +1044,7 @@
         const coincideTarea = solicitud.tarea_id?.toString() === idTarea?.toString()
         const coincideSolicitud = solicitud.id?.toString() === idSolicitud?.toString()
 
-        // console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
+         console.log('Coincidencias:', { coincideActividad, coincideTarea, coincideSolicitud })
 
         return coincideActividad && coincideTarea && coincideSolicitud
       })
@@ -1645,7 +1645,7 @@
   // Ciclo de vida
   onMounted(async () => {
     await cargarDatos()
-    await cargarSolicitudFondos()
+    //await cargarSolicitudFondos()
     await textoProcedencia.value
     resetForm()
   })
