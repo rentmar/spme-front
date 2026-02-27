@@ -225,7 +225,8 @@
                             :datos-existente="formData.avanceIndicadores"
                             @todos-los-registros-enviados="manejarRegistrosIndicadores"
                           ></RegistroAvanceIndicadores> -->
-                          <RegistroAvanceIndicadoresV2></RegistroAvanceIndicadoresV2>
+                          <!-- <RegistroAvanceIndicadoresV2></RegistroAvanceIndicadoresV2> -->
+                          <RegistroAvanceIndicadoresV3></RegistroAvanceIndicadoresV3>
                         </v-col>
                       </v-row>
                     </div>
@@ -395,6 +396,7 @@ import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdH
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import EncabezadoContribucion from '@/modules/formularios/components/EncabezadoContribucion.vue'
 import RegistroAvanceIndicadoresV2 from '@/modules/reportes/components/RegistroAvanceIndicadoresV2.vue'
+import RegistroAvanceIndicadoresV3 from '@/modules/reportes/components/RegistroAvanceIndicadoresV3.vue'
 import InformacionCuantitativaV2 from '@/modules/formularios/components/InformacionCuantitativaV2.vue'
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
 import ProcedenciaFondosPresupuesto from '@/modules/procedenciaFondos/components/ProcedenciaFondosPresupuesto.vue'

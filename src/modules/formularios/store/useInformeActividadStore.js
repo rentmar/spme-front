@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useActividad } from '@/modules/proyecto/composables/useActividad'
 import { useInformeActividad } from '../composables/useInformeActividad'
 import { formulariosServico } from '../services/formularioService'
+import { useIndicadores } from '@/modules/proyecto/composables/useIndicadores'
 
 export const useInformeActividadStore = defineStore('informe-actividad', () => {
   //Estados
@@ -18,7 +19,141 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
   const listaInformeTareas = ref([]) //Lista de informes de una tarea
   const listaInformes = ref([]) //Lista conjunta de los informes
   //Estructura de procedencia
-  const datosProcedencia = ref(null)
+  const estructuraProcedencia = ref(null)
+  const indicadores = ref(null)
+  const indicadoresIds = ref(null)
+  //Indicadores del Informe de Actividad
+  const indicadorog = ref(null) //Indicador del Objetivo General
+  const indicadoroe = ref(null) //Indicadores del objetivo Especifico
+  const indicadorrog = ref(null) //Indicadores Resultado Objetivo General
+  const indicadorroe = ref(null) //Indicdores Resultado Objetivo Especifico
+
+  //Estado para registros de indicadores
+  const registrosIndicadores = ref({
+    indicadorog: {}, // key: id_indicador, value: registro
+    indicadoroe: {},
+    indicadorrog: {},
+    indicadorroe: {},
+  })
+
+  //Getters computados para totales
+  const totalesPorTipo = computed(() => ({
+    indicadorog: Object.keys(registrosIndicadores.value.indicadorog).length,
+    indicadoroe: Object.keys(registrosIndicadores.value.indicadoroe).length,
+    indicadorrog: Object.keys(registrosIndicadores.value.indicadorrog).length,
+    indicadorroe: Object.keys(registrosIndicadores.value.indicadorroe).length,
+  }))
+
+  const totalGeneral = computed(() => {
+    const totals = totalesPorTipo.value
+    return totals.indicadorog + totals.indicadoroe + totals.indicadorrog + totals.indicadorroe
+  })
+
+  /***************  MANEJAR INDICADORES  ********************/
+  // ⭐ NUEVO: Computed que genera el JSON exacto que necesitas (con arrays)
+  const indicadoresParaAPI = computed(() => {
+    // Función auxiliar para convertir objeto a array
+    const objetoToArray = (objeto) => {
+      return Object.values(objeto).map((registro) => ({
+        ...registro,
+        // Asegurar que los valores nulos estén presentes
+        valor_literal: registro.valor_literal || null,
+        valor_numerico: registro.valor_numerico || null,
+        valor_porcentual: registro.valor_porcentual || null,
+      }))
+    }
+
+    // Construir el objeto exactamente como lo necesita la API
+    return {
+      metadatos: {
+        total_indicadorog: totalesPorTipo.value.indicadorog,
+        total_indicadoroe: totalesPorTipo.value.indicadoroe,
+        total_indicadorrog: totalesPorTipo.value.indicadorrog,
+        total_indicadorroe: totalesPorTipo.value.indicadorroe,
+        total_general: totalGeneral.value,
+      },
+      indicadorog: objetoToArray(registrosIndicadores.value.indicadorog),
+      indicadoroe: objetoToArray(registrosIndicadores.value.indicadoroe),
+      indicadorrog: objetoToArray(registrosIndicadores.value.indicadorrog),
+      indicadorroe: objetoToArray(registrosIndicadores.value.indicadorroe),
+    }
+  })
+
+  // NUEVO: Acciones para manejar indicadores
+  const guardarRegistroIndicador = (tipo, indicadorId, registro) => {
+    console.log(`💾 Store guardando registro ${tipo} para indicador ${indicadorId}:`, registro)
+
+    // Validar que el tipo existe
+    if (!registrosIndicadores.value[tipo]) {
+      console.error(`Tipo de indicador inválido: ${tipo}`)
+      return
+    }
+
+    // Guardar el registro usando el ID del indicador como key
+    registrosIndicadores.value[tipo][indicadorId] = {
+      id: Date.now(), // ID único del registro
+      tipo_indicador: tipo,
+      id_indicador: indicadorId,
+      fecha_registro: registro.fecha_registro,
+      tipo_dato: registro.tipo_dato,
+      // Solo el valor correspondiente al tipo tendrá datos
+      valor_literal: registro.tipo_dato === 'A-Z' ? registro.valor_literal : null,
+      valor_numerico: registro.tipo_dato === '1-9' ? registro.valor_numerico : null,
+      valor_porcentual: registro.tipo_dato === '%' ? registro.valor_porcentual : null,
+      observaciones: registro.observaciones || '',
+      timestamp_registro: registro.timestamp_registro || new Date().toISOString(),
+      registrado_por: registro.registrado_por || 'Usuario Actual',
+      fecha_actualizacion: new Date().toISOString(),
+    }
+
+    console.log('✅ Store actualizado:', registrosIndicadores.value)
+    console.log('📊 JSON generado para API:', indicadoresParaAPI.value)
+  }
+
+  const eliminarRegistroIndicador = (tipo, indicadorId) => {
+    console.log(`🗑️ Store eliminando registro ${tipo} para indicador ${indicadorId}`)
+
+    if (registrosIndicadores.value[tipo]?.[indicadorId]) {
+      delete registrosIndicadores.value[tipo][indicadorId]
+      console.log('✅ Store actualizado después de eliminar')
+    }
+  }
+
+  // NUEVO: Cargar registros existentes desde el backend
+  const cargarRegistrosIndicadores = (data) => {
+    // Si vienen datos del backend, procesarlos
+    if (data?.indicadorog) {
+      data.indicadorog.forEach((registro) => {
+        registrosIndicadores.value.indicadorog[registro.id_indicador] = registro
+      })
+    }
+    if (data?.indicadoroe) {
+      data.indicadoroe.forEach((registro) => {
+        registrosIndicadores.value.indicadoroe[registro.id_indicador] = registro
+      })
+    }
+    if (data?.indicadorrog) {
+      data.indicadorrog.forEach((registro) => {
+        registrosIndicadores.value.indicadorrog[registro.id_indicador] = registro
+      })
+    }
+    if (data?.indicadorroe) {
+      data.indicadorroe.forEach((registro) => {
+        registrosIndicadores.value.indicadorroe[registro.id_indicador] = registro
+      })
+    }
+  }
+
+  const resetearRegistrosIndicadores = () => {
+    registrosIndicadores.value = {
+      indicadorog: {},
+      indicadoroe: {},
+      indicadorrog: {},
+      indicadorroe: {},
+    }
+  }
+
+  /***************  FIN MANEJAR INDICADORES  *******************/
 
   //Iniciar composables
   const { actividadInfo, obtenerActidadPorId } = useActividad() //manejo de actividades
@@ -29,6 +164,13 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
     listarInformeActividadSubactividadMinPorId,
   } = useInformeActividad()
 
+  const {
+    cargarIndicadoresOgporIds, //indicadorog
+    cargarIndicadoresOePorIds, //indicadoroe
+    cargarIndicadoresResultadoOgPorIds, //indicadorrog
+    cargarIndicadoresResultadoOePorIds, //indicadorroe
+  } = useIndicadores()
+
   //Cargar la actividad y desestructurar en los estados
   async function cargarActividadPorId(idactividad) {
     loading.value = true
@@ -37,6 +179,18 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
       await obtenerActidadPorId(idactividad)
       //La respuesta completa
       actividadDetalles.value = actividadInfo.value
+      estructuraProcedencia.value = actividadInfo.value.estructuraProcedencia
+      indicadores.value = actividadInfo.value.estructuraProcedencia.indicadores_recolectados
+      indicadoresIds.value = extraerIdsIndicadores(indicadores.value)
+      console.log('indicadores ids OG: ', indicadoresIds.value.indicadorog)
+      indicadorog.value = await cargarIndicadoresOgporIds(indicadoresIds.value.indicadorog)
+      indicadoroe.value = await cargarIndicadoresOePorIds(indicadoresIds.value.indicadoroe)
+      indicadorrog.value = await cargarIndicadoresResultadoOgPorIds(
+        indicadoresIds.value.indicadorrog,
+      )
+      indicadorroe.value = await cargarIndicadoresResultadoOePorIds(
+        indicadoresIds.value.indicadorroe,
+      )
 
       // Desestructurar la respuesta en las variables específicas
       if (actividadInfo.value) {
@@ -87,6 +241,33 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
       loading.value = false
     }
   }
+
+  /***********************Funciones indicadores*********************************************/
+  // Función para extraer IDs de indicadores agrupados por tipo
+  // Opción 3: Si solo te interesan los tipos que ya existen en resultado
+  const extraerIdsIndicadores = (indicadoresData) => {
+    const resultado = {
+      indicadorog: [],
+      indicadoroe: [],
+      indicadorrog: [],
+      indicadorroe: [],
+    }
+
+    if (!indicadoresData || typeof indicadoresData !== 'object') {
+      return resultado
+    }
+
+    // Solo procesar los tipos que nos interesan
+    Object.keys(resultado).forEach((tipo) => {
+      if (Array.isArray(indicadoresData[tipo])) {
+        resultado[tipo] = indicadoresData[tipo].map((item) => item.id)
+      }
+    })
+
+    return resultado
+  }
+
+  /***********************Funciones indicadores FIN*********************************************/
 
   // FUNCIONES DE BÚSQUEDA INCORPORADAS
 
@@ -232,7 +413,7 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
       const respuesta = await formulariosServico.creaInformeActividadPrincipal(infData)
       return respuesta
     } catch (err) {
-      console.error('Error al crear el informe de actividad')
+      console.error('Error al crear el informe de actividad', err)
     } finally {
       loading.value = false
     }
@@ -249,6 +430,19 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
     listaInformeActividad,
     listaInformeTareas,
     listaInformes,
+    estructuraProcedencia,
+    indicadores,
+    indicadoresIds,
+    indicadorog,
+    indicadoroe,
+    indicadorrog,
+    indicadorroe,
+
+    //Estados para los datos indicadores recolectados
+    registrosIndicadores,
+    totalesPorTipo,
+    totalGeneral,
+    indicadoresParaAPI,
 
     //Funciones de carga
     cargarActividadPorId,
@@ -265,5 +459,11 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
 
     //Funciones de creacion
     crearInformeActividadPrincipal,
+
+    //Recoleccion de indicadores
+    guardarRegistroIndicador,
+    eliminarRegistroIndicador,
+    cargarRegistrosIndicadores,
+    resetearRegistrosIndicadores,
   }
 })

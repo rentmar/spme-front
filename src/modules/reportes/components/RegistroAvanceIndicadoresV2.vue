@@ -123,7 +123,10 @@
           <v-card
             elevation="1"
             class="indicator-header-card mb-2"
-            :class="{ 'indicator-with-registry': hasRegistry(indicator) }"
+            :class="[
+              getIndicatorTypeClass(indicator.tipo),
+              { 'indicator-with-registry': hasRegistry(indicator) },
+            ]"
           >
             <v-card-text class="pa-3">
               <div class="d-flex align-center justify-space-between">
@@ -722,6 +725,17 @@ const toggleAllDetails = () => {
   }
 }
 
+// NUEVO: Método para obtener la clase CSS del tipo de indicador
+const getIndicatorTypeClass = (tipo) => {
+  const classes = {
+    indicadorog: 'indicator-type-og',
+    indicadoroe: 'indicator-type-oe',
+    indicadorrog: 'indicator-type-rog',
+    indicadorroe: 'indicator-type-roe',
+  }
+  return classes[tipo] || 'indicator-type-default'
+}
+
 // Métodos auxiliares
 const formatDate = (date) => {
   if (!date) return 'N/A'
@@ -1009,7 +1023,7 @@ const submitEntryForIndicator = async (indicator) => {
 
   // Crear nuevo registro
   const newRecord = {
-    id: 1,
+    id: Date.now(), // Usar timestamp para ID único
     fecha_registro: new Date().toISOString(),
     tipo_dato: getIndicatorDetail(indicator)?.tipo || '1-9',
     valor_numerico: parseFloat(form.valor_numerico),
@@ -1134,10 +1148,29 @@ onMounted(() => {
 }
 
 .indicator-header-card {
-  border-left: 4px solid;
-  border-left-color: v-bind('indicator => getIndicatorColor(indicator.tipo)');
   transition: all 0.3s ease;
   position: relative;
+}
+
+/* CORREGIDO: Clases específicas para cada tipo de indicador en lugar de v-bind */
+.indicator-type-og {
+  border-left: 4px solid blue;
+}
+
+.indicator-type-oe {
+  border-left: 4px solid green;
+}
+
+.indicator-type-rog {
+  border-left: 4px solid orange;
+}
+
+.indicator-type-roe {
+  border-left: 4px solid purple;
+}
+
+.indicator-type-default {
+  border-left: 4px solid grey;
 }
 
 .indicator-header-card:hover {

@@ -51,7 +51,7 @@ export const indicadoresServicios = {
   /* Carga una lista de indicadore og,  por IDs */
   fetchIndicadoresOgPorIds: async (dataArrayIds) => {
     try {
-      const respuesta = await apiRep.post('/indicador-og/by-ids/', dataArrayIds)
+      const respuesta = await apiRep.post('/indicador-og/by-ids/', { ids: dataArrayIds })
       return respuesta.data
     } catch (error) {
       console.error('Axios: error al cargar la lista de indicadores og: ' + dataArrayIds, error)
@@ -106,7 +106,7 @@ export const indicadoresServicios = {
   /* Carga una lista de indicadore og,  por IDs */
   fetchIndicadoresRogPorIds: async (dataArrayIds) => {
     try {
-      const respuesta = await apiRep.post('/indicador-rog/by-ids/', dataArrayIds)
+      const respuesta = await apiRep.post('/indicador-rog/by-ids/', { ids: dataArrayIds })
       return respuesta.data
     } catch (error) {
       console.error('Axios: error al cargar la lista de indicadores rog: ' + dataArrayIds, error)
@@ -166,7 +166,7 @@ export const indicadoresServicios = {
   /* Carga una lista de indicadores oe,  por IDs */
   fetchIndicadoresOePorIds: async (dataArrayIds) => {
     try {
-      const respuesta = await apiRep.post('/indicador-oe/by-ids/', dataArrayIds)
+      const respuesta = await apiRep.post('/indicador-oe/by-ids/', { ids: dataArrayIds })
       return respuesta.data
     } catch (error) {
       console.error('Axios: error al cargar la lista de indicadores oe: ' + dataArrayIds, error)
@@ -226,7 +226,7 @@ export const indicadoresServicios = {
   /* Carga una lista de indicadores oe,  por IDs */
   fetchIndicadoresRoePorIds: async (dataArrayIds) => {
     try {
-      const respuesta = await apiRep.post('/indicador-roe/by-ids/', dataArrayIds)
+      const respuesta = await apiRep.post('/indicador-roe/by-ids/', { ids: dataArrayIds })
       return respuesta.data
     } catch (error) {
       console.error('Axios: error al cargar la lista de indicadores roe: ' + dataArrayIds, error)
