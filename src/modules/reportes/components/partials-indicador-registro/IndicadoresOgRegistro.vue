@@ -232,7 +232,6 @@
                         variant="outlined"
                         density="compact"
                         :rules="[rules.required]"
-                        placeholder="Ej: Bueno, Regular, Excelente, etc."
                         class="mb-2"
                       ></v-text-field>
                     </template>

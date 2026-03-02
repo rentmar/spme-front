@@ -381,12 +381,14 @@
       </v-row>
     </div>
   </v-container>
+  {{ formData }}
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useInformeActividadStore } from '@/modules/formularios/store/useInformeActividadStore'
+import { useUserStore } from '@/stores/user'
 //Cabecera - Componentes
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
@@ -407,6 +409,7 @@ const idactividad = route.params.id
 
 // Store
 const storeInfActividad = useInformeActividadStore()
+const usuarioStore = useUserStore() //Inicializar el store de usuarios
 
 // Composables
 const { successMsg } = useSnackbar()
@@ -419,6 +422,9 @@ const cargandoGeneral = ref(false)
 const loading = ref(false)
 const form = ref(null)
 const habilitarIndicadores = ref(false)
+
+//Id del usuario
+const usuarioId = computed(() => usuarioStore.id)
 
 // Datos del formulario
 const formData = ref({
@@ -437,6 +443,7 @@ const formData = ref({
   procedenciaFondos: '',
   observacionesPresupuesto: '',
   actividad: idactividad,
+  // 👇 EL USUARIO CREADOR SE AGREGARÁ EN EL SUBMIT, NO AQUÍ
 })
 
 /***************** WATCHERS *******************************/
@@ -530,6 +537,7 @@ const resetForm = () => {
     procedenciaFondos: '',
     observacionesPresupuesto: '',
     actividad: idactividad,
+    // No incluimos usuario_creador aquí porque se agrega en el submit
   }
   habilitarIndicadores.value = false
   resetearIndicadores() // Resetear también los indicadores
@@ -540,12 +548,26 @@ const cancelar = () => {
   router.push('/actividades/informe/')
 }
 
-// ✅ MODIFICADO: Enviar Formulario con indicadores
+// ✅ MODIFICADO: Enviar Formulario con indicadores y usuario_creador
 const submitForm = async () => {
   loading.value = true
   try {
     // Preparar datos finales
     const datosParaEnviar = { ...formData.value }
+
+    // Agregar el usuario autenticado como autor
+    if (usuarioStore.isAuthenticated) {
+      // Dependiendo de lo que espere tu backend:
+      datosParaEnviar.usuario = usuarioId.value // Si espera el ID
+      // O si espera el objeto completo:
+      // datosParaEnviar.usuario_creador = usuarioActual.value
+
+      console.log('👤 Usuario creador ID:', usuarioId.value)
+    } else {
+      console.warn('⚠️ No hay usuario autenticado')
+      // Opcional: puedes cancelar el envío si el usuario es obligatorio
+      // throw new Error('Usuario no autenticado')
+    }
 
     // Obtener indicadores del componente si la sección está habilitada
     if (habilitarIndicadores.value && indicadoresComponent.value) {
@@ -571,10 +593,10 @@ const submitForm = async () => {
     console.log('📦 Enviando informe:', datosParaEnviar)
 
     // Enviar al backend
-    await formulariosServico.creaInformeActividadPrincipal(datosParaEnviar)
+    //await formulariosServico.creaInformeActividadPrincipal(datosParaEnviar)
 
     successMsg('Informe enviado exitosamente')
-    router.push('/actividades/informe/')
+    // router.push('/actividades/informe/')
   } catch (error) {
     console.error('Error al enviar el informe:', error)
     alert(`Error: ${error.message}`)
@@ -601,6 +623,13 @@ const cargarDatos = async () => {
           storeInfActividad.actividad.tipo_info.tipo_actividad
         formData.value.tipoActividad = tipoActividadInf
       }
+    }
+
+    //VERIFICAR USUARIO EN CONSOLA
+    if (usuarioId.value) {
+      console.log('👤 Usuario autenticado:', usuarioId.value)
+    } else {
+      console.warn('⚠️ No hay usuario autenticado al cargar la vista')
     }
   } catch (err) {
     console.error('Error al cargar la información de la Actividad:', err)
