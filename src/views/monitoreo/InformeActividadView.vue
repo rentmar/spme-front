@@ -266,6 +266,7 @@
                     <v-col cols="12">
                       <InformacionCuantitativaV2
                         @registrar-informacion="manejarRegistro"
+                        @estado-habilitacion="manejarEstadoHabilitacion"
                       ></InformacionCuantitativaV2>
                     </v-col>
                   </v-row>
@@ -412,7 +413,7 @@ const storeInfActividad = useInformeActividadStore()
 const usuarioStore = useUserStore() //Inicializar el store de usuarios
 
 // Composables
-const { successMsg } = useSnackbar()
+const { successMsg, errorMsg } = useSnackbar()
 
 // ✅ REFERENCIA AL COMPONENTE DE INDICADORES
 const indicadoresComponent = ref(null)
@@ -443,7 +444,6 @@ const formData = ref({
   procedenciaFondos: '',
   observacionesPresupuesto: '',
   actividad: idactividad,
-  // 👇 EL USUARIO CREADOR SE AGREGARÁ EN EL SUBMIT, NO AQUÍ
 })
 
 /***************** WATCHERS *******************************/
@@ -551,7 +551,46 @@ const cancelar = () => {
 // ✅ MODIFICADO: Enviar Formulario con indicadores y usuario_creador
 const submitForm = async () => {
   loading.value = true
+  //Matriz de errores
+  const errores = []
   try {
+    //VALIDAR: Registro de indicadores
+    if (habilitarIndicadores.value) {
+      //Obtener el json de indicadores del componente
+      const jsonIndicadores = indicadoresComponent.value?.obtenerJSONIndicadores()
+      //Verificar si hay al menos un registro  (total_general > 0)
+      const tieneRegistros = jsonIndicadores?.metadatos?.total_general > 0
+
+      if (!tieneRegistros) {
+        errores.push('Debe registrar al menos un avance de indicadores')
+      }
+      console.log('📊 Validación indicadores:', {
+        habilitado: true,
+        tieneRegistros,
+        total: jsonIndicadores?.metadatos?.total_general,
+      })
+    } else {
+      console.log('Validacion indicadores: seccion desactivida')
+    }
+
+    //VALIDAR: Informacion cuantitativa
+    const { seccionHabilitada, totalParticipantes } = infoCuantitativaEstado.value
+    if (seccionHabilitada) {
+      if (!totalParticipantes || totalParticipantes <= 0) {
+        errores.push('Debe registrar el total de participantes en información cuantitativa')
+      }
+    }
+
+    //MOstrar errores si existen
+    if (errores.length > 0) {
+      const mensajeError = 'Por favor complete los siguientes campos:\n• ' + errores.join('<br>• ')
+      errorMsg(mensajeError)
+      loading.value = false
+      return
+    }
+
+    /******************************* Envio de datos ****************************************/
+
     // Preparar datos finales
     const datosParaEnviar = { ...formData.value }
 
@@ -643,6 +682,21 @@ const cargarDatos = async () => {
 onMounted(() => {
   cargarDatos()
 })
+
+/****************** VARIABLE PARA VALIDACION DE Informacion Cuantitativa ***********************************/
+const infoCuantitativaEstado = ref({
+  seccionHabilitada: false,
+  totalParticipantes: 0,
+})
+//Manejador del estado de habilitacion
+const manejarEstadoHabilitacion = (estado) => {
+  console.log('📊 Estado info cuantitativa:', estado)
+  infoCuantitativaEstado.value = {
+    seccionHabilitada: estado.seccionHabilitada,
+    totalParticipantes: estado.totalParticipantes,
+  }
+  console.log('INFO ESTADO:', infoCuantitativaEstado.value)
+}
 </script>
 
 <style scoped>

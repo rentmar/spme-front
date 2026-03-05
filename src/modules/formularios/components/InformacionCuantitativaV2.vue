@@ -835,7 +835,7 @@ import { ref, reactive, computed, watch } from 'vue'
 // ============================
 // DEFINICIÓN DEL EVENTO PARA REGISTRAR EN EL PADRE
 // ============================
-const emit = defineEmits(['registrar-informacion'])
+const emit = defineEmits(['registrar-informacion', 'estado-habilitacion'])
 
 // ============================
 // VARIABLE PRINCIPAL DE HABILITACIÓN (SECCIÓN COMPLETA)
@@ -1456,6 +1456,30 @@ watch(seccionHabilitada, (nuevoValor) => {
     habilitadoOrganizaciones.value = false
     habilitadoArchivos.value = false
   }
+})
+
+/************************************ FUNCIONES PARA LA VALIDACION *******************************/
+const emitirEstadoHabilitacion = () => {
+  emit('estado-habilitacion', {
+    seccionHabilitada: seccionHabilitada.value,
+    totalParticipantes: parseInt(totalParticipantes.value) || 0,
+  })
+}
+
+//Watcher para emitir estado estado
+watch(
+  seccionHabilitada,
+  (nuevoValor) => {
+    console.log('🔄 Sección cambió a:', nuevoValor ? 'ACTIVADA' : 'DESACTIVADA')
+    emitirEstadoHabilitacion()
+  },
+  { immediate: true },
+)
+
+//Emitir cambios totalParticipantes
+watch(totalParticipantes, (nuevoTotal) => {
+  console.log('🔄 Total participantes cambió a:', nuevoTotal)
+  emitirEstadoHabilitacion()
 })
 </script>
 
