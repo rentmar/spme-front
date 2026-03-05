@@ -1,6 +1,6 @@
 <template>
   <div class="indicadores-og-container">
-    <!-- Cabecera retráctil (siempre visible, clickeable) -->
+    <!-- Cabecera retráctil -->
     <v-card class="mb-4" elevation="2">
       <v-card-text class="pa-0">
         <!-- Barra de título clickeable -->
@@ -16,7 +16,17 @@
           <span class="text-subtitle-1 font-weight-bold mr-2">
             Indicadores de Objetivo General
           </span>
-          <v-chip color="blue" size="small" class="mr-2"> Total: 5 </v-chip>
+          <v-chip color="blue" size="small" class="mr-2"> Total: {{ totalSolicitados }} </v-chip>
+          <v-chip
+            :color="totalEncontrados === totalSolicitados ? 'success' : 'warning'"
+            size="small"
+          >
+            {{
+              totalEncontrados === totalSolicitados
+                ? 'Completos'
+                : `Encontrados: ${totalEncontrados}`
+            }}
+          </v-chip>
           <v-spacer></v-spacer>
 
           <!-- Botón para expandir/colapsar -->
@@ -27,18 +37,26 @@
             @click.stop="toggleExpand"
           ></v-btn>
         </div>
+
+        <!-- IDs no encontrados -->
+        <v-slide-y-transition>
+          <div v-if="idsNoEncontrados.length > 0" class="px-3 pb-2">
+            <v-chip color="error" size="small" prepend-icon="mdi-alert" class="mt-1">
+              IDs no encontrados: {{ idsNoEncontrados.join(', ') }}
+            </v-chip>
+          </div>
+        </v-slide-y-transition>
       </v-card-text>
     </v-card>
 
-    <!-- Contenido expandible con 3 columnas -->
+    <!-- Contenido expandible -->
     <v-expand-transition>
       <div v-if="expandido">
-        <!--Desplegar los indicadores, registro y bitacora-->
         <div v-for="indicador in resultados" :key="indicador.id" class="mb-6">
           <v-row>
             <!-- COLUMNA 1: Información del Indicador -->
             <v-col cols="12" md="4">
-              <v-card elevation="2" class="h100">
+              <v-card elevation="2" class="h-100">
                 <v-card-title class="bg-blue text-white py-2">
                   <v-icon class="mr-2">mdi-information</v-icon>
                   Ind. OG: {{ indicador.codigo }}
@@ -116,6 +134,8 @@
                       </div>
                     </v-col>
                   </v-row>
+
+                  <!-- MEDIAS METAS -->
                   <div class="mt-2">
                     <div class="text-caption font-weight-bold text-grey mb-1">Metas (Q)</div>
                     <v-row dense>
@@ -126,8 +146,8 @@
                           <span v-if="indicador.tipo === '%' && indicador[mm.field]">%</span>
                           <br />
                           <span class="text-caption text-grey">
-                            {{ formatDateIndicador(indicador[mm.fechaField]) }}</span
-                          >
+                            {{ formatDateIndicador(indicador[mm.fechaField]) }}
+                          </span>
                         </div>
                       </v-col>
                     </v-row>
@@ -141,7 +161,8 @@
               <v-card elevation="2" class="h-100">
                 <v-card-title class="bg-success text-white py-2">
                   <v-icon class="mr-2">mdi-pencil-plus</v-icon>
-                  Registrar Avance
+                  <span v-if="modoEdicion[indicador.id]">Editando Registro</span>
+                  <span v-else>Registrar Avance</span>
                   <v-spacer></v-spacer>
                   <v-chip color="white" text-color="success" size="x-small">
                     {{ indicador.frecuencia }}
@@ -149,14 +170,22 @@
                 </v-card-title>
                 <v-divider></v-divider>
                 <v-card-text class="pa-2">
-                  <!-- Mensaje si ya existe registro -->
-                  <div v-if="tieneRegistro(indicador.id)" class="text-center py-4">
+                  <!-- Mensaje de registro existente -->
+                  <div
+                    v-if="tieneRegistro(indicador.id) && !modoEdicion[indicador.id]"
+                    class="text-center py-4"
+                  >
                     <v-icon size="48" color="success" class="mb-2">mdi-check-circle</v-icon>
                     <p class="text-body-2 font-weight-bold">
                       Ya existe un registro para este indicador
                     </p>
                     <p class="text-caption text-grey mb-3">
-                      Para modificarlo, edite el registro existente en la bitácora
+                      Valor actual:
+                      <strong>{{ formatearValor(obtenerRegistro(indicador.id)) }}</strong>
+                    </p>
+                    <p class="text-caption text-grey mb-3">
+                      Fecha:
+                      {{ formatDateIndicador(obtenerRegistro(indicador.id)?.fecha_registro) }}
                     </p>
                     <v-btn
                       color="warning"
@@ -168,87 +197,109 @@
                       Editar registro existente
                     </v-btn>
                   </div>
-                  <!-- Formulario de registro (solo si NO hay registro) -->
-                  <v-form v-else @submit.prevent="submitRegistro(indicador)">
-                    <!-- Fecha de registro -->
-                    <v-text-field
-                      v-model="obtenerFormulario(indicador.id).fecha_registro"
-                      label="Fecha de registro *"
-                      type="date"
-                      prepend-inner-icon="mdi-calendar"
-                      variant="outlined"
-                      density="compact"
-                      :rules="[rules.required]"
-                      class="mb-2"
-                    ></v-text-field>
-                    <!-- Campo según tipo de dato -->
-                    <template v-if="indicador.tipo === 'A-Z'">
+
+                  <!-- Formulario -->
+                  <div v-else>
+                    <v-form @submit.prevent="submitRegistro(indicador)">
+                      <!-- Fecha de registro -->
                       <v-text-field
-                        v-model="obtenerFormulario(indicador.id).valor_literal"
-                        label="Valor literal *"
-                        prepend-inner-icon="mdi-text"
+                        v-model="obtenerFormulario(indicador.id).fecha_registro"
+                        label="Fecha de registro *"
+                        type="date"
+                        prepend-inner-icon="mdi-calendar"
                         variant="outlined"
                         density="compact"
                         :rules="[rules.required]"
                         class="mb-2"
-                        placeholder="Ingrese el valor"
                       ></v-text-field>
-                    </template>
-                    <template v-else-if="indicador.tipo === '%'">
-                      <v-text-field
-                        v-model="obtenerFormulario(indicador.id).valor_porcentual"
-                        label="Valor porcentual *"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="100"
-                        prepend-inner-icon="mdi-percent"
+
+                      <!-- Campos según tipo -->
+                      <template v-if="indicador.tipo === 'A-Z'">
+                        <v-text-field
+                          v-model="obtenerFormulario(indicador.id).valor_literal"
+                          label="Valor literal *"
+                          prepend-inner-icon="mdi-text"
+                          variant="outlined"
+                          density="compact"
+                          :rules="[rules.required]"
+                          class="mb-2"
+                        ></v-text-field>
+                      </template>
+
+                      <template v-else-if="indicador.tipo === '%'">
+                        <v-text-field
+                          v-model="obtenerFormulario(indicador.id).valor_porcentual"
+                          label="Valor porcentual *"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="100"
+                          prepend-inner-icon="mdi-percent"
+                          variant="outlined"
+                          density="compact"
+                          suffix="%"
+                          :rules="[rules.required, rules.porcentaje]"
+                          placeholder="Ej: 75.5"
+                          class="mb-2"
+                        ></v-text-field>
+                      </template>
+
+                      <template v-else>
+                        <v-text-field
+                          v-model.number="obtenerFormulario(indicador.id).valor_numerico"
+                          label="Valor numérico *"
+                          type="number"
+                          step="any"
+                          prepend-inner-icon="mdi-numeric"
+                          variant="outlined"
+                          density="compact"
+                          :rules="[rules.required]"
+                          placeholder="Ej: 150, 75.5, 2000"
+                          class="mb-2"
+                        ></v-text-field>
+                      </template>
+
+                      <!-- Observaciones -->
+                      <v-textarea
+                        v-model="obtenerFormulario(indicador.id).observaciones"
+                        label="Observaciones"
+                        prepend-inner-icon="mdi-note-text"
                         variant="outlined"
                         density="compact"
-                        suffix="%"
-                        :rules="[rules.required, rules.porcentaje]"
-                        placeholder="Ej: 75.5"
+                        rows="4"
                         class="mb-2"
-                      ></v-text-field>
-                    </template>
-                    <template v-else>
-                      <v-text-field
-                        v-model.number="obtenerFormulario(indicador.id).valor_numerico"
-                        label="Valor numérico *"
-                        type="number"
-                        step="any"
-                        prepend-inner-icon="mdi-numeric"
-                        variant="outlined"
-                        density="compact"
-                        :rules="[rules.required]"
-                        placeholder="Ej: 150, 75.5, 2000"
-                        class="mb-2"
-                      ></v-text-field>
-                    </template>
-                    <!-- Observaciones -->
-                    <v-textarea
-                      v-model="obtenerFormulario(indicador.id).observaciones"
-                      label="Observaciones"
-                      prepend-inner-icon="mdi-note-text"
-                      variant="outlined"
-                      density="compact"
-                      rows="4"
-                      class="mb-2"
-                      placeholder="Describa el contexto del registro..."
-                    ></v-textarea>
-                    <!-- Botón guardar -->
-                    <v-btn
-                      color="success"
-                      block
-                      type="submit"
-                      :loading="cargando[indicador.id]"
-                      :disabled="!formularioValido(indicador)"
-                      size="small"
-                    >
-                      <v-icon start size="small">mdi-content-save</v-icon>
-                      Guardar registro
-                    </v-btn>
-                  </v-form>
+                        placeholder="Describa el contexto del registro..."
+                      ></v-textarea>
+
+                      <!-- BOTONES CORREGIDOS - EN LA MISMA FILA -->
+                      <div class="d-flex ga-2">
+                        <!-- Botón Cancelar (solo en modo edición) -->
+                        <v-btn
+                          v-if="modoEdicion[indicador.id]"
+                          color="grey"
+                          size="small"
+                          variant="outlined"
+                          @click="cancelarEdicion(indicador.id)"
+                          style="flex: 1; min-width: 0"
+                        >
+                          Cancelar
+                        </v-btn>
+
+                        <!-- Botón Guardar/Actualizar -->
+                        <v-btn
+                          color="success"
+                          type="submit"
+                          :loading="cargando[indicador.id]"
+                          :disabled="!formularioValido(indicador)"
+                          size="small"
+                          :style="{ flex: modoEdicion[indicador.id] ? 1 : '100%' }"
+                        >
+                          <v-icon start size="small">mdi-content-save</v-icon>
+                          {{ modoEdicion[indicador.id] ? 'Actualizar' : 'Guardar registro' }}
+                        </v-btn>
+                      </div>
+                    </v-form>
+                  </div>
                 </v-card-text>
               </v-card>
             </v-col>
@@ -261,7 +312,6 @@
         </div>
       </div>
     </v-expand-transition>
-    {{ props.registros }}
   </div>
 </template>
 
@@ -276,20 +326,12 @@ import {
 import { useSnackbar } from '@/composables/useSnackbar'
 
 const props = defineProps({
-  datos: {
-    type: Object,
-    required: true,
-  },
-  expanded: {
-    type: Boolean,
-    default: true,
-  },
-  registros: {
-    type: Array,
-    default: () => ({}),
-  },
+  datos: { type: Object, required: true },
+  expanded: { type: Boolean, default: true },
+  registros: { type: Array, default: () => [] },
 })
 
+// Mapear array a objeto
 const registrosMap = computed(() => {
   const map = {}
   props.registros.forEach((reg) => {
@@ -300,15 +342,14 @@ const registrosMap = computed(() => {
   return map
 })
 
-//Iniciar el composable
 const { infoMsg } = useSnackbar()
-
 const emit = defineEmits(['update:expanded', 'registro-guardado', 'registro-eliminado'])
 
-// Estado local para el collapsable
+// Estado local
 const expandido = ref(props.expanded)
 const formularios = ref({})
 const cargando = ref({})
+const modoEdicion = ref({})
 
 // Reglas de validación
 const rules = {
@@ -319,49 +360,26 @@ const rules = {
   },
 }
 
-// Función para toggle
 const toggleExpand = () => {
   expandido.value = !expandido.value
   emit('update:expanded', expandido.value)
 }
 
-/***************************** Datos iniciales del componente ********************************/
-//Indicadores e informacion adicional de los indicadores
+/***************************** Datos iniciales ********************************/
 const resultados = computed(() => props.datos?.resultados || [])
-const tipo = computed(() => props.datos?.tipo || '')
 const totalSolicitados = computed(() => props.datos?.totalSolicitados || 0)
 const totalEncontrados = computed(() => props.datos?.totalEncontrados || 0)
 const idsNoEncontrados = computed(() => props.datos?.idsNoEncontrados || 0)
 
-//Medias metas
+// Medias metas
 const mediasMetas = [
-  {
-    key: 'mm1', // Identificador único
-    label: 'Q1', // Etiqueta genérica
-    field: 'target_q1', // Campo en el backend
-    fechaField: 'fechaTargetQ1', // Campo de fecha en el backend
-  },
-  {
-    key: 'mm2',
-    label: 'Q2',
-    field: 'target_q2',
-    fechaField: 'fechaTargetQ2',
-  },
-  {
-    key: 'mm3',
-    label: 'Q3',
-    field: 'target_q3',
-    fechaField: 'fechaTargetQ3',
-  },
-  {
-    key: 'mm4',
-    label: 'Q4',
-    field: 'target_q4',
-    fechaField: 'fechaTargetQ4',
-  },
+  { key: 'mm1', label: 'Q1', field: 'target_q1', fechaField: 'fechaTargetQ1' },
+  { key: 'mm2', label: 'Q2', field: 'target_q2', fechaField: 'fechaTargetQ2' },
+  { key: 'mm3', label: 'Q3', field: 'target_q3', fechaField: 'fechaTargetQ3' },
+  { key: 'mm4', label: 'Q4', field: 'target_q4', fechaField: 'fechaTargetQ4' },
 ]
 
-//Crear formulario vacio
+/***************************** Funciones de formulario ********************************/
 const crearFormularioVacio = () => ({
   fecha_registro: new Date().toISOString().split('T')[0],
   valor_literal: null,
@@ -377,18 +395,19 @@ const obtenerFormulario = (indicadorId) => {
   return formularios.value[indicadorId]
 }
 
-const obtenerRegistro = (indicadorId) => {
-  //return props.registros[indicadorId] || null
-  return registrosMap.value[indicadorId] || null
+/***************************** Funciones de registro ********************************/
+const obtenerRegistro = (indicadorId) => registrosMap.value[indicadorId] || null
+const tieneRegistro = (indicadorId) => !!registrosMap.value[indicadorId]
+
+const formatearValor = (registro) => {
+  if (!registro) return 'N/A'
+  if (registro.valor_literal) return registro.valor_literal
+  if (registro.valor_numerico) return registro.valor_numerico
+  if (registro.valor_porcentual) return `${registro.valor_porcentual}%`
+  return 'N/A'
 }
 
-// Funciones de registro (usando store)
-const tieneRegistro = (indicadorId) => {
-  //return !!props.registros[indicadorId]
-  return !!registrosMap.value[indicadorId]
-}
-
-// Validación
+/***************************** Validación ********************************/
 const formularioValido = (indicador) => {
   const form = obtenerFormulario(indicador.id)
   if (!form.fecha_registro) return false
@@ -402,22 +421,35 @@ const formularioValido = (indicador) => {
   }
 }
 
-//Acciones CRUD
-const submitRegistro = async (indicador) => {
-  const registroExistente = tieneRegistro(indicador.id)
+/***************************** Acciones CRUD ********************************/
+const editarRegistro = (registro, indicador) => {
+  if (!registro) return
 
-  if (registroExistente) {
-    if (!confirm('Ya existe un registro. ¿Desea actualizarlo?')) {
-      return
-    }
+  formularios.value[indicador.id] = {
+    fecha_registro: registro.fecha_registro.split('T')[0] || registro.fecha_registro,
+    valor_literal: registro.valor_literal,
+    valor_numerico: registro.valor_numerico,
+    valor_porcentual: registro.valor_porcentual,
+    observaciones: registro.observaciones,
   }
 
-  const form = obtenerFormulario(indicador.id)
+  modoEdicion.value[indicador.id] = true
+  if (!expandido.value) toggleExpand()
+}
+
+const cancelarEdicion = (indicadorId) => {
+  formularios.value[indicadorId] = crearFormularioVacio()
+  modoEdicion.value[indicadorId] = false
+}
+
+const submitRegistro = async (indicador) => {
+  const esEdicion = modoEdicion.value[indicador.id]
   const registroExistenteData = obtenerRegistro(indicador.id)
 
-  // Preparar datos - INCLUIR ID si existe
+  const form = obtenerFormulario(indicador.id)
+
   const registroData = {
-    id: registroExistenteData?.id, // ← Enviar ID existente si lo hay
+    id: registroExistenteData?.id,
     tipo_indicador: 'indicadorog',
     tipo_dato: indicador.tipo,
     id_indicador: indicador.id,
@@ -428,7 +460,6 @@ const submitRegistro = async (indicador) => {
     registrado_por_id: 1,
   }
 
-  // Asignar valor según tipo
   if (indicador.tipo === 'A-Z') {
     registroData.valor_literal = form.valor_literal
   } else if (indicador.tipo === '%') {
@@ -443,38 +474,91 @@ const submitRegistro = async (indicador) => {
     emit('registro-guardado', {
       indicadorId: indicador.id,
       registro: registroData,
-      esActualizacion: !!registroExistente,
+      esActualizacion: esEdicion,
     })
 
-    // Limpiar formulario SOLO si es nuevo
-    if (!registroExistente) {
-      formularios.value[indicador.id] = crearFormularioVacio()
-    }
+    formularios.value[indicador.id] = crearFormularioVacio()
+    modoEdicion.value[indicador.id] = false
+    infoMsg(esEdicion ? 'Registro actualizado' : 'Registro guardado')
   } catch (err) {
     console.error('Error: ', err)
   } finally {
     cargando.value[indicador.id] = false
   }
 }
-
-//Editar el registro
-const editarRegistro = (registro, indicador) => {
-  if (!registro) return
-
-  formularios.value[indicador.id] = {
-    fecha_registro: registro.fecha_registro.split('T')[0] || registro.fecha_registro,
-    valor_literal: registro.valor_literal,
-    valor_numerico: registro.valor_numerico,
-    valor_porcentual: registro.valor_porcentual,
-    observaciones: registro.observaciones,
-  }
-
-  if (!expandido.value) toggleExpand()
-}
 </script>
 
 <style scoped>
 .indicadores-og-container {
   min-height: 200px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.bg-grey-lighten-3 {
+  background-color: #f5f5f5 !important;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+.text-grey {
+  color: #9e9e9e;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ga-2 {
+  gap: 8px;
+}
+
+.timeline-container {
+  height: 400px !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.timeline-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.timeline-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.timeline-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.bg-blue {
+  background-color: #1976d2;
+}
+
+.bg-success {
+  background-color: #4caf50;
+}
+
+.bg-warning {
+  background-color: #ff9800;
 }
 </style>
