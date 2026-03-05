@@ -13,6 +13,7 @@
         <div v-if="indicadorog" class="mb-4">
           <indicadores-og-registro
             :datos="indicadorog"
+            :registros="store.indicadoresParaAPI.indicadorog"
             @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadorog')"
             @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadorog')"
           />
@@ -54,6 +55,7 @@
       </div>
     </div>
   </v-container>
+  {{ store.indicadoresParaAPI }}
 </template>
 
 <script setup>

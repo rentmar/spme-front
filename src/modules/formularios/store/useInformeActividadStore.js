@@ -79,8 +79,9 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
     }
   })
 
-  // NUEVO: Acciones para manejar indicadores
-  const guardarRegistroIndicador = (tipo, indicadorId, registro) => {
+  // NUEVO: Acciones para manejar indicadores (VERSIÓN CORREGIDA)
+  // NUEVO: Acciones para manejar indicadores (VERSIÓN LIMPIA)
+  const guardarRegistroIndicador = (tipo, indicadorId, registro, esActualizacion = false) => {
     console.log(`💾 Store guardando registro ${tipo} para indicador ${indicadorId}:`, registro)
 
     // Validar que el tipo existe
@@ -89,24 +90,49 @@ export const useInformeActividadStore = defineStore('informe-actividad', () => {
       return
     }
 
-    // Guardar el registro usando el ID del indicador como key
-    registrosIndicadores.value[tipo][indicadorId] = {
-      id: Date.now(), // ID único del registro
+    // Obtener registro actual si existe
+    const registroActual = registrosIndicadores.value[tipo][indicadorId] || {}
+
+    // Determinar el ID (prioridad: 1. enviado, 2. existente, 3. nuevo)
+    const id = registro.id || registroActual.id || Date.now()
+
+    // Construir el nuevo registro
+    const nuevoRegistro = {
+      id,
       tipo_indicador: tipo,
       id_indicador: indicadorId,
       fecha_registro: registro.fecha_registro,
       tipo_dato: registro.tipo_dato,
-      // Solo el valor correspondiente al tipo tendrá datos
-      valor_literal: registro.tipo_dato === 'A-Z' ? registro.valor_literal : null,
-      valor_numerico: registro.tipo_dato === '1-9' ? registro.valor_numerico : null,
-      valor_porcentual: registro.tipo_dato === '%' ? registro.valor_porcentual : null,
-      observaciones: registro.observaciones || '',
-      timestamp_registro: registro.timestamp_registro || new Date().toISOString(),
-      registrado_por: registro.registrado_por || 'Usuario Actual',
+      observaciones: registro.observaciones || registroActual.observaciones || '',
+      timestamp_registro:
+        registro.timestamp_registro ||
+        registroActual.timestamp_registro ||
+        new Date().toISOString(),
+      registrado_por: registro.registrado_por || registroActual.registrado_por || 'Usuario Actual',
+      registrado_por_id: registro.registrado_por_id || registroActual.registrado_por_id || null,
+      fecha_creacion: registroActual.fecha_creacion || new Date().toISOString(),
       fecha_actualizacion: new Date().toISOString(),
     }
 
-    console.log('✅ Store actualizado:', registrosIndicadores.value)
+    // Asignar el valor correcto según el tipo
+    if (registro.tipo_dato === 'A-Z') {
+      nuevoRegistro.valor_literal = registro.valor_literal
+      nuevoRegistro.valor_numerico = null
+      nuevoRegistro.valor_porcentual = null
+    } else if (registro.tipo_dato === '%') {
+      nuevoRegistro.valor_porcentual = registro.valor_porcentual
+      nuevoRegistro.valor_literal = null
+      nuevoRegistro.valor_numerico = null
+    } else if (registro.tipo_dato === '1-9') {
+      nuevoRegistro.valor_numerico = registro.valor_numerico
+      nuevoRegistro.valor_literal = null
+      nuevoRegistro.valor_porcentual = null
+    }
+
+    // Guardar en el store
+    registrosIndicadores.value[tipo][indicadorId] = nuevoRegistro
+
+    console.log('✅ Store actualizado:', nuevoRegistro)
     console.log('📊 JSON generado para API:', indicadoresParaAPI.value)
   }
 
