@@ -314,6 +314,8 @@ import {
   getTipoDatoIcon,
   formatDateIndicador,
 } from '../../utils/uiUtilsRegistroIndicadores'
+import { useUserStore } from '@/stores/user'
+
 const props = defineProps({
   datos: {
     type: Object,
@@ -340,7 +342,11 @@ const registrosMap = computed(() => {
   return map
 })
 
+//COmposable de mensajes
 const { infoMsg } = useSnackbar()
+//Store de usuarios
+const userStore = useUserStore()
+//Emits del componente
 const emit = defineEmits(['update:expanded', 'registro-guardado', 'registro-eliminado'])
 
 // Estado local
@@ -455,8 +461,8 @@ const submitRegistro = async (indicador) => {
     fecha_registro: form.fecha_registro,
     observaciones: form.observaciones || '',
     timestamp_registro: new Date().toISOString(),
-    registrado_por: 'Usuario Actual',
-    registrado_por_id: 1,
+    registrado_por: userStore.usuario,
+    registrado_por_id: userStore.id,
   }
 
   if (indicador.tipo === 'A-Z') {

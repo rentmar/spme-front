@@ -313,6 +313,7 @@ import {
   getTipoDatoIcon,
 } from '../../utils/uiUtilsRegistroIndicadores'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { useUserStore } from '@/stores/user'
 
 const props = defineProps({
   datos: { type: Object, required: true },
@@ -331,7 +332,11 @@ const registrosMap = computed(() => {
   return map
 })
 
+//Iniciar el composable
 const { infoMsg } = useSnackbar()
+//Inciar store
+const usuarioStore = useUserStore()
+//Emits del componente
 const emit = defineEmits(['update:expanded', 'registro-guardado', 'registro-eliminado'])
 
 // Estado local
@@ -445,8 +450,8 @@ const submitRegistro = async (indicador) => {
     fecha_registro: form.fecha_registro,
     observaciones: form.observaciones || '',
     timestamp_registro: new Date().toISOString(),
-    registrado_por: 'Usuario Actual',
-    registrado_por_id: 1,
+    registrado_por: usuarioStore.usuario,
+    registrado_por_id: usuarioStore.id,
   }
 
   if (indicador.tipo === 'A-Z') {
