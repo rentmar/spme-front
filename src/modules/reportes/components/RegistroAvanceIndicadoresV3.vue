@@ -43,6 +43,7 @@
         <div v-if="indicadorroe" class="mb-4">
           <indicadores-roe-registro
             :datos="indicadorroe"
+            :registros="store.indicadoresParaAPI.indicadorroe"
             @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadorroe')"
             @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadorroe')"
           />
