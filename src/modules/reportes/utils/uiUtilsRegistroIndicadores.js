@@ -47,3 +47,46 @@ export const getTipoDatoLabel = (tipo) => {
   }
   return labels[tipo] || tipo
 }
+
+/**
+ * MAPA DE COLORES POR TIPO DE INDICADOR
+ */
+const coloresPorTipoIndicador = {
+  indicadorog: {
+    header: 'blue',
+    chip: 'blue',
+    icon: 'mdi-chart-bar',
+    bgClass: 'bg-blue',
+  },
+  indicadoroe: {
+    header: 'green',
+    chip: 'green',
+    icon: 'mdi-chart-line',
+    bgClass: 'bg-green',
+  },
+  indicadorrog: {
+    header: 'orange',
+    chip: 'orange',
+    icon: 'mdi-chart-areaspline',
+    bgClass: 'bg-orange',
+  },
+  indicadorroe: {
+    header: 'purple',
+    chip: 'purple',
+    icon: 'mdi-chart-bell-curve',
+    bgClass: 'bg-purple',
+  },
+  default: {
+    header: 'grey',
+    chip: 'grey',
+    icon: 'mdi-chart-bar',
+    bgClass: 'bg-grey',
+  },
+}
+
+/**
+ * Obtiene los colores para un tipo de indicador
+ */
+export const getColoresIndicador = (tipoIndicador) => {
+  return coloresPorTipoIndicador[tipoIndicador] || coloresPorTipoIndicador.default
+}

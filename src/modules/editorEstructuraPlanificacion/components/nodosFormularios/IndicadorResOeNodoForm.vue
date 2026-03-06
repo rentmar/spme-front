@@ -13,7 +13,7 @@
     <v-textarea
       v-model="formData.nodoProyecto.descripcion"
       variant="outlined"
-      label="Descripcion"
+      label="Descripcion dcdcd"
       outlined
       dense
       clearable

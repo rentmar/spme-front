@@ -61,7 +61,7 @@
 
     <v-text-field
       v-model="formData.nodoProyecto.fechaTargetPoblacion"
-      label="Fecha Baseline *"
+      label="Fecha Target Poblacion *"
       type="date"
       variant="outlined"
       clearable

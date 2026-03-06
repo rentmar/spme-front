@@ -12,11 +12,13 @@
           <v-icon :color="expandido ? 'primary' : 'grey'" class="mr-2">
             {{ expandido ? 'mdi-chevron-down' : 'mdi-chevron-right' }}
           </v-icon>
-          <v-icon color="blue" class="mr-2">mdi-chart-bar</v-icon>
+          <v-icon :color="colores.header" class="mr-2">{{ colores.icon }}</v-icon>
           <span class="text-subtitle-1 font-weight-bold mr-2">
             Indicadores de Objetivo Especifico
           </span>
-          <v-chip color="blue" size="small" class="mr-2"> Total: {{ totalSolicitados }} </v-chip>
+          <v-chip :color="colores.chip" size="small" class="mr-2">
+            Total: {{ totalSolicitados }}
+          </v-chip>
           <v-chip
             :color="totalEncontrados === totalSolicitados ? 'success' : 'warning'"
             size="small"
@@ -54,7 +56,7 @@
             <!--COLUMNA 1: Informacion del indicador-->
             <v-col cols="12" md="4">
               <v-card elevation="2" class="h-100">
-                <v-card-title class="bg-blue text-white py-2">
+                <v-card-title :class="colores.bgClass + ' text-white py-2'">
                   <v-icon class="mr-2">mdi-information</v-icon>
                   Ind. OE: {{ indicador.codigo }}
                   <v-spacer></v-spacer>
@@ -313,6 +315,7 @@ import {
   getTipoDatoColor,
   getTipoDatoIcon,
   formatDateIndicador,
+  getColoresIndicador,
 } from '../../utils/uiUtilsRegistroIndicadores'
 import { useUserStore } from '@/stores/user'
 
@@ -341,6 +344,9 @@ const registrosMap = computed(() => {
   })
   return map
 })
+
+//Colores del componente
+const colores = getColoresIndicador('indicadoroe')
 
 //COmposable de mensajes
 const { infoMsg } = useSnackbar()
@@ -372,16 +378,16 @@ const toggleExpand = () => {
 
 /***************************** Datos iniciales ********************************/
 const resultados = computed(() => props.datos?.resultados || [])
-const totalSolicitados = computed(() => props.datos?.totalSolicitados || 0)
-const totalEncontrados = computed(() => props.datos?.totalEncontrados || 0)
-const idsNoEncontrados = computed(() => props.datos?.idsNoEncontrados || 0)
+const totalSolicitados = computed(() => props.datos?.total_solicitados || 0)
+const totalEncontrados = computed(() => props.datos?.total_encontrados || 0)
+const idsNoEncontrados = computed(() => props.datos?.ids_no_Encontrados || 0)
 
 // Medias metas
 const mediasMetas = [
   { key: 'mm1', label: 'Q1', field: 'target_q1', fechaField: 'fechaTargetQ1' },
   { key: 'mm2', label: 'Q2', field: 'target_q2', fechaField: 'fechaTargetQ2' },
   { key: 'mm3', label: 'Q3', field: 'target_q3', fechaField: 'fechaTargetQ3' },
-  { key: 'mm4', label: 'Q4', field: 'target_q4', fechaField: 'fechaTargetQ4' },
+  // { key: 'mm4', label: 'Q4', field: 'target_q4', fechaField: 'fechaTargetQ4' },
 ]
 
 /***************************** Funciones de formulario ********************************/

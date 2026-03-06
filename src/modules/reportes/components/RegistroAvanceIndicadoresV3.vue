@@ -58,11 +58,10 @@
       </div>
     </div>
   </v-container>
-  {{ store.indicadoresParaAPI }}
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useInformeActividadStore } from '@/modules/formularios/store/useInformeActividadStore'
 import IndicadoresOgRegistro from './partials-indicador-registro/IndicadoresOgRegistro.vue'
 import IndicadoresOeRegistro from './partials-indicador-registro/IndicadoresOeRegistro.vue'
