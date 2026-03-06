@@ -1,5 +1,5 @@
 <template>
-  <div class="indicadores-og-container">
+  <div class="indicadores-oe-container">
     <!--Cabecera retractil-->
     <v-card class="mb-4" elevation="2">
       <v-card-text class="pa-0">
@@ -486,4 +486,77 @@ const submitRegistro = async (indicador) => {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped>
+.indicadores-oe-container {
+  min-height: 200px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.bg-grey-lighten-3 {
+  background-color: #f5f5f5 !important;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+.text-grey {
+  color: #9e9e9e;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ga-2 {
+  gap: 8px;
+}
+
+.timeline-container {
+  height: 400px !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.timeline-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.timeline-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.timeline-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.bg-blue {
+  background-color: #1976d2;
+}
+
+.bg-success {
+  background-color: #4caf50;
+}
+
+.bg-warning {
+  background-color: #ff9800;
+}
+</style>
