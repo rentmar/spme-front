@@ -331,98 +331,7 @@
 
             <!-- Columna 3: Bitácora existente -->
             <v-col cols="12" md="4">
-              <v-card elevation="2" class="h-100">
-                <v-card-title class="bg-warning text-white py-2">
-                  <v-icon class="mr-2">mdi-book-open-page-variant</v-icon>
-                  Bitácora ROG
-                  <v-spacer></v-spacer>
-                  <v-chip color="white" text-color="warning" size="x-small">
-                    {{ obtenerRegistrosPorIndicador(indicador.id).length }} registros
-                  </v-chip>
-                </v-card-title>
-
-                <v-divider></v-divider>
-
-                <v-card-text class="timeline-container pa-2">
-                  <div
-                    v-if="obtenerRegistrosPorIndicador(indicador.id).length === 0"
-                    class="text-center py-4"
-                  >
-                    <v-icon size="36" color="grey-lighten-1">mdi-book-open-blank</v-icon>
-                    <p class="text-caption text-grey mt-1">Sin registros</p>
-                  </div>
-
-                  <div v-else class="timeline-scroll">
-                    <v-timeline density="compact" side="end">
-                      <v-timeline-item
-                        v-for="(registro, index) in obtenerRegistrosPorIndicador(indicador.id)"
-                        :key="registro.id"
-                        :dot-color="getRegistroColor(registro, indicador)"
-                        size="x-small"
-                      >
-                        <template v-slot:opposite>
-                          <span class="text-caption">{{
-                            formatDate(registro.fecha_registro)
-                          }}</span>
-                        </template>
-
-                        <v-card variant="outlined" class="mb-1">
-                          <v-card-text class="pa-1">
-                            <div class="d-flex justify-space-between align-start">
-                              <div>
-                                <div class="d-flex align-center">
-                                  <span class="font-weight-bold text-caption mr-1">
-                                    {{ getValorFormateado(registro) }}
-                                  </span>
-                                  <v-chip
-                                    size="x-small"
-                                    :color="getTipoDatoColor(registro.tipo_dato)"
-                                  >
-                                    {{ getTipoDatoLabel(registro.tipo_dato) }}
-                                  </v-chip>
-                                </div>
-                                <p class="text-caption mt-0 mb-0">{{ registro.observaciones }}</p>
-                                <div class="d-flex align-center mt-0">
-                                  <v-icon size="10" color="grey">mdi-account</v-icon>
-                                  <span class="text-caption text-grey ml-1">
-                                    {{ registro.registrado_por }}
-                                  </span>
-                                </div>
-                              </div>
-                              <v-menu location="bottom end">
-                                <template v-slot:activator="{ props }">
-                                  <v-btn
-                                    size="x-small"
-                                    icon="mdi-dots-vertical"
-                                    variant="text"
-                                    v-bind="props"
-                                  ></v-btn>
-                                </template>
-                                <v-list density="compact">
-                                  <v-list-item @click="editarRegistro(registro, indicador)">
-                                    <template v-slot:prepend>
-                                      <v-icon size="small">mdi-pencil</v-icon>
-                                    </template>
-                                    <v-list-item-title>Editar</v-list-item-title>
-                                  </v-list-item>
-                                  <v-list-item @click="eliminarRegistro(registro.id, indicador.id)">
-                                    <template v-slot:prepend>
-                                      <v-icon color="error" size="small">mdi-delete</v-icon>
-                                    </template>
-                                    <v-list-item-title class="text-error"
-                                      >Eliminar</v-list-item-title
-                                    >
-                                  </v-list-item>
-                                </v-list>
-                              </v-menu>
-                            </div>
-                          </v-card-text>
-                        </v-card>
-                      </v-timeline-item>
-                    </v-timeline>
-                  </div>
-                </v-card-text>
-              </v-card>
+              <timeline-bitacora></timeline-bitacora>
             </v-col>
           </v-row>
         </div>
@@ -433,6 +342,13 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import TimelineBitacora from '../TimelineBitacora.vue'
+import {
+  formatDateIndicador,
+  getTipoDatoColor,
+  getTipoDatoIcon,
+  getTipoDatoLabel,
+} from '../../utils/uiUtilsRegistroIndicadores'
 
 // Props
 const props = defineProps({
@@ -645,34 +561,6 @@ const editarRegistro = (registro, indicador) => {
   if (!expandido.value) {
     toggleExpand()
   }
-}
-
-// Funciones auxiliares (sin cambios)
-const getTipoDatoColor = (tipo) => {
-  const colores = {
-    'A-Z': 'purple',
-    '1-9': 'blue',
-    '%': 'green',
-  }
-  return colores[tipo] || 'grey'
-}
-
-const getTipoDatoIcon = (tipo) => {
-  const iconos = {
-    'A-Z': 'mdi-text',
-    '1-9': 'mdi-numeric',
-    '%': 'mdi-percent',
-  }
-  return iconos[tipo] || 'mdi-help'
-}
-
-const getTipoDatoLabel = (tipo) => {
-  const labels = {
-    'A-Z': 'Literal',
-    '1-9': 'Numérico',
-    '%': 'Porcentual',
-  }
-  return labels[tipo] || tipo
 }
 
 const getRegistroColor = (registro, indicador) => {

@@ -23,6 +23,7 @@
         <div v-if="indicadoroe" class="mb-4">
           <indicadores-oe-registro
             :datos="indicadoroe"
+            :registros="store.indicadoresParaAPI.indicadoroe"
             @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadoroe')"
             @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadoroe')"
           />
@@ -32,6 +33,7 @@
         <div v-if="indicadorrog" class="mb-4">
           <indicadores-rog-registro
             :datos="indicadorrog"
+            :registros="store.indicadoresParaAPI.indicadorrog"
             @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadorrog')"
             @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadorrog')"
           />

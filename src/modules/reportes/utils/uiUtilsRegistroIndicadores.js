@@ -37,3 +37,13 @@ export const formatDateIndicador = (fecha) => {
     year: 'numeric',
   })
 }
+
+//Funcion para formateo de fechas
+export const getTipoDatoLabel = (tipo) => {
+  const labels = {
+    'A-Z': 'Literal',
+    '1-9': 'Numérico',
+    '%': 'Porcentual',
+  }
+  return labels[tipo] || tipo
+}
