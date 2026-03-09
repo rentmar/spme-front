@@ -73,9 +73,38 @@ export const ESTADOS_TAREA = {
   COMPL: 'Completada',
 }
 
+export const formatearFecha = (fechaString) => {
+  if (!fechaString) return 'Sin Fecha'
+
+  try {
+    const fecha = new Date(fechaString)
+    if (isNaN(fecha.getTime())) return fechaString
+
+    // Formato YYYY-MM-DD para campos type="date"
+    const año = fecha.getFullYear()
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0')
+    const dia = String(fecha.getDate()).padStart(2, '0')
+
+    return `${año}-${mes}-${dia}`
+  } catch (error) {
+    console.log('Error al formatear la fecha', error)
+    return fechaString
+  }
+}
+
+export const formatearPresupuesto = (monto) => {
+  if (!monto && monto !== 0) return 'No definido'
+
+  const numValue = Number(monto)
+  if (isNaN(numValue)) return monto
+
+  return `Bs. ${numValue.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
 // Exportar todas las funciones juntas
 export default {
   formatearEstadoTarea,
+  formatearFecha,
   obtenerLiteralEstado,
   esEstadoValido,
   ESTADOS_TAREA,

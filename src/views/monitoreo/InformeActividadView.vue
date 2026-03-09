@@ -382,7 +382,6 @@
       </v-row>
     </div>
   </v-container>
-  {{ formData }}
 </template>
 
 <script setup>
@@ -401,7 +400,7 @@ import HerramientasAplicadasResultados from '@/modules/formularios/components/He
 import ProcedenciaFondosPresupuesto from '@/modules/procedenciaFondos/components/ProcedenciaFondosPresupuesto.vue'
 //Auxiliares
 import { useSnackbar } from '@/composables/useSnackbar'
-import { formulariosServico } from '@/modules/formularios/services/formularioService'
+import { useInformeActividadPrincipal } from '@/modules/formularios/composables/useInformeActividadPrincipal'
 
 // Router
 const router = useRouter()
@@ -414,6 +413,7 @@ const usuarioStore = useUserStore() //Inicializar el store de usuarios
 
 // Composables
 const { successMsg, errorMsg } = useSnackbar()
+const { crearInformeActividadPrincipal, informeActividadPrincipal } = useInformeActividadPrincipal()
 
 // ✅ REFERENCIA AL COMPONENTE DE INDICADORES
 const indicadoresComponent = ref(null)
@@ -444,6 +444,7 @@ const formData = ref({
   procedenciaFondos: '',
   observacionesPresupuesto: '',
   actividad: idactividad,
+  usuario: usuarioId,
 })
 
 /***************** WATCHERS *******************************/
@@ -593,21 +594,6 @@ const submitForm = async () => {
 
     // Preparar datos finales
     const datosParaEnviar = { ...formData.value }
-
-    // Agregar el usuario autenticado como autor
-    if (usuarioStore.isAuthenticated) {
-      // Dependiendo de lo que espere tu backend:
-      datosParaEnviar.usuario = usuarioId.value // Si espera el ID
-      // O si espera el objeto completo:
-      // datosParaEnviar.usuario_creador = usuarioActual.value
-
-      console.log('👤 Usuario creador ID:', usuarioId.value)
-    } else {
-      console.warn('⚠️ No hay usuario autenticado')
-      // Opcional: puedes cancelar el envío si el usuario es obligatorio
-      // throw new Error('Usuario no autenticado')
-    }
-
     // Obtener indicadores del componente si la sección está habilitada
     if (habilitarIndicadores.value && indicadoresComponent.value) {
       const jsonIndicadores = indicadoresComponent.value.obtenerJSONIndicadores()
@@ -624,18 +610,13 @@ const submitForm = async () => {
       datosParaEnviar.avanceIndicadores = null
     }
 
-    // Si no hay datos de indicadores, eliminar la propiedad
-    if (!datosParaEnviar.avanceIndicadores) {
-      delete datosParaEnviar.avanceIndicadores
-    }
-
     console.log('📦 Enviando informe:', datosParaEnviar)
 
     // Enviar al backend
-    //await formulariosServico.creaInformeActividadPrincipal(datosParaEnviar)
-
+    await crearInformeActividadPrincipal(datosParaEnviar)
+    resetForm()
     successMsg('Informe enviado exitosamente')
-    // router.push('/actividades/informe/')
+    router.push('/actividades/informe/')
   } catch (error) {
     console.error('Error al enviar el informe:', error)
     alert(`Error: ${error.message}`)

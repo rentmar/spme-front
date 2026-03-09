@@ -13,6 +13,7 @@
         <div v-if="indicadorog" class="mb-4">
           <indicadores-og-registro
             :datos="indicadorog"
+            :registros="store.indicadoresParaAPI.indicadorog"
             @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadorog')"
             @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadorog')"
           />
@@ -22,6 +23,7 @@
         <div v-if="indicadoroe" class="mb-4">
           <indicadores-oe-registro
             :datos="indicadoroe"
+            :registros="store.indicadoresParaAPI.indicadoroe"
             @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadoroe')"
             @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadoroe')"
           />
@@ -31,6 +33,7 @@
         <div v-if="indicadorrog" class="mb-4">
           <indicadores-rog-registro
             :datos="indicadorrog"
+            :registros="store.indicadoresParaAPI.indicadorrog"
             @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadorrog')"
             @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadorrog')"
           />
@@ -40,6 +43,7 @@
         <div v-if="indicadorroe" class="mb-4">
           <indicadores-roe-registro
             :datos="indicadorroe"
+            :registros="store.indicadoresParaAPI.indicadorroe"
             @registro-guardado="(payload) => manejarRegistroIndicador(payload, 'indicadorroe')"
             @registro-eliminado="(payload) => manejarEliminacionIndicador(payload, 'indicadorroe')"
           />
@@ -57,50 +61,38 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { computed, watch } from 'vue'
 import { useInformeTareaStore } from '@/modules/formularios/store/useInformeTareaStore'
 import IndicadoresOgRegistro from './partials-indicador-registro/IndicadoresOgRegistro.vue'
 import IndicadoresOeRegistro from './partials-indicador-registro/IndicadoresOeRegistro.vue'
 import IndicadoresRogRegistro from './partials-indicador-registro/IndicadoresRogRegistro.vue'
 import IndicadoresRoeRegistro from './partials-indicador-registro/IndicadoresRoeRegistro.vue'
 
-// ============================================
 // Store
-// ============================================
 const store = useInformeTareaStore()
 
 // Emits
-const emit = defineEmits([
-  'indicadores-cargados',
-  'indicadores-actualizados',
-  'todos-los-registros-enviados',
-])
+const emit = defineEmits(['indicadores-cargados', 'indicadores-actualizados'])
 
-// ============================================
-// Estados computados del store
-// ============================================
+// Estados computados que se sincronizan automáticamente con el store
 const loading = computed(() => store.loading)
 const indicadorog = computed(() => store.indicadorog)
 const indicadoroe = computed(() => store.indicadoroe)
 const indicadorrog = computed(() => store.indicadorrog)
 const indicadorroe = computed(() => store.indicadorroe)
 const indicadoresIds = computed(() => store.indicadoresIds)
-const actividadId = computed(() => store.actividad?.id) // ID de actividad desde el store
-const tareaId = computed(() => store.tarea?.id)
 
 // Computed para verificar si hay indicadores
 const tieneIndicadores = computed(() => {
   return indicadorog.value || indicadoroe.value || indicadorrog.value || indicadorroe.value
 })
 
-// ============================================
-// Watchers
-// ============================================
+// Watch para detectar cuando los indicadores se cargan
 watch(
   [indicadorog, indicadoroe, indicadorrog, indicadorroe],
   ([newOg, newOe, newRog, newRoe]) => {
     if (newOg || newOe || newRog || newRoe) {
-      console.log('Indicadores cargados en tarea:')
+      console.log('Indicadores cargados:')
       console.log('- OG:', newOg)
       console.log('- OE:', newOe)
       console.log('- ROG:', newRog)
@@ -115,72 +107,54 @@ watch(
   tieneIndicadores,
   (nuevoValor) => {
     if (nuevoValor) {
-      const payload = {
+      emit('indicadores-cargados', {
         indicadorog: indicadorog.value,
         indicadoroe: indicadoroe.value,
         indicadorrog: indicadorrog.value,
         indicadorroe: indicadorroe.value,
         ids: indicadoresIds.value,
-      }
-      emit('indicadores-cargados', payload)
-      emit('todos-los-registros-enviados', payload)
+      })
     }
   },
   { immediate: true },
 )
 
-// ============================================
-// Manejadores de eventos
-// ============================================
+/**
+ * Manejador para registros guardados - PASA AL STORE
+ */
 const manejarRegistroIndicador = (payload, tipo) => {
-  console.log(`📝 Registro ${tipo} recibido en tarea:`, payload)
+  console.log(`📝 Registro ${tipo} recibido:`, payload)
 
   // Guardar en el store
   store.guardarRegistroIndicador(tipo, payload.indicadorId, payload.registro)
 
-  // Emitir eventos
+  // Emitir evento de actualización
   emit('indicadores-actualizados', {
     tipo,
     accion: 'guardado',
     indicadorId: payload.indicadorId,
   })
-
-  emit('todos-los-registros-enviados', {
-    tipo,
-    accion: 'guardado',
-    indicadorId: payload.indicadorId,
-    registro: payload.registro,
-  })
 }
 
+/**
+ * Manejador para eliminaciones - PASA AL STORE
+ */
 const manejarEliminacionIndicador = (payload, tipo) => {
-  console.log(`🗑️ Eliminación ${tipo} recibida en tarea:`, payload)
+  console.log(`🗑️ Eliminación ${tipo} recibida:`, payload)
 
   // Eliminar del store
   store.eliminarRegistroIndicador(tipo, payload.indicadorId)
 
-  // Emitir eventos
+  // Emitir evento de actualización
   emit('indicadores-actualizados', {
-    tipo,
-    accion: 'eliminado',
-    indicadorId: payload.indicadorId,
-  })
-
-  emit('todos-los-registros-enviados', {
     tipo,
     accion: 'eliminado',
     indicadorId: payload.indicadorId,
   })
 }
 
-// ============================================
-// Métodos expuestos
-// ============================================
+// Método para recargar manualmente
 const recargarIndicadores = async () => {
-  console.log('Recargando indicadores...')
-  if (actividadId.value) {
-    await store.obtenerTareasPorIdMasDetalles(tareaId.value)
-  }
   console.log('Indicadores actuales:', {
     og: indicadorog.value,
     oe: indicadoroe.value,
@@ -189,30 +163,15 @@ const recargarIndicadores = async () => {
   })
 }
 
+// ✅ NUEVO: Obtener el JSON completo para enviar al backend
 const obtenerJSONIndicadores = () => {
   return store.indicadoresParaAPI
 }
 
+// ✅ NUEVO: Resetear todos los registros
 const resetearRegistros = () => {
   store.resetearRegistrosIndicadores()
 }
-
-// ============================================
-// Carga inicial
-// ============================================
-const cargarIndicadores = async () => {
-  // Esperar a que el store tenga el ID de actividad
-  // (viene desde el padre que ya cargó los datos)
-  if (actividadId.value) {
-    await store.obtenerTareasPorIdMasDetalles(tareaId.value)
-  } else {
-    console.warn('No hay ID de actividad disponible para cargar indicadores')
-  }
-}
-
-onMounted(() => {
-  cargarIndicadores()
-})
 
 // Exponer métodos al padre
 defineExpose({

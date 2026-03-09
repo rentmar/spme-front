@@ -206,6 +206,7 @@ export const useInformeTareaStore = defineStore('informe-tarea', () => {
       observaciones: registro.observaciones || '',
       timestamp_registro: registro.timestamp_registro || new Date().toISOString(),
       registrado_por: registro.registrado_por || 'Usuario Actual',
+      registrado_por_id: registro.registrado_por_id || 0,
       fecha_actualizacion: new Date().toISOString(),
     }
 
