@@ -139,12 +139,7 @@
                           variant="text"
                           color="info"
                           size="small"
-                          :to="
-                            actividad.pei_id
-                              ? `/monitoreo/informe-actividad-pei/${actividad.id}/`
-                              : `/monitoreo/informe-actividad/${actividad.id}`
-                          "
-                          @click.stop
+                          @click.stop="irInformeActividad(actividad.id, actividad.pei_id)"
                         ></v-btn>
                       </template>
                     </v-tooltip>
@@ -564,6 +559,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useListaActividadStore } from '@/modules/proyecto/store/useListaActividadesStore'
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
+import { useInformeActividadPrincipal } from '@/modules/formularios/composables/useInformeActividadPrincipal'
+import { useRouter } from 'vue-router'
 
 // Iniciar el store de actividades
 const storeActividad = useListaActividadStore()
@@ -707,7 +704,7 @@ const toggleExpanded = (id) => {
   expandedActividadId.value = expandedActividadId.value === id ? null : id
 }
 
-// --- MÉTODOS AUXILIARES PARA LA SOLUCIÓN 5 ---
+// --- MÉTODOS AUXILIARES  ---
 const esTextoLargo = (texto) => {
   return texto && texto.length > 40
 }
@@ -893,6 +890,21 @@ const mostrarSnackbar = (texto, color = 'success') => {
     color: color,
   }
 }
+
+/******************************* Redireccionadores *************************************/
+//Iniciar el composable de comprobacion
+const { verificando, verificarActividad } = useInformeActividadPrincipal()
+const router = useRouter()
+
+//Verificaar si hay informe de actividad
+const irInformeActividad = async (actividadId, esPei) => {
+  const existe = await verificarActividad(actividadId)
+
+  if (!existe) {
+    router.push('/monitoreo/informe-actividad/' + actividadId)
+  }
+}
+//Verificar si hay tarea
 </script>
 
 <style scoped>

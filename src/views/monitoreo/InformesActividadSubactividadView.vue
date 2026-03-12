@@ -1,6 +1,6 @@
 <template>
   <v-container class="actividad-informes-container">
-    <!-- Overlay de carga -->
+    <!-- Overlay de carga original (sin cambios) -->
     <v-overlay :model-value="loading" class="align-center justify-center" persistent opacity="0.8">
       <div class="text-center">
         <v-progress-circular
@@ -14,33 +14,34 @@
     </v-overlay>
 
     <div v-if="!loading && actividad">
-      <!-- Encabezado -->
-      <v-row>
+      <!-- Encabezado mejorado -->
+      <v-row class="mb-6">
         <v-col cols="12">
-          <div class="mb-4">
-            <div>
-              <PaginaTituloIcono
-                :titulo="'Informes Actividad/Subactividad'"
-                :icon="'mdi-clipboard-text-multiple'"
-              />
-              <actividad-informacion :actividad-id="route.params.id"></actividad-informacion>
-            </div>
-          </div>
+          <v-sheet class="header-sheet pa-6 rounded-lg" elevation="1">
+            <PaginaTituloIcono
+              :titulo="'Informes Actividad/Subactividad'"
+              :icon="'mdi-clipboard-text-multiple'"
+              class="mb-4"
+            />
+            <actividad-informacion :actividad-id="route.params.id"></actividad-informacion>
+          </v-sheet>
         </v-col>
       </v-row>
 
-      <!-- Cards de estadísticas -->
+      <!-- Cards de estadísticas mejoradas -->
       <v-row class="mb-6">
-        <v-col cols="12" md="3" v-for="(stat, index) in estadisticas" :key="index">
-          <v-card elevation="2" rounded="lg">
+        <v-col cols="12" md="4" v-for="(stat, index) in estadisticas" :key="index">
+          <v-card elevation="2" rounded="lg" class="stat-card" :class="`stat-${stat.color}`">
             <v-card-text class="pa-4">
               <div class="d-flex align-center">
-                <v-avatar :color="stat.color" size="48" class="mr-4">
-                  <v-icon dark>{{ stat.icon }}</v-icon>
+                <v-avatar :color="stat.color" size="52" class="mr-4 stat-avatar">
+                  <v-icon dark size="24">{{ stat.icon }}</v-icon>
                 </v-avatar>
                 <div>
-                  <div class="text-subtitle-2 text-medium-emphasis">{{ stat.title }}</div>
-                  <div class="text-h5 font-weight-bold">{{ stat.value }}</div>
+                  <div class="text-subtitle-2 text-medium-emphasis font-weight-medium">
+                    {{ stat.title }}
+                  </div>
+                  <div class="text-h4 font-weight-bold stat-value">{{ stat.value }}</div>
                   <div class="text-caption text-medium-emphasis mt-1">{{ stat.subtitle }}</div>
                 </div>
               </div>
@@ -49,903 +50,602 @@
         </v-col>
       </v-row>
 
-      <!-- Tabs principales -->
-      <v-row>
+      <!-- Buscador general mejorado -->
+      <v-row class="mb-6">
         <v-col cols="12">
-          <v-card elevation="2" rounded="lg">
-            <v-tabs v-model="tabActivo" color="primary" class="px-4 pt-4">
-              <v-tab value="informes-actividad">
-                <v-icon start icon="mdi-file-document"></v-icon>
-                Informes de Actividad
-                <v-chip v-if="actividad.informes_actividad?.length" size="x-small" class="ml-2">
-                  {{ actividad.informes_actividad.length }}
-                </v-chip>
-              </v-tab>
-              <v-tab value="tareas">
-                <v-icon start icon="mdi-checkbox-multiple-marked"></v-icon>
-                Tareas
-                <v-chip v-if="actividad.tareas?.length" size="x-small" class="ml-2">
-                  {{ actividad.tareas.length }}
-                </v-chip>
-              </v-tab>
-              <v-tab value="informacion-general">
-                <v-icon start icon="mdi-information"></v-icon>
-                Información General
-              </v-tab>
-              <v-tab value="busqueda">
-                <v-icon start icon="mdi-magnify"></v-icon>
-                Búsqueda
-              </v-tab>
-            </v-tabs>
-
-            <v-window v-model="tabActivo" class="pa-4">
-              <!-- Tab: Informes de Actividad -->
-              <v-window-item value="informes-actividad">
-                <div class="d-flex justify-space-between align-center mb-4">
-                  <h3 class="text-h5 font-weight-bold">Informes de la Actividad Principal</h3>
+          <v-card elevation="2" rounded="lg" class="search-card">
+            <v-card-text class="pa-5">
+              <v-row>
+                <v-col cols="12" md="7">
+                  <v-text-field
+                    v-model="searchQuery"
+                    label="Buscar informes"
+                    placeholder="Ej: INF-001, Reunión, Capacitación..."
+                    prepend-inner-icon="mdi-magnify"
+                    clearable
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details
+                    bg-color="white"
+                    class="search-input"
+                    @keyup.enter="realizarBusqueda"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="3">
+                  <v-select
+                    v-model="searchType"
+                    label="Tipo"
+                    :items="tiposBusqueda"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details
+                    bg-color="white"
+                  ></v-select>
+                </v-col>
+                <v-col cols="12" md="2" class="d-flex align-center">
                   <v-btn
                     color="primary"
-                    variant="tonal"
-                    prepend-icon="mdi-plus"
-                    @click="crearInformeActividad"
+                    variant="flat"
+                    block
+                    @click="realizarBusqueda"
+                    :loading="searching"
+                    size="x-large"
+                    height="56"
+                    class="search-btn"
                   >
-                    Nuevo Informe
+                    <v-icon start icon="mdi-magnify" size="large"></v-icon>
+                    Buscar
                   </v-btn>
-                </div>
+                </v-col>
+              </v-row>
 
-                <v-alert
-                  v-if="actividad.informes_actividad?.length === 0"
-                  type="info"
-                  variant="tonal"
-                  class="mb-4"
-                >
-                  No hay informes registrados para esta actividad.
-                </v-alert>
-
-                <v-row v-else>
-                  <v-col
-                    v-for="informe in actividad.informes_actividad"
-                    :key="informe.id"
-                    cols="12"
-                    md="6"
-                    lg="4"
-                  >
-                    <v-card
-                      elevation="2"
-                      rounded="lg"
-                      class="h-100 informe-card"
-                      :color="getInformeCardColor(informe)"
-                      variant="tonal"
-                    >
-                      <v-card-item>
-                        <div class="d-flex justify-space-between align-start mb-2">
-                          <div>
-                            <v-card-title class="text-h6 pa-0 mb-1">
-                              {{ informe.numeroInforme }}
-                            </v-card-title>
-                            <v-card-subtitle class="pa-0">
-                              <v-icon start icon="mdi-calendar" size="small"></v-icon>
-                              {{ informe.fechaEjecucion }}
-                            </v-card-subtitle>
-                          </div>
-                          <v-chip v-if="informe.tipoActividad" size="small" variant="flat">
-                            {{ informe.tipoActividad }}
-                          </v-chip>
-                        </div>
-                      </v-card-item>
-
-                      <v-card-text>
-                        <div class="mb-3">
-                          <div class="text-caption text-medium-emphasis mb-1">Objetivo</div>
-                          <div class="text-body-2 truncate-text">
-                            {{ informe.objetivoActividad || 'Sin objetivo especificado' }}
-                          </div>
-                        </div>
-
-                        <v-divider class="my-3"></v-divider>
-
-                        <v-row>
-                          <v-col cols="6">
-                            <div>
-                              <div class="text-caption text-medium-emphasis mb-1">Planificado</div>
-                              <div class="text-body-1 font-weight-bold">
-                                Bs{{ formatNumber(informe.presupuestoPlanificado) }}
-                              </div>
-                            </div>
-                          </v-col>
-                          <v-col cols="6">
-                            <div>
-                              <div class="text-caption text-medium-emphasis mb-1">Ejecutado</div>
-                              <div class="text-body-1 font-weight-bold">
-                                Bs{{ formatNumber(informe.presupuestoEjecutado) }}
-                              </div>
-                            </div>
-                          </v-col>
-                        </v-row>
-
-                        <div v-if="informe.comentariosRecomendaciones" class="mt-4">
-                          <div class="text-caption text-medium-emphasis mb-1">Comentarios</div>
-                          <div class="text-body-2">
-                            {{ truncarTexto(informe.comentariosRecomendaciones, 80) }}
-                          </div>
-                        </div>
-                      </v-card-text>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          color="primary"
-                          variant="text"
-                          size="small"
-                          prepend-icon="mdi-eye"
-                          @click="verDetalleInforme(informe.id)"
-                        >
-                          Ver
-                        </v-btn>
-                        <v-btn
-                          color="secondary"
-                          variant="text"
-                          size="small"
-                          prepend-icon="mdi-pencil"
-                          @click="editarInforme(informe.id)"
-                        >
-                          Editar
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-col>
-                </v-row>
-              </v-window-item>
-
-              <!-- Tab: Tareas -->
-              <v-window-item value="tareas">
-                <div class="d-flex justify-space-between align-center mb-4">
-                  <h3 class="text-h5 font-weight-bold">Tareas / Subactividades</h3>
-                  <v-btn
-                    color="primary"
-                    variant="tonal"
-                    prepend-icon="mdi-plus"
-                    @click="crearTarea"
-                  >
-                    Nueva Tarea
-                  </v-btn>
-                </div>
-
-                <v-alert
-                  v-if="actividad.tareas?.length === 0"
-                  type="info"
-                  variant="tonal"
-                  class="mb-4"
-                >
-                  No hay tareas registradas para esta actividad.
-                </v-alert>
-
-                <v-expansion-panels v-else multiple variant="accordion">
-                  <v-expansion-panel
-                    v-for="tarea in actividad.tareas"
-                    :key="tarea.id"
-                    elevation="2"
-                    rounded="lg"
-                    class="mb-3"
-                  >
-                    <v-expansion-panel-title expand-icon="mdi-chevron-down" class="py-4">
-                      <template v-slot:default="{ expanded }">
-                        <v-row no-gutters>
-                          <v-col cols="12" md="4" class="d-flex align-center">
-                            <v-avatar :color="getEstadoColor(tarea.estado)" size="36" class="mr-3">
-                              <v-icon dark>{{
-                                expanded ? 'mdi-folder-open' : 'mdi-folder'
-                              }}</v-icon>
-                            </v-avatar>
-                            <div>
-                              <div class="font-weight-bold text-body-1">{{ tarea.titulo }}</div>
-                              <div class="text-caption text-medium-emphasis">
-                                {{ tarea.codigo }}
-                              </div>
-                            </div>
-                          </v-col>
-                          <v-col cols="12" md="4" class="d-flex align-center">
-                            <v-chip
-                              :color="getEstadoColor(tarea.estado)"
-                              size="small"
-                              variant="flat"
-                              class="mr-2"
-                            >
-                              {{ tarea.estado }}
-                            </v-chip>
-                            <v-chip size="small" variant="outlined">
-                              <v-icon start icon="mdi-cash" size="x-small"></v-icon>
-                              Bs{{ formatNumber(tarea.presupuesto) }}
-                            </v-chip>
-                          </v-col>
-                          <v-col cols="12" md="4" class="d-flex align-center justify-end">
-                            <div class="text-end">
-                              <div class="text-caption text-medium-emphasis">Informes</div>
-                              <div class="text-h6">
-                                {{ tarea.informes_tarea?.length || 0 }}
-                              </div>
-                            </div>
-                          </v-col>
-                        </v-row>
-                      </template>
-                    </v-expansion-panel-title>
-
-                    <v-expansion-panel-text>
-                      <!-- Información de la tarea -->
-                      <v-row class="mb-4">
-                        <v-col cols="12" md="6">
-                          <v-card variant="tonal" color="grey-lighten-3" rounded="lg">
-                            <v-card-text>
-                              <div class="text-caption text-medium-emphasis mb-2">Descripción</div>
-                              <div class="text-body-2">{{ tarea.descripcion }}</div>
-                            </v-card-text>
-                          </v-card>
-                        </v-col>
-                        <v-col cols="12" md="6">
-                          <v-card variant="tonal" color="grey-lighten-3" rounded="lg">
-                            <v-card-text>
-                              <div class="text-caption text-medium-emphasis mb-2">Fechas</div>
-                              <div class="text-body-2">
-                                <div class="mb-1">
-                                  <v-icon
-                                    icon="mdi-calendar-plus"
-                                    size="small"
-                                    class="mr-1"
-                                  ></v-icon>
-                                  Creación: {{ tarea.fecha_creacion }}
-                                </div>
-                                <div>
-                                  <v-icon
-                                    icon="mdi-calendar-clock"
-                                    size="small"
-                                    class="mr-1"
-                                  ></v-icon>
-                                  Límite: {{ tarea.fecha_limite }}
-                                </div>
-                              </div>
-                            </v-card-text>
-                          </v-card>
-                        </v-col>
-                      </v-row>
-
-                      <!-- Informes de la tarea -->
-                      <div class="mb-4">
-                        <div class="d-flex justify-space-between align-center mb-3">
-                          <h4 class="text-h6">Informes de esta Tarea</h4>
-                          <v-btn
-                            color="primary"
-                            size="small"
-                            prepend-icon="mdi-plus"
-                            @click="crearInformeTarea(tarea.id)"
-                          >
-                            Nuevo Informe
-                          </v-btn>
-                        </div>
-
-                        <v-alert
-                          v-if="tarea.informes_tarea?.length === 0"
-                          type="info"
-                          variant="tonal"
-                          density="compact"
-                          class="mb-4"
-                        >
-                          No hay informes para esta tarea.
-                        </v-alert>
-
-                        <v-row v-else>
-                          <v-col
-                            v-for="informe in tarea.informes_tarea"
-                            :key="informe.id"
-                            cols="12"
-                            sm="6"
-                            md="4"
-                          >
-                            <v-card elevation="1" rounded="lg" variant="outlined">
-                              <v-card-item>
-                                <div class="d-flex justify-space-between align-start">
-                                  <div>
-                                    <div class="text-body-1 font-weight-bold">
-                                      {{ informe.numeroInforme }}
-                                    </div>
-                                    <div class="text-caption text-medium-emphasis">
-                                      <v-icon start icon="mdi-calendar" size="x-small"></v-icon>
-                                      {{ informe.fechaEjecucion }}
-                                    </div>
-                                  </div>
-                                  <v-chip v-if="informe.tipoActividad" size="x-small" color="info">
-                                    {{ informe.tipoActividad }}
-                                  </v-chip>
-                                </div>
-                              </v-card-item>
-
-                              <v-card-text>
-                                <div class="d-flex justify-space-between align-center">
-                                  <div>
-                                    <div class="text-caption text-medium-emphasis">Planificado</div>
-                                    <div class="text-body-2 font-weight-bold">
-                                      Bs{{ formatNumber(informe.presupuestoPlanificado) }}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div class="text-caption text-medium-emphasis">Ejecutado</div>
-                                    <div class="text-body-2 font-weight-bold">
-                                      Bs{{ formatNumber(informe.presupuestoEjecutado) }}
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div v-if="informe.objetivoTarea" class="mt-3">
-                                  <div class="text-caption text-medium-emphasis">Objetivo:</div>
-                                  <div class="text-body-2">
-                                    {{ truncarTexto(informe.objetivoTarea, 60) }}
-                                  </div>
-                                </div>
-                              </v-card-text>
-
-                              <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn
-                                  size="small"
-                                  variant="text"
-                                  color="primary"
-                                  @click="verDetalleInformeTarea(informe.id)"
-                                >
-                                  Ver Detalle
-                                </v-btn>
-                              </v-card-actions>
-                            </v-card>
-                          </v-col>
-                        </v-row>
-                      </div>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          color="primary"
-                          variant="text"
-                          prepend-icon="mdi-eye"
-                          @click="verDetalleTarea(tarea.id)"
-                        >
-                          Ver Tarea Completa
-                        </v-btn>
-                        <v-btn
-                          color="secondary"
-                          variant="tonal"
-                          prepend-icon="mdi-file-document-plus"
-                          @click="crearInformeTarea(tarea.id)"
-                        >
-                          Crear Informe
-                        </v-btn>
-                      </v-card-actions>
-                    </v-expansion-panel-text>
-                  </v-expansion-panel>
-                </v-expansion-panels>
-              </v-window-item>
-
-              <!-- Tab: Información General -->
-              <v-window-item value="informacion-general">
-                <v-row>
-                  <!-- Información básica y factores críticos -->
-                  <v-col cols="12" md="6">
-                    <v-card class="mb-4" elevation="2" rounded="lg">
-                      <v-toolbar color="primary" density="compact">
-                        <v-toolbar-title class="text-white">Información Básica</v-toolbar-title>
-                      </v-toolbar>
-                      <v-card-text class="pa-4">
-                        <v-list density="compact">
-                          <v-list-item class="px-0">
-                            <v-list-item-title class="text-caption text-medium-emphasis">
-                              Código
-                            </v-list-item-title>
-                            <v-list-item-subtitle class="text-body-1 font-weight-medium">
-                              {{ actividad.codigo }}
-                            </v-list-item-subtitle>
-                          </v-list-item>
-                          <v-divider class="my-2"></v-divider>
-                          <v-list-item class="px-0">
-                            <v-list-item-title class="text-caption text-medium-emphasis">
-                              Nombre Corto
-                            </v-list-item-title>
-                            <v-list-item-subtitle class="text-body-1">
-                              {{ actividad.nombreCorto }}
-                            </v-list-item-subtitle>
-                          </v-list-item>
-                          <v-divider class="my-2"></v-divider>
-                          <v-list-item class="px-0">
-                            <v-list-item-title class="text-caption text-medium-emphasis">
-                              Grado de Ejecución
-                            </v-list-item-title>
-                            <v-list-item-subtitle>
-                              <v-chip
-                                size="small"
-                                :color="getGradoEjecucionColor(actividad.gradoEjecucion)"
-                                variant="flat"
-                              >
-                                {{ actividad.gradoEjecucion }}
-                              </v-chip>
-                            </v-list-item-subtitle>
-                          </v-list-item>
-                          <v-divider class="my-2"></v-divider>
-                          <v-list-item class="px-0">
-                            <v-list-item-title class="text-caption text-medium-emphasis">
-                              Presupuesto Total
-                            </v-list-item-title>
-                            <v-list-item-subtitle class="text-h6 text-primary">
-                              Bs{{ formatNumber(actividad.presupuesto) }}
-                            </v-list-item-subtitle>
-                          </v-list-item>
-                        </v-list>
-                      </v-card-text>
-                    </v-card>
-
-                    <!-- Factores Críticos -->
-                    <v-card
-                      v-if="actividad.factoresCriticos?.length > 0"
-                      elevation="2"
-                      rounded="lg"
-                    >
-                      <v-toolbar color="primary" density="compact">
-                        <v-toolbar-title class="text-white">
-                          Factores Críticos
-                          <v-chip size="small" class="ml-2">
-                            {{ actividad.factoresCriticos.length }}
-                          </v-chip>
-                        </v-toolbar-title>
-                      </v-toolbar>
-                      <v-card-text class="pa-4">
-                        <v-list density="compact">
-                          <v-list-item
-                            v-for="factor in actividad.factoresCriticos"
-                            :key="factor.id"
-                            class="px-0"
-                          >
-                            <template v-slot:prepend>
-                              <v-icon color="warning" icon="mdi-alert-circle"></v-icon>
-                            </template>
-                            <v-list-item-title class="text-body-1">
-                              {{ factor.nombre }}
-                            </v-list-item-title>
-                            <v-list-item-subtitle v-if="factor.nota" class="text-caption">
-                              {{ factor.nota }}
-                            </v-list-item-subtitle>
-                          </v-list-item>
-                        </v-list>
-                      </v-card-text>
-                    </v-card>
-                  </v-col>
-
-                  <!-- Estructura de procedencia -->
-                  <v-col cols="12" md="6">
-                    <!-- Objetivo General -->
-                    <v-card
-                      v-if="actividad.estructuraProcedencia?.datosProcedencia?.objetivogeneral"
-                      class="mb-4"
-                      elevation="2"
-                      rounded="lg"
-                    >
-                      <v-toolbar color="primary" density="compact">
-                        <v-toolbar-title class="text-white">
-                          <v-icon start icon="mdi-target"></v-icon>
-                          Objetivo General
-                        </v-toolbar-title>
-                      </v-toolbar>
-                      <v-card-text class="pa-4">
-                        <div class="mb-3">
-                          <div class="text-caption text-medium-emphasis mb-1">Código:</div>
-                          <div class="text-body-1 font-weight-bold">
-                            {{
-                              actividad.estructuraProcedencia.datosProcedencia.objetivogeneral.data
-                                .codigo
-                            }}
-                          </div>
-                        </div>
-                        <div>
-                          <div class="text-caption text-medium-emphasis mb-1">Descripción:</div>
-                          <div class="text-body-2">
-                            {{
-                              actividad.estructuraProcedencia.datosProcedencia.objetivogeneral.data
-                                .descripcion
-                            }}
-                          </div>
-                        </div>
-                      </v-card-text>
-                    </v-card>
-
-                    <!-- Resultado OG -->
-                    <v-card
-                      v-if="actividad.estructuraProcedencia?.datosProcedencia?.resultadoog"
-                      class="mb-4"
-                      elevation="2"
-                      rounded="lg"
-                    >
-                      <v-toolbar color="primary" density="compact">
-                        <v-toolbar-title class="text-white">
-                          <v-icon start icon="mdi-chart-line"></v-icon>
-                          Resultado OG
-                        </v-toolbar-title>
-                      </v-toolbar>
-                      <v-card-text class="pa-4">
-                        <div class="mb-3">
-                          <div class="text-caption text-medium-emphasis mb-1">Código:</div>
-                          <div class="text-body-1 font-weight-bold">
-                            {{
-                              actividad.estructuraProcedencia.datosProcedencia.resultadoog.data
-                                .codigo
-                            }}
-                          </div>
-                        </div>
-                        <div>
-                          <div class="text-caption text-medium-emphasis mb-1">Descripción:</div>
-                          <div class="text-body-2">
-                            {{
-                              actividad.estructuraProcedencia.datosProcedencia.resultadoog.data
-                                .descripcion
-                            }}
-                          </div>
-                        </div>
-                      </v-card-text>
-                    </v-card>
-
-                    <!-- Indicador Resultado OG -->
-                    <v-card
-                      v-if="actividad.estructuraProcedencia?.datosProcedencia?.indicadorresultadoog"
-                      elevation="2"
-                      rounded="lg"
-                    >
-                      <v-toolbar color="primary" density="compact">
-                        <v-toolbar-title class="text-white">
-                          <v-icon start icon="mdi-chart-bar"></v-icon>
-                          Indicador del Resultado
-                        </v-toolbar-title>
-                      </v-toolbar>
-                      <v-card-text class="pa-4">
-                        <div class="mb-3">
-                          <div class="text-caption text-medium-emphasis mb-1">Código:</div>
-                          <div class="text-body-1 font-weight-bold">
-                            {{
-                              actividad.estructuraProcedencia.datosProcedencia.indicadorresultadoog
-                                .data.codigo
-                            }}
-                          </div>
-                        </div>
-                        <div class="mb-3">
-                          <div class="text-caption text-medium-emphasis mb-1">Descripción:</div>
-                          <div class="text-body-2">
-                            {{
-                              actividad.estructuraProcedencia.datosProcedencia.indicadorresultadoog
-                                .data.descripcion
-                            }}
-                          </div>
-                        </div>
-                        <div>
-                          <div class="text-caption text-medium-emphasis mb-1">Redacción:</div>
-                          <div class="text-body-2">
-                            {{
-                              actividad.estructuraProcedencia.datosProcedencia.indicadorresultadoog
-                                .data.redaccion
-                            }}
-                          </div>
-                        </div>
-                      </v-card-text>
-                    </v-card>
-                  </v-col>
-                </v-row>
-              </v-window-item>
-
-              <!-- Tab: Búsqueda -->
-              <v-window-item value="busqueda">
-                <div class="d-flex justify-space-between align-center mb-4">
-                  <h3 class="text-h5 font-weight-bold">Buscar Informes</h3>
-                  <v-btn
-                    color="primary"
-                    variant="tonal"
-                    prepend-icon="mdi-file-document-plus"
-                    @click="crearInformeActividad"
-                  >
-                    Nuevo Informe
-                  </v-btn>
-                </div>
-
-                <!-- Barra de búsqueda -->
-                <v-card class="mb-6" elevation="2">
-                  <v-card-text class="pa-4">
-                    <v-row>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="searchQuery"
-                          label="Buscar por código o nombre"
-                          placeholder="Ej: INF-001, Reunión de planificación"
-                          prepend-inner-icon="mdi-magnify"
-                          clearable
-                          variant="outlined"
-                          @keyup.enter="realizarBusqueda"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" md="3">
-                        <v-select
-                          v-model="searchType"
-                          label="Tipo de búsqueda"
-                          :items="tiposBusqueda"
-                          variant="outlined"
-                        ></v-select>
-                      </v-col>
-                      <v-col cols="12" md="3" class="d-flex align-end">
-                        <v-btn
-                          color="primary"
-                          variant="flat"
-                          block
-                          @click="realizarBusqueda"
-                          :loading="searching"
-                        >
-                          <v-icon start icon="mdi-magnify"></v-icon>
-                          Buscar
-                        </v-btn>
-                      </v-col>
-                    </v-row>
-
-                    <!-- Filtros adicionales -->
-                    <v-expansion-panels flat class="mt-2">
-                      <v-expansion-panel>
-                        <v-expansion-panel-title>
-                          <v-icon icon="mdi-filter" class="mr-2"></v-icon>
-                          Filtros avanzados
-                        </v-expansion-panel-title>
-                        <v-expansion-panel-text>
-                          <v-row>
-                            <v-col cols="12" md="4">
-                              <v-select
-                                v-model="filtroEstado"
-                                label="Estado del informe"
-                                :items="estadosInforme"
-                                clearable
-                                variant="outlined"
-                              ></v-select>
-                            </v-col>
-                            <v-col cols="12" md="4">
-                              <v-select
-                                v-model="filtroTipo"
-                                label="Tipo de actividad"
-                                :items="tiposActividad"
-                                clearable
-                                variant="outlined"
-                              ></v-select>
-                            </v-col>
-                            <v-col cols="12" md="4">
-                              <v-menu>
-                                <template v-slot:activator="{ props }">
-                                  <v-text-field
-                                    v-model="filtroFecha"
-                                    label="Fecha de ejecución"
-                                    prepend-inner-icon="mdi-calendar"
-                                    readonly
-                                    variant="outlined"
-                                    v-bind="props"
-                                  ></v-text-field>
-                                </template>
-                                <v-date-picker v-model="filtroFecha"></v-date-picker>
-                              </v-menu>
-                            </v-col>
-                          </v-row>
-                        </v-expansion-panel-text>
-                      </v-expansion-panel>
-                    </v-expansion-panels>
-                  </v-card-text>
-                </v-card>
-
-                <!-- Resultados de búsqueda -->
-                <div>
-                  <div class="d-flex justify-space-between align-center mb-4">
-                    <h4 class="text-h6">Resultados de búsqueda</h4>
+              <!-- Resultados de búsqueda activa -->
+              <transition name="slide-fade">
+                <div v-if="searchActive" class="search-active-container mt-4">
+                  <v-divider class="mb-4"></v-divider>
+                  <div class="d-flex justify-space-between align-center">
                     <div class="d-flex align-center">
-                      <span class="text-caption text-medium-emphasis mr-2">
-                        {{ resultadosBusqueda.length }} resultado(s) encontrado(s)
+                      <v-chip color="primary" variant="flat" size="small" class="mr-2">
+                        {{ resultadosBusqueda.length }}
+                      </v-chip>
+                      <span class="text-body-2 text-medium-emphasis">
+                        resultado(s) encontrado(s) para
+                        <span class="font-weight-bold">"{{ searchQuery }}"</span>
                       </span>
-                      <v-btn
-                        v-if="resultadosBusqueda.length > 0"
-                        color="secondary"
-                        variant="text"
-                        size="small"
-                        @click="limpiarBusqueda"
-                      >
-                        Limpiar búsqueda
-                      </v-btn>
                     </div>
-                  </div>
-
-                  <v-alert
-                    v-if="resultadosBusqueda.length === 0 && !searchQuery"
-                    type="info"
-                    variant="tonal"
-                    class="mb-4"
-                  >
-                    <template v-slot:prepend>
-                      <v-icon>mdi-information</v-icon>
-                    </template>
-                    Ingresa un término de búsqueda para encontrar informes por código, nombre o
-                    descripción.
-                  </v-alert>
-
-                  <v-alert
-                    v-else-if="resultadosBusqueda.length === 0 && searchQuery"
-                    type="warning"
-                    variant="tonal"
-                    class="mb-4"
-                  >
-                    <template v-slot:prepend>
-                      <v-icon>mdi-alert</v-icon>
-                    </template>
-                    No se encontraron resultados para "{{ searchQuery }}". Intenta con otros
-                    términos.
-                  </v-alert>
-
-                  <!-- Resultados -->
-                  <v-row v-if="resultadosBusqueda.length > 0">
-                    <v-col
-                      v-for="informe in resultadosBusqueda"
-                      :key="informe.id"
-                      cols="12"
-                      md="6"
-                      lg="4"
+                    <v-btn
+                      color="secondary"
+                      variant="text"
+                      size="small"
+                      @click="limpiarBusqueda"
+                      class="clear-search-btn"
                     >
-                      <v-card
-                        elevation="2"
-                        rounded="lg"
-                        class="h-100 informe-card"
-                        :color="getInformeCardColor(informe)"
-                        variant="tonal"
-                      >
-                        <v-card-item>
-                          <div class="d-flex justify-space-between align-start mb-2">
-                            <div>
-                              <v-card-title class="text-h6 pa-0 mb-1">
-                                {{ informe.numeroInforme }}
-                              </v-card-title>
-                              <v-card-subtitle class="pa-0">
-                                <v-icon start icon="mdi-calendar" size="small"></v-icon>
-                                {{ informe.fechaEjecucion }}
-                                <span v-if="informe.tarea" class="ml-2">
-                                  <v-icon icon="mdi-folder" size="small"></v-icon>
-                                  {{ informe.tarea.codigo }}
-                                </span>
-                              </v-card-subtitle>
-                            </div>
-                            <v-chip v-if="informe.tipoActividad" size="small" variant="flat">
-                              {{ informe.tipoActividad }}
-                            </v-chip>
-                          </div>
-                        </v-card-item>
-
-                        <v-card-text>
-                          <div class="mb-3">
-                            <div class="text-caption text-medium-emphasis mb-1">Origen</div>
-                            <div class="text-body-2">
-                              <v-chip size="x-small" :color="informe.tarea ? 'info' : 'primary'">
-                                {{
-                                  informe.tarea
-                                    ? 'Tarea: ' + informe.tarea.titulo
-                                    : 'Actividad Principal'
-                                }}
-                              </v-chip>
-                            </div>
-                          </div>
-
-                          <div class="mb-3">
-                            <div class="text-caption text-medium-emphasis mb-1">Objetivo</div>
-                            <div class="text-body-2 truncate-text">
-                              {{
-                                informe.objetivoActividad ||
-                                informe.objetivoTarea ||
-                                'Sin objetivo especificado'
-                              }}
-                            </div>
-                          </div>
-
-                          <v-divider class="my-3"></v-divider>
-
-                          <v-row>
-                            <v-col cols="6">
-                              <div>
-                                <div class="text-caption text-medium-emphasis mb-1">
-                                  Planificado
-                                </div>
-                                <div class="text-body-1 font-weight-bold">
-                                  Bs{{ formatNumber(informe.presupuestoPlanificado) }}
-                                </div>
-                              </div>
-                            </v-col>
-                            <v-col cols="6">
-                              <div>
-                                <div class="text-caption text-medium-emphasis mb-1">Ejecutado</div>
-                                <div class="text-body-1 font-weight-bold">
-                                  Bs{{ formatNumber(informe.presupuestoEjecutado) }}
-                                </div>
-                              </div>
-                            </v-col>
-                          </v-row>
-
-                          <div v-if="informe.comentariosRecomendaciones" class="mt-4">
-                            <div class="text-caption text-medium-emphasis mb-1">Comentarios</div>
-                            <div class="text-body-2">
-                              {{ truncarTexto(informe.comentariosRecomendaciones, 80) }}
-                            </div>
-                          </div>
-                        </v-card-text>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            color="primary"
-                            variant="text"
-                            size="small"
-                            prepend-icon="mdi-eye"
-                            @click="
-                              informe.tarea
-                                ? verDetalleInformeTarea(informe.id)
-                                : verDetalleInforme(informe.id)
-                            "
-                          >
-                            Ver
-                          </v-btn>
-                          <v-btn
-                            color="secondary"
-                            variant="text"
-                            size="small"
-                            prepend-icon="mdi-pencil"
-                            @click="
-                              informe.tarea
-                                ? editarInformeTarea(informe.id)
-                                : editarInforme(informe.id)
-                            "
-                          >
-                            Editar
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-col>
-                  </v-row>
+                      <v-icon start icon="mdi-close" size="small"></v-icon>
+                      Limpiar
+                    </v-btn>
+                  </div>
                 </div>
-              </v-window-item>
-            </v-window>
+              </transition>
+            </v-card-text>
           </v-card>
         </v-col>
       </v-row>
+
+      <!-- Resultados de búsqueda -->
+      <transition name="slide-fade">
+        <v-row v-if="searchActive && resultadosBusqueda.length > 0" class="mb-6">
+          <v-col cols="12">
+            <h4 class="text-h6 font-weight-bold mb-4 d-flex align-center">
+              <v-icon color="primary" class="mr-2">mdi-file-find</v-icon>
+              Resultados de búsqueda
+            </h4>
+            <v-row>
+              <v-col
+                v-for="informe in resultadosBusqueda"
+                :key="informe.id"
+                cols="12"
+                md="6"
+                lg="4"
+              >
+                <v-card
+                  elevation="2"
+                  rounded="lg"
+                  class="h-100 informe-card"
+                  :class="{
+                    'informe-card-actividad': !informe.tarea,
+                    'informe-card-tarea': informe.tarea,
+                  }"
+                >
+                  <v-card-item>
+                    <div class="d-flex justify-space-between align-start mb-3">
+                      <div>
+                        <v-card-title class="text-h6 pa-0 mb-1 font-weight-bold">
+                          {{ informe.numeroInforme }}
+                        </v-card-title>
+                        <v-card-subtitle class="pa-0 d-flex align-center">
+                          <v-icon icon="mdi-calendar" size="small" class="mr-1"></v-icon>
+                          {{ formatDate(informe.fechaEjecucion) }}
+                          <template v-if="informe.tarea">
+                            <v-icon icon="mdi-chevron-right" size="small" class="mx-1"></v-icon>
+                            <v-icon icon="mdi-folder" size="small" class="mr-1"></v-icon>
+                            {{ informe.tarea.codigo }}
+                          </template>
+                        </v-card-subtitle>
+                      </div>
+                      <v-chip
+                        size="small"
+                        :color="informe.tarea ? 'info' : 'primary'"
+                        variant="flat"
+                        class="origin-chip"
+                      >
+                        <v-icon
+                          start
+                          :icon="informe.tarea ? 'mdi-file-tree' : 'mdi-file-document'"
+                          size="x-small"
+                        ></v-icon>
+                        {{ informe.tarea ? 'Tarea' : 'Actividad' }}
+                      </v-chip>
+                    </div>
+                  </v-card-item>
+
+                  <v-card-text>
+                    <div class="mb-3">
+                      <div class="text-caption text-medium-emphasis mb-1">
+                        <v-icon icon="mdi-bullseye-arrow" size="x-small" class="mr-1"></v-icon>
+                        Objetivo
+                      </div>
+                      <div class="text-body-2 informe-objetivo">
+                        {{
+                          truncarTexto(informe.objetivoActividad || informe.objetivoTarea, 80) ||
+                          'Sin objetivo especificado'
+                        }}
+                      </div>
+                    </div>
+
+                    <v-divider class="my-3"></v-divider>
+
+                    <div class="d-flex justify-space-between">
+                      <div class="text-center">
+                        <div class="text-caption text-medium-emphasis mb-1">Planificado</div>
+                        <div class="text-body-1 font-weight-bold text-primary">
+                          Bs{{ formatNumber(informe.presupuestoPlanificado) }}
+                        </div>
+                      </div>
+                      <div class="text-center">
+                        <div class="text-caption text-medium-emphasis mb-1">Ejecutado</div>
+                        <div
+                          class="text-body-1 font-weight-bold"
+                          :class="getEjecutadoColor(informe)"
+                        >
+                          Bs{{ formatNumber(informe.presupuestoEjecutado) }}
+                        </div>
+                      </div>
+                      <div class="text-center">
+                        <div class="text-caption text-medium-emphasis mb-1">Avance</div>
+                        <div class="text-body-1 font-weight-bold" :class="getAvanceColor(informe)">
+                          {{ getAvancePorcentaje(informe) }}%
+                        </div>
+                      </div>
+                    </div>
+                  </v-card-text>
+
+                  <v-card-actions class="pa-4">
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      color="primary"
+                      variant="text"
+                      size="small"
+                      prepend-icon="mdi-eye"
+                      @click="
+                        informe.tarea
+                          ? verDetalleInformeTarea(informe.id)
+                          : verDetalleInforme(informe.id)
+                      "
+                      class="action-btn"
+                    >
+                      Ver
+                    </v-btn>
+                    <v-btn
+                      color="secondary"
+                      variant="text"
+                      size="small"
+                      prepend-icon="mdi-pencil"
+                      @click="
+                        informe.tarea ? editarInformeTarea(informe.id) : editarInforme(informe.id)
+                      "
+                      class="action-btn"
+                    >
+                      Editar
+                    </v-btn>
+                    <v-btn
+                      color="success"
+                      variant="text"
+                      size="small"
+                      prepend-icon="mdi-file-pdf-box"
+                      @click="generarPDF(informe)"
+                      class="action-btn"
+                    >
+                      PDF
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+      </transition>
+
+      <!-- Contenido principal -->
+      <transition name="slide-fade">
+        <v-row v-if="!searchActive">
+          <!-- Informes de Actividad Principal -->
+          <v-col cols="12" md="6">
+            <div class="d-flex align-center mb-4">
+              <v-avatar color="primary" size="40" class="mr-3">
+                <v-icon dark>mdi-file-document-multiple</v-icon>
+              </v-avatar>
+              <h3 class="text-h5 font-weight-bold">Informes de Actividad Principal</h3>
+              <v-chip class="ml-3" color="primary" variant="flat" size="small">
+                {{ actividad.informes_actividad?.length || 0 }}
+              </v-chip>
+            </div>
+
+            <v-alert
+              v-if="actividad.informes_actividad?.length === 0"
+              type="info"
+              variant="tonal"
+              class="mb-4 empty-alert"
+              icon="mdi-information"
+            >
+              No hay informes registrados para esta actividad.
+            </v-alert>
+
+            <div v-else class="informe-list">
+              <v-row>
+                <v-col v-for="informe in actividad.informes_actividad" :key="informe.id" cols="12">
+                  <v-card elevation="2" rounded="lg" class="informe-card">
+                    <v-card-item>
+                      <div class="d-flex justify-space-between align-start mb-2">
+                        <div>
+                          <v-card-title class="text-h6 pa-0 mb-1 font-weight-bold">
+                            {{ informe.numeroInforme }}
+                          </v-card-title>
+                          <v-card-subtitle class="pa-0">
+                            <v-icon icon="mdi-calendar" size="small" class="mr-1"></v-icon>
+                            {{ formatDate(informe.fechaEjecucion) }}
+                          </v-card-subtitle>
+                        </div>
+                        <v-chip
+                          v-if="informe.tipoActividad"
+                          size="small"
+                          color="primary"
+                          variant="flat"
+                        >
+                          {{ informe.tipoActividad }}
+                        </v-chip>
+                      </div>
+                    </v-card-item>
+
+                    <v-card-text>
+                      <div class="mb-3">
+                        <div class="text-caption text-medium-emphasis mb-1">
+                          <v-icon icon="mdi-bullseye-arrow" size="x-small" class="mr-1"></v-icon>
+                          Objetivo
+                        </div>
+                        <div class="text-body-2">
+                          {{ informe.objetivoActividad || 'Sin objetivo especificado' }}
+                        </div>
+                      </div>
+
+                      <v-divider class="my-3"></v-divider>
+
+                      <div class="d-flex justify-space-between">
+                        <div class="text-center">
+                          <div class="text-caption text-medium-emphasis mb-1">Planificado</div>
+                          <div class="text-body-1 font-weight-bold text-primary">
+                            Bs{{ formatNumber(informe.presupuestoPlanificado) }}
+                          </div>
+                        </div>
+                        <div class="text-center">
+                          <div class="text-caption text-medium-emphasis mb-1">Ejecutado</div>
+                          <div
+                            class="text-body-1 font-weight-bold"
+                            :class="getEjecutadoColor(informe)"
+                          >
+                            Bs{{ formatNumber(informe.presupuestoEjecutado) }}
+                          </div>
+                        </div>
+                        <div class="text-center">
+                          <div class="text-caption text-medium-emphasis mb-1">Avance</div>
+                          <div
+                            class="text-body-1 font-weight-bold"
+                            :class="getAvanceColor(informe)"
+                          >
+                            {{ getAvancePorcentaje(informe) }}%
+                          </div>
+                        </div>
+                      </div>
+                    </v-card-text>
+
+                    <v-card-actions class="pa-4">
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        color="primary"
+                        variant="text"
+                        size="small"
+                        prepend-icon="mdi-eye"
+                        @click="verDetalleInforme(informe.id)"
+                        class="action-btn"
+                      >
+                        Ver
+                      </v-btn>
+                      <v-btn
+                        color="secondary"
+                        variant="text"
+                        size="small"
+                        prepend-icon="mdi-pencil"
+                        @click="editarInforme(informe.id)"
+                        class="action-btn"
+                      >
+                        Editar
+                      </v-btn>
+                      <v-btn
+                        color="success"
+                        variant="text"
+                        size="small"
+                        prepend-icon="mdi-file-pdf-box"
+                        @click="generarPDF(informe)"
+                        class="action-btn"
+                      >
+                        PDF
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </div>
+          </v-col>
+
+          <!-- Informes de Tareas/Subactividades -->
+          <v-col cols="12" md="6">
+            <div class="d-flex align-center mb-4">
+              <v-avatar color="orange" size="40" class="mr-3">
+                <v-icon dark>mdi-file-tree</v-icon>
+              </v-avatar>
+              <h3 class="text-h5 font-weight-bold">Informes de Tareas</h3>
+              <v-chip class="ml-3" color="orange" variant="flat" size="small">
+                {{ totalInformesTareas }}
+              </v-chip>
+            </div>
+
+            <v-alert
+              v-if="actividad.tareas?.length === 0"
+              type="info"
+              variant="tonal"
+              class="mb-4 empty-alert"
+              icon="mdi-information"
+            >
+              No hay tareas registradas para esta actividad.
+            </v-alert>
+
+            <div v-else class="tareas-container">
+              <v-expansion-panels
+                v-model="expandedPanels"
+                multiple
+                variant="accordion"
+                class="tareas-panels"
+              >
+                <v-expansion-panel
+                  v-for="tarea in actividad.tareas"
+                  :key="tarea.id"
+                  elevation="2"
+                  rounded="lg"
+                  class="mb-3 tarea-panel"
+                >
+                  <v-expansion-panel-title expand-icon="mdi-chevron-down" class="py-4">
+                    <template v-slot:default="{ expanded }">
+                      <v-row no-gutters>
+                        <v-col cols="12" md="8" class="d-flex align-center">
+                          <v-avatar :color="getEstadoColor(tarea.estado)" size="40" class="mr-3">
+                            <v-icon dark>{{ expanded ? 'mdi-folder-open' : 'mdi-folder' }}</v-icon>
+                          </v-avatar>
+                          <div>
+                            <div class="font-weight-bold text-body-1">{{ tarea.titulo }}</div>
+                            <div class="text-caption text-medium-emphasis">
+                              <v-icon icon="mdi-tag" size="x-small" class="mr-1"></v-icon>
+                              {{ tarea.codigo }}
+                            </div>
+                          </div>
+                        </v-col>
+                        <v-col cols="12" md="4" class="d-flex align-center justify-end">
+                          <div class="text-end">
+                            <div class="text-caption text-medium-emphasis">
+                              <v-icon icon="mdi-file-document" size="x-small" class="mr-1"></v-icon>
+                              Informes
+                            </div>
+                            <div class="text-h6 font-weight-bold">
+                              {{ tarea.informes_tarea?.length || 0 }}
+                            </div>
+                          </div>
+                        </v-col>
+                      </v-row>
+                    </template>
+                  </v-expansion-panel-title>
+
+                  <v-expansion-panel-text>
+                    <v-alert
+                      v-if="tarea.informes_tarea?.length === 0"
+                      type="info"
+                      variant="tonal"
+                      density="compact"
+                      class="mb-4"
+                      icon="mdi-information"
+                    >
+                      No hay informes para esta tarea.
+                    </v-alert>
+
+                    <div v-else>
+                      <v-row>
+                        <v-col v-for="informe in tarea.informes_tarea" :key="informe.id" cols="12">
+                          <v-card
+                            elevation="1"
+                            rounded="lg"
+                            variant="outlined"
+                            class="tarea-informe-card"
+                          >
+                            <v-card-item>
+                              <div class="d-flex justify-space-between align-start">
+                                <div>
+                                  <div class="text-body-1 font-weight-bold">
+                                    {{ informe.numeroInforme }}
+                                  </div>
+                                  <div class="text-caption text-medium-emphasis">
+                                    <v-icon
+                                      icon="mdi-calendar"
+                                      size="x-small"
+                                      class="mr-1"
+                                    ></v-icon>
+                                    {{ formatDate(informe.fechaEjecucion) }}
+                                  </div>
+                                </div>
+                                <v-chip v-if="informe.tipoActividad" size="x-small" color="info">
+                                  {{ informe.tipoActividad }}
+                                </v-chip>
+                              </div>
+                            </v-card-item>
+
+                            <v-card-text>
+                              <div class="d-flex justify-space-between align-center">
+                                <div>
+                                  <div class="text-caption text-medium-emphasis">Planificado</div>
+                                  <div class="text-body-2 font-weight-bold text-primary">
+                                    Bs{{ formatNumber(informe.presupuestoPlanificado) }}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div class="text-caption text-medium-emphasis">Ejecutado</div>
+                                  <div
+                                    class="text-body-2 font-weight-bold"
+                                    :class="getEjecutadoColor(informe)"
+                                  >
+                                    Bs{{ formatNumber(informe.presupuestoEjecutado) }}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div class="text-caption text-medium-emphasis">Avance</div>
+                                  <div
+                                    class="text-body-2 font-weight-bold"
+                                    :class="getAvanceColor(informe)"
+                                  >
+                                    {{ getAvancePorcentaje(informe) }}%
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div v-if="informe.objetivoTarea" class="mt-3">
+                                <div class="text-caption text-medium-emphasis">
+                                  <v-icon
+                                    icon="mdi-bullseye-arrow"
+                                    size="x-small"
+                                    class="mr-1"
+                                  ></v-icon>
+                                  Objetivo:
+                                </div>
+                                <div class="text-body-2">
+                                  {{ truncarTexto(informe.objetivoTarea, 80) }}
+                                </div>
+                              </div>
+                            </v-card-text>
+
+                            <v-card-actions class="pa-3">
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                size="x-small"
+                                variant="text"
+                                color="primary"
+                                prepend-icon="mdi-eye"
+                                @click="verDetalleInformeTarea(informe.id)"
+                              >
+                                Ver
+                              </v-btn>
+                              <v-btn
+                                size="x-small"
+                                variant="text"
+                                color="secondary"
+                                prepend-icon="mdi-pencil"
+                                @click="editarInformeTarea(informe.id)"
+                              >
+                                Editar
+                              </v-btn>
+                              <v-btn
+                                size="x-small"
+                                variant="text"
+                                color="success"
+                                prepend-icon="mdi-file-pdf-box"
+                                @click="generarPDF(informe)"
+                              >
+                                PDF
+                              </v-btn>
+                            </v-card-actions>
+                          </v-card>
+                        </v-col>
+                      </v-row>
+                    </div>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+              </v-expansion-panels>
+            </div>
+          </v-col>
+        </v-row>
+      </transition>
     </div>
 
-    <!-- Error -->
-    <v-alert v-if="error && !loading" type="error" variant="tonal" class="mb-4">
-      {{ error }}
-      <template v-slot:actions>
-        <v-btn color="error" variant="text" @click="cargarDatos"> Reintentar </v-btn>
-      </template>
-    </v-alert>
+    <!-- Error mejorado -->
+    <transition name="slide-fade">
+      <v-alert
+        v-if="error && !loading"
+        type="error"
+        variant="tonal"
+        class="mb-4 error-alert"
+        icon="mdi-alert-circle"
+      >
+        <div class="d-flex align-center">
+          <div class="flex-grow-1">{{ error }}</div>
+          <v-btn color="error" variant="text" @click="cargarDatos" size="small">
+            <v-icon start icon="mdi-refresh"></v-icon>
+            Reintentar
+          </v-btn>
+        </div>
+      </v-alert>
+    </transition>
   </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useInfPrinActTareaListaStore } from '@/modules/formularios/store/useInfPrinActTareaListaStore'
 import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 // Store y router
 const storeListasInformes = useInfPrinActTareaListaStore()
 const router = useRouter()
 const route = useRoute()
+const { successMsg } = useSnackbar()
 
 // Estado
 const loading = ref(false)
 const error = ref(null)
-const tabActivo = ref('informes-actividad')
+const expandedPanels = ref([])
 
 // Estado para búsqueda
 const searchQuery = ref('')
 const searchType = ref('todos')
 const searching = ref(false)
-const filtroEstado = ref(null)
-const filtroTipo = ref(null)
-const filtroFecha = ref(null)
+const searchActive = ref(false)
 
 const tiposBusqueda = ref([
   { title: 'Todos los informes', value: 'todos' },
@@ -953,52 +653,30 @@ const tiposBusqueda = ref([
   { title: 'Solo informes de tareas', value: 'tareas' },
 ])
 
-const estadosInforme = ref([
-  { title: 'Planificado', value: 'PLAN' },
-  { title: 'En ejecución', value: 'EJEC' },
-  { title: 'Completado', value: 'COMP' },
-  { title: 'Cancelado', value: 'CANC' },
-])
-
-const tiposActividad = ref([
-  { title: 'Reunión', value: 'REUNION' },
-  { title: 'Taller', value: 'TALLER' },
-  { title: 'Capacitación', value: 'CAPACITACION' },
-  { title: 'Visita de campo', value: 'VISITA' },
-  { title: 'Evaluación', value: 'EVALUACION' },
-])
-
 // Computed properties
 const actividad = computed(() => storeListasInformes.actividadDetalles?.data || null)
 
 const estadisticas = computed(() => [
   {
-    title: 'Informes Actividad',
+    title: 'Informes Actividad Principal',
     value: actividad.value?.informes_actividad?.length || 0,
-    subtitle: 'Principal',
+    subtitle: 'Total de informes',
     icon: 'mdi-file-document-multiple',
     color: 'blue',
   },
   {
-    title: 'Informes Tareas',
-    value: totalInformesTareas.value,
-    subtitle: 'Subactividades',
-    icon: 'mdi-file-document',
-    color: 'green',
-  },
-  {
-    title: 'Tareas',
+    title: 'Tareas/Subactividades',
     value: actividad.value?.tareas?.length || 0,
-    subtitle: 'Activas',
+    subtitle: 'Tareas registradas',
     icon: 'mdi-checkbox-multiple-marked',
     color: 'orange',
   },
   {
-    title: 'Factores Críticos',
-    value: actividad.value?.factoresCriticos?.length || 0,
-    subtitle: 'Identificados',
-    icon: 'mdi-alert-circle',
-    color: 'purple',
+    title: 'Informes de Tareas',
+    value: totalInformesTareas.value,
+    subtitle: 'Total por tarea',
+    icon: 'mdi-file-document',
+    color: 'green',
   },
 ])
 
@@ -1010,9 +688,7 @@ const totalInformesTareas = computed(() => {
 })
 
 const resultadosBusqueda = computed(() => {
-  if (!searchQuery.value && !filtroEstado.value && !filtroTipo.value && !filtroFecha.value) {
-    return []
-  }
+  if (!searchActive.value || !searchQuery.value) return []
 
   let todosInformes = []
 
@@ -1075,24 +751,6 @@ const resultadosBusqueda = computed(() => {
     })
   }
 
-  // Filtro por estado (simulado ya que no hay campo estado en informes)
-  if (filtroEstado.value) {
-    // Este filtro sería para un campo de estado si existiera
-    // resultados = resultados.filter(informe => informe.estado === filtroEstado.value)
-  }
-
-  // Filtro por tipo de actividad
-  if (filtroTipo.value) {
-    resultados = resultados.filter((informe) => informe.tipoActividad === filtroTipo.value)
-  }
-
-  // Filtro por fecha (simplificado)
-  if (filtroFecha.value) {
-    resultados = resultados.filter(
-      (informe) => informe.fechaEjecucion && informe.fechaEjecucion.includes(filtroFecha.value),
-    )
-  }
-
   return resultados
 })
 
@@ -1111,19 +769,30 @@ const cargarDatos = async () => {
 }
 
 const realizarBusqueda = () => {
+  if (!searchQuery.value) {
+    searchActive.value = false
+    return
+  }
   searching.value = true
-  // Simular búsqueda
+  searchActive.value = true
   setTimeout(() => {
     searching.value = false
-  }, 500)
+  }, 300)
 }
 
 const limpiarBusqueda = () => {
   searchQuery.value = ''
+  searchActive.value = false
   searchType.value = 'todos'
-  filtroEstado.value = null
-  filtroTipo.value = null
-  filtroFecha.value = null
+}
+
+const formatDate = (date) => {
+  if (!date) return ''
+  return new Date(date).toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
 const getEstadoColor = (estado) => {
@@ -1139,26 +808,26 @@ const getEstadoColor = (estado) => {
   return colores[estado] || 'grey'
 }
 
-const getGradoEjecucionColor = (grado) => {
-  const colores = {
-    PLANIFICADA: 'blue',
-    EN_EJECUCION: 'orange',
-    COMPLETADA: 'green',
-    CANCELADA: 'red',
-  }
-  return colores[grado] || 'grey'
+const getEjecutadoColor = (informe) => {
+  const porcentaje = getAvancePorcentaje(informe)
+  if (porcentaje >= 100) return 'text-success'
+  if (porcentaje >= 80) return 'text-info'
+  if (porcentaje >= 50) return 'text-warning'
+  return 'text-error'
 }
 
-const getInformeCardColor = (informe) => {
-  const presupuestoEjecutado = parseFloat(informe.presupuestoEjecutado) || 0
-  const presupuestoPlanificado = parseFloat(informe.presupuestoPlanificado) || 1
+const getAvanceColor = (informe) => {
+  const porcentaje = getAvancePorcentaje(informe)
+  if (porcentaje >= 100) return 'text-success'
+  if (porcentaje >= 80) return 'text-info'
+  if (porcentaje >= 50) return 'text-warning'
+  return 'text-error'
+}
 
-  const porcentaje = (presupuestoEjecutado / presupuestoPlanificado) * 100
-
-  if (porcentaje >= 100) return 'success-lighten-5'
-  if (porcentaje >= 80) return 'info-lighten-5'
-  if (porcentaje >= 50) return 'warning-lighten-5'
-  return 'error-lighten-5'
+const getAvancePorcentaje = (informe) => {
+  const ejecutado = parseFloat(informe.presupuestoEjecutado) || 0
+  const planificado = parseFloat(informe.presupuestoPlanificado) || 1
+  return Math.min(100, Math.round((ejecutado / planificado) * 100))
 }
 
 const formatNumber = (num) => {
@@ -1172,26 +841,6 @@ const formatNumber = (num) => {
 const truncarTexto = (texto, longitud) => {
   if (!texto) return ''
   return texto.length > longitud ? texto.substring(0, longitud) + '...' : texto
-}
-
-const crearInformeActividad = () => {
-  router.push({
-    name: 'crear-informe-actividad',
-    params: { id: route.params.id },
-  })
-}
-
-const crearInformeTarea = (tareaId) => {
-  router.push({
-    name: 'crear-informe-tarea',
-    params: { id: tareaId },
-    query: { actividad_id: route.params.id },
-  })
-}
-
-const crearTarea = () => {
-  // Implementar navegación para crear nueva tarea
-  console.log('Crear nueva tarea')
 }
 
 const verDetalleInforme = (informeId) => {
@@ -1208,20 +857,6 @@ const verDetalleInformeTarea = (informeId) => {
   })
 }
 
-const editarInformeTarea = (informeId) => {
-  router.push({
-    name: 'editar-informe-tarea',
-    params: { id: informeId },
-  })
-}
-
-const verDetalleTarea = (tareaId) => {
-  router.push({
-    name: 'detalle-tarea',
-    params: { id: tareaId },
-  })
-}
-
 const editarInforme = (informeId) => {
   router.push({
     name: 'editar-informe-actividad',
@@ -1229,17 +864,17 @@ const editarInforme = (informeId) => {
   })
 }
 
-// const exportarInformes = () => {
-//   console.log('Exportando informes...')
-//   // Implementar lógica de exportación
-// }
+const editarInformeTarea = (informeId) => {
+  router.push({
+    name: 'editar-informe-tarea',
+    params: { id: informeId },
+  })
+}
 
-// Watch para limpiar filtros cuando se cambia de tab
-watch(tabActivo, (newTab) => {
-  if (newTab !== 'busqueda') {
-    limpiarBusqueda()
-  }
-})
+const generarPDF = (informe) => {
+  console.log('Generando PDF para:', informe.numeroInforme)
+  successMsg(`Generando PDF del informe ${informe.numeroInforme}`)
+}
 
 // Hook de ciclo de vida
 onMounted(() => {
@@ -1251,52 +886,244 @@ onMounted(() => {
 .actividad-informes-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 20px 16px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  min-height: 100vh;
 }
 
-.v-card {
-  border-radius: 8px;
+/* Header */
+.header-sheet {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.header-sheet:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Estadísticas */
+.stat-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.stat-blue .stat-avatar {
+  background: linear-gradient(145deg, #1976d2, #1565c0);
+}
+
+.stat-orange .stat-avatar {
+  background: linear-gradient(145deg, #f57c00, #ef6c00);
+}
+
+.stat-green .stat-avatar {
+  background: linear-gradient(145deg, #388e3c, #2e7d32);
+}
+
+.stat-avatar {
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-avatar {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.stat-value {
+  color: #1a1a1a;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-value {
+  color: #1976d2;
+}
+
+/* Búsqueda */
+.search-card {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.search-input :deep(.v-field) {
+  border-radius: 12px !important;
+}
+
+.search-input :deep(.v-field--focused) {
+  border-color: #1976d2 !important;
+}
+
+.search-btn {
+  border-radius: 12px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  background: linear-gradient(145deg, #1976d2, #1565c0) !important;
+  transition: all 0.3s ease !important;
+}
+
+.search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(25, 118, 210, 0.3) !important;
+}
+
+.search-active-container {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.clear-search-btn {
+  border-radius: 20px !important;
+  transition: all 0.3s ease !important;
+}
+
+.clear-search-btn:hover {
+  background-color: #e0e0e0 !important;
+}
+
+/* Informes Cards */
+.informe-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  height: 100%;
+  background: white;
+}
+
+.informe-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+  border-color: #1976d2;
+}
+
+.informe-card-actividad {
+  border-left: 4px solid #1976d2;
+}
+
+.informe-card-tarea {
+  border-left: 4px solid #f57c00;
+}
+
+.informe-objetivo {
+  color: #4a4a4a;
+  line-height: 1.5;
+}
+
+.origin-chip {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.action-btn {
+  border-radius: 20px !important;
+  transition: all 0.3s ease !important;
+  font-weight: 500 !important;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  background-color: rgba(25, 118, 210, 0.1) !important;
+}
+
+/* Tareas */
+.tareas-container {
+  max-height: 800px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.tareas-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tareas-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.tareas-container::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-radius: 10px;
+}
+
+.tareas-container::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+
+.tarea-panel {
+  border-radius: 12px !important;
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: white;
 }
 
-.v-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+.tarea-panel:hover {
+  border-color: #f57c00;
+  box-shadow: 0 8px 16px rgba(245, 124, 0, 0.15) !important;
 }
 
-.gap-2 {
-  gap: 8px;
+.tarea-informe-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+  background: white;
+  margin-bottom: 12px;
 }
 
-.h-100 {
-  height: 100%;
+.tarea-informe-card:hover {
+  transform: translateX(4px);
+  border-color: #f57c00;
+  background: #fff8f0;
 }
 
+/* Alertas */
+.empty-alert {
+  border-radius: 12px !important;
+  background: linear-gradient(145deg, #e3f2fd, #bbdefb) !important;
+  border: 1px solid #90caf9 !important;
+}
+
+.error-alert {
+  border-radius: 12px !important;
+}
+
+/* Transiciones */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* Utilidades */
 .truncate-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.informe-card {
-  transition: all 0.3s ease;
+.h-100 {
+  height: 100%;
 }
 
-.informe-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-.v-expansion-panel {
-  border-radius: 8px;
-  margin-bottom: 8px;
-}
-
+/* Responsive */
 @media (max-width: 960px) {
   .actividad-informes-container {
-    padding: 16px 12px;
+    padding: 16px;
+  }
+
+  .tareas-container {
+    max-height: none;
+    overflow-y: visible;
   }
 }
 </style>

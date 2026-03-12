@@ -21,6 +21,20 @@ export const informeActividadPrinServicio = {
       throw err
     }
   },
+  comprobarInformesActividadPrincipalPorIdActividad: async (idActividad) => {
+    try {
+      const respuesta = await api.get(
+        '/verificar-informes-actividad-principal/' + idActividad + '/',
+      )
+      return respuesta.data
+    } catch (err) {
+      console.error(
+        'Axios: Error al comprobar existencia de informes actividad: ' + idActividad,
+        err,
+      )
+      throw err
+    }
+  },
   /*********************** Informe Tarea Principal ************************************/
   crearInformeTareaPrincipal: async (data) => {
     try {

@@ -413,7 +413,7 @@ const usuarioStore = useUserStore() //Inicializar el store de usuarios
 
 // Composables
 const { successMsg, errorMsg } = useSnackbar()
-const { crearInformeActividadPrincipal, informeActividadPrincipal } = useInformeActividadPrincipal()
+const { crearInformeActividadPrincipal } = useInformeActividadPrincipal()
 
 // ✅ REFERENCIA AL COMPONENTE DE INDICADORES
 const indicadoresComponent = ref(null)
@@ -660,7 +660,7 @@ const cargarDatos = async () => {
 }
 
 // Hook de ciclo de vida
-onMounted(() => {
+onMounted(async () => {
   cargarDatos()
 })
 

@@ -1,8 +1,12 @@
 //Composable para:
 //- Informe de Actividad
 //- Informe de Tareas
+//- Comprobar si hay Informes de una actividad por idactividad
+//- Comprobar si hay informes de una tarea por su id
 import { informeActividadPrinServicio } from '../services/informeActividadPrinService'
 import { ref } from 'vue'
+import { useSnackbar } from '@/composables/useSnackbar'
+import { useRouter } from 'vue-router'
 
 export function useInformeActividadPrincipal() {
   //Estados
@@ -11,6 +15,11 @@ export function useInformeActividadPrincipal() {
   const actividadDetallesInforme = ref(null)
   const informeActividadPrincipal = ref(null) //Informe de Actividad principal
   const informeTareaPrincipal = ref(null) //Informe de Tarea principal
+  const verificando = ref(false)
+
+  //Inicar el composable
+  const { warningMsg } = useSnackbar()
+  const router = useRouter()
 
   /********************************** Informe de Actividad Principal ******************************************************/
   //Obtener las tareas de una actividad(usando su id), mas sus respectivos informes
@@ -42,6 +51,30 @@ export function useInformeActividadPrincipal() {
     }
   }
 
+  //Comprobar si una actividad tiene informes, usando su id
+  async function verificarActividad(actividadId) {
+    verificando.value = true
+    try {
+      const data =
+        await informeActividadPrinServicio.comprobarInformesActividadPrincipalPorIdActividad(
+          actividadId,
+        )
+
+      if (data.existe) {
+        warningMsg('Ya existe un informe de actividad')
+        router.push('/actividades/informe/')
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Error al verificar informes de la actividad', error)
+    } finally {
+      verificando.value = false
+    }
+  }
+
+  //Obtener los informes de una actividad por su id
+
   /*********************************Informe de Tarea Principal ********************************/
   //Crear un informe de Tarea Principal
   async function crearInformeTareaPrincipal(datosInformePrincipal) {
@@ -57,6 +90,8 @@ export function useInformeActividadPrincipal() {
     }
   }
 
+  //Obtener los informes de una tarea usando su id
+
   return {
     //Estado
     loading,
@@ -64,10 +99,13 @@ export function useInformeActividadPrincipal() {
     actividadDetallesInforme, //Actividad con tareas e informes
     informeActividadPrincipal,
     informeTareaPrincipal,
+    verificando,
     //Func Informe Actividad
     obtenerDetallesActividadPorID,
     crearInformeActividadPrincipal,
     //Func Informe Tarea
     crearInformeTareaPrincipal,
+    //Comprobacion
+    verificarActividad,
   }
 }

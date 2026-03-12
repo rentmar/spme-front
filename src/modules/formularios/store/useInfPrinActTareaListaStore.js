@@ -1,3 +1,5 @@
+//Store para manejar los informes de actividad y tareas de una actividad
+
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useInformeActividadPrincipal } from '../composables/useInformeActividadPrincipal'
