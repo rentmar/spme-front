@@ -164,6 +164,7 @@ const testStore = () => {
                     id="txtusuario"
                     v-model="usuario"
                     required
+                    autocomplete="username"
                   />
                   <span class="input-group-text">
                     <img
@@ -188,6 +189,7 @@ const testStore = () => {
                     id="txtpwd"
                     v-model="password"
                     required
+                    autocomplete="current-password"
                   />
                   <span class="input-group-text">
                     <img

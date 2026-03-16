@@ -98,7 +98,7 @@ const apiFf = axios.create({
   },
 })
 
-//Instancia para fonfosc
+//Instancia para Impresion de formularios
 const apiPrint = axios.create({
   //baseURL: import.meta.env.VITE_API_URL_PLAN,
   baseURL: import.meta.env.VITE_API_BASE_PRINT,
@@ -108,6 +108,31 @@ const apiPrint = axios.create({
     'Content-Type': 'application/json',
   },
 })
+
+//Instancia para Validadores
+const apiValid = axios.create({
+  //baseURL: import.meta.env.VITE_API_URL_PLAN,
+  baseURL: import.meta.env.VITE_API_BASE_VALID,
+  withCredentials: false,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Interceptor para agregar token SOLO a apiValid
+apiValid.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('access_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
 
 //Interceptor comun para ambas instancias
 const errorInterceptor = (error) => {
@@ -125,6 +150,7 @@ apiAxs.interceptors.response.use((response) => response, errorInterceptor)
 apiMsg.interceptors.response.use((response) => response, errorInterceptor)
 apiFf.interceptors.response.use((response) => response, errorInterceptor)
 apiPrint.interceptors.response.use((response) => response, errorInterceptor)
+apiValid.interceptors.response.use((response) => response, errorInterceptor)
 // Interceptor para manejar errores globales
 // api.interceptors.response.use(
 //   (response) => response,
@@ -134,4 +160,16 @@ apiPrint.interceptors.response.use((response) => response, errorInterceptor)
 //   },
 // )
 export default api
-export { api, apiPlan, apiUsuarios, apiProg, apiProy, apiRep, apiAxs, apiMsg, apiFf, apiPrint }
+export {
+  api,
+  apiPlan,
+  apiUsuarios,
+  apiProg,
+  apiProy,
+  apiRep,
+  apiAxs,
+  apiMsg,
+  apiFf,
+  apiPrint,
+  apiValid,
+}

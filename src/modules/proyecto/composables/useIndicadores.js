@@ -59,6 +59,12 @@ export function useIndicadores() {
 
   //Cargar una lista de Indicadores OG
   async function cargarIndicadoresOgporIds(dataArrayId) {
+    // Validar que hay IDs antes de hacer la petición
+    if (!dataArrayId || dataArrayId.length === 0) {
+      console.log('ℹ️ No hay IDs de indicadores OG para cargar')
+      listaIndicadoresOg.value = []
+      return []
+    }
     loading.value = true
     try {
       const respuesta = await indicadoresServicios.fetchIndicadoresOgPorIds(dataArrayId)
@@ -124,6 +130,12 @@ export function useIndicadores() {
 
   //Cargar una lista de Indicadores OG
   async function cargarIndicadoresResultadoOgPorIds(dataArrayId) {
+    // Validar que hay IDs antes de hacer la petición
+    if (!dataArrayId || dataArrayId.length === 0) {
+      console.log('ℹ️ No hay IDs de indicadores ROG para cargar')
+      listaIndicadoresRog.value = []
+      return []
+    }
     loading.value = true
     try {
       const respuesta = await indicadoresServicios.fetchIndicadoresRogPorIds(dataArrayId)
@@ -188,6 +200,11 @@ export function useIndicadores() {
   }
   //Cargar una lista de Indicadores OE
   async function cargarIndicadoresOePorIds(dataArrayId) {
+    if (!dataArrayId || dataArrayId.length === 0) {
+      console.log('ℹ️ No hay IDs de indicadores OE para cargar')
+      listaIndicadoresOe.value = []
+      return []
+    }
     loading.value = true
     try {
       const respuesta = await indicadoresServicios.fetchIndicadoresOePorIds(dataArrayId)
@@ -253,6 +270,11 @@ export function useIndicadores() {
 
   //Cargar una lista de Indicadores OE
   async function cargarIndicadoresResultadoOePorIds(dataArrayId) {
+    if (!dataArrayId || dataArrayId.length === 0) {
+      console.log('ℹ️ No hay IDs de indicadores ROE para cargar')
+      listaIndicadoresRoe.value = []
+      return []
+    }
     loading.value = true
     try {
       const respuesta = await indicadoresServicios.fetchIndicadoresRoePorIds(dataArrayId)

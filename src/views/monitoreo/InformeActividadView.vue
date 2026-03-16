@@ -344,6 +344,23 @@
                   </v-row>
                 </div>
 
+                <!-- Seccio 10: Validadores del informe-->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-account-check</v-icon>
+                    Asignar Validadores
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <ValidadorInformeActividad
+                        v-model="nuevosValidadores"
+                        :tipoDocumento="'actividad'"
+                        :usuarioRol="usuarioRol"
+                      ></ValidadorInformeActividad>
+                    </v-col>
+                  </v-row>
+                </div>
+
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
                   <v-btn
@@ -382,6 +399,9 @@
       </v-row>
     </div>
   </v-container>
+  <!-- {{ nuevosValidadores }}
+  <br /><br /><br />
+  {{ formData }} -->
 </template>
 
 <script setup>
@@ -398,6 +418,7 @@ import RegistroAvanceIndicadoresV3 from '@/modules/reportes/components/RegistroA
 import InformacionCuantitativaV2 from '@/modules/formularios/components/InformacionCuantitativaV2.vue'
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
 import ProcedenciaFondosPresupuesto from '@/modules/procedenciaFondos/components/ProcedenciaFondosPresupuesto.vue'
+import ValidadorInformeActividad from '@/modules/formularios/components/validadores/ValidadorInformeActividad.vue'
 //Auxiliares
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useInformeActividadPrincipal } from '@/modules/formularios/composables/useInformeActividadPrincipal'
@@ -426,6 +447,7 @@ const habilitarIndicadores = ref(false)
 
 //Id del usuario
 const usuarioId = computed(() => usuarioStore.id)
+const usuarioRol = computed(() => usuarioStore.rol)
 
 // Datos del formulario
 const formData = ref({
@@ -443,9 +465,14 @@ const formData = ref({
   herramientasEvaluacion: '',
   procedenciaFondos: '',
   observacionesPresupuesto: '',
+  presupuestoPlanificado: 0,
+  presupuestoEjecutado: 0,
   actividad: idactividad,
   usuario: usuarioId,
 })
+
+//Datos de los validadores
+const nuevosValidadores = ref([])
 
 /***************** WATCHERS *******************************/
 // Watcher para activar automáticamente la sección si hay datos de indicadores
@@ -518,6 +545,8 @@ const registrarProcedenciaFondos = async (datos) => {
   console.log('Procedencia Fondos: ', datos)
   formData.value.procedenciaFondos = datos
   formData.value.observacionesPresupuesto = datos?.observaciones
+  formData.value.presupuestoPlanificado = datos?.totalPlanificado
+  formData.value.presupuestoEjecutado = datos?.totalEjecutado
 }
 
 //Reset FORM
@@ -537,7 +566,10 @@ const resetForm = () => {
     herramientasEvaluacion: '',
     procedenciaFondos: '',
     observacionesPresupuesto: '',
+    presupuestoPlanificado: 0,
+    presupuestoEjecutado: 0,
     actividad: idactividad,
+    usuario: usuarioId,
     // No incluimos usuario_creador aquí porque se agrega en el submit
   }
   habilitarIndicadores.value = false
@@ -582,6 +614,11 @@ const submitForm = async () => {
       }
     }
 
+    //Deve seleccionar un validador
+    if (!nuevosValidadores.value || nuevosValidadores.value.length === 0) {
+      errores.push('Debe asignar al menos un validador para el informe')
+    }
+
     //MOstrar errores si existen
     if (errores.length > 0) {
       const mensajeError = 'Por favor complete los siguientes campos:\n• ' + errores.join('<br>• ')
@@ -593,27 +630,52 @@ const submitForm = async () => {
     /******************************* Envio de datos ****************************************/
 
     // Preparar datos finales
-    const datosParaEnviar = { ...formData.value }
+    // Preparar informeData con todos los campos del formulario
+    const informeData = {
+      fechaEjecucion: formData.value.fechaEjecucion,
+      contribucionProyecto: formData.value.contribucionProyecto,
+      informacionCuantitativa: formData.value.informacionCuantitativa,
+      mediosVerificacion: formData.value.mediosVerificacion,
+      mediosArchivos: formData.value.mediosArchivos,
+      objetivoActividad: formData.value.objetivoActividad,
+      informeObjetivoActividad: formData.value.informeObjetivoActividad,
+      tipoActividad: formData.value.tipoActividad,
+      reporteTipo: formData.value.reporteTipo,
+      comentariosRecomendaciones: formData.value.comentariosRecomendaciones,
+      herramientasEvaluacion: formData.value.herramientasEvaluacion,
+      procedenciaFondos: formData.value.procedenciaFondos,
+      observacionesPresupuesto: formData.value.observacionesPresupuesto,
+      presupuestoPlanificado: formData.value.presupuestoPlanificado,
+      presupuestoEjecutado: formData.value.presupuestoEjecutado,
+      actividad: formData.value.actividad,
+      usuario: formData.value.usuario,
+    }
     // Obtener indicadores del componente si la sección está habilitada
     if (habilitarIndicadores.value && indicadoresComponent.value) {
       const jsonIndicadores = indicadoresComponent.value.obtenerJSONIndicadores()
 
       // Solo incluir si hay registros
       if (jsonIndicadores && jsonIndicadores.metadatos?.total_general > 0) {
-        datosParaEnviar.avanceIndicadores = jsonIndicadores
+        informeData.avanceIndicadores = jsonIndicadores
         console.log('✅ JSON de indicadores incluido:', jsonIndicadores)
       } else {
-        datosParaEnviar.avanceIndicadores = null
+        informeData.avanceIndicadores = null
         console.log('ℹ️ No hay registros de indicadores')
       }
     } else {
-      datosParaEnviar.avanceIndicadores = null
+      informeData.avanceIndicadores = null
     }
 
-    console.log('📦 Enviando informe:', datosParaEnviar)
+    //Preparar el payload
+    const payload = {
+      informeData: informeData,
+      validadores: nuevosValidadores.value,
+    }
+
+    console.log('📦 Enviando payload al RestAPI:', payload)
 
     // Enviar al backend
-    await crearInformeActividadPrincipal(datosParaEnviar)
+    await crearInformeActividadPrincipal(payload)
     resetForm()
     successMsg('Informe enviado exitosamente')
     router.push('/actividades/informe/')

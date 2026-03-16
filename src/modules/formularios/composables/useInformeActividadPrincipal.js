@@ -16,6 +16,7 @@ export function useInformeActividadPrincipal() {
   const informeActividadPrincipal = ref(null) //Informe de Actividad principal
   const informeTareaPrincipal = ref(null) //Informe de Tarea principal
   const verificando = ref(false)
+  const listaInformesActividad = ref([]) //Lista de informes de actividad principal
 
   //Inicar el composable
   const { warningMsg } = useSnackbar()
@@ -73,7 +74,34 @@ export function useInformeActividadPrincipal() {
     }
   }
 
-  //Obtener los informes de una actividad por su id
+  //Obtener un informe de actividad por su id
+  async function obtenerInformeActividadPrincipalPorId(idInformeActividadPrin) {
+    loading.value = true
+    try {
+      const respuesta =
+        await informeActividadPrinServicio.informeActividadPrincipalPorId(idInformeActividadPrin)
+      informeActividadPrincipal.value = respuesta
+      return respuesta
+    } catch (err) {
+      console.error('Error al crear el informe de actividad principal', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Listar los informes de Actividad Principal
+  async function listarInformesActividadPrincipal() {
+    loading.value = true
+    try {
+      const respuesta = await informeActividadPrinServicio.todosInformesActividadPrin()
+      listaInformesActividad.value = respuesta
+      return respuesta
+    } catch (error) {
+      console.error('Error al obtener la lista de informes de actividad principal', error)
+    } finally {
+      loading.value = false
+    }
+  }
 
   /*********************************Informe de Tarea Principal ********************************/
   //Crear un informe de Tarea Principal
@@ -100,9 +128,12 @@ export function useInformeActividadPrincipal() {
     informeActividadPrincipal,
     informeTareaPrincipal,
     verificando,
+    listaInformesActividad,
     //Func Informe Actividad
     obtenerDetallesActividadPorID,
     crearInformeActividadPrincipal,
+    obtenerInformeActividadPrincipalPorId,
+    listarInformesActividadPrincipal,
     //Func Informe Tarea
     crearInformeTareaPrincipal,
     //Comprobacion

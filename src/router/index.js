@@ -444,6 +444,11 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/monitoreo/informe-actividad-ver/:id',
+      name: 'VerInformeDeActividadPrincipal',
+      component: () => import('@/views/monitoreo/InformeActividadPrincipalVerView.vue'),
+    },
+    {
       path: '/actividades/informe/',
       name: 'actividades',
       component: () => import('@/views/monitoreo/InformeListaActividadView.vue'),

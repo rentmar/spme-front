@@ -428,6 +428,23 @@
                   </v-row>
                 </div>
 
+                <!-- Seccio 10: Validadores del informe-->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-account-check</v-icon>
+                    Asignar Validadores
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <ValidadorInformeActividad
+                        v-model="nuevosValidadores"
+                        :tipoDocumento="'tarea'"
+                        :usuarioRol="usuarioRol"
+                      ></ValidadorInformeActividad>
+                    </v-col>
+                  </v-row>
+                </div>
+
                 <v-divider class="my-4"></v-divider>
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
@@ -469,6 +486,11 @@
       </v-row>
     </div>
   </v-container>
+  <!-- Datos formulario:
+  {{ formData }}
+  <br /><br /><br /><br />
+  Validadores:
+  {{ nuevosValidadores }} -->
 </template>
 
 <script setup>
@@ -485,6 +507,7 @@ import RegistroAvanceIndicadoresTareaV3 from '@/modules/reportes/components/Regi
 import InformacionCuantitativaV2 from '@/modules/formularios/components/InformacionCuantitativaV2.vue'
 import PresupuestoSubactividad from '@/modules/formularios/components/PresupuestoSubactividad.vue'
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
+import ValidadorInformeActividad from '@/modules/formularios/components/validadores/ValidadorInformeActividad.vue'
 //Composable
 import { useSnackbar } from '@/composables/useSnackbar'
 //utils
@@ -514,6 +537,7 @@ const loading = ref(false)
 
 //Id del usuario
 const usuarioId = computed(() => usuarioStore.id)
+const usuarioRol = computed(() => usuarioStore.rol)
 
 // Datos del formulario
 const formData = ref({
@@ -535,6 +559,9 @@ const formData = ref({
   tarea: idtarea.value,
   usuario: usuarioId,
 })
+
+//Datos de los validadores
+const nuevosValidadores = ref([])
 
 /****************************** Funciones Encabezado Contribucion ************************/
 const recibirDatosContribucion = (payload) => {
@@ -660,12 +687,18 @@ const submitForm = async () => {
     } else {
       console.log('Validacion indicadores: seccion desactivida')
     }
+
     //VALIDAR: Informacion cuantitativa
     const { seccionHabilitada, totalParticipantes } = infoCuantitativaEstado.value
     if (seccionHabilitada) {
       if (!totalParticipantes || totalParticipantes <= 0) {
         errores.push('Debe registrar el total de participantes en información cuantitativa')
       }
+    }
+
+    //Debe seleeccionar un validador
+    if (!nuevosValidadores.value || nuevosValidadores.value.length === 0) {
+      errores.push('Debe asignar al menos un validador para el informe')
     }
 
     //MOstrar errores si existen
@@ -677,29 +710,53 @@ const submitForm = async () => {
     }
 
     /******************************* Envio de datos ****************************************/
-    // Preparar datos finales
-    const datosParaEnviar = { ...formData.value }
+    // Preparar los datos del informe para el envio
+    const informeData = {
+      fechaEjecucion: formData.value.fechaEjecucion,
+      contribucionProyecto: formData.value.contribucionProyecto,
+      avanceIndicadores: formData.value.avanceIndicadores,
+      informacionCuantitativa: formData.value.informacionCuantitativa,
+      herramientasEvaluacion: formData.value.herramientasEvaluacion,
+      mediosVerificacion: formData.value.mediosVerificacion,
+      comentariosRecomendaciones: formData.value.comentariosRecomendaciones,
+      presupuestoPlanificado: formData.value.presupuestoPlanificado,
+      presupuestoEjecutado: formData.value.presupuestoEjecutado,
+      objetivoTarea: formData.value.objetivoTarea,
+      informeObjetivoTarea: formData.value.informeObjetivoTarea,
+      tipoActividad: formData.value.tipoActividad,
+      desglosePresupuesto: formData.value.desglosePresupuesto,
+      tarea: formData.value.tarea,
+      usuario: formData.value.usuario,
+    }
+
     // Obtener indicadores del componente si la sección está habilitada
     if (habilitarIndicadores.value && indicadoresComponent.value) {
       const jsonIndicadores = indicadoresComponent.value.obtenerJSONIndicadores()
 
       // Solo incluir si hay registros
       if (jsonIndicadores && jsonIndicadores.metadatos?.total_general > 0) {
-        datosParaEnviar.avanceIndicadores = jsonIndicadores
+        informeData.avanceIndicadores = jsonIndicadores
         console.log('✅ JSON de indicadores incluido:', jsonIndicadores)
       } else {
-        datosParaEnviar.avanceIndicadores = null
+        informeData.avanceIndicadores = null
         console.log('ℹ️ No hay registros de indicadores')
       }
     } else {
-      datosParaEnviar.avanceIndicadores = null
+      informeData.avanceIndicadores = null
     }
 
-    console.log('📦 Enviando informe:', datosParaEnviar)
+    //Preparar el pyload
+    const payload = {
+      informeData: informeData,
+      validadores: nuevosValidadores.value,
+    }
+
+    console.log('📦 Enviando payload al RestAPI:', payload)
+    console.log('Encio de datos')
+    console.log(payload)
 
     // Enviar al backend
-    await crearInformeTareaPrincipal(datosParaEnviar)
-    //await formulariosServico.creaInformeActividadPrincipal(datosParaEnviar)
+    await crearInformeTareaPrincipal(payload)
     resetForm()
     successMsg('Informe enviado exitosamente')
     router.push('/actividades/informe/')

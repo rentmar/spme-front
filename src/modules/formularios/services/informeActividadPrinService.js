@@ -35,6 +35,28 @@ export const informeActividadPrinServicio = {
       throw err
     }
   },
+  /* Informe de actividad principal por ID CRUD BASICO */
+  informeActividadPrincipalPorId: async (idInformeActividad) => {
+    try {
+      const respuesta = await api.get('/informe-actividad-principal/' + idInformeActividad + '/')
+      return respuesta.data
+    } catch (err) {
+      console.error(
+        'Axios: Error al cargar el inform de actividad con id' + idInformeActividad,
+        err,
+      )
+    }
+  },
+  /*Informe de actividad principal CRUD BASICO*/
+  todosInformesActividadPrin: async () => {
+    try {
+      const respuesta = await api.get('/informe-actividad-principal/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar los informes de actividad principal', error)
+    }
+  },
+
   /*********************** Informe Tarea Principal ************************************/
   crearInformeTareaPrincipal: async (data) => {
     try {
