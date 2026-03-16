@@ -166,7 +166,9 @@
                   <v-text-field
                     v-model="formData.monto_asignado"
                     label="Monto Asignado (Bs.)"
-                    readonly
+                    bg-color="blue-lighten-5"
+                    type="number"
+                    required
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="6" md="4">
@@ -1043,6 +1045,7 @@
         'descripcion_actividad',
         'lugar_actividad',
         'fecha_actividad',
+        'monto_asignado',
         //'idresponsable',
         'idcoordinador',
         'idcontador',

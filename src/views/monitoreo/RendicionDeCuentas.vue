@@ -163,7 +163,9 @@
                 <v-text-field
                   v-model="formData.monto_asignado"
                   label="Monto Asignado (Bs.)"
-                  readonly
+                  bg-color="blue-lighten-5"
+                  type="number"
+                  required
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6" md="4">
@@ -1004,7 +1006,7 @@ watch(
 
         // Pre-llenar campos con los datos de la solicitud
         //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
-        formData.value.monto_asignado = solicitudEncontrada.montoSolicitado || 0 // Asumiendo que monto asignado = monto solicitado
+        //formData.value.monto_asignado = solicitudEncontrada.montoSolicitado || 0 // Asumiendo que monto asignado = monto solicitado
 
         // También puedes pre-llenar otros campos si es necesario
         if (solicitudEncontrada.numeroFormulario) {
@@ -1109,7 +1111,7 @@ watch(
 
       if (solicitudEncontrada) {
         //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
-        formData.value.monto_asignado = solicitudEncontrada.formaPago || 0
+        //formData.value.monto_asignado = solicitudEncontrada.formaPago || 0
       }
     }
   },
@@ -1151,6 +1153,7 @@ async function submitForm() {
       'descripcion_actividad',
       'lugar_actividad',
       'fecha_actividad',
+      'monto_asignado',
       //'idresponsable',
       'idcoordinador',
       'idcontador',
