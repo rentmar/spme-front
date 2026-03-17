@@ -28,11 +28,7 @@
         :proyecto-id="datosFormulario.actividad?.proyecto ?? '999999'"
       ></ProyectoIdHeader>
       <br /> -->
-      <!-- <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" /> -->
-      <ActividadPeiInformacion
-        v-if="datosFormulario.actividad"
-        :actividadPeiId="idActividad"
-      ></ActividadPeiInformacion>
+      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
       <br />
       <!-- <v-form ref="form" v-model="valid" lazy-validation>
@@ -127,66 +123,67 @@
                 ></v-text-field>
               </v-col>
 
-                <v-col cols="12">
-                  <v-textarea
-                    v-model="formData.descripcion_actividad"
-                    label="Descripción de la Actividad que se realizo"
-                    bg-color="blue-lighten-5"
-                    rows="3"
-                    required
-                  ></v-textarea>
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="formData.fuente_financiamiento"
-                    label="Fuente de Financiamiento"
-                    required
-                    readonly
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" sm="6" md="4">
-                  <v-text-field
-                    v-model="formData.lugar_actividad"
-                    label="Lugar donde se realizo la Actividad"
-                    bg-color="blue-lighten-5"
-                    required
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" sm="6" md="4">
-                  <v-text-field
-                    v-model="formData.fecha_actividad"
-                    label="Fecha de la realización de Actividad"
-                    bg-color="blue-lighten-5"
-                    type="date"
-                    required
-                  ></v-text-field>
-                </v-col>
-                </v-row>
-              <v-row>
-                <v-col cols="12" sm="6" md="4">
-                  <v-text-field
-                    v-model="formData.monto_asignado"
-                    label="Monto Asignado (Bs.)"
-                    bg-color="blue-lighten-5"
-                    type="number"
-                    required
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" sm="6" md="4">
-                  <v-text-field
-                    v-model="formData.monto_gastado"
-                    label="Monto Descargado (Bs.)"
-                    readonly
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" sm="6" md="4">
-                  <v-text-field
-                    v-model="saldoPorReembolsar"
-                    label="Saldo por Reembolsar (Bs.)"
-                    readonly
-                  ></v-text-field>
-                </v-col>
-              </v-row>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="formData.descripcion_actividad"
+                  label="Descripción de la Actividad que se realizo"
+                  bg-color="blue-lighten-5"
+                  rows="3"
+                  required
+                ></v-textarea>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="formData.fuente_financiamiento"
+                  label="Fuente de Financiamiento"
+                  required
+                  readonly
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="4">
+                <v-text-field
+                  v-model="formData.lugar_actividad"
+                  label="Lugar donde se realizo la Actividad"
+                  bg-color="blue-lighten-5"
+                  required
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="4">
+                <v-text-field
+                  v-model="formData.fecha_actividad"
+                  label="Fecha de la realización de Actividad"
+                  bg-color="blue-lighten-5"
+                  type="date"
+                  required
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12" sm="6" md="4">
+                <v-text-field
+                  v-model="formData.monto_asignado"
+                  label="Monto Asignado (Bs.)"
+                  bg-color="blue-lighten-5"
+                  type="number"
+                  required
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="4">
+                <v-text-field
+                  v-model="formData.monto_gastado"
+                  label="Monto Descargado (Bs.)"
+                  readonly
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="4">
+                <v-text-field
+                  v-model="saldoPorReembolsar"
+                  label="Saldo por Reembolsar (Bs.)"
+                  readonly
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </div>
 
           <v-divider class="my-4"></v-divider>
 
@@ -439,7 +436,6 @@ import { ref, onMounted, computed, watch } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
-import ActividadPeiInformacion from '@/modules/pei/components/partials/ActividadPeiInformacion.vue'
 
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { useUserStore } from '@/stores/user'
@@ -1075,6 +1071,7 @@ async function submitForm() {
       'descripcion_actividad',
       'lugar_actividad',
       'fecha_actividad',
+      'monto_asignado',
       //'idresponsable',
       'idcoordinador',
       'idcontador',
@@ -1094,22 +1091,13 @@ async function submitForm() {
       throw new Error('Debe agregar al menos un gasto.')
     }
 
-  async function submitForm() {
-    loading.value = true;
-    try {
-      // Validar campos requeridos
-      const requiredFields = [
-        'cpte_diario',
-        'fecha_desembolso',
-        'descripcion_actividad',
-        'lugar_actividad',
-        'fecha_actividad',
-        'monto_asignado',
-        //'idresponsable',
-        'idcoordinador',
-        'idcontador',
-        'idadministrador'
-      ];
+    if (
+      formData.value.detalle_destino_fondos.some(
+        (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0,
+      )
+    ) {
+      throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
+    }
 
     const hasInvalidGasto = formData.value.detalle_destino_fondos.some(
       (gasto) =>

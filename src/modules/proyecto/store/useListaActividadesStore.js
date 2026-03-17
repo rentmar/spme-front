@@ -45,6 +45,7 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
         obtenerMisValidaciones(),
       ])
       misValidaciones.value = validaciones
+      actividadesSubactividadesLista.value = actividadesTareasListas.value.actividades
     } catch (err) {
       console.error('Error al cargar las actividades', err)
     } finally {

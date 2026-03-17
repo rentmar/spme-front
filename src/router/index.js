@@ -254,7 +254,8 @@ const router = createRouter({
     {
       path: '/reportes/estructura',
       name: 'reportesEstructura',
-      component: () => import('@/views/reportes/ProyectoEstructuraView.vue'),
+      //component: () => import('@/views/reportes/ProyectoEstructuraView.vue'),
+      component: () => import('@/views/reportes/FIltroActividadesView.vue'),
       meta: { requiresAuth: true },
     },
     {

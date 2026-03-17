@@ -138,7 +138,9 @@
                             variant="text"
                             color="primary"
                             size="small"
-                            :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
+                            :disabled="
+                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
+                            "
                             @click.stop="abrirDialogValidar(actividad.id, null)"
                           ></v-btn>
                         </template>
@@ -242,7 +244,9 @@
                             variant="text"
                             color="warning"
                             size="small"
-                            :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false"
+                            :disabled="
+                              getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false
+                            "
                             @click.stop="abrirDialogReposicionValidar(actividad.id, null)"
                           ></v-btn>
                         </template>
@@ -358,7 +362,10 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Fondos SA" location="bottom">
+                                  <v-tooltip
+                                    text="Validar Solicitud de Fondos SA"
+                                    location="bottom"
+                                  >
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -429,7 +436,10 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Pago Directo SA" location="bottom">
+                                  <v-tooltip
+                                    text="Validar Solicitud de Pago Directo SA"
+                                    location="bottom"
+                                  >
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -467,7 +477,10 @@
                                     </template>
                                   </v-tooltip>
 
-                                  <v-tooltip text="Validar Solicitud de Reposición SA" location="bottom">
+                                  <v-tooltip
+                                    text="Validar Solicitud de Reposición SA"
+                                    location="bottom"
+                                  >
                                     <template v-slot:activator="{ props }">
                                       <v-btn
                                         v-if="parseInt($route.query.showButton) === 1"
@@ -476,7 +489,9 @@
                                         variant="text"
                                         color="warning"
                                         size="x-small"
-                                        @click.stop="abrirDialogReposicionValidar(actividad.id, tarea.id)"
+                                        @click.stop="
+                                          abrirDialogReposicionValidar(actividad.id, tarea.id)
+                                        "
                                       ></v-btn>
                                       <!-- :disabled="getSolicitudFondosInfo(actividad.id)?.bloquearIconosSolFondos && false" -->
                                     </template>
@@ -1098,6 +1113,7 @@ import { useActividad } from '@/modules/proyecto/composables/useActividad'
 import { tareasServicios } from '@/modules/proyecto/services/tareasService'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
+import { useListaActividadStore } from '@/modules/proyecto/store/useListaActividadesStore'
 
 const baseurl = import.meta.env.VITE_API_BASE
 
@@ -1115,6 +1131,9 @@ const usuario = computed(() => {
     role: userStore.rol,
   }
 })
+
+const actividadesStore = useListaActividadStore()
+
 //variables para carga de datos
 const datosFormulario = ref(null)
 const datosFormulario1 = ref(null)
@@ -1372,7 +1391,8 @@ const abrirFormularioSolicitudDePagoDirectoParaValidar = (idSolicitudF) => {
   router.push(routeConfig)
 }
 
-const abrirDialogValidar = async (actividadId, tareaId) => {     //tareaId = null
+const abrirDialogValidar = async (actividadId, tareaId) => {
+  //tareaId = null
   // Guardar los IDs para usarlos en las funciones
   actividadIdParaValidar.value = actividadId
   tareaIdParaValidar.value = tareaId
@@ -1476,23 +1496,25 @@ const cargar = async () => {
     await Promise.all([
       actividadesTareas(),
       cargarSolicitudesFondos(), // Cargar solicitudes de fondos en paralelo
+      actividadesStore.cargarActividadesTareas(),
     ])
 
     // [Procesamiento existente de actividades]
-    if (Array.isArray(actividadesFromApi.value)) {
-      actividades.value = actividadesFromApi.value.map((actividad) => ({
-        ...actividad,
-        estadoFrontend: mapEstadoBackendToFrontend(actividad.estado),
-        tareas: Array.isArray(actividad.tareas)
-          ? actividad.tareas.map((tarea) => ({
-              ...tarea,
-              estadoFrontend: mapEstadoBackendToFrontend(tarea.estado),
-            }))
-          : [],
-      }))
-    } else {
-      actividades.value = []
-    }
+    // if (Array.isArray(actividadesFromApi.value)) {
+    //   actividades.value = actividadesFromApi.value.map((actividad) => ({
+    //     ...actividad,
+    //     estadoFrontend: mapEstadoBackendToFrontend(actividad.estado),
+    //     tareas: Array.isArray(actividad.tareas)
+    //       ? actividad.tareas.map((tarea) => ({
+    //           ...tarea,
+    //           estadoFrontend: mapEstadoBackendToFrontend(tarea.estado),
+    //         }))
+    //       : [],
+    //   }))
+    // } else {
+    //   actividades.value = []
+    // }
+    actividades.value = actividadesStore.actividadesFiltradas
 
     emptyResponse.value = actividades.value.length === 0
   } catch (error) {
@@ -1735,7 +1757,7 @@ async function cargarRendicionesDeCuenta() {
       const coincideTarea = solicitud.tarea_id === tareaIdParaValidar.value
       return coincideActividad && coincideTarea //&& coincideValidacionResp && coincideValidacionCoord
     })
-    datosFormularioValidarRC.value = {rendiciones: solicitudesFiltradas}
+    datosFormularioValidarRC.value = { rendiciones: solicitudesFiltradas }
 
     //const rawData = { rendiciones: await response.json() }
     //console.log('Datos recibidos para RC:', JSON.stringify(rawData, null, 2))

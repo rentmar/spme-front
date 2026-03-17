@@ -358,7 +358,7 @@
                   bg-color="blue-lighten-5"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Contador"
+                  label="Responsable Contable"
                   required
                 ></v-select>
               </v-col>
@@ -506,10 +506,10 @@ const formData = ref({
   documento_identidad: '',
   // Campos de la actividad
   descripcion_actividad: '',
-  lugar_actividad: '',        //********** */
-  fecha_actividad: '',        //********** */
+  lugar_actividad: '', //********** */
+  fecha_actividad: '', //********** */
   objetivo_actividad: '',
-  fecha_desembolso: '',       //********** */
+  fecha_desembolso: '', //********** */
   fecha_irealizacion: '',
   fecha_frealizacion: '',
   fuente_financiamiento: '',
@@ -520,7 +520,7 @@ const formData = ref({
     { fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 },
   ],
   forma_pago: null,
-  lugar_solicitud: '',        //******* */
+  lugar_solicitud: '', //******* */
   fecha_actual: getCurrentDate(),
   fecha_solicitud: '',
   //monto_solicitado: 0,
@@ -1248,7 +1248,7 @@ async function submitForm() {
       idTarea: idTarea ? parseInt(idTarea) : null,
       descripcionActividad: formData.value.descripcion_actividad,
       lugarActividad: formData.value.lugar_actividad,
-      lugarRendicion:formData.value.lugar_solicitud,
+      lugarRendicion: formData.value.lugar_solicitud,
       fechaActividad: formData.value.fecha_actividad,
       bloquearIconoRC: true,
       idSolicitudReembolso: null,
@@ -1279,7 +1279,11 @@ async function submitForm() {
     const cuerpoMensaje = {
       destinatario_id: payload.idcoordinador,
       asunto: 'Rendicion de Cuentas',
-      contenido: 'Rendicion de Cuentas pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
+      contenido:
+        'Rendicion de Cuentas pediente del formulario ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1288,7 +1292,11 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.idcontador,
       asunto: 'Rendicion de Cuentas',
-      contenido: 'Rendicion de Cuentas pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
+      contenido:
+        'Rendicion de Cuentas pediente del formulario ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1297,7 +1305,11 @@ async function submitForm() {
     const cuerpoMensaje3 = {
       destinatario_id: payload.idadministrador,
       asunto: 'Rendicion de Cuentas',
-      contenido: 'Rendicion de Cuentas pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
+      contenido:
+        'Rendicion de Cuentas pediente del formulario ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1315,14 +1327,17 @@ async function submitForm() {
     try {
       const emailPayload = {
         //emails: [formData.value.correo_coordinador, formData.value.correo_contador],
-        emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter((email) => email),
+        emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter(
+          (email) => email,
+        ),
         datos_solicitud: {
           codigo: numeroFormulario.value || 'SOL-PROV',
           titulo: 'Formulario Rendicion de Cuentas',
           solicitante: nombreCompletoSolicitante.value,
           tipo: 'Rendicion de Cuentas',
           prioridad: 'alta',
-          descripcion: formData.value.descripcion_actividad || 'Rendicion de Cuentas para actividad',
+          descripcion:
+            formData.value.descripcion_actividad || 'Rendicion de Cuentas para actividad',
           url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
