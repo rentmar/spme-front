@@ -23,11 +23,37 @@ export function useValidadores() {
 
   /*********************** VALIDADORES Informe Actividad Principal****************************************************/
 
+  //Extrae el estado de validaciones de un informe de actividad principal
   async function estadoValidacionInformeActividadPrincipal(idinforme) {
     loading.value = true
     try {
       const respuesta = await validadoresServicio.estadoValidacionInformeActividad(idinforme)
       return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Listar mis validacions
+  async function obtenerMisValidaciones() {
+    loading.value = true
+    try {
+      const respuesta = await validadoresServicio.listarMisValidaciones()
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Listar mis validaciones pendientes
+  async function obtenerMisValidacionesPendientes() {
+    loading.value = true
+    try {
+      const respuesta = await validadoresServicio.listarMisValidacionesPendientes()
     } catch (err) {
       error.value = err
     } finally {
@@ -41,6 +67,8 @@ export function useValidadores() {
     error,
     //func validadores
     listarValidadores,
+    obtenerMisValidaciones,
+    obtenerMisValidacionesPendientes,
     //Func Informe actividad principal
     estadoValidacionInformeActividadPrincipal,
   }

@@ -29,8 +29,25 @@ export const validadoresServicio = {
       throw new Error(`Error al obtener el estado de validadores ${error.message}`)
     }
   },
-  /* Validaciones pendientes del usuario actual
-
+  /* listar mis validaciones */
+  listarMisValidaciones: async () => {
+    try {
+      const respuesta = await apiValid.get('/validaciones/')
+      return respuesta.data
+    } catch (error) {
+      console.error('axios: Error al obtener todas mis validaciones', error)
+    }
+  },
+  /* listar mis validaciones pendientes */
+  listarMisValidacionesPendientes: async () => {
+    try {
+      const respuesta = await apiValid.get('/api/validaciones/pendientes/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al obtener mis validaciones pendientes', error)
+      throw new Error(error)
+    }
+  },
 
   /**************************** Validadores Informe SubActividad/Tarea *******************/
 }

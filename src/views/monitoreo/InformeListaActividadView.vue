@@ -445,7 +445,7 @@
       <!-- Columna lateral -->
       <v-col cols="12" md="3" lg="3">
         <!-- Tarjeta de estadísticas -->
-        <v-card elevation="2">
+        <v-card elevation="2" class="mb-4">
           <v-card-title class="primary white--text">
             <v-icon left>mdi-chart-box</v-icon>
             Estadísticas
@@ -513,6 +513,94 @@
             </v-list-item>
           </v-list>
         </v-card>
+
+        <!-- NUEVA TARJETA: Validaciones pendientes -->
+        <v-card elevation="2" class="mt-4">
+          <v-card-title class="warning white--text d-flex align-center">
+            <v-icon left>mdi-bell-ring</v-icon>
+            Validaciones Pendientes
+            <v-spacer></v-spacer>
+            <v-chip
+              :color="totalPendientes > 0 ? 'error' : 'success'"
+              text-color="white"
+              size="small"
+            >
+              {{ totalPendientes }}
+            </v-chip>
+          </v-card-title>
+
+          <v-card-text>
+            <!-- Resumen rápido -->
+            <div class="d-flex justify-space-around text-center mb-4">
+              <div>
+                <div
+                  class="text-h5 font-weight-bold"
+                  :class="totalPendientes > 0 ? 'text-warning' : 'text-success'"
+                >
+                  {{ totalPendientes }}
+                </div>
+                <div class="text-caption text-grey">Pendientes</div>
+              </div>
+              <div>
+                <div class="text-h5 font-weight-bold text-success">{{ totalAprobados }}</div>
+                <div class="text-caption text-grey">Aprobados</div>
+              </div>
+              <div>
+                <div class="text-h5 font-weight-bold text-error">{{ totalRechazados }}</div>
+                <div class="text-caption text-grey">Rechazados</div>
+              </div>
+            </div>
+
+            <!-- Últimas validaciones -->
+            <div v-if="ultimasValidaciones.length > 0" class="mb-4">
+              <div class="text-subtitle-2 mb-2">Últimas asignaciones:</div>
+              <v-list density="compact" class="pa-0 bg-transparent">
+                <v-list-item v-for="val in ultimasValidaciones" :key="val.id" class="px-0">
+                  <template v-slot:prepend>
+                    <v-avatar size="32" :color="getEstadoColor(val.estado)" class="mr-2">
+                      <v-icon size="16" color="white">{{ getIconoEstado(val.estado) }}</v-icon>
+                    </v-avatar>
+                  </template>
+
+                  <v-list-item-title class="text-caption font-weight-medium">
+                    {{ truncarTexto(val.informe_numero, 15) }}
+                  </v-list-item-title>
+
+                  <v-list-item-subtitle class="text-caption">
+                    <v-icon size="x-small" class="mr-1">mdi-calendar</v-icon>
+                    {{ formatDateCorta(val.fechaAsignacion) }}
+                  </v-list-item-subtitle>
+
+                  <template v-slot:append>
+                    <v-chip :color="getEstadoColor(val.estado)" size="x-small" class="text-caption">
+                      {{ val.estado_display }}
+                    </v-chip>
+                  </template>
+                </v-list-item>
+              </v-list>
+            </div>
+
+            <!-- Mensaje cuando no hay validaciones -->
+            <div v-else class="text-center py-4">
+              <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-bell-off</v-icon>
+              <div class="text-body-2 text-grey">No tienes validaciones pendientes</div>
+            </div>
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions class="pa-4">
+            <v-btn
+              block
+              color="primary"
+              variant="tonal"
+              prepend-icon="mdi-eye"
+              @click="abrirDialogValidaciones"
+            >
+              Ver todas mis validaciones
+            </v-btn>
+          </v-card-actions>
+        </v-card>
       </v-col>
     </v-row>
 
@@ -545,6 +633,12 @@
       </v-card>
     </v-dialog>
 
+    <!-- Diálogo de validaciones -->
+    <DialogValidaciones
+      v-model="dialogValidaciones"
+      :validaciones="storeActividad.misValidaciones?.results || []"
+    />
+
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
       {{ snackbar.text }}
       <template v-slot:actions>
@@ -561,7 +655,7 @@ import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSub
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 import { useInformeActividadPrincipal } from '@/modules/formularios/composables/useInformeActividadPrincipal'
 import { useRouter } from 'vue-router'
-
+import DialogValidaciones from '@/modules/formularios/components/validadores/DialogValidaciones.vue'
 // Iniciar el store de actividades
 const storeActividad = useListaActividadStore()
 
@@ -593,6 +687,9 @@ const actividadIdParaEliminarTarea = ref(null)
 
 // Notificaciones
 const snackbar = ref({ show: false, text: '', color: 'success' })
+
+// Diálogo de validaciones
+const dialogValidaciones = ref(false)
 
 // Estados disponibles para actividades y tareas
 const availableStatuses = [
@@ -904,7 +1001,66 @@ const irInformeActividad = async (actividadId, esPei) => {
     router.push('/monitoreo/informe-actividad/' + actividadId)
   }
 }
-//Verificar si hay tarea
+
+// Validaciones computadas
+const totalPendientes = computed(() => {
+  const validaciones = storeActividad.misValidaciones?.results || []
+  return validaciones.filter((v) => v.estado === 'PENDIENTE').length
+})
+
+const totalAprobados = computed(() => {
+  const validaciones = storeActividad.misValidaciones?.results || []
+  return validaciones.filter((v) => v.estado === 'APROBADO').length
+})
+
+const totalRechazados = computed(() => {
+  const validaciones = storeActividad.misValidaciones?.results || []
+  return validaciones.filter((v) => v.estado === 'RECHAZADO').length
+})
+
+const ultimasValidaciones = computed(() => {
+  const validaciones = storeActividad.misValidaciones?.results || []
+  return validaciones
+    .sort((a, b) => new Date(b.fechaAsignacion) - new Date(a.fechaAsignacion))
+    .slice(0, 3)
+})
+
+// Métodos para validaciones
+const getEstadoColor = (estado) => {
+  const colores = {
+    PENDIENTE: 'warning',
+    APROBADO: 'success',
+    RECHAZADO: 'error',
+  }
+  return colores[estado] || 'grey'
+}
+
+const getIconoEstado = (estado) => {
+  const iconos = {
+    PENDIENTE: 'mdi-clock-outline',
+    APROBADO: 'mdi-check',
+    RECHAZADO: 'mdi-close',
+  }
+  return iconos[estado] || 'mdi-circle'
+}
+
+const formatDateCorta = (dateStr) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+  })
+}
+
+const truncarTexto = (texto, max) => {
+  if (!texto) return ''
+  return texto.length > max ? texto.substring(0, max) + '...' : texto
+}
+
+const abrirDialogValidaciones = () => {
+  dialogValidaciones.value = true
+}
 </script>
 
 <style scoped>
@@ -953,5 +1109,10 @@ const irInformeActividad = async (actividadId, esPei) => {
 
 .text-success {
   color: #4caf50;
+}
+
+/* Estilos para la tarjeta de validaciones */
+.v-card-title.warning {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
 }
 </style>

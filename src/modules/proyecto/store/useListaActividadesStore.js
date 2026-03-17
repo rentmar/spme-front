@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useActividad } from '../composables/useActividad'
 import { useUserStore } from '@/stores/user'
+import { useValidadores } from '@/modules/formularios/composables/useValidadores'
 
 export const useListaActividadStore = defineStore('actividades-tareas-lista', () => {
   //Estados
@@ -16,6 +17,9 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
   //Listado general de actividades
   const actividadesListaGeneral = ref([])
 
+  //Validaciones pendientes
+  const misValidaciones = ref([])
+
   //Iniciar los composables
   const {
     actividadesTareasListas,
@@ -24,6 +28,8 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     obtenerListaActividadesConTareasPei,
   } = useActividad()
 
+  const { obtenerMisValidaciones } = useValidadores()
+
   //Iniciar el store de usuarios
   const userStore = useUserStore()
 
@@ -31,8 +37,14 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
   async function cargarActividadesTareas() {
     loading.value = true
     try {
-      await obtenerListaActividadesConTareas()
-      actividadesSubactividadesLista.value = actividadesTareasListas.value.actividades
+      // await obtenerListaActividadesConTareas()
+      // actividadesSubactividadesLista.value = actividadesTareasListas.value.actividades
+      // misValidaciones.value = await obtenerMisValidaciones()
+      const [, validaciones] = await Promise.all([
+        obtenerListaActividadesConTareas(),
+        obtenerMisValidaciones(),
+      ])
+      misValidaciones.value = validaciones
     } catch (err) {
       console.error('Error al cargar las actividades', err)
     } finally {
@@ -225,6 +237,8 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     actividadesFiltradas,
     actividadesPeiFiltradas,
     actividadesListaGeneral,
+    //Validaciones
+    misValidaciones,
     //Getters
     actividadesFiltradasTotales,
     //Funciones
