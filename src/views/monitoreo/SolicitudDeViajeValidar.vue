@@ -128,6 +128,7 @@
               <thead>
                 <tr>
                   <th>Partida</th>
+                  <th>Fuente</th>
                   <th>Descripción del Gasto</th>
                   <th>Monto (Bs.)</th>
                   <th>Acción</th>
@@ -138,10 +139,22 @@
                   <td>
                     <v-text-field
                       v-model="gasto.partida"
-                      bg-color="blue-lighten-5"
-                      hide-details
                       density="compact"
+                      hide-details
+
+                      bg-color="blue-lighten-5"
+
+
                       :readonly="soloLectura"
+                    ></v-text-field>
+                  </td>
+                  <td>
+                    <v-text-field
+                      v-model="gasto.fuente"
+                      density="compact"
+                      hide-details
+                      bg-color="blue-lighten-5"
+                      placeholder="Financiador"
                     ></v-text-field>
                   </td>
                   <td>
@@ -325,7 +338,7 @@
                   :items="responsablesList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Contador"
+                  label="Responsable Contable"
                   required
                   :readonly="soloLectura"
                 ></v-select>
@@ -333,7 +346,7 @@
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
                   v-model="solicitudDeViaje.validacionResponsable"
-                  :label="`Aprobado por Contador ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                  :label="`Aprobado por Contable ${puedeValidarResponsable ? '(Usted)' : ''}`"
                   :disabled="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
                   :readonly="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
                   :color="puedeValidarResponsable ? 'primary' : 'grey'"
@@ -357,7 +370,7 @@
                   :items="coordinadoresList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Coordinador"
+                  label="Responsable Coordinación"
                   required
                   :readonly="soloLectura"
                 ></v-select>
@@ -365,7 +378,7 @@
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
                   v-model="solicitudDeViaje.validacionCoordinador"
-                  :label="`Aprobado por Coordinador ${puedeValidarCoordinador ? '(Usted)' : ''}`"
+                  :label="`Aprobado por Coordinación ${puedeValidarCoordinador ? '(Usted)' : ''}`"
                   :disabled="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
                   :readonly="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
                   :color="puedeValidarCoordinador ? 'primary' : 'grey'"
@@ -555,7 +568,7 @@ const formData = ref({
   id_tarea: null,
   id_actividad: 0,
   id_usuario: 0,
-  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [{ partida: '', fuente: '', descripcion_gasto: '', monto: 0 }],
   forma_pago: null,
   formaPago: null,
   datos_forma_pago: {
@@ -956,6 +969,7 @@ async function cargarSolicitudesDeViaje() {
     formData.value.detalle_destino_fondos = solicitudDeViaje.value.detalleGasto.items.map(
       (item) => ({
         partida: item.partida || '',
+        fuente: item.fuente || '',
         descripcion_gasto: item.concepto || '',
         monto: item.monto || 0,
       }),
@@ -989,7 +1003,7 @@ async function cargarSolicitudesDeViaje() {
 }
 
 function addGasto() {
-  formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 })
+  formData.value.detalle_destino_fondos.push({ partida: '', fuente: '', descripcion_gasto: '', monto: 0 })
 }
 
 function removeGasto(index) {
@@ -1025,7 +1039,7 @@ async function submitForm() {
 
     if (
       formData.value.detalle_destino_fondos.some(
-        (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0,
+        (gasto) => !gasto.partida || !gasto.fuente || !gasto.descripcion_gasto || gasto.monto <= 0,
       )
     ) {
       throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
@@ -1064,6 +1078,7 @@ async function submitForm() {
       "detalleGasto": {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida: gasto.partida,
+          fuente: gasto.fuente,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         }))
@@ -1251,6 +1266,7 @@ function exportToExcel() {
   // 3. Datos de gastos
   const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
     gasto.partida,
+    gasto.fuente,
     gasto.descripcion_gasto,
     gasto.monto,
     '',
@@ -1478,6 +1494,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
     // Mapear al formato que espera la tabla
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
       partida: item.partida_sf || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
+      fuente: item.fuente || '',
       descripcion_gasto: item.concepto || '',
       monto: item.monto || 0,
     }))
