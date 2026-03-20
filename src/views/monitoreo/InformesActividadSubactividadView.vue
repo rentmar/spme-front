@@ -1,83 +1,33 @@
 <template>
-  <v-container class="actividad-informes-container">
-    <!-- Overlay de carga -->
-    <v-overlay :model-value="loading" class="align-center justify-center" persistent opacity="0.8">
-      <div class="text-center">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-          size="64"
-          width="6"
-        ></v-progress-circular>
-        <p class="mt-4 text-h6">Cargando informes de actividad...</p>
-      </div>
-    </v-overlay>
+  <!-- Overlay de carga - MOVER FUERA DEL CONTENEDOR -->
+  <v-overlay
+    :model-value="loading"
+    class="align-center justify-center"
+    persistent
+    opacity="0.9"
+    scrim="#000000"
+    contained
+  >
+    <div class="text-center">
+      <v-progress-circular indeterminate color="primary" size="64" width="6"></v-progress-circular>
+      <p class="mt-4 text-h6 text-white">Cargando informes de actividad...</p>
+    </div>
+  </v-overlay>
 
-    <div v-if="!loading && actividad">
-      <!-- ENCABEZADO ORIGINAL RESTAURADO -->
+  <v-container v-if="!loading" class="informes-container">
+    <div v-if="actividad">
+      <!-- ENCABEZADO ORIGINAL RESTAURADO (simplificado) -->
+      <PaginaTituloIcono
+        :titulo="'Informes Actividad/Subactividad'"
+        :icon="'mdi-clipboard-text-multiple'"
+        class="mb-4"
+      />
+      <actividad-informacion :actividad-id="route.params.id"></actividad-informacion>
+
+      <!-- Buscador General (estilo consistente con la muestra) -->
       <v-row class="mb-6">
         <v-col cols="12">
-          <v-sheet class="header-sheet pa-6 rounded-lg" elevation="1">
-            <PaginaTituloIcono
-              :titulo="'Informes Actividad/Subactividad'"
-              :icon="'mdi-clipboard-text-multiple'"
-              class="mb-4"
-            />
-            <actividad-informacion :actividad-id="route.params.id"></actividad-informacion>
-
-            <!-- Información adicional de la actividad -->
-            <v-row class="mt-4">
-              <v-col cols="12" md="3">
-                <div class="text-caption text-medium-emphasis">Código</div>
-                <div class="font-weight-bold">{{ actividad.codigo }}</div>
-              </v-col>
-              <v-col cols="12" md="3">
-                <div class="text-caption text-medium-emphasis">Estado</div>
-                <v-chip :color="getEstadoColor(actividad.estado)" size="small">
-                  {{ actividad.estado }}
-                </v-chip>
-              </v-col>
-              <v-col cols="12" md="3">
-                <div class="text-caption text-medium-emphasis">Presupuesto</div>
-                <div class="font-weight-bold">Bs{{ formatNumber(actividad.presupuesto) }}</div>
-              </v-col>
-              <v-col cols="12" md="3">
-                <div class="text-caption text-medium-emphasis">Ejecutado</div>
-                <div class="font-weight-bold text-success">
-                  Bs{{ formatNumber(actividad.totalEjecutado) }}
-                </div>
-              </v-col>
-            </v-row>
-          </v-sheet>
-        </v-col>
-      </v-row>
-
-      <!-- CARDS DE ESTADÍSTICAS REDUCIDAS (SOLO 3) -->
-      <v-row class="mb-6">
-        <v-col cols="12" md="4" v-for="(stat, index) in estadisticas" :key="index">
-          <v-card elevation="2" rounded="lg" class="stat-card" :class="`stat-${stat.color}`">
-            <v-card-text class="pa-4">
-              <div class="d-flex align-center">
-                <v-avatar :color="stat.color" size="52" class="mr-4 stat-avatar">
-                  <v-icon dark size="24">{{ stat.icon }}</v-icon>
-                </v-avatar>
-                <div>
-                  <div class="text-subtitle-2 text-medium-emphasis font-weight-medium">
-                    {{ stat.title }}
-                  </div>
-                  <div class="text-h4 font-weight-bold stat-value">{{ stat.value }}</div>
-                  <div class="text-caption text-medium-emphasis mt-1">{{ stat.subtitle }}</div>
-                </div>
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- BUSCADOR GENERAL -->
-      <v-row class="mb-6">
-        <v-col cols="12">
-          <v-card elevation="2" rounded="lg" class="search-card">
+          <v-card class="tarjeta-busqueda" elevation="2" rounded="lg">
             <v-card-text class="pa-5">
               <v-row>
                 <v-col cols="12" md="7">
@@ -90,8 +40,7 @@
                     variant="outlined"
                     density="comfortable"
                     hide-details
-                    bg-color="white"
-                    class="search-input"
+                    bg-color="grey-lighten-4"
                     @keyup.enter="realizarBusqueda"
                   ></v-text-field>
                 </v-col>
@@ -103,7 +52,7 @@
                     variant="outlined"
                     density="comfortable"
                     hide-details
-                    bg-color="white"
+                    bg-color="grey-lighten-4"
                   ></v-select>
                 </v-col>
                 <v-col cols="12" md="2" class="d-flex align-center">
@@ -113,11 +62,9 @@
                     block
                     @click="realizarBusqueda"
                     :loading="searching"
-                    size="x-large"
-                    height="56"
-                    class="search-btn"
+                    class="btn-buscar"
                   >
-                    <v-icon start icon="mdi-magnify" size="large"></v-icon>
+                    <v-icon start icon="mdi-magnify"></v-icon>
                     Buscar
                   </v-btn>
                 </v-col>
@@ -137,13 +84,7 @@
                         <span class="font-weight-bold">"{{ searchQuery }}"</span>
                       </span>
                     </div>
-                    <v-btn
-                      color="secondary"
-                      variant="text"
-                      size="small"
-                      @click="limpiarBusqueda"
-                      class="clear-search-btn"
-                    >
+                    <v-btn color="secondary" variant="text" size="small" @click="limpiarBusqueda">
                       <v-icon start icon="mdi-close" size="small"></v-icon>
                       Limpiar
                     </v-btn>
@@ -155,11 +96,11 @@
         </v-col>
       </v-row>
 
-      <!-- RESULTADOS DE BÚSQUEDA -->
+      <!-- Resultados de búsqueda -->
       <transition name="slide-fade">
         <v-row v-if="searchActive && resultadosBusqueda.length > 0" class="mb-6">
           <v-col cols="12">
-            <h4 class="text-h6 font-weight-bold mb-4 d-flex align-center">
+            <h4 class="text-h6 font-weight-medium mb-4 d-flex align-center">
               <v-icon color="primary" class="mr-2">mdi-file-find</v-icon>
               Resultados de búsqueda
             </h4>
@@ -174,7 +115,7 @@
                 <v-card
                   elevation="2"
                   rounded="lg"
-                  class="h-100 informe-card"
+                  class="informe-card"
                   :class="{
                     'informe-card-actividad': !informe.tarea,
                     'informe-card-tarea': informe.tarea,
@@ -187,11 +128,11 @@
                           <v-chip size="x-small" color="grey" variant="tonal" class="mr-2">
                             ID: {{ informe.id }}
                           </v-chip>
-                          <v-card-title class="text-h6 pa-0 mb-1 font-weight-bold">
+                          <v-card-title class="text-h6 pa-0 mb-1 font-weight-medium">
                             {{ informe.numeroInforme || 'Sin número' }}
                           </v-card-title>
                         </div>
-                        <v-card-subtitle class="pa-0 d-flex align-center">
+                        <v-card-subtitle class="pa-0 d-flex align-center text-caption">
                           <v-icon icon="mdi-calendar" size="small" class="mr-1"></v-icon>
                           {{ formatDate(informe.fechaEjecucion) }}
                           <template v-if="informe.tarea">
@@ -202,16 +143,10 @@
                         </v-card-subtitle>
                       </div>
                       <v-chip
-                        size="small"
+                        size="x-small"
                         :color="informe.tarea ? 'info' : 'primary'"
                         variant="flat"
-                        class="origin-chip"
                       >
-                        <v-icon
-                          start
-                          :icon="informe.tarea ? 'mdi-file-tree' : 'mdi-file-document'"
-                          size="x-small"
-                        ></v-icon>
                         {{ informe.tarea ? 'Tarea' : 'Actividad' }}
                       </v-chip>
                     </div>
@@ -219,11 +154,8 @@
 
                   <v-card-text>
                     <div class="mb-3">
-                      <div class="text-caption text-medium-emphasis mb-1">
-                        <v-icon icon="mdi-bullseye-arrow" size="x-small" class="mr-1"></v-icon>
-                        Objetivo
-                      </div>
-                      <div class="text-body-2 informe-objetivo">
+                      <div class="text-caption text-medium-emphasis mb-1">Objetivo</div>
+                      <div class="text-body-2">
                         {{
                           truncarTexto(informe.objetivoActividad || informe.objetivoTarea, 80) ||
                           'Sin objetivo'
@@ -235,15 +167,15 @@
 
                     <div class="d-flex justify-space-between">
                       <div class="text-center">
-                        <div class="text-caption text-medium-emphasis mb-1">Planificado</div>
-                        <div class="text-body-1 font-weight-bold text-primary">
+                        <div class="text-caption text-medium-emphasis mb-1">Planif.</div>
+                        <div class="text-body-2 font-weight-medium text-primary">
                           Bs{{ formatNumber(informe.presupuestoPlanificado || 0) }}
                         </div>
                       </div>
                       <div class="text-center">
-                        <div class="text-caption text-medium-emphasis mb-1">Ejecutado</div>
+                        <div class="text-caption text-medium-emphasis mb-1">Ejec.</div>
                         <div
-                          class="text-body-1 font-weight-bold"
+                          class="text-body-2 font-weight-medium"
                           :class="getEjecutadoColor(informe)"
                         >
                           Bs{{ formatNumber(informe.presupuestoEjecutado || 0) }}
@@ -251,47 +183,35 @@
                       </div>
                       <div class="text-center">
                         <div class="text-caption text-medium-emphasis mb-1">Avance</div>
-                        <div class="text-body-1 font-weight-bold" :class="getAvanceColor(informe)">
+                        <div
+                          class="text-body-2 font-weight-medium"
+                          :class="getAvanceColor(informe)"
+                        >
                           {{ getAvancePorcentaje(informe) }}%
                         </div>
                       </div>
                     </div>
 
-                    <!-- Indicadores de estado del informe -->
                     <div class="mt-3 d-flex flex-wrap gap-1">
-                      <v-chip
-                        v-if="informe.tieneDesglose"
-                        size="x-small"
-                        color="info"
-                        variant="tonal"
-                      >
-                        <v-icon start icon="mdi-cash" size="x-small"></v-icon>
-                        Desglose
-                      </v-chip>
                       <v-chip
                         v-if="informe.totalIndicadores > 0"
                         size="x-small"
                         color="success"
                         variant="tonal"
                       >
-                        <v-icon start icon="mdi-chart-line" size="x-small"></v-icon>
                         {{ informe.totalIndicadores }} indicadores
                       </v-chip>
                     </div>
                   </v-card-text>
 
-                  <v-card-actions class="pa-4">
+                  <v-card-actions class="pa-4 pt-0">
                     <v-spacer></v-spacer>
                     <v-btn
                       color="primary"
                       variant="text"
-                      size="small"
+                      size="x-small"
                       prepend-icon="mdi-eye"
-                      @click="
-                        informe.tarea
-                          ? verDetalleInformeTarea(informe.id)
-                          : verDetalleInforme(informe.id)
-                      "
+                      @click="verDetalleInforme(informe.id)"
                       class="action-btn"
                     >
                       Ver
@@ -299,7 +219,7 @@
                     <v-btn
                       color="secondary"
                       variant="text"
-                      size="small"
+                      size="x-small"
                       prepend-icon="mdi-pencil"
                       @click="
                         informe.tarea ? editarInformeTarea(informe.id) : editarInforme(informe.id)
@@ -311,7 +231,7 @@
                     <v-btn
                       color="success"
                       variant="text"
-                      size="small"
+                      size="x-small"
                       prepend-icon="mdi-file-pdf-box"
                       @click="generarPDF(informe)"
                       class="action-btn"
@@ -332,11 +252,11 @@
           <!-- INFORMES DE ACTIVIDAD PRINCIPAL -->
           <v-col cols="12" md="6">
             <div class="d-flex align-center mb-4">
-              <v-avatar color="primary" size="40" class="mr-3">
-                <v-icon dark>mdi-file-document-multiple</v-icon>
+              <v-avatar color="primary" size="36" class="mr-3">
+                <v-icon dark size="18">mdi-file-document-multiple</v-icon>
               </v-avatar>
-              <h3 class="text-h5 font-weight-bold">Informes de Actividad Principal</h3>
-              <v-chip class="ml-3" color="primary" variant="flat" size="small">
+              <h3 class="text-h6 font-weight-medium">Informes de Actividad Principal</h3>
+              <v-chip class="ml-3" color="primary" variant="tonal" size="x-small">
                 {{ informesActividad.length }}
               </v-chip>
             </div>
@@ -345,8 +265,8 @@
               v-if="informesActividad.length === 0"
               type="info"
               variant="tonal"
-              class="mb-4 empty-alert"
-              icon="mdi-information"
+              class="mb-4"
+              density="compact"
             >
               No hay informes registrados para esta actividad.
             </v-alert>
@@ -354,7 +274,7 @@
             <div v-else class="informe-list">
               <v-row>
                 <v-col v-for="informe in informesActividad" :key="informe.id" cols="12">
-                  <v-card elevation="2" rounded="lg" class="informe-card">
+                  <v-card elevation="1" rounded="lg" class="informe-item" variant="outlined">
                     <v-card-item>
                       <div class="d-flex justify-space-between align-start mb-2">
                         <div>
@@ -362,85 +282,66 @@
                             <v-chip size="x-small" color="primary" variant="tonal" class="mr-2">
                               ID: {{ informe.id }}
                             </v-chip>
-                            <v-card-title class="text-h6 pa-0 font-weight-bold">
+                            <div class="text-subtitle-2 font-weight-medium">
                               {{ informe.numeroInforme || 'Sin número' }}
-                            </v-card-title>
+                            </div>
                           </div>
-                          <v-card-subtitle class="pa-0">
-                            <v-icon icon="mdi-calendar" size="small" class="mr-1"></v-icon>
+                          <div class="text-caption text-medium-emphasis">
+                            <v-icon icon="mdi-calendar" size="x-small" class="mr-1"></v-icon>
                             {{ formatDate(informe.fechaEjecucion) }}
-                          </v-card-subtitle>
+                          </div>
                         </div>
                         <v-chip
                           v-if="informe.tipoActividad"
-                          size="small"
+                          size="x-small"
                           color="primary"
-                          variant="flat"
+                          variant="tonal"
                         >
-                          {{ truncarTexto(informe.tipoActividad, 20) }}
+                          {{ truncarTexto(informe.tipoActividad, 15) }}
                         </v-chip>
                       </div>
                     </v-card-item>
 
-                    <v-card-text>
-                      <div class="mb-3">
-                        <div class="text-caption text-medium-emphasis mb-1">
-                          <v-icon icon="mdi-bullseye-arrow" size="x-small" class="mr-1"></v-icon>
-                          Objetivo
-                        </div>
-                        <div class="text-body-2">
-                          {{ informe.objetivoActividad || 'Sin objetivo especificado' }}
-                        </div>
+                    <v-card-text class="pt-0">
+                      <div class="text-caption text-medium-emphasis mb-1">Objetivo</div>
+                      <div class="text-body-2 mb-3">
+                        {{ informe.objetivoActividad || 'Sin objetivo' }}
                       </div>
 
-                      <v-divider class="my-3"></v-divider>
-
                       <div class="d-flex justify-space-between">
-                        <div class="text-center">
-                          <div class="text-caption text-medium-emphasis mb-1">Planificado</div>
-                          <div class="text-body-1 font-weight-bold text-primary">
+                        <div>
+                          <div class="text-caption text-medium-emphasis">Planif.</div>
+                          <div class="text-body-2 font-weight-medium text-primary">
                             Bs{{ formatNumber(informe.presupuestoPlanificado) }}
                           </div>
                         </div>
-                        <div class="text-center">
-                          <div class="text-caption text-medium-emphasis mb-1">Ejecutado</div>
+                        <div>
+                          <div class="text-caption text-medium-emphasis">Ejec.</div>
                           <div
-                            class="text-body-1 font-weight-bold"
+                            class="text-body-2 font-weight-medium"
                             :class="getEjecutadoColor(informe)"
                           >
                             Bs{{ formatNumber(informe.presupuestoEjecutado) }}
                           </div>
                         </div>
-                        <div class="text-center">
-                          <div class="text-caption text-medium-emphasis mb-1">Avance</div>
+                        <div>
+                          <div class="text-caption text-medium-emphasis">Avance</div>
                           <div
-                            class="text-body-1 font-weight-bold"
+                            class="text-body-2 font-weight-medium"
                             :class="getAvanceColor(informe)"
                           >
                             {{ getAvancePorcentaje(informe) }}%
                           </div>
                         </div>
                       </div>
-
-                      <div class="mt-2 d-flex flex-wrap gap-1">
-                        <v-chip
-                          v-if="informe.avanceIndicadores?.metadatos?.total_general"
-                          size="x-small"
-                          color="success"
-                          variant="tonal"
-                        >
-                          <v-icon start icon="mdi-chart-line" size="x-small"></v-icon>
-                          {{ informe.avanceIndicadores.metadatos.total_general }} indicadores
-                        </v-chip>
-                      </div>
                     </v-card-text>
 
-                    <v-card-actions class="pa-4">
+                    <v-card-actions class="pa-3 pt-0">
                       <v-spacer></v-spacer>
                       <v-btn
-                        color="primary"
+                        size="x-small"
                         variant="text"
-                        size="small"
+                        color="primary"
                         prepend-icon="mdi-eye"
                         @click="verDetalleInforme(informe.id)"
                         class="action-btn"
@@ -448,9 +349,9 @@
                         Ver
                       </v-btn>
                       <v-btn
-                        color="secondary"
+                        size="x-small"
                         variant="text"
-                        size="small"
+                        color="secondary"
                         prepend-icon="mdi-pencil"
                         @click="editarInforme(informe.id)"
                         class="action-btn"
@@ -458,11 +359,13 @@
                         Editar
                       </v-btn>
                       <v-btn
-                        color="success"
+                        size="x-small"
                         variant="text"
-                        size="small"
+                        color="success"
                         prepend-icon="mdi-file-pdf-box"
-                        @click="generarPDF(informe)"
+                        :loading="pdfGenerandoActividad"
+                        :disabled="pdfGenerandoActividad"
+                        @click="generarPDFActividad(informe)"
                         class="action-btn"
                       >
                         PDF
@@ -477,11 +380,11 @@
           <!-- INFORMES DE TAREAS/SUBACTIVIDADES -->
           <v-col cols="12" md="6">
             <div class="d-flex align-center mb-4">
-              <v-avatar color="orange" size="40" class="mr-3">
-                <v-icon dark>mdi-file-tree</v-icon>
+              <v-avatar color="info" size="36" class="mr-3">
+                <v-icon dark size="18">mdi-file-tree</v-icon>
               </v-avatar>
-              <h3 class="text-h5 font-weight-bold">Informes de Subactividad</h3>
-              <v-chip class="ml-3" color="orange" variant="flat" size="small">
+              <h3 class="text-h6 font-weight-medium">Informes de Subactividad</h3>
+              <v-chip class="ml-3" color="info" variant="tonal" size="x-small">
                 {{ totalInformesTareas }}
               </v-chip>
             </div>
@@ -490,35 +393,30 @@
               v-if="actividad.tareas?.length === 0"
               type="info"
               variant="tonal"
-              class="mb-4 empty-alert"
-              icon="mdi-information"
+              class="mb-4"
+              density="compact"
             >
-              No hay informes de subactividad registrados para esta actividad.
+              No hay informes de subactividad registrados.
             </v-alert>
 
             <div v-else class="tareas-container">
-              <v-expansion-panels
-                v-model="expandedPanels"
-                multiple
-                variant="accordion"
-                class="tareas-panels"
-              >
+              <v-expansion-panels v-model="expandedPanels" multiple variant="accordion">
                 <v-expansion-panel
                   v-for="tarea in actividad.tareas"
                   :key="tarea.id"
-                  elevation="2"
+                  elevation="1"
                   rounded="lg"
                   class="mb-3 tarea-panel"
                 >
-                  <v-expansion-panel-title expand-icon="mdi-chevron-down" class="py-4">
-                    <template v-slot:default="{ expanded }">
+                  <v-expansion-panel-title class="py-3">
+                    <template v-slot:default>
                       <v-row no-gutters>
                         <v-col cols="12" md="8" class="d-flex align-center">
-                          <v-avatar :color="getEstadoColor(tarea.estado)" size="40" class="mr-3">
-                            <v-icon dark>{{ expanded ? 'mdi-folder-open' : 'mdi-folder' }}</v-icon>
+                          <v-avatar :color="getEstadoColor(tarea.estado)" size="32" class="mr-3">
+                            <v-icon dark size="14">mdi-folder</v-icon>
                           </v-avatar>
                           <div>
-                            <div class="font-weight-bold text-body-1">{{ tarea.titulo }}</div>
+                            <div class="text-subtitle-2 font-weight-medium">{{ tarea.titulo }}</div>
                             <div class="text-caption text-medium-emphasis">
                               <v-icon icon="mdi-tag" size="x-small" class="mr-1"></v-icon>
                               {{ tarea.codigo }}
@@ -527,11 +425,8 @@
                         </v-col>
                         <v-col cols="12" md="4" class="d-flex align-center justify-end">
                           <div class="text-end">
-                            <div class="text-caption text-medium-emphasis">
-                              <v-icon icon="mdi-file-document" size="x-small" class="mr-1"></v-icon>
-                              Informes
-                            </div>
-                            <div class="text-h6 font-weight-bold">
+                            <div class="text-caption text-medium-emphasis">Informes</div>
+                            <div class="text-subtitle-2 font-weight-bold">
                               {{ tarea.informes_tarea?.length || 0 }}
                             </div>
                           </div>
@@ -546,8 +441,7 @@
                       type="info"
                       variant="tonal"
                       density="compact"
-                      class="mb-4"
-                      icon="mdi-information"
+                      class="mb-3"
                     >
                       No hay informes para esta tarea.
                     </v-alert>
@@ -556,24 +450,24 @@
                       <v-row>
                         <v-col v-for="informe in tarea.informes_tarea" :key="informe.id" cols="12">
                           <v-card
-                            elevation="1"
+                            elevation="0"
                             rounded="lg"
                             variant="outlined"
-                            class="tarea-informe-card"
+                            class="tarea-informe-item"
                           >
-                            <v-card-item>
+                            <v-card-item class="pa-3">
                               <div class="d-flex justify-space-between align-start">
                                 <div>
                                   <div class="d-flex align-center mb-1">
                                     <v-chip
                                       size="x-small"
-                                      color="orange"
+                                      color="info"
                                       variant="tonal"
                                       class="mr-2"
                                     >
                                       ID: {{ informe.id }}
                                     </v-chip>
-                                    <div class="text-body-1 font-weight-bold">
+                                    <div class="text-subtitle-2 font-weight-medium">
                                       {{ informe.numeroInforme || 'Sin número' }}
                                     </div>
                                   </div>
@@ -586,24 +480,21 @@
                                     {{ formatDate(informe.fechaEjecucion) }}
                                   </div>
                                 </div>
-                                <v-chip v-if="informe.tipoActividad" size="x-small" color="info">
-                                  {{ truncarTexto(informe.tipoActividad, 15) }}
-                                </v-chip>
                               </div>
                             </v-card-item>
 
-                            <v-card-text>
+                            <v-card-text class="pa-3 pt-0">
                               <div class="d-flex justify-space-between align-center">
                                 <div>
-                                  <div class="text-caption text-medium-emphasis">Planificado</div>
-                                  <div class="text-body-2 font-weight-bold text-primary">
+                                  <div class="text-caption text-medium-emphasis">Planif.</div>
+                                  <div class="text-caption font-weight-medium text-primary">
                                     Bs{{ formatNumber(informe.presupuestoPlanificado) }}
                                   </div>
                                 </div>
                                 <div>
-                                  <div class="text-caption text-medium-emphasis">Ejecutado</div>
+                                  <div class="text-caption text-medium-emphasis">Ejec.</div>
                                   <div
-                                    class="text-body-2 font-weight-bold"
+                                    class="text-caption font-weight-medium"
                                     :class="getEjecutadoColor(informe)"
                                   >
                                     Bs{{ formatNumber(informe.presupuestoEjecutado) }}
@@ -612,43 +503,16 @@
                                 <div>
                                   <div class="text-caption text-medium-emphasis">Avance</div>
                                   <div
-                                    class="text-body-2 font-weight-bold"
+                                    class="text-caption font-weight-medium"
                                     :class="getAvanceColor(informe)"
                                   >
                                     {{ getAvancePorcentaje(informe) }}%
                                   </div>
                                 </div>
                               </div>
-
-                              <div v-if="informe.objetivoTarea" class="mt-3">
-                                <div class="text-caption text-medium-emphasis">
-                                  <v-icon
-                                    icon="mdi-bullseye-arrow"
-                                    size="x-small"
-                                    class="mr-1"
-                                  ></v-icon>
-                                  Objetivo:
-                                </div>
-                                <div class="text-body-2">
-                                  {{ truncarTexto(informe.objetivoTarea, 80) }}
-                                </div>
-                              </div>
-
-                              <div class="mt-2 d-flex flex-wrap gap-1">
-                                <v-chip
-                                  v-if="informe.avanceIndicadores?.metadatos?.total_general"
-                                  size="x-small"
-                                  color="success"
-                                  variant="tonal"
-                                >
-                                  <v-icon start icon="mdi-chart-line" size="x-small"></v-icon>
-                                  {{ informe.avanceIndicadores.metadatos.total_general }}
-                                  indicadores
-                                </v-chip>
-                              </div>
                             </v-card-text>
 
-                            <v-card-actions class="pa-3">
+                            <v-card-actions class="pa-3 pt-0">
                               <v-spacer></v-spacer>
                               <v-btn
                                 size="x-small"
@@ -656,6 +520,7 @@
                                 color="primary"
                                 prepend-icon="mdi-eye"
                                 @click="verDetalleInformeTarea(informe.id)"
+                                class="action-btn"
                               >
                                 Ver
                               </v-btn>
@@ -665,6 +530,7 @@
                                 color="secondary"
                                 prepend-icon="mdi-pencil"
                                 @click="editarInformeTarea(informe.id)"
+                                class="action-btn"
                               >
                                 Editar
                               </v-btn>
@@ -673,7 +539,10 @@
                                 variant="text"
                                 color="success"
                                 prepend-icon="mdi-file-pdf-box"
-                                @click="generarPDF(informe)"
+                                :loading="pdfGenerandoTarea"
+                                :disabled="pdfGenerandoTarea"
+                                @click="generarPDFTarea(informe)"
+                                class="action-btn"
                               >
                                 PDF
                               </v-btn>
@@ -693,17 +562,11 @@
 
     <!-- Error mejorado -->
     <transition name="slide-fade">
-      <v-alert
-        v-if="error && !loading"
-        type="error"
-        variant="tonal"
-        class="mb-4 error-alert"
-        icon="mdi-alert-circle"
-      >
+      <v-alert v-if="error && !loading" type="error" variant="tonal" class="mb-4" density="compact">
         <div class="d-flex align-center">
           <div class="flex-grow-1">{{ error }}</div>
           <v-btn color="error" variant="text" @click="cargarDatos" size="small">
-            <v-icon start icon="mdi-refresh"></v-icon>
+            <v-icon start icon="mdi-refresh" size="small"></v-icon>
             Reintentar
           </v-btn>
         </div>
@@ -720,12 +583,13 @@ import { useRoute } from 'vue-router'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 
 // Store y router
 const storeListasInformes = useInfPrinActTareaListaStore()
 const router = useRouter()
 const route = useRoute()
-const { successMsg } = useSnackbar()
+const { successMsg, errorMsg } = useSnackbar()
 
 // Estado
 const loading = ref(false)
@@ -760,43 +624,6 @@ const totalInformesTareas = computed(() => {
   }, 0)
 })
 
-const totalIndicadoresGlobal = computed(() => {
-  let total = 0
-  informesActividad.value.forEach((informe) => {
-    total += informe.avanceIndicadores?.metadatos?.total_general || 0
-  })
-  actividad.value?.tareas?.forEach((tarea) => {
-    tarea.informes_tarea?.forEach((informe) => {
-      total += informe.avanceIndicadores?.metadatos?.total_general || 0
-    })
-  })
-  return total
-})
-
-const estadisticas = computed(() => [
-  {
-    title: 'Informes Actividad Principal',
-    value: informesActividad.value.length,
-    subtitle: 'Total de informes',
-    icon: 'mdi-file-document-multiple',
-    color: 'blue',
-  },
-  {
-    title: 'Informes de Tareas',
-    value: totalInformesTareas.value,
-    subtitle: 'Total por tarea',
-    icon: 'mdi-file-document',
-    color: 'green',
-  },
-  {
-    title: 'Indicadores Registrados',
-    value: totalIndicadoresGlobal.value,
-    subtitle: 'Total de indicadores',
-    icon: 'mdi-chart-line',
-    color: 'purple',
-  },
-])
-
 const resultadosBusqueda = computed(() => {
   if (!searchActive.value || !searchQuery.value) return []
 
@@ -809,7 +636,6 @@ const resultadosBusqueda = computed(() => {
         ...informe,
         tarea: null,
         origen: 'actividad',
-        tieneDesglose: !!informe.desglosePresupuesto,
         totalIndicadores: informe.avanceIndicadores?.metadatos?.total_general || 0,
       })),
     )
@@ -828,7 +654,6 @@ const resultadosBusqueda = computed(() => {
               titulo: tarea.titulo,
             },
             origen: 'tarea',
-            tieneDesglose: !!informe.desglosePresupuesto,
             totalIndicadores: informe.avanceIndicadores?.metadatos?.total_general || 0,
           })),
         )
@@ -924,11 +749,11 @@ const truncarTexto = (texto, longitud) => {
 
 const getEstadoColor = (estado) => {
   const colores = {
-    PLAN: 'blue',
-    PLANIFICADA: 'blue',
-    EJEC: 'orange',
-    COMP: 'green',
-    CANC: 'red',
+    PLAN: 'info',
+    PLANIFICADA: 'info',
+    EJEC: 'warning',
+    COMPL: 'success',
+    CANC: 'error',
     PEN: 'grey',
     TER: 'success',
   }
@@ -944,11 +769,7 @@ const getEjecutadoColor = (informe) => {
 }
 
 const getAvanceColor = (informe) => {
-  const porcentaje = getAvancePorcentaje(informe)
-  if (porcentaje >= 100) return 'text-success'
-  if (porcentaje >= 80) return 'text-info'
-  if (porcentaje >= 50) return 'text-warning'
-  return 'text-error'
+  return getEjecutadoColor(informe)
 }
 
 const getAvancePorcentaje = (informe) => {
@@ -958,32 +779,58 @@ const getAvancePorcentaje = (informe) => {
 }
 
 // ============================================================
-// Métodos de navegación - MODIFICADOS
+// Métodos de navegación
 // ============================================================
 const verDetalleInforme = (informeId) => {
-  console.log('Ver detalle informe:', informeId)
   router.push('/monitoreo/informe-actividad-ver/' + informeId)
-  // successMsg(`Ver detalle del informe ${informeId} - Funcionalidad en desarrollo`)
 }
 
 const verDetalleInformeTarea = (informeId) => {
-  console.log('Ver detalle tarea:', informeId)
   successMsg(`Ver detalle de la tarea ${informeId} - Funcionalidad en desarrollo`)
 }
 
 const editarInforme = (informeId) => {
-  console.log('Editar informe:', informeId)
   successMsg(`Funcionalidad de edición en desarrollo para el informe ${informeId}`)
 }
 
 const editarInformeTarea = (informeId) => {
-  console.log('Editar informe tarea:', informeId)
   successMsg(`Funcionalidad de edición en desarrollo para la tarea ${informeId}`)
 }
 
 const generarPDF = (informe) => {
-  console.log('Generando PDF para:', informe.numeroInforme)
   successMsg(`Generando PDF del informe ${informe.numeroInforme}`)
+}
+/*********************** Descarga de reportes ******************************************/
+const pdfGenerandoActividad = ref(false)
+const pdfGenerandoTarea = ref(false)
+//Composable
+const { generarPdfInformeActividadPrincipal, generarPdfInformeTareaPrincipal } =
+  useImpresionFormularios()
+
+const generarPDFActividad = async (informe) => {
+  pdfGenerandoActividad.value = true
+  try {
+    await generarPdfInformeActividadPrincipal(informe.id)
+    successMsg('Informe de Actividad - PDF Generado')
+  } catch (err) {
+    console.error('Error generando PDF de actividad:', err)
+    errorMsg(`Error al generar PDF de actividad: ${err.message}`)
+  } finally {
+    pdfGenerandoActividad.value = false
+  }
+}
+
+const generarPDFTarea = async (informe) => {
+  pdfGenerandoTarea.value = true
+  try {
+    await generarPdfInformeTareaPrincipal(informe.id)
+    successMsg('Informe de Subactividad - PDF Generado')
+  } catch (err) {
+    console.error('Error generando PDF de subactividad:', err)
+    errorMsg(`Error al generar PDF de subactividad: ${err.message}`)
+  } finally {
+    pdfGenerandoTarea.value = false
+  }
 }
 
 // Hook de ciclo de vida
@@ -993,213 +840,172 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.actividad-informes-container {
+/* Estilos base - consistentes con la muestra */
+.informes-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 24px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-  min-height: 100vh;
+  padding: 24px 16px;
+  position: relative;
 }
 
-/* Header */
-.header-sheet {
+/* Tarjeta de búsqueda */
+.tarjeta-busqueda {
   background: white;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
 }
 
-.header-sheet:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
-}
-
-/* Estadísticas */
-.stat-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
-}
-
-.stat-blue .stat-avatar {
-  background: linear-gradient(145deg, #1976d2, #1565c0);
-}
-
-.stat-green .stat-avatar {
-  background: linear-gradient(145deg, #388e3c, #2e7d32);
-}
-
-.stat-purple .stat-avatar {
-  background: linear-gradient(145deg, #9c27b0, #7b1fa2);
-}
-
-.stat-avatar {
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover .stat-avatar {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.stat-value {
-  color: #1a1a1a;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover .stat-value {
-  color: #1976d2;
-}
-
-/* Búsqueda */
-.search-card {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.search-input :deep(.v-field) {
-  border-radius: 12px !important;
-}
-
-.search-input :deep(.v-field--focused) {
-  border-color: #1976d2 !important;
-}
-
-.search-btn {
-  border-radius: 12px !important;
+.btn-buscar {
+  height: 40px !important;
   text-transform: none !important;
-  font-weight: 600 !important;
-  background: linear-gradient(145deg, #1976d2, #1565c0) !important;
+  font-weight: 500 !important;
   transition: all 0.3s ease !important;
 }
 
-.search-btn:hover {
+.btn-buscar:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(25, 118, 210, 0.3) !important;
+  box-shadow: 0 6px 12px rgba(25, 118, 210, 0.25) !important;
 }
 
 .search-active-container {
   background: #f8f9fa;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 8px;
+  padding: 12px;
 }
 
-.clear-search-btn {
-  border-radius: 20px !important;
-  transition: all 0.3s ease !important;
-}
-
-.clear-search-btn:hover {
-  background-color: #e0e0e0 !important;
-}
-
-/* Informes Cards */
+/* Tarjetas de informe - con efecto flotante */
 .informe-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  height: 100%;
   background: white;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+  position: relative;
+  top: 0;
 }
 
 .informe-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
   border-color: #1976d2;
+  z-index: 10;
 }
 
 .informe-card-actividad {
-  border-left: 4px solid #1976d2;
+  border-left: 3px solid #1976d2;
 }
 
 .informe-card-tarea {
-  border-left: 4px solid #f57c00;
+  border-left: 3px solid #f57c00;
 }
 
-.informe-objetivo {
-  color: #4a4a4a;
-  line-height: 1.5;
+.informe-card-tarea:hover {
+  border-color: #f57c00;
 }
 
-.origin-chip {
-  font-weight: 600;
-  letter-spacing: 0.3px;
+.informe-item {
+  background: white;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  top: 0;
 }
 
-.action-btn {
-  border-radius: 20px !important;
-  transition: all 0.3s ease !important;
-  font-weight: 500 !important;
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
-  background-color: rgba(25, 118, 210, 0.1) !important;
+.informe-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12) !important;
+  border-color: #1976d2;
+  background: white;
 }
 
 /* Tareas */
 .tareas-container {
-  max-height: 800px;
+  max-height: 600px;
   overflow-y: auto;
   padding-right: 8px;
 }
 
 .tareas-container::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .tareas-container::-webkit-scrollbar-track {
   background: #f1f1f1;
-  border-radius: 10px;
+  border-radius: 4px;
 }
 
 .tareas-container::-webkit-scrollbar-thumb {
   background: #c0c0c0;
-  border-radius: 10px;
-}
-
-.tareas-container::-webkit-scrollbar-thumb:hover {
-  background: #a0a0a0;
+  border-radius: 4px;
 }
 
 .tarea-panel {
-  border-radius: 12px !important;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.08);
   background: white;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  top: 0;
 }
 
 .tarea-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(245, 124, 0, 0.15) !important;
   border-color: #f57c00;
-  box-shadow: 0 8px 16px rgba(245, 124, 0, 0.15) !important;
+  z-index: 5;
 }
 
-.tarea-informe-card {
-  transition: all 0.3s ease;
-  border: 1px solid #e0e0e0;
+.tarea-informe-item {
   background: white;
-  margin-bottom: 12px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 8px;
+  position: relative;
+  top: 0;
 }
 
-.tarea-informe-card:hover {
-  transform: translateX(4px);
+.tarea-informe-item:hover {
+  transform: translateX(4px) translateY(-2px);
+  box-shadow: 0 6px 12px rgba(245, 124, 0, 0.15) !important;
   border-color: #f57c00;
-  background: #fff8f0;
+  background: white;
+  z-index: 5;
 }
 
-/* Alertas */
-.empty-alert {
-  border-radius: 12px !important;
-  background: linear-gradient(145deg, #e3f2fd, #bbdefb) !important;
-  border: 1px solid #90caf9 !important;
+/* Botones de acción */
+.action-btn {
+  transition: all 0.2s ease !important;
 }
 
-.error-alert {
-  border-radius: 12px !important;
+.action-btn:hover {
+  background-color: rgba(25, 118, 210, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+/* Utilidades */
+.gap-1 {
+  gap: 4px;
+}
+.gap-2 {
+  gap: 8px;
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Estados de texto */
+.text-error {
+  color: #f44336;
+}
+.text-warning {
+  color: #ff9800;
+}
+.text-info {
+  color: #2196f3;
+}
+.text-success {
+  color: #4caf50;
 }
 
 /* Transiciones */
@@ -1211,29 +1017,32 @@ onMounted(() => {
 .slide-fade-enter-from,
 .slide-fade-leave-to {
   opacity: 0;
-  transform: translateY(-20px);
-}
-
-/* Utilidades */
-.truncate-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.h-100 {
-  height: 100%;
+  transform: translateY(-10px);
 }
 
 /* Responsive */
 @media (max-width: 960px) {
-  .actividad-informes-container {
-    padding: 16px;
+  .informes-container {
+    padding: 16px 12px;
   }
 
   .tareas-container {
     max-height: none;
     overflow-y: visible;
+    padding-right: 0;
+  }
+
+  .informe-card:hover,
+  .informe-item:hover,
+  .tarea-panel:hover,
+  .tarea-informe-item:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 600px) {
+  .btn-buscar {
+    height: 44px !important;
   }
 }
 </style>

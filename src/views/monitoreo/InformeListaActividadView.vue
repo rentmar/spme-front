@@ -12,7 +12,7 @@
     <!-- Mensaje cuando no hay actividades -->
     <v-card v-if="emptyResponse && !loading" class="mb-4">
       <v-card-text class="text-center py-8">
-        <v-icon size="64" color="grey lighten-1">mdi-calendar-remove</v-icon>
+        <v-icon size="64" color="grey-lighten-1">mdi-calendar-remove</v-icon>
         <h3 class="text-h5 mt-4">No hay actividades registradas</h3>
       </v-card-text>
     </v-card>
@@ -20,14 +20,19 @@
     <v-row v-else>
       <!-- Columna principal -->
       <v-col cols="12" md="9" lg="9">
-        <v-card class="pa-4" elevation="2">
-          <v-card-title class="d-flex justify-space-between align-center">
-            <span>Lista de Actividades</span>
-            <span class="text-caption text-grey">Total: {{ filteredActividades.length }}</span>
+        <v-card class="pa-4 tarjeta-principal" elevation="2" rounded="lg">
+          <v-card-title class="d-flex justify-space-between align-center px-0 pt-0">
+            <div class="d-flex align-center">
+              <v-icon color="primary" size="28" class="mr-2">mdi-format-list-bulleted</v-icon>
+              <span class="text-h6 font-weight-medium">Lista de Actividades</span>
+            </div>
+            <span class="text-caption text-grey px-2 py-1 bg-grey-lighten-4 rounded">
+              Total: {{ filteredActividades.length }}
+            </span>
           </v-card-title>
 
           <!-- Buscador y filtros -->
-          <v-card-text class="pt-0 pb-4">
+          <v-card-text class="pt-4 pb-4 px-0">
             <v-text-field
               v-model="searchQuery"
               label="Buscar actividades (por código, nombre o descripción)"
@@ -35,10 +40,13 @@
               variant="outlined"
               clearable
               density="comfortable"
+              bg-color="grey-lighten-4"
+              hide-details
+              class="mb-4"
               @input="currentPage = 1"
             ></v-text-field>
 
-            <div class="d-flex flex-wrap gap-2 mt-2">
+            <div class="d-flex flex-wrap gap-2">
               <!-- Filtros por estado -->
               <v-chip-group v-model="statusFilters" multiple column>
                 <v-chip
@@ -48,111 +56,103 @@
                   filter
                   :color="getStatusColor(status.value)"
                   variant="outlined"
+                  size="small"
                 >
                   {{ status.text }}
                 </v-chip>
               </v-chip-group>
             </div>
           </v-card-text>
-          <v-divider class="my-4"></v-divider>
 
-          <v-list v-if="!loading" class="py-0">
+          <v-divider class="my-2"></v-divider>
+
+          <v-list v-if="!loading" class="py-0" lines="two">
             <template
               v-for="(actividad, index) in actividadesPaginadasOrdenadas"
               :key="`actividad-${actividad.id}-${index}`"
             >
-              <v-list-item :value="actividad.id" @click="toggleExpanded(actividad.id)" class="mb-2">
+              <v-list-item
+                :value="actividad.id"
+                @click="toggleExpanded(actividad.id)"
+                class="mb-2 actividad-item rounded-lg"
+                :class="{ 'actividad-expandida': expandedActividadId === actividad.id }"
+              >
                 <template v-slot:prepend>
-                  <v-avatar :color="getStatusColor(actividad.estado)" class="mr-4">
-                    <v-icon dark>{{ getTipoIcon(actividad.estado) }}</v-icon>
+                  <v-avatar :color="getStatusColor(actividad.estado)" size="40" class="mr-3">
+                    <v-icon size="20" dark>{{ getTipoIcon(actividad.estado) }}</v-icon>
                   </v-avatar>
                 </template>
 
-                <v-list-item-title class="font-weight-bold">
+                <v-list-item-title class="font-weight-medium d-flex align-center">
                   <!-- CHIP PARA DISTINGUIR TIPO DE ACTIVIDAD -->
-                  <v-chip v-if="actividad.pei_id" color="green" size="x-small" class="mr-2">
+                  <v-chip
+                    v-if="actividad.pei_id"
+                    color="green"
+                    size="x-small"
+                    class="mr-2"
+                    variant="flat"
+                  >
                     PEI
                   </v-chip>
-                  <v-chip v-else color="blue" size="x-small" class="mr-2"> PROYECTO </v-chip>
+                  <v-chip v-else color="blue" size="x-small" class="mr-2" variant="flat">
+                    PROYECTO
+                  </v-chip>
 
-                  {{ actividad.codigo }} - {{ actividad.nombreCorto }}
+                  <span class="text-truncate"
+                    >{{ actividad.codigo }} - {{ actividad.nombreCorto }}</span
+                  >
                 </v-list-item-title>
+
                 <v-list-item-subtitle class="mt-1">
-                  <div class="d-flex align-center flex-wrap">
+                  <div class="d-flex align-center flex-wrap gap-2">
                     <v-chip
-                      small
+                      size="x-small"
                       :color="getStatusColor(actividad.estado)"
                       text-color="white"
-                      class="mr-2"
+                      class="mr-1"
                     >
                       {{ actividad.estado }}
                     </v-chip>
-                    <!-- Mostrar PEI ID si es actividad PEI -->
-                    <span v-if="actividad.pei_id" class="mr-2">
-                      <v-icon small>mdi-identifier</v-icon>
-                      PEI ID: {{ actividad.pei_id }}
+
+                    <span class="text-caption text-medium-emphasis">
+                      <v-icon size="14" class="mr-1">mdi-cash</v-icon>
+                      {{ formatCurrency(actividad.presupuesto) }}
                     </span>
-                    <span class="mr-2"
-                      >Presupuesto: {{ formatCurrency(actividad.presupuesto) }}</span
+
+                    <span
+                      v-if="actividad.responsable_info"
+                      class="text-caption text-medium-emphasis"
                     >
-                    <span v-if="actividad.responsable_info" class="mr-2">
-                      Responsable: {{ actividad.responsable_info.nombre_completo }}
+                      <v-icon size="14" class="mr-1">mdi-account</v-icon>
+                      {{ actividad.responsable_info.nombre_completo }}
                     </span>
                   </div>
-                  <div class="text-caption mt-1" v-if="actividad.descripcion">
-                    {{ actividad.descripcion }}
-                  </div>
-                  <div
-                    class="text-caption mt-1"
-                    v-if="actividad.fecha_inicio || actividad.fecha_cierre"
-                  >
-                    <span v-if="actividad.fecha_inicio">
-                      <strong>Inicio:</strong> {{ formatDate(actividad.fecha_inicio) }}
-                    </span>
-                    <span v-if="actividad.fecha_cierre" class="ml-2">
-                      <strong>Cierre:</strong> {{ formatDate(actividad.fecha_cierre) }}
-                    </span>
-                  </div>
-                  <div
-                    class="text-caption mt-1"
-                    v-if="actividad.tareas && actividad.tareas.length > 0"
-                  >
-                    <strong>Subactividades:</strong> {{ actividad.tareas.length }}
+
+                  <div class="text-caption text-grey mt-1" v-if="actividad.descripcion">
+                    {{ truncarTexto(actividad.descripcion, 100) }}
                   </div>
                 </v-list-item-subtitle>
 
                 <!-- iconos de acciones -->
                 <template v-slot:append>
-                  <div class="d-flex">
-                    <!-- Separador visual -->
-                    <v-divider vertical inset class="mx-1 my-1"></v-divider>
-
+                  <div class="d-flex acciones-container">
                     <!-- Informe de Actividad -->
-                    <v-tooltip
-                      :text="actividad.pei_id ? 'Informe de Actividad PEI' : 'Informe de Actividad'"
-                      location="top"
-                    >
+                    <v-tooltip text="Informe de Actividad" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
                           v-bind="props"
                           icon="mdi-file-document-outline"
                           variant="text"
-                          color="info"
+                          color="primary"
                           size="small"
                           @click.stop="irInformeActividad(actividad.id, actividad.pei_id)"
+                          class="accion-btn"
                         ></v-btn>
                       </template>
                     </v-tooltip>
 
                     <!-- Informe de Tarea (para la actividad principal) -->
-                    <v-tooltip
-                      :text="
-                        actividad.pei_id
-                          ? 'Ver Informe de Actividad/Subactividad PEI'
-                          : 'Ver Informe de Actividad/Subactividad'
-                      "
-                      location="top"
-                    >
+                    <v-tooltip text="Ver Informe de Actividad/Subactividad" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
                           v-bind="props"
@@ -166,6 +166,7 @@
                               : `/monitoreo/informes-actividad-subactividad/${actividad.id}`
                           "
                           @click.stop
+                          class="accion-btn"
                         ></v-btn>
                       </template>
                     </v-tooltip>
@@ -175,34 +176,37 @@
 
               <!-- Tarjeta de detalles desplegable -->
               <v-expand-transition>
-                <div v-if="expandedActividadId === actividad.id">
-                  <v-list-item :value="`detalle-${actividad.id}`" class="mb-2">
-                    <v-card elevation="0" class="ml-10 mr-4 mb-4 bg-grey-lighten-4">
-                      <v-card-text class="pt-4">
-                        <div class="d-flex justify-space-between align-center mb-4">
-                          <span class="text-subtitle-1"
-                            >Subactividades de {{ actividad.codigo }}</span
-                          >
-                          <div class="d-flex align-center">
-                            <v-btn
-                              color="primary"
-                              variant="text"
-                              @click="openTareaDialog(actividad.id)"
-                            >
-                              <v-icon left>mdi-plus</v-icon>
-                              Añadir Subactividad
-                            </v-btn>
-                          </div>
-                        </div>
+                <div
+                  v-if="expandedActividadId === actividad.id"
+                  class="detalles-container ml-9 mt-2 mb-4"
+                >
+                  <v-card variant="outlined" rounded="lg" class="bg-grey-lighten-4">
+                    <v-card-text class="pa-4">
+                      <div class="d-flex justify-space-between align-center mb-3">
+                        <span class="text-subtitle-2 font-weight-medium d-flex align-center">
+                          <v-icon size="18" color="primary" class="mr-1">mdi-playlist-check</v-icon>
+                          Subactividades de {{ actividad.codigo }}
+                        </span>
+                        <v-btn
+                          color="primary"
+                          variant="tonal"
+                          size="small"
+                          prepend-icon="mdi-plus"
+                          @click.stop="openTareaDialog(actividad.id)"
+                        >
+                          Añadir Subactividad
+                        </v-btn>
+                      </div>
 
-                        <!-- Lista de subactividades mejorada -->
-                        <v-list density="compact" class="py-0">
-                          <v-list-item
-                            v-for="tarea in actividad.tareasOrdenadas"
-                            :key="`tarea-${actividad.id}-${tarea.id}`"
-                            class="mb-2 pa-3"
-                          >
-                            <template v-slot:prepend>
+                      <!-- Lista de subactividades mejorada -->
+                      <v-list density="compact" class="py-0 bg-transparent">
+                        <v-list-item
+                          v-for="tarea in actividad.tareasOrdenadas"
+                          :key="`tarea-${actividad.id}-${tarea.id}`"
+                          class="subactividad-item mb-2 pa-3 rounded-lg"
+                        >
+                          <template v-slot:prepend>
+                            <div class="position-relative">
                               <v-badge
                                 :color="getStatusColorTarea(tarea.estado)"
                                 dot
@@ -211,233 +215,237 @@
                                 offset-y="-5"
                               >
                                 <v-avatar
-                                  size="40"
+                                  size="36"
                                   :color="getStatusColorTarea(tarea.estado) + ' lighten-4'"
                                 >
-                                  <v-icon :color="getStatusColorTarea(tarea.estado)">
+                                  <v-icon size="18" :color="getStatusColorTarea(tarea.estado)">
                                     {{ getTareaIcon(tarea.estado) }}
                                   </v-icon>
                                 </v-avatar>
                               </v-badge>
-                            </template>
+                            </div>
+                          </template>
 
-                            <!-- SOLUCIÓN 5 IMPLEMENTADA AQUÍ -->
-                            <v-list-item-title class="font-weight-medium mb-1">
-                              <div class="d-flex align-center flex-wrap gap-2">
-                                <!-- Título principal -->
-                                <v-tooltip
-                                  location="top"
-                                  :disabled="!esTextoLargo(tarea.titulo || tarea.descripcion)"
-                                >
-                                  <template v-slot:activator="{ props }">
-                                    <div
-                                      v-bind="props"
-                                      class="text-truncate"
-                                      style="max-width: min(70%, 300px)"
-                                    >
-                                      {{
-                                        tarea.titulo ||
-                                        tarea.descripcion ||
-                                        'Subactividad sin título'
-                                      }}
-                                    </div>
-                                  </template>
-                                  <span>{{
-                                    tarea.titulo || tarea.descripcion || 'Subactividad sin título'
-                                  }}</span>
-                                </v-tooltip>
+                          <v-list-item-title class="font-weight-medium mb-1">
+                            <div class="d-flex align-center flex-wrap gap-2">
+                              <span class="text-truncate" style="max-width: 250px">
+                                {{ tarea.titulo || tarea.descripcion || 'Subactividad sin título' }}
+                              </span>
+                              <v-chip
+                                v-if="tieneCodigoValido(tarea.codigo)"
+                                size="x-small"
+                                color="primary"
+                                variant="outlined"
+                                class="chip-codigo"
+                              >
+                                {{ formatearCodigo(tarea.codigo) }}
+                              </v-chip>
+                            </div>
+                          </v-list-item-title>
 
-                                <!-- Código -->
-                                <div class="d-flex align-center flex-shrink-0">
-                                  <v-chip
-                                    v-if="tieneCodigoValido(tarea.codigo)"
-                                    small
-                                    color="primary"
-                                    variant="outlined"
-                                    class="text-no-wrap chip-codigo"
-                                    density="comfortable"
-                                  >
-                                    {{ formatearCodigo(tarea.codigo) }}
-                                  </v-chip>
-                                </div>
-                              </div>
-                            </v-list-item-title>
+                          <v-list-item-subtitle>
+                            <div class="d-flex flex-wrap align-center gap-2 mt-1">
+                              <v-chip
+                                size="x-small"
+                                :color="getStatusColorTarea(tarea.estado)"
+                                text-color="white"
+                              >
+                                {{ getEstadoTareaDisplay(tarea.estado) }}
+                              </v-chip>
 
-                            <v-list-item-subtitle>
-                              <div class="d-flex flex-wrap align-center gap-2 mt-1">
-                                <!-- Estado -->
-                                <v-chip
-                                  small
-                                  :color="getStatusColorTarea(tarea.estado)"
-                                  text-color="white"
-                                  class="text-caption"
-                                >
-                                  {{ getEstadoTareaDisplay(tarea.estado) }}
-                                </v-chip>
-
-                                <!-- Presupuesto -->
-                                <span class="text-caption">
-                                  <v-icon small class="mr-1">mdi-cash</v-icon>
+                              <div class="d-flex align-center">
+                                <span class="text-caption text-medium-emphasis d-flex align-center">
+                                  <v-icon size="12" class="mr-1">mdi-cash</v-icon>
                                   {{ formatCurrency(tarea.presupuesto) }}
                                 </span>
 
-                                <!-- Fechas -->
-                                <span v-if="tarea.fecha_creacion" class="text-caption">
-                                  <v-icon small class="mr-1">mdi-calendar-start</v-icon>
-                                  {{ formatDate(tarea.fecha_creacion) }}
-                                </span>
-
-                                <span v-if="tarea.fecha_limite" class="text-caption">
-                                  <v-icon small class="mr-1">mdi-calendar-end</v-icon>
-                                  {{ formatDate(tarea.fecha_limite) }}
-                                </span>
-
-                                <!-- Días restantes -->
-                                <span
-                                  v-if="tarea.fecha_limite"
-                                  class="text-caption"
-                                  :class="getDiasRestantesColor(tarea.fecha_limite)"
+                                <!-- INDICADOR DE PRESUPUESTO DESGLOSADO CON LEYENDA -->
+                                <div
+                                  v-if="
+                                    tarea.presupuestoDesglose !== null &&
+                                    tarea.presupuestoDesglose !== undefined &&
+                                    tarea.presupuestoDesglose.length > 0
+                                  "
+                                  class="d-flex align-center ml-2 desglose-badge"
                                 >
-                                  <v-icon small class="mr-1">mdi-clock</v-icon>
-                                  {{ calcularDiasRestantes(tarea.fecha_limite) }}
-                                </span>
+                                  <v-icon
+                                    size="16"
+                                    color="info"
+                                    class="desglose-icon"
+                                    icon="mdi-cash-multiple"
+                                  ></v-icon>
+                                  <span class="text-caption font-weight-medium ml-1 text-info"
+                                    >Con Desglose</span
+                                  >
+
+                                  <!-- Tooltip con detalle -->
+                                  <v-tooltip location="top">
+                                    <template v-slot:activator="{ props }">
+                                      <v-icon
+                                        v-bind="props"
+                                        size="14"
+                                        color="grey"
+                                        class="ml-1"
+                                        icon="mdi-information-outline"
+                                      ></v-icon>
+                                    </template>
+                                    <span>{{ getDesgloseTooltip(tarea.presupuestoDesglose) }}</span>
+                                  </v-tooltip>
+                                </div>
                               </div>
 
-                              <!-- Descripción -->
-                              <div v-if="tarea.descripcion" class="text-caption mt-1 text-grey">
-                                {{ tarea.descripcion }}
-                              </div>
-                            </v-list-item-subtitle>
+                              <span class="text-caption text-medium-emphasis">
+                                <v-icon size="12" class="mr-1">mdi-calendar</v-icon>
+                                {{ formatDate(tarea.fecha_creacion) }}
+                              </span>
 
-                            <template v-slot:append>
-                              <div class="d-flex flex-column align-end gap-1">
-                                <!-- Acciones principales -->
-                                <div class="d-flex">
-                                  <!-- Informe de Subactividad -->
-                                  <v-tooltip
-                                    :text="
+                              <span
+                                v-if="tarea.fecha_limite"
+                                class="text-caption"
+                                :class="getDiasRestantesColor(tarea.fecha_limite)"
+                              >
+                                <v-icon size="12" class="mr-1">mdi-clock</v-icon>
+                                {{ calcularDiasRestantes(tarea.fecha_limite) }}
+                              </span>
+                            </div>
+
+                            <div v-if="tarea.descripcion" class="text-caption text-grey mt-1">
+                              {{ truncarTexto(tarea.descripcion, 80) }}
+                            </div>
+
+                            <!-- Mostrar resumen del desglose si existe -->
+                            <div
+                              v-if="
+                                tarea.presupuestoDesglose && tarea.presupuestoDesglose.length > 0
+                              "
+                              class="desglose-resumen mt-2"
+                            >
+                              <v-chip
+                                size="x-small"
+                                color="info"
+                                variant="tonal"
+                                prepend-icon="mdi-cash-multiple"
+                                class="mt-1"
+                              >
+                                {{ tarea.presupuestoDesglose.length }} item(s) desglosados
+                              </v-chip>
+                            </div>
+                          </v-list-item-subtitle>
+
+                          <template v-slot:append>
+                            <div class="d-flex acciones-container">
+                              <!-- Informe de Subactividad -->
+                              <v-tooltip text="Informe de Subactividad" location="top">
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    v-bind="props"
+                                    icon="mdi-file-document-outline"
+                                    variant="text"
+                                    color="info"
+                                    size="x-small"
+                                    :to="
                                       actividad.pei_id
-                                        ? 'Informe de Subactividad PEI'
-                                        : 'Informe de Subactividad'
+                                        ? `/monitoreo/informe-subactividad-pei/${tarea.id}/`
+                                        : `/monitoreo/informe-subactividad/${tarea.id}`
                                     "
-                                    location="top"
-                                  >
-                                    <template v-slot:activator="{ props }">
-                                      <v-btn
-                                        v-bind="props"
-                                        icon="mdi-file-document-outline"
-                                        variant="text"
-                                        color="info"
-                                        size="small"
-                                        :to="
-                                          actividad.pei_id
-                                            ? `/monitoreo/informe-subactividad-pei/${tarea.id}/`
-                                            : `/monitoreo/informe-subactividad/${tarea.id}`
-                                        "
-                                        @click.stop
-                                      ></v-btn>
-                                    </template>
-                                  </v-tooltip>
+                                    @click.stop
+                                    class="accion-btn"
+                                  ></v-btn>
+                                </template>
+                              </v-tooltip>
 
-                                  <!-- Editar -->
-                                  <v-tooltip text="Editar subactividad" location="top">
-                                    <template v-slot:activator="{ props }">
-                                      <v-btn
-                                        v-bind="props"
-                                        icon="mdi-pencil"
-                                        variant="text"
-                                        color="warning"
-                                        size="small"
-                                        @click.stop="openTareaDialog(actividad.id, tarea)"
-                                      ></v-btn>
-                                    </template>
-                                  </v-tooltip>
+                              <!-- Editar -->
+                              <v-tooltip text="Editar subactividad" location="top">
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    v-bind="props"
+                                    icon="mdi-pencil"
+                                    variant="text"
+                                    color="warning"
+                                    size="x-small"
+                                    @click.stop="openTareaDialog(actividad.id, tarea)"
+                                    class="accion-btn"
+                                  ></v-btn>
+                                </template>
+                              </v-tooltip>
 
-                                  <!-- Eliminar -->
-                                  <v-tooltip text="Eliminar Subactividad" location="top">
-                                    <template v-slot:activator="{ props }">
-                                      <v-btn
-                                        v-bind="props"
-                                        icon="mdi-delete"
-                                        variant="text"
-                                        color="error"
-                                        size="small"
-                                        @click.stop="confirmDeleteTarea(actividad.id, tarea)"
-                                      ></v-btn>
-                                    </template>
-                                  </v-tooltip>
-                                </div>
+                              <!-- Eliminar -->
+                              <v-tooltip text="Eliminar Subactividad" location="top">
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    v-bind="props"
+                                    icon="mdi-delete"
+                                    variant="text"
+                                    color="error"
+                                    size="x-small"
+                                    @click.stop="confirmDeleteTarea(actividad.id, tarea)"
+                                    class="accion-btn"
+                                  ></v-btn>
+                                </template>
+                              </v-tooltip>
+                            </div>
+                          </template>
+                        </v-list-item>
 
-                                <!-- Información adicional -->
-                                <div class="text-right">
-                                  <div class="text-caption text-grey">ID: {{ tarea.id }}</div>
-                                  <div
-                                    v-if="tarea.presupuestoDesglose"
-                                    class="text-caption text-info"
-                                  >
-                                    <v-icon x-small>mdi-format-list-bulleted</v-icon>
-                                    Con desglose
-                                  </div>
-                                </div>
-                              </div>
-                            </template>
-                          </v-list-item>
-
-                          <v-list-item v-if="!actividad.tareas || actividad.tareas.length === 0">
-                            <v-list-item-title class="text-grey text-caption text-center py-4">
-                              <v-icon size="48" color="grey lighten-1" class="mb-2"
-                                >mdi-playlist-remove</v-icon
-                              >
-                              <div>No hay Subactividades para esta actividad</div>
-                              <v-btn
-                                color="primary"
-                                variant="text"
-                                size="small"
-                                @click="openTareaDialog(actividad.id)"
-                                class="mt-2"
-                              >
-                                <v-icon left>mdi-plus</v-icon>
-                                Crear la primera subactividad
-                              </v-btn>
-                            </v-list-item-title>
-                          </v-list-item>
-                        </v-list>
-                      </v-card-text>
-                    </v-card>
-                  </v-list-item>
+                        <div
+                          v-if="!actividad.tareas || actividad.tareas.length === 0"
+                          class="text-center py-4"
+                        >
+                          <v-icon size="40" color="grey-lighten-2" class="mb-2"
+                            >mdi-playlist-remove</v-icon
+                          >
+                          <div class="text-caption text-grey">
+                            No hay subactividades para esta actividad
+                          </div>
+                          <v-btn
+                            color="primary"
+                            variant="text"
+                            size="small"
+                            @click.stop="openTareaDialog(actividad.id)"
+                            class="mt-2"
+                          >
+                            <v-icon left size="16">mdi-plus</v-icon>
+                            Crear la primera subactividad
+                          </v-btn>
+                        </div>
+                      </v-list>
+                    </v-card-text>
+                  </v-card>
                 </div>
               </v-expand-transition>
             </template>
 
-            <v-list-item v-if="filteredActividades.length === 0 && !loading">
-              <v-list-item-title class="text-grey">No se encontraron actividades</v-list-item-title>
-            </v-list-item>
+            <div v-if="filteredActividades.length === 0 && !loading" class="text-center py-8">
+              <v-icon size="48" color="grey-lighten-2" class="mb-3">mdi-file-search-outline</v-icon>
+              <div class="text-body-1 text-grey">No se encontraron actividades</div>
+            </div>
           </v-list>
 
-          <!-- Paginación -->
-          <v-pagination
-            v-if="totalPages > 1"
-            v-model="currentPage"
-            :length="totalPages"
-            :total-visible="7"
-            class="mt-4"
-          ></v-pagination>
+          <!-- Paginación y controles -->
+          <div v-if="filteredActividades.length > 0" class="mt-4">
+            <v-pagination
+              v-if="totalPages > 1"
+              v-model="currentPage"
+              :length="totalPages"
+              :total-visible="7"
+              size="small"
+              class="mb-3"
+            ></v-pagination>
 
-          <div
-            v-if="filteredActividades.length > 0"
-            class="d-flex align-center justify-space-between mt-2"
-          >
-            <span class="text-caption text-grey">
-              Mostrando {{ startItem }}-{{ endItem }} de {{ filteredActividades.length }}
-            </span>
-            <v-select
-              v-model="itemsPerPage"
-              :items="[5, 10, 20, 50]"
-              label="Items por página"
-              density="compact"
-              style="max-width: 150px"
-              variant="outlined"
-            ></v-select>
+            <div class="d-flex align-center justify-space-between">
+              <span class="text-caption text-grey">
+                Mostrando {{ startItem }}-{{ endItem }} de {{ filteredActividades.length }}
+              </span>
+              <v-select
+                v-model="itemsPerPage"
+                :items="[5, 10, 20, 50]"
+                label="Items por página"
+                density="compact"
+                style="max-width: 150px"
+                variant="outlined"
+                hide-details
+              ></v-select>
+            </div>
           </div>
         </v-card>
       </v-col>
@@ -445,134 +453,98 @@
       <!-- Columna lateral -->
       <v-col cols="12" md="3" lg="3">
         <!-- Tarjeta de estadísticas -->
-        <v-card elevation="2" class="mb-4">
-          <v-card-title class="primary white--text">
-            <v-icon left>mdi-chart-box</v-icon>
-            Estadísticas
-          </v-card-title>
+        <v-card elevation="2" rounded="lg" class="mb-4 tarjeta-lateral tarjeta-flotante">
+          <v-card-item class="pa-4">
+            <template v-slot:prepend>
+              <v-icon color="primary" size="24">mdi-chart-box</v-icon>
+            </template>
+            <v-card-title class="text-subtitle-1 font-weight-medium pa-0"
+              >Estadísticas</v-card-title
+            >
+          </v-card-item>
 
-          <v-list density="comfortable">
-            <v-list-item>
-              <template v-slot:prepend>
-                <v-icon color="primary">mdi-calendar-check</v-icon>
-              </template>
-              <v-list-item-title>Total actividades</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ filteredActividades.length }}
-              </v-list-item-subtitle>
-            </v-list-item>
+          <v-divider></v-divider>
 
-            <v-list-item>
+          <v-list density="compact" class="py-1">
+            <v-list-item v-for="stat in estadisticas" :key="stat.label" class="stat-item">
               <template v-slot:prepend>
-                <v-icon color="primary">mdi-playlist-check</v-icon>
+                <v-icon :color="stat.color" size="18">{{ stat.icon }}</v-icon>
               </template>
-              <v-list-item-title>Total subactividades</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ totalSubactividades }}
-              </v-list-item-subtitle>
-            </v-list-item>
-
-            <v-list-item>
-              <template v-slot:prepend>
-                <v-icon color="yellow">mdi-calendar-question</v-icon>
+              <v-list-item-title class="text-body-2">{{ stat.label }}</v-list-item-title>
+              <template v-slot:append>
+                <v-chip size="x-small" :color="stat.color" variant="tonal">{{ stat.value }}</v-chip>
               </template>
-              <v-list-item-title>Reprogramación</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ countByStatus('REPROG') }}
-              </v-list-item-subtitle>
-            </v-list-item>
-
-            <v-list-item>
-              <template v-slot:prepend>
-                <v-icon color="light-blue">mdi-calendar-edit</v-icon>
-              </template>
-              <v-list-item-title>Planificación</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ countByStatus('PLAN') }}
-              </v-list-item-subtitle>
-            </v-list-item>
-
-            <v-list-item>
-              <template v-slot:prepend>
-                <v-icon color="orange">mdi-progress-clock</v-icon>
-              </template>
-              <v-list-item-title>En Ejecución</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ countByStatus('EJEC') }}
-              </v-list-item-subtitle>
-            </v-list-item>
-
-            <v-list-item>
-              <template v-slot:prepend>
-                <v-icon color="green">mdi-check-circle</v-icon>
-              </template>
-              <v-list-item-title>Finalizado</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ countByStatus('FIN') }}
-              </v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-card>
 
-        <!-- NUEVA TARJETA: Validaciones pendientes -->
-        <v-card elevation="2" class="mt-4">
-          <v-card-title class="warning white--text d-flex align-center">
-            <v-icon left>mdi-bell-ring</v-icon>
-            Validaciones Pendientes
-            <v-spacer></v-spacer>
-            <v-chip
-              :color="totalPendientes > 0 ? 'error' : 'success'"
-              text-color="white"
-              size="small"
-            >
-              {{ totalPendientes }}
-            </v-chip>
-          </v-card-title>
+        <!-- TARJETA DE VALIDACIONES MEJORADA -->
+        <v-card elevation="2" rounded="lg" class="tarjeta-validaciones tarjeta-flotante">
+          <v-card-item class="pa-4">
+            <template v-slot:prepend>
+              <v-avatar :color="totalPendientes > 0 ? 'warning' : 'success'" size="32">
+                <v-icon size="18" color="white">mdi-bell-ring</v-icon>
+              </v-avatar>
+            </template>
+            <v-card-title class="text-subtitle-1 font-weight-medium pa-0">
+              Validaciones Pendientes
+            </v-card-title>
+            <template v-slot:append>
+              <v-chip
+                :color="totalPendientes > 0 ? 'warning' : 'success'"
+                text-color="white"
+                size="small"
+              >
+                {{ totalPendientes }}
+              </v-chip>
+            </template>
+          </v-card-item>
 
-          <v-card-text>
-            <!-- Resumen rápido -->
-            <div class="d-flex justify-space-around text-center mb-4">
-              <div>
-                <div
-                  class="text-h5 font-weight-bold"
-                  :class="totalPendientes > 0 ? 'text-warning' : 'text-success'"
-                >
-                  {{ totalPendientes }}
-                </div>
-                <div class="text-caption text-grey">Pendientes</div>
-              </div>
-              <div>
-                <div class="text-h5 font-weight-bold text-success">{{ totalAprobados }}</div>
-                <div class="text-caption text-grey">Aprobados</div>
-              </div>
-              <div>
-                <div class="text-h5 font-weight-bold text-error">{{ totalRechazados }}</div>
-                <div class="text-caption text-grey">Rechazados</div>
-              </div>
+          <v-card-text class="pa-4 pt-0">
+            <!-- Resumen rápido en chips -->
+            <div class="d-flex gap-2 mb-4">
+              <v-chip size="small" color="warning" variant="tonal" class="flex-grow-1">
+                <span class="font-weight-bold mr-1">{{ totalPendientes }}</span> Pendientes
+              </v-chip>
+              <v-chip size="small" color="success" variant="tonal" class="flex-grow-1">
+                <span class="font-weight-bold mr-1">{{ totalAprobados }}</span> Aprobados
+              </v-chip>
+              <v-chip size="small" color="error" variant="tonal" class="flex-grow-1">
+                <span class="font-weight-bold mr-1">{{ totalRechazados }}</span> Rechazados
+              </v-chip>
             </div>
 
             <!-- Últimas validaciones -->
-            <div v-if="ultimasValidaciones.length > 0" class="mb-4">
-              <div class="text-subtitle-2 mb-2">Últimas asignaciones:</div>
+            <div v-if="ultimasValidaciones.length > 0">
+              <div class="text-caption font-weight-medium text-grey mb-2">ÚLTIMAS ASIGNACIONES</div>
               <v-list density="compact" class="pa-0 bg-transparent">
-                <v-list-item v-for="val in ultimasValidaciones" :key="val.id" class="px-0">
+                <v-list-item
+                  v-for="val in ultimasValidaciones"
+                  :key="val.id"
+                  class="px-0 validacion-item"
+                >
                   <template v-slot:prepend>
-                    <v-avatar size="32" :color="getEstadoColor(val.estado)" class="mr-2">
-                      <v-icon size="16" color="white">{{ getIconoEstado(val.estado) }}</v-icon>
+                    <v-avatar
+                      size="28"
+                      :color="getEstadoColor(val.estado) + '-lighten-4'"
+                      class="mr-2"
+                    >
+                      <v-icon size="14" :color="getEstadoColor(val.estado)">
+                        {{ getIconoEstado(val.estado) }}
+                      </v-icon>
                     </v-avatar>
                   </template>
 
-                  <v-list-item-title class="text-caption font-weight-medium">
-                    {{ truncarTexto(val.informe_numero, 15) }}
+                  <v-list-item-title class="text-caption">
+                    {{ truncarTexto(val.informe_numero, 18) }}
                   </v-list-item-title>
 
-                  <v-list-item-subtitle class="text-caption">
-                    <v-icon size="x-small" class="mr-1">mdi-calendar</v-icon>
+                  <v-list-item-subtitle class="text-caption text-grey">
                     {{ formatDateCorta(val.fechaAsignacion) }}
                   </v-list-item-subtitle>
 
                   <template v-slot:append>
-                    <v-chip :color="getEstadoColor(val.estado)" size="x-small" class="text-caption">
+                    <v-chip :color="getEstadoColor(val.estado)" size="x-small" variant="tonal">
                       {{ val.estado_display }}
                     </v-chip>
                   </template>
@@ -581,21 +553,23 @@
             </div>
 
             <!-- Mensaje cuando no hay validaciones -->
-            <div v-else class="text-center py-4">
-              <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-bell-off</v-icon>
-              <div class="text-body-2 text-grey">No tienes validaciones pendientes</div>
+            <div v-else class="text-center py-2">
+              <v-icon size="32" color="grey-lighten-2" class="mb-1">mdi-bell-off</v-icon>
+              <div class="text-caption text-grey">Sin validaciones pendientes</div>
             </div>
           </v-card-text>
 
           <v-divider></v-divider>
 
-          <v-card-actions class="pa-4">
+          <v-card-actions class="pa-3">
             <v-btn
               block
               color="primary"
               variant="tonal"
-              prepend-icon="mdi-eye"
+              size="small"
+              prepend-icon="mdi-eye-outline"
               @click="abrirDialogValidaciones"
+              class="text-caption"
             >
               Ver todas mis validaciones
             </v-btn>
@@ -604,7 +578,7 @@
       </v-col>
     </v-row>
 
-    <!-- Diálogo de Tarea/Subactividad (Componente Reutilizable) -->
+    <!-- Diálogo de Tarea/Subactividad -->
     <DialogTarea
       v-model="tareaDialog"
       :actividad="actividadSeleccionada"
@@ -615,20 +589,21 @@
     />
 
     <v-dialog v-model="deleteTareaDialog" max-width="400">
-      <v-card>
-        <v-card-title class="text-h5">Confirmar eliminación</v-card-title>
-        <v-card-text>
-          ¿Estás seguro de que deseas eliminar la subactividad "{{
-            tareaToDelete?.titulo || tareaToDelete?.descripcion || 'Sin título'
-          }}"?
-          <v-alert v-if="tareaToDelete?.codigo" type="warning" density="compact" class="mt-2">
+      <v-card rounded="lg">
+        <v-card-title class="text-h6 pa-4">Confirmar eliminación</v-card-title>
+        <v-card-text class="pa-4 pt-0">
+          ¿Estás seguro de que deseas eliminar la subactividad?
+          <div class="font-weight-medium mt-2">
+            {{ tareaToDelete?.titulo || tareaToDelete?.descripcion || 'Sin título' }}
+          </div>
+          <v-alert v-if="tareaToDelete?.codigo" type="info" density="compact" class="mt-3">
             Código: {{ tareaToDelete.codigo }}
           </v-alert>
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="pa-4 pt-0">
           <v-spacer></v-spacer>
-          <v-btn color="grey" @click="deleteTareaDialog = false">Cancelar</v-btn>
-          <v-btn color="error" @click="deleteTarea">Eliminar</v-btn>
+          <v-btn color="grey" variant="text" @click="deleteTareaDialog = false">Cancelar</v-btn>
+          <v-btn color="error" variant="flat" @click="deleteTarea">Eliminar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -653,9 +628,9 @@ import { ref, onMounted, computed } from 'vue'
 import { useListaActividadStore } from '@/modules/proyecto/store/useListaActividadesStore'
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
-import { useInformeActividadPrincipal } from '@/modules/formularios/composables/useInformeActividadPrincipal'
 import { useRouter } from 'vue-router'
 import DialogValidaciones from '@/modules/formularios/components/validadores/DialogValidaciones.vue'
+
 // Iniciar el store de actividades
 const storeActividad = useListaActividadStore()
 
@@ -725,6 +700,54 @@ const cargar = async () => {
   }
 }
 
+// Estadísticas computadas
+const estadisticas = computed(() => {
+  return [
+    {
+      label: 'Total actividades',
+      value: filteredActividades.value.length,
+      icon: 'mdi-calendar-check',
+      color: 'primary',
+    },
+    {
+      label: 'Total subactividades',
+      value: totalSubactividades.value,
+      icon: 'mdi-playlist-check',
+      color: 'primary',
+    },
+    {
+      label: 'Subact. con desglose',
+      value: totalSubactividadesConDesglose.value,
+      icon: 'mdi-cash-multiple',
+      color: 'info',
+    },
+    {
+      label: 'Reprogramación',
+      value: countByStatus('REPROG'),
+      icon: 'mdi-calendar-question',
+      color: 'warning',
+    },
+    {
+      label: 'Planificación',
+      value: countByStatus('PLAN'),
+      icon: 'mdi-calendar-edit',
+      color: 'info',
+    },
+    {
+      label: 'En Ejecución',
+      value: countByStatus('EJEC'),
+      icon: 'mdi-progress-clock',
+      color: 'orange',
+    },
+    {
+      label: 'Finalizado',
+      value: countByStatus('FIN'),
+      icon: 'mdi-check-circle',
+      color: 'success',
+    },
+  ]
+})
+
 // Computed mejoradas para las actividades
 const filteredActividades = computed(() => {
   if (!Array.isArray(actividades.value)) return []
@@ -785,6 +808,21 @@ const totalSubactividades = computed(() => {
   }, 0)
 })
 
+const totalSubactividadesConDesglose = computed(() => {
+  return filteredActividades.value.reduce((total, actividad) => {
+    if (!actividad.tareas) return total
+    return (
+      total +
+      actividad.tareas.filter(
+        (t) =>
+          t.presupuestoDesglose !== null &&
+          t.presupuestoDesglose !== undefined &&
+          t.presupuestoDesglose.length > 0,
+      ).length
+    )
+  }, 0)
+})
+
 const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
 const endItem = computed(() => {
   if (!Array.isArray(filteredActividades.value)) return 0
@@ -802,8 +840,9 @@ const toggleExpanded = (id) => {
 }
 
 // --- MÉTODOS AUXILIARES  ---
-const esTextoLargo = (texto) => {
-  return texto && texto.length > 40
+const truncarTexto = (texto, max) => {
+  if (!texto) return ''
+  return texto.length > max ? texto.substring(0, max) + '...' : texto
 }
 
 const tieneCodigoValido = (codigo) => {
@@ -812,6 +851,18 @@ const tieneCodigoValido = (codigo) => {
 
 const formatearCodigo = (codigo) => {
   return tieneCodigoValido(codigo) ? codigo.trim().toUpperCase() : ''
+}
+
+// --- MÉTODOS PARA DESGLOSE ---
+const getDesgloseIcon = (desglose) => {
+  if (!desglose || desglose.length === 0) return 'mdi-cash'
+  return 'mdi-cash-multiple'
+}
+
+const getDesgloseTooltip = (desglose) => {
+  if (!desglose || desglose.length === 0) return 'Sin desglose'
+  if (desglose.length === 1) return '1 item desglosado'
+  return `${desglose.length} items desglosados`
 }
 
 // --- CRUD TAREAS ---
@@ -850,7 +901,7 @@ const guardarTarea = async (datosTarea) => {
     }
   } catch (err) {
     console.error('Error al guardar subactividad', err)
-    mostrarSnackbar('Error al guardarSUbactividad', 'error')
+    mostrarSnackbar('Error al guardar subactividad', 'error')
   } finally {
     cargandoTarea.value = false
     tareaDialog.value = false
@@ -896,10 +947,10 @@ const getStatusColor = (status) => {
     CRD: 'grey',
     PLAN: 'light-blue',
     RETR: 'red',
-    REPROG: 'yellow',
+    REPROG: 'warning',
     EJEC: 'orange',
     REP: 'light-green',
-    FIN: 'green',
+    FIN: 'success',
   }
   return colors[status] || 'grey'
 }
@@ -920,8 +971,8 @@ const getTipoIcon = (status) => {
 const getStatusColorTarea = (status) => {
   const colors = {
     PEN: 'grey',
-    EPROG: 'orange',
-    COMPL: 'green',
+    EPROG: 'warning',
+    COMPL: 'success',
   }
   return colors[status] || 'grey'
 }
@@ -989,17 +1040,10 @@ const mostrarSnackbar = (texto, color = 'success') => {
 }
 
 /******************************* Redireccionadores *************************************/
-//Iniciar el composable de comprobacion
-const { verificando, verificarActividad } = useInformeActividadPrincipal()
 const router = useRouter()
 
-//Verificaar si hay informe de actividad
 const irInformeActividad = async (actividadId, esPei) => {
-  const existe = await verificarActividad(actividadId)
-
-  if (!existe) {
-    router.push('/monitoreo/informe-actividad/' + actividadId)
-  }
+  router.push('/monitoreo/informe-actividad/' + actividadId)
 }
 
 // Validaciones computadas
@@ -1053,66 +1097,278 @@ const formatDateCorta = (dateStr) => {
   })
 }
 
-const truncarTexto = (texto, max) => {
-  if (!texto) return ''
-  return texto.length > max ? texto.substring(0, max) + '...' : texto
-}
-
 const abrirDialogValidaciones = () => {
   dialogValidaciones.value = true
 }
 </script>
 
 <style scoped>
-.text-no-wrap {
-  white-space: nowrap;
+/* Estilos base */
+.v-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+/* Tarjetas principales */
+.tarjeta-principal {
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.tarjeta-lateral {
+  background: white;
+}
+
+/* Efecto flotante para tarjetas laterales */
+.tarjeta-flotante {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  top: 0;
+}
+
+.tarjeta-flotante:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+  z-index: 10;
+}
+
+/* Items de actividad */
+.actividad-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  background: white;
+  cursor: pointer;
+  position: relative;
+  top: 0;
+}
+
+.actividad-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12) !important;
+  border-color: #1976d2;
+  background: white;
+  z-index: 5;
+}
+
+.actividad-expandida {
+  background: #f5f5f5;
+  border-color: #1976d2;
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2) !important;
+}
+
+/* Acciones */
+.acciones-container {
+  display: flex;
+  gap: 4px;
+}
+
+.accion-btn {
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.actividad-item:hover .accion-btn {
+  opacity: 1;
+}
+
+.accion-btn:hover {
+  transform: translateY(-1px);
+  background-color: rgba(25, 118, 210, 0.1) !important;
+}
+
+/* Subactividades */
+.subactividad-item {
+  background: white;
+  border: 1px solid #eee;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  top: 0;
+}
+
+.subactividad-item:hover {
+  transform: translateX(4px) translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12) !important;
+  border-color: #1976d2;
+  background: white;
+  z-index: 5;
+}
+
+.detalles-container {
+  transition: all 0.3s ease;
+}
+
+/* Estadísticas */
+.stat-item {
+  min-height: 40px;
+  padding: 4px 16px;
+  transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+  background: #f8f9fa;
+  transform: translateX(2px);
+}
+
+/* Tarjeta de validaciones mejorada */
+.tarjeta-validaciones {
+  background: white;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  top: 0;
+}
+
+.tarjeta-validaciones:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+  border-color: #ff9800;
+  z-index: 10;
+}
+
+.validacion-item {
+  border-radius: 6px;
+  margin-bottom: 4px;
+  padding: 6px 0;
+  transition: all 0.2s ease;
+}
+
+.validacion-item:hover {
+  background: #f8f9fa;
+  transform: translateX(2px);
+}
+
+/* Chips y badges */
+.chip-codigo {
+  font-size: 0.7rem;
+  letter-spacing: 0.3px;
+}
+
+/* Utilidades */
+.gap-2 {
+  gap: 8px;
 }
 
 .text-truncate {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 100px;
 }
 
-.chip-codigo {
-  font-size: 0.75rem;
-  letter-spacing: 0.5px;
-}
-
-@media (max-width: 600px) {
-  .text-truncate {
-    max-width: 50% !important;
-  }
-}
-
-.rotate-180 {
-  transform: rotate(180deg);
-  transition: transform 0.3s ease;
-}
-
-.gap-2 {
-  gap: 8px;
-}
-
+/* Estados de texto */
 .text-error {
   color: #f44336;
 }
-
 .text-warning {
   color: #ff9800;
 }
-
 .text-info {
   color: #2196f3;
 }
-
 .text-success {
   color: #4caf50;
 }
 
-/* Estilos para la tarjeta de validaciones */
-.v-card-title.warning {
-  background: linear-gradient(135deg, #ff9800, #f57c00);
+/* Scroll personalizado */
+.v-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.v-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.v-list::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-radius: 4px;
+}
+
+/* Posicionamiento relativo */
+.position-relative {
+  position: relative;
+}
+
+/* Icono de desglose */
+.desglose-icon {
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.desglose-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Badge de desglose con leyenda */
+.desglose-badge {
+  background-color: rgba(33, 150, 243, 0.1);
+  padding: 2px 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  cursor: default;
+  transition: all 0.2s ease;
+}
+
+.desglose-badge:hover {
+  background-color: rgba(33, 150, 243, 0.15);
+  border-color: rgba(33, 150, 243, 0.5);
+}
+
+/* Estilo para el resumen de desglose */
+.desglose-resumen {
+  border-top: 1px dashed #e0e0e0;
+  padding-top: 4px;
+}
+
+/* Tooltip personalizado */
+.v-tooltip .v-overlay__content {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .v-container {
+    padding: 12px;
+  }
+
+  .actividad-item {
+    padding: 8px !important;
+  }
+
+  .actividad-item:hover {
+    transform: translateY(-1px);
+  }
+
+  .tarjeta-flotante:hover,
+  .tarjeta-validaciones:hover {
+    transform: translateY(-2px);
+  }
+
+  .subactividad-item:hover {
+    transform: translateX(2px) translateY(-1px);
+  }
+
+  .gap-2 {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 600px) {
+  .text-truncate {
+    max-width: 150px;
+  }
+
+  .acciones-container {
+    flex-wrap: wrap;
+  }
+
+  .desglose-badge {
+    margin-top: 4px;
+  }
 }
 </style>

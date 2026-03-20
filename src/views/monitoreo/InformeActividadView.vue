@@ -504,10 +504,10 @@ const manejarIndicadoresActualizados = (payload) => {
 /**
  * Obtiene el JSON completo de indicadores del componente
  */
-const obtenerJSONIndicadores = () => {
-  if (!indicadoresComponent.value) return null
-  return indicadoresComponent.value.obtenerJSONIndicadores()
-}
+// const obtenerJSONIndicadores = () => {
+//   if (!indicadoresComponent.value) return null
+//   return indicadoresComponent.value.obtenerJSONIndicadores()
+//}
 
 /**
  * Resetea todos los registros de indicadores

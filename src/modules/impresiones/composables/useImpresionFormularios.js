@@ -245,6 +245,28 @@ export function useImpresionFormularios() {
     }
   }
 
+  async function generarPdfInformeActividadPrincipal(idInformeActividad) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirInformeActividadPrincipal(idInformeActividad)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function generarPdfInformeTareaPrincipal(idInformeTarea) {
+    loading.value = true
+    try {
+      await impresionFormulariosServicio.imprimirInformeTareaPrincipal(idInformeTarea)
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
@@ -259,6 +281,8 @@ export function useImpresionFormularios() {
     generarPdfSolicitudPagoDirectoTareas,
     generarPdfRendicionCuentasTareas,
     generarPdfSolicitudReposicionTareas,
+    generarPdfInformeActividadPrincipal,
+    generarPdfInformeTareaPrincipal,
     //PEI
     generarPdfSolicitudFondosPei,
     generarPdfSolicitudViajePei,

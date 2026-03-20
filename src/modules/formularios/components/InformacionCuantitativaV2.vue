@@ -478,7 +478,7 @@
           </v-slide-y-transition>
         </div>
 
-        <!-- Sección de Localidades -->
+        <!-- Sección de Localidades - MODIFICADA CON v-select PARA DEPARTAMENTOS -->
         <div class="mb-6 seccion-con-toggle">
           <div class="seccion-header">
             <div class="d-flex align-center justify-space-between">
@@ -534,12 +534,16 @@
               >
                 <v-row>
                   <v-col cols="12" sm="3">
-                    <v-text-field
+                    <!-- DEPARTAMENTO: Cambiado a v-select con lista de departamentos de Bolivia -->
+                    <v-select
                       v-model="localidad.departamento"
                       :label="`Departamento ${index + 1}`"
+                      :items="departamentosBolivia"
                       variant="outlined"
-                      placeholder="Nombre del departamento"
-                    ></v-text-field>
+                      placeholder="Seleccione un departamento"
+                      clearable
+                      @update:model-value="actualizarTotales"
+                    ></v-select>
                   </v-col>
                   <v-col cols="12" sm="3">
                     <v-text-field
@@ -547,6 +551,7 @@
                       :label="`Municipio ${index + 1}`"
                       variant="outlined"
                       placeholder="Nombre del municipio"
+                      @update:model-value="actualizarTotales"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="3">
@@ -555,6 +560,7 @@
                       :label="`Localidad ${index + 1}`"
                       variant="outlined"
                       placeholder="Nombre de la localidad"
+                      @update:model-value="actualizarTotales"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="2">
@@ -833,6 +839,21 @@
 import { ref, reactive, computed, watch } from 'vue'
 
 // ============================
+// DEPARTAMENTOS DE BOLIVIA (nuevo array)
+// ============================
+const departamentosBolivia = [
+  'Beni',
+  'Chuquisaca',
+  'Cochabamba',
+  'La Paz',
+  'Oruro',
+  'Pando',
+  'Potosí',
+  'Santa Cruz',
+  'Tarija',
+]
+
+// ============================
 // DEFINICIÓN DEL EVENTO PARA REGISTRAR EN EL PADRE
 // ============================
 const emit = defineEmits(['registrar-informacion', 'estado-habilitacion'])
@@ -902,7 +923,7 @@ const grupoEdadValues = reactive({
 // Ocupaciones
 const ocupaciones = ref([{ nombre: '', cantidad: 0 }])
 
-// Localidades
+// Localidades (ahora con departamento como v-select)
 const localidades = ref([
   {
     departamento: '',
