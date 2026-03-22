@@ -48,6 +48,37 @@ export const validadoresServicio = {
       throw new Error(error)
     }
   },
+  /* Estado del informe actividad/subactividad */
+  estadoValidacionInforme: async (documentoId, tipoDocumento) => {
+    try {
+      const respuesta = await apiValid.get(
+        '/estado-validacion/?tipo=' + tipoDocumento + '&id=' + documentoId,
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error(
+        'Axios: Error al obtener las validaciones del informe: ' +
+          documentoId +
+          ' - ' +
+          tipoDocumento,
+        error,
+      )
+      throw new Error(error)
+    }
+  },
+  /* Aprobar/rechazar un Informe de Actividad Principla */
+  evaluacionInformeActividad: async (idValidacion, datosEvaluacion) => {
+    try {
+      const respuesta = await apiValid.post(
+        '/validaciones/' + idValidacion + '/actividad/votar/',
+        datosEvaluacion,
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al enviar el resultado de la evaluacion', error)
+      throw new Error(error)
+    }
+  },
 
   /**************************** Validadores Informe SubActividad/Tarea *******************/
 }

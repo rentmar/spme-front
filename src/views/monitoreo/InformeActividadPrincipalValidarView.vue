@@ -33,11 +33,6 @@
             <v-chip :color="getTipoActividadColor" size="small" class="mr-3">
               {{ informeActividadPrincipal.tipoActividad }}
             </v-chip>
-            <span class="text-body-2 text-medium-emphasis">
-              <v-icon size="small" class="mr-1">mdi-calendar</v-icon>
-              Período: {{ formatDate(informeActividadPrincipal.fechaInicio) }} -
-              {{ formatDate(informeActividadPrincipal.fechaFin) }}
-            </span>
           </v-col>
           <v-col cols="12" md="4" class="d-flex justify-end gap-2">
             <v-btn
@@ -51,7 +46,7 @@
             >
               Exportar PDF
             </v-btn>
-            <v-btn
+            <!-- <v-btn
               color="success"
               variant="flat"
               prepend-icon="mdi-check"
@@ -59,8 +54,8 @@
               size="small"
             >
               Validar Informe
-            </v-btn>
-            <v-btn
+            </v-btn> -->
+            <!-- <v-btn
               color="error"
               variant="flat"
               prepend-icon="mdi-cancel"
@@ -68,7 +63,7 @@
               @click="salirFormulario"
             >
               Salir
-            </v-btn>
+            </v-btn> -->
           </v-col>
         </v-row>
       </v-sheet>
@@ -577,10 +572,10 @@ const porcentajeEjecucion = computed(() => {
 })
 
 // Salir del formulario
-const salirFormulario = () => {
-  const actividadId = informeActividadPrincipal.value?.actividad
-  router.push(`/monitoreo/informes-actividad-subactividad/${actividadId}`)
-}
+// const salirFormulario = () => {
+//   const actividadId = informeActividadPrincipal.value?.actividad
+//   router.push(`/monitoreo/informes-actividad-subactividad/${actividadId}`)
+// }
 
 const puedeEnviarValidacion = computed(() => {
   if (accionValidacion.value === 'rechazar') {

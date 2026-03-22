@@ -54,6 +54,39 @@ export function useValidadores() {
     loading.value = true
     try {
       const respuesta = await validadoresServicio.listarMisValidacionesPendientes()
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Obtener el estado de validaciones de un informe de actividad/tarea
+  async function obtenerEstadoValidacion(documentoId, tipoDocumento) {
+    loading.value = true
+    try {
+      const respuesta = await validadoresServicio.estadoValidacionInforme(
+        documentoId,
+        tipoDocumento,
+      )
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Evaluacion de un informe de actividad principal
+  async function evaluacionInformeActividad(idValidacion, datosEvaluacion) {
+    loading.value = true
+    try {
+      const respuesta = await validadoresServicio.evaluacionInformeActividad(
+        idValidacion,
+        datosEvaluacion,
+      )
+      return respuesta
     } catch (err) {
       error.value = err
     } finally {
@@ -69,6 +102,8 @@ export function useValidadores() {
     listarValidadores,
     obtenerMisValidaciones,
     obtenerMisValidacionesPendientes,
+    obtenerEstadoValidacion,
+    evaluacionInformeActividad,
     //Func Informe actividad principal
     estadoValidacionInformeActividadPrincipal,
   }

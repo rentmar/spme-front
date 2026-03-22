@@ -449,6 +449,21 @@ const router = createRouter({
       component: () => import('@/views/monitoreo/InformeActividadPrincipalVerView.vue'),
     },
     {
+      path: '/monitoreo/informe-subactividad-ver/:id',
+      name: 'VerInformeSubactividadPrincipal',
+      component: () => import('@/views/monitoreo/InformeSuabactividadVerView.vue'),
+    },
+    {
+      path: '/monitoreo/informe-actividad-validar/:id',
+      name: 'ValidarInformeActividadPrincipal',
+      component: () => import('@/views/monitoreo/InformeActividadPrincipalValidarView.vue'),
+    },
+    {
+      path: '/monitoreo/informe-subactividad-validar/:id',
+      name: 'ValidarInformeSubActividadPrincipal',
+      component: () => import('@/views/monitoreo/InformeSubactividadValidarView.vue'),
+    },
+    {
       path: '/actividades/informe/',
       name: 'actividades',
       component: () => import('@/views/monitoreo/InformeListaActividadView.vue'),
