@@ -214,6 +214,7 @@
                 <tr>
                   <th>Fecha</th>
                   <th>Partida</th>
+                  <th>Fuente</th>
                   <th>Factura/Recibo</th>
                   <th>Descripción del Gasto</th>
                   <th>Monto (Bs.)</th>
@@ -235,9 +236,20 @@
                   <td>
                     <v-text-field
                       v-model="gasto.partida"
-                      hide-details
                       density="compact"
+                      hide-details
+
                       required
+                      :readonly="soloLectura"
+                    ></v-text-field>
+                  </td>
+                  <td class="narrow-column">
+                    <v-text-field
+                      v-model="gasto.fuente"
+                      variant="outlined"
+                      density="compact"
+                      hide-details
+                      bg-color="blue-lighten-5"
                       :readonly="soloLectura"
                     ></v-text-field>
                   </td>
@@ -354,7 +366,7 @@
                   :items="coordinadoresList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Coordinador"
+                  label="Responsable Coordinación"
                   required
                   :readonly="soloLectura"
                 ></v-select>
@@ -362,7 +374,7 @@
               <v-col cols="12" md="6">
                 <v-checkbox
                   v-model="formData.validacion_coordinador"
-                  :label="`Aprobado por Coordinador ${puedeValidarCoordinador ? '(Usted)' : ''}`"
+                  :label="`Aprobado por Coordinación ${puedeValidarCoordinador ? '(Usted)' : ''}`"
                   :disabled="!puedeValidarCoordinador || formData.validacion_coordinador"
                   :readonly="!puedeValidarCoordinador || formData.validacion_coordinador"
                   :color="puedeValidarCoordinador ? 'primary' : 'grey'"
@@ -386,7 +398,7 @@
                   :items="contadoresList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Contador"
+                  label="Responsable Contable"
                   required
                   :readonly="soloLectura"
                 ></v-select>
@@ -394,7 +406,7 @@
               <v-col cols="12" md="6">
                 <v-checkbox
                   v-model="formData.validacion_contador"
-                  :label="`Aprobado por Contador ${puedeValidarContador ? '(Usted)' : ''}`"
+                  :label="`Aprobado por Contable ${puedeValidarContador ? '(Usted)' : ''}`"
                   :disabled="!puedeValidarContador || formData.validacion_contador"
                   :readonly="!puedeValidarContador || formData.validacion_contador"
                   :color="puedeValidarContador ? 'primary' : 'grey'"
@@ -418,7 +430,7 @@
                   :items="administradoresList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Administrador"
+                  label="Responsable Administración"
                   required
                   :readonly="soloLectura"
                 ></v-select>
@@ -426,7 +438,7 @@
               <v-col cols="12" md="6">
                 <v-checkbox
                   v-model="formData.validacion_administrador"
-                  :label="`Aprobado por Administrador ${puedeValidarAdministrador ? '(Usted)' : ''}`"
+                  :label="`Aprobado por Administración ${puedeValidarAdministrador ? '(Usted)' : ''}`"
                   :disabled="!puedeValidarAdministrador || formData.validacion_administrador"
                   :readonly="!puedeValidarAdministrador || formData.validacion_administrador"
                   :color="puedeValidarAdministrador ? 'primary' : 'grey'"
@@ -503,9 +515,9 @@
       </div>
     </div>
   </div>
-  <!-- <pre>{{ datosRendicionDeCuenta }}</pre> -->
-  <!-- {{ "**************************************" }}
-<pre>{{datosRendicionDeCuenta}}</pre> -->
+  <!-- <pre>{{ formData.monto_asignado }}</pre>
+  {{ "**************************************" }} -->
+<!-- <pre>{{datosRendicionDeCuenta.montoAsignado}}</pre> -->
 </template>
 
 <script setup>
@@ -680,7 +692,7 @@ const formDataRC = ref({
   lugar_actividadRC: '',
   fecha_actividadRC: '',
 
-  detalle_gastos: [{ fecha: '', partida: '', factura_recibo: '', descripcion: '', monto: 0 }],
+  detalle_gastos: [{ fecha: '', partida: '', fuente: '', factura_recibo: '', descripcion: '', monto: 0 }],
   lugar_solicitudRC: '',
   fecha_solicitudRC: '',
 
@@ -1085,6 +1097,7 @@ watch(
       formDataRC.value.fecha_actividadRC = getSafeValue(newVal.fechaActividad)
       formDataRC.value.lugar_solicitudRC = getSafeValue(newVal.lugarRendicion)
       formDataRC.value.fecha_solicitudRC = getSafeValue(newVal.fechaRendicion)
+      formData.value.monto_asignado = newVal.montoAsignado
 
       // Asignar detalles de gastos
       if (newVal.detalleDestinoFondos) {
@@ -1168,6 +1181,7 @@ function actualizarDetalleGastos(detalleDestinoFondos) {
       return detalleParseado.map((item, index) => ({
         fecha: item.fecha || '',
         partida: item.partida || `${index + 1}.${index + 1}.${index + 1}`,
+        fuente: item.fuente || '',
         factura_recibo: item.factura_recibo || '',
         descripcion_gasto: item.descripcion || item.descripcion_gasto || '',
         monto: item.monto || 0,
@@ -1176,6 +1190,7 @@ function actualizarDetalleGastos(detalleDestinoFondos) {
       return detalleParseado.items.map((item, index) => ({
         fecha: item.fecha || '',
         partida: item.partida || `${index + 1}.${index + 1}.${index + 1}`,
+        fuente: item.fuente || '',
         factura_recibo: item.factura_recibo || item.numero_factura || '',
         descripcion_gasto: item.descripcion || item.concepto || '',
         monto: item.monto || 0,
@@ -1403,8 +1418,8 @@ watch(
         //console.log('Solicitud encontrada, pre-llenando datos:', solicitudEncontrada)
 
         // Pre-llenar campos con los datos de la solicitud
-        formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
-        formData.value.monto_asignado = solicitudEncontrada.montoSolicitado || 0 // Asumiendo que monto asignado = monto solicitado
+        //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+        //formData.value.monto_asignado = solicitudEncontrada.montoSolicitado || 0 // Asumiendo que monto asignado = monto solicitado
 
         // También puedes pre-llenar otros campos si es necesario
         if (solicitudEncontrada.numeroFormulario) {
@@ -1446,8 +1461,8 @@ watch(
       solicitud.value = solicitudEncontrada
 
       if (solicitudEncontrada) {
-        formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
-        formData.value.monto_asignado = solicitudEncontrada.formaPago || 0
+        //formData.value.monto_solicitado = solicitudEncontrada.montoSolicitado || 0
+        //formData.value.monto_asignado = solicitudEncontrada.formaPago || 0
       }
     }
   },

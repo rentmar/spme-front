@@ -210,6 +210,7 @@
                 <tr>
                   <th>Fecha</th>
                   <th>Partida</th>
+                  <th>Fuente</th>
                   <th>Factura/Recibo</th>
                   <th>Descripción del Gasto</th>
                   <th>Monto (Bs.)</th>
@@ -231,9 +232,19 @@
                   <td>
                     <v-text-field
                       v-model="gasto.partida"
-                      bg-color="blue-lighten-5"
-                      hide-details
                       density="compact"
+                      hide-details
+                      bg-color="blue-lighten-5"
+                      required
+                    ></v-text-field>
+                  </td>
+                  <td class="narrow-column">
+                    <v-text-field
+                      v-model="gasto.fuente"
+                      variant="outlined"
+                      density="compact"
+                      hide-details
+                      bg-color="blue-lighten-5"
                       required
                     ></v-text-field>
                   </td>
@@ -337,14 +348,14 @@
                   bg-color="blue-lighten-5"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Coordinador"
+                  label="Responsable Coordinación"
                   required
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6">
                 <v-checkbox
                   v-model="formData.validacion_coordinador"
-                  label="Aprobado por Coordinador"
+                  label="Aprobado por Coordinación"
                   :disabled="!isAdmin"
                 ></v-checkbox>
               </v-col>
@@ -365,7 +376,7 @@
               <v-col cols="12" md="6">
                 <v-checkbox
                   v-model="formData.validacion_contador"
-                  label="Aprobado por Contador"
+                  label="Aprobado por Contable"
                   :disabled="!isAdmin"
                 ></v-checkbox>
               </v-col>
@@ -379,14 +390,14 @@
                   bg-color="blue-lighten-5"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Administrador"
+                  label="Responsable Administración"
                   required
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6">
                 <v-checkbox
                   v-model="formData.validacion_administrador"
-                  label="Aprobado por Administrador"
+                  label="Aprobado por Administración"
                   :disabled="!isAdmin"
                 ></v-checkbox>
               </v-col>
@@ -517,7 +528,7 @@ const formData = ref({
   id_usuario: 0,
   // Resto de campos del formulario
   detalle_destino_fondos: [
-    { fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 },
+    { fecha: '', partida: '', fuente: '', factura_recibo: '', descripcion_gasto: '', monto: 0 },
   ],
   forma_pago: null,
   lugar_solicitud: '', //******* */
@@ -888,7 +899,9 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
 
     // Mapear al formato que espera la tabla
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
+      fecha: item.fecha,
       partida: `${index + 1}.${index + 1}.${index + 1}`, // Generar partida automáticamente o usar una lógica específica
+      fuente: item.fuente || '',
       descripcion_gasto: item.concepto || '',
       monto: item.monto || 0,
     }))
@@ -1131,6 +1144,7 @@ function agregarGasto() {
   formData.value.detalle_destino_fondos.push({
     fecha: '',
     partida: '',
+    fuente: '',
     factura_recibo: '',
     descripcion_gasto: '',
     monto: 0,
@@ -1175,7 +1189,7 @@ async function submitForm() {
 
     if (
       formData.value.detalle_destino_fondos.some(
-        (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0,
+        (gasto) => !gasto.partida || !gasto.fuente || !gasto.descripcion_gasto || gasto.monto <= 0,
       )
     ) {
       throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
@@ -1185,6 +1199,7 @@ async function submitForm() {
       (gasto) =>
         !gasto.fecha || // <--- AÑADIR: Verifica que la fecha exista
         !gasto.partida ||
+        !gasto.fuente ||
         !gasto.factura_recibo || // <--- AÑADIR: Verifica que el número de factura/recibo exista
         !gasto.descripcion_gasto ||
         Number(gasto.monto) <= 0, // <--- Asegúrate de convertir a número para la comparación
@@ -1231,6 +1246,7 @@ async function submitForm() {
       detalleDestinoFondos: formData.value.detalle_destino_fondos.map((gasto) => ({
         fecha: gasto.fecha || '',
         partida: gasto.partida || '',
+        fuente: gasto.fuente || '',
         factura_recibo: gasto.factura_recibo || '',
         descripcion: gasto.descripcion_gasto || '',
         monto: Number(gasto.monto) || 0,
@@ -1439,6 +1455,7 @@ function exportToExcel() {
   const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
     gasto.fecha,
     gasto.partida,
+    gasto.fuente,
     gasto.factura_recibo,
     gasto.descripcion_gasto,
     gasto.monto,

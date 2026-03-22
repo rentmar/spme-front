@@ -208,7 +208,7 @@
                   ></v-textarea>
                   <v-text-field
                     v-model="textoProcedencia"
-                    label="Fuente de Financiamiento"
+                    label="Fuentes de Financiamiento"
                     variant="outlined"
                     density="compact"
                     bg-color="grey-lighten-4"
@@ -230,6 +230,9 @@
                     <v-file-input
                       v-model="formData.medios_archivos"
                       label="Adjuntar Medios de verificacion"
+                      variant="outlined"
+                      hint="Ud. puede adjuntar: contrato, acta de conformidad, informe de consultoria, factura por servicio... "
+                      persistent-hint
                       multiple
                       chips
                       show-size
@@ -267,7 +270,8 @@
                       <tr>
                         <th class="fecha-column">Fecha</th>
                         <th class="text-subtitle-2 font-weight-bold">Partida</th>
-                        <th>Factura/Recibo</th>
+                        <th class="text-subtitle-2 font-weight-bold">Fuente</th>
+                        <th class="text-subtitle-2 font-weight-bold">Factura/Recibo</th>
                         <th class="text-subtitle-2 font-weight-bold">Descripción</th>
                         <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
                         <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
@@ -278,6 +282,7 @@
                         <td class="fecha-column">
                           <v-text-field
                             v-model="gasto.fecha"
+                            variant="outlined"
                             type="date"
                             bg-color="blue-lighten-5"
                             hide-details
@@ -298,12 +303,25 @@
                             required
                           ></v-text-field>
                         </td>
+                        <td class="narrow-column">
+                          <v-text-field
+                            v-model="gasto.fuente"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            bg-color="blue-lighten-5"
+                            placeholder="Financiador"
+                            required
+                          ></v-text-field>
+                        </td>
                         <td>
                           <v-text-field
                             v-model="gasto.factura_recibo"
+                            variant="outlined"
                             bg-color="blue-lighten-5"
                             hide-details
                             density="compact"
+                            placeholder="Factura/Recibo"
                             required
                           ></v-text-field>
                         </td>
@@ -495,7 +513,7 @@
                         :items="contadoresList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Contador"
+                        label="Responsable Contable"
                         variant="outlined"
                         bg-color="blue-lighten-5"
                         required
@@ -504,7 +522,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formData.validacion_responsable"
-                        label="Aprobado por Contador"
+                        label="Aprobado por Contable"
                         :disabled="isFrozen"
                       ></v-checkbox>
                     </v-col>
@@ -516,7 +534,7 @@
                         :items="coordinadoresList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Coordinador"
+                        label="Responsable Coordinación"
                         variant="outlined"
                         bg-color="blue-lighten-5"
                         required
@@ -525,7 +543,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formData.validacion_coordinador"
-                        label="Aprobado por Coordinador o Dirección"
+                        label="Aprobado por Coordinación o Dirección"
                         :disabled="isFrozen"
                       ></v-checkbox>
                     </v-col>
@@ -640,7 +658,7 @@ const formData = ref({
   id_tarea: 0,
   id_usuario: 0,
   // Resto de campos del formulario
-  detalle_destino_fondos: [{ fecha: '', partida: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [{ fecha: '', partida: '', fuente: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
   monto_solicitado: 0,
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
@@ -1067,7 +1085,7 @@ async function cargarSolicitudFondos() {
 }
 
 function addGasto() {
-  formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 })
+  formData.value.detalle_destino_fondos.push({ fecha: '', partida: '', fuente: '', descripcion_gasto: '', monto: 0 })
 }
 
 function removeGasto(index) {
@@ -1112,6 +1130,7 @@ async function submitForm() {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           fecha: gasto.fecha || '',
           partida: gasto.partida,
+          fuente: gasto.fuente,
           factura_recibo: gasto.factura_recibo || '',
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
@@ -1317,6 +1336,7 @@ function exportToExcel() {
   const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
     gasto.fecha,
     gasto.partida,
+    gasto.fuente,
     gasto.factura_recibo,
     gasto.descripcion_gasto,
     gasto.monto,
@@ -1534,7 +1554,10 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
 
     // Mapear al formato que espera la tabla
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
+      fecha: item.fecha,
       partida: `${index + 1}.${index + 1}.${index + 1}`, // Generar partida automáticamente o usar una lógica específica
+      fuente: item.fuente,
+      factura_recibo: item.factura_recibo,
       descripcion_gasto: item.concepto || '',
       monto: item.monto || 0,
     }))

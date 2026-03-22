@@ -253,6 +253,7 @@
                     <thead>
                       <tr>
                         <th class="text-subtitle-2 font-weight-bold">Partida</th>
+                        <th class="text-subtitle-2 font-weight-bold">Fuente</th>
                         <th class="text-subtitle-2 font-weight-bold">Descripción</th>
                         <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
                         <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
@@ -269,6 +270,16 @@
                             placeholder="1.1.1"
                             class="compact-field"
                             :readonly="soloLectura"
+                          ></v-text-field>
+                        </td>
+                        <td class="narrow-column">
+                          <v-text-field
+                            v-model="gasto.fuente"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            bg-color="blue-lighten-5"
+                            placeholder="Financiador"
                           ></v-text-field>
                         </td>
                         <td class="wide-column">
@@ -447,7 +458,7 @@
                         :items="responsablesList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Contador"
+                        label="Responsable Contable"
                         variant="outlined"
                         :readonly="soloLectura"
                       ></v-select>
@@ -455,7 +466,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formDatSF.validacionResponsablesf"
-                        :label="`Aprobado por Contador ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                        :label="`Aprobado por Contable ${puedeValidarResponsable ? '(Usted)' : ''}`"
                         :disabled="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :readonly="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :color="puedeValidarResponsable ? 'primary' : 'grey'"
@@ -478,7 +489,7 @@
                         :items="coordinadoresList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Coordinador"
+                        label="Responsable Coordinación"
                         variant="outlined"
                         :readonly="soloLectura"
                       ></v-select>
@@ -486,7 +497,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formDatSF.validacionCoordinadorsf"
-                        :label="`Aprobado por Coordinador ${puedeValidarCoordinador ? '(Usted)' : ''}`"
+                        :label="`Aprobado por Coordinación ${puedeValidarCoordinador ? '(Usted)' : ''}`"
                         :disabled="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :readonly="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :color="puedeValidarCoordinador ? 'primary' : 'grey'"
@@ -698,7 +709,7 @@ const formData = ref({
   id_actividad: 0,
   id_usuario: 0,
   // Resto de campos del formulario
-  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [{ partida: '', fuente: '', descripcion_gasto: '', monto: 0 }],
   forma_pago: null,
   datos_forma_pago: {
     otros: { nombre_otros: '', ci_otros: '' },
@@ -1143,7 +1154,7 @@ async function cargarSolicitudPago() {
 }
 
 function addGasto() {
-  formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 })
+  formData.value.detalle_destino_fondos.push({ partida: '', fuente: '', descripcion_gasto: '', monto: 0 })
 }
 
 function removeGasto(index) {
@@ -1215,6 +1226,7 @@ async function submitForm() {
       detalleDestinoFondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida: gasto.partida,
+          fuente: gasto.fuente,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
@@ -1466,6 +1478,7 @@ function exportToExcel() {
   // 3. Datos de gastos
   const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
     gasto.partida,
+    gasto.fuente,
     gasto.descripcion_gasto,
     gasto.monto,
     '',
@@ -1682,7 +1695,7 @@ function actualizarDatosFormulario(solicitud) {
 // Función para parsear y actualizar el detalle de destino de fondos
 function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
   try {
-    //console.log('Detalle de destino de fondos recibido:', JSON.stringify(detalleDestinoFondos,null,2))
+    console.log('Detalle de destino de fondos recibido:', JSON.stringify(detalleDestinoFondos,null,2))
     if (!detalleDestinoFondos) {
       formData.value.detalle_destino_fondos = []
       return
@@ -1700,7 +1713,8 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
 
     // Mapear al formato que espera la tabla
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
-      partida: item.partida,// || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
+      partida: item.partida_sf,// || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
+      fuente: item.fuente || '',
       descripcion_gasto: item.concepto || '',
       monto: item.monto || 0,
     }))

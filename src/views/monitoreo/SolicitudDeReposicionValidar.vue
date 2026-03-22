@@ -265,7 +265,8 @@
                       <tr>
                         <th class="fecha-column">Fecha</th>
                         <th class="text-subtitle-2 font-weight-bold">Partida</th>
-                        <th>Factura/Recibo</th>
+                        <th class="text-subtitle-2 font-weight-bold">Fuente</th>
+                        <th class="text-subtitle-2 font-weight-bold">Factura/Recibo</th>
                         <th class="text-subtitle-2 font-weight-bold">Descripción</th>
                         <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
                         <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
@@ -277,6 +278,7 @@
                         <td class="fecha-column">
                           <v-text-field
                             v-model="gasto.fecha"
+                            variant="outlined"
                             type="date"
                             bg-color="blue-lighten-5"
                             hide-details
@@ -298,12 +300,25 @@
                             :readonly="soloLectura"
                           ></v-text-field>
                         </td>
+                        <td class="narrow-column">
+                          <v-text-field
+                            v-model="gasto.fuente"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            bg-color="blue-lighten-5"
+                            placeholder="Financiador"
+                            :readonly="soloLectura"
+                          ></v-text-field>
+                        </td>
                         <td>
                           <v-text-field
                             v-model="gasto.factura_recibo"
+                            variant="outlined"
                             bg-color="blue-lighten-5"
                             hide-details
                             density="compact"
+                            placeholder="Factura/Recibo"
                             :readonly="soloLectura"
                           ></v-text-field>
                         </td>
@@ -485,7 +500,7 @@
                         :items="responsablesList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Contador"
+                        label="Responsable Contable"
                         variant="outlined"
                         :readonly="soloLectura"
                       ></v-select>
@@ -493,7 +508,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formDatSF.validacionResponsablesf"
-                        :label="`Aprobado por Contador ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                        :label="`Aprobado por Contable ${puedeValidarResponsable ? '(Usted)' : ''}`"
                         :disabled="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :readonly="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :color="puedeValidarResponsable ? 'primary' : 'grey'"
@@ -516,7 +531,7 @@
                         :items="coordinadoresList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Coordinador"
+                        label="Responsable Coordinación"
                         variant="outlined"
                         :readonly="soloLectura"
                       ></v-select>
@@ -524,7 +539,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formDatSF.validacionCoordinadorsf"
-                        :label="`Aprobado por Coordinador ${puedeValidarCoordinador ? '(Usted)' : ''}`"
+                        :label="`Aprobado por Coordinación ${puedeValidarCoordinador ? '(Usted)' : ''}`"
                         :disabled="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :readonly="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :color="puedeValidarCoordinador ? 'primary' : 'grey'"
@@ -726,7 +741,7 @@ const formData = ref({
   id_actividad: 0,
   id_usuario: 0,
   // Resto de campos del formulario
-  detalle_destino_fondos: [{ fecha:'', partida: '', factura_recibo: '', concepto: '', monto: 0 }],
+  detalle_destino_fondos: [{ fecha:'', partida: '', fuente: '', factura_recibo: '', concepto: '', monto: 0 }],
   forma_pago: null,
   datos_forma_pago: {
     otros: { nombre_otros: '', ci_otros: '' },
@@ -1205,7 +1220,7 @@ async function cargarSolicitudDeReposicion() {
 }
 
 function addGasto() {
-  formData.value.detalle_destino_fondos.push({ fecha: '', partida: '', factura_recibo: '', concepto: '', monto: 0 })
+  formData.value.detalle_destino_fondos.push({ fecha: '', partida: '', fuente: '', factura_recibo: '', concepto: '', monto: 0 })
 }
 
 function removeGasto(index) {
@@ -1250,6 +1265,7 @@ async function submitForm() {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           fecha: gasto.fecha,
           partida: gasto.partida,
+          fuente: gasto.fuente,
           factura_recibo: gasto.factura_recibo,
           concepto: gasto.concepto,
           monto: Number(gasto.monto),
@@ -1502,6 +1518,7 @@ function exportToExcel() {
   const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
     gasto.fecha,
     gasto.partida,
+    gasto.fuente,
     gasto.factura_recibo,
     gasto.concepto,
     gasto.monto,
@@ -1738,6 +1755,7 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
       fecha: item.fecha || '',
       partida: item.partida || `${index + 1}.${index + 1}.${index + 1}`, // Usar partida_sf del backend o generar automáticamente
+      fuente: item.fuente || '',
       factura_recibo: item.factura_recibo || '',
       concepto: item.concepto || '',
       monto: item.monto || 0,

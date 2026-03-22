@@ -119,6 +119,7 @@
               <thead>
                 <tr>
                   <th>Partida</th>
+                  <th>Fuente</th>
                   <th>Descripción del Gasto</th>
                   <th>Monto (Bs.)</th>
                   <th>Acción</th>
@@ -129,22 +130,37 @@
                   <td>
                     <v-text-field
                       v-model="gasto.partida"
-                      bg-color="blue-lighten-5"
-                      hide-details
+                      variant="outlined"
                       density="compact"
+                      hide-details
+                      bg-color="blue-lighten-5"
+                      placeholder="Partida"
+                    ></v-text-field>
+                  </td>
+                  <td>
+                    <v-text-field
+                      v-model="gasto.fuente"
+                      variant="outlined"
+                      density="compact"
+                      hide-details
+                      bg-color="blue-lighten-5"
+                      placeholder="Financiador"
                     ></v-text-field>
                   </td>
                   <td>
                     <v-text-field
                       v-model="gasto.descripcion_gasto"
+                      variant="outlined"
                       bg-color="blue-lighten-5"
                       hide-details
                       density="compact"
+                      placeholder="Descripcion de gasto"
                     ></v-text-field>
                   </td>
                   <td>
                     <v-text-field
                       v-model="gasto.monto"
+                      variant="outlined"
                       bg-color="blue-lighten-5"
                       type="number"
                       hide-details
@@ -353,7 +369,7 @@
                   :items="responsablesList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Contador"
+                  label="Responsable Contable"
                   bg-color="blue-lighten-5"
                   required
                 ></v-select>
@@ -361,7 +377,7 @@
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
                   v-model="formData.validacion_responsable"
-                  label="Aprobado por Contador"
+                  label="Aprobado por Contable"
                   :disabled="isFrozen"
                 ></v-checkbox>
               </v-col>
@@ -374,14 +390,14 @@
                   :items="coordinadoresList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Coordinador"
+                  label="Responsable Coordinación"
                   required
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
                   v-model="formData.validacion_coordinador"
-                  label="Aprobado por Coordinador"
+                  label="Aprobado por Coordinación"
                   :disabled="isFrozen"
                 ></v-checkbox>
               </v-col>
@@ -496,7 +512,7 @@ const formData = ref({
   id_actividad: '',
   id_tarea: null,
   id_usuario: '',
-  detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [{ partida: '', fuente: '', descripcion_gasto: '', monto: 0 }],
   monto_solicitado: 0,
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
@@ -726,7 +742,7 @@ async function cargarUsuarios() {
 }
 
 function addGasto() {
-  formData.value.detalle_destino_fondos.push({ partida: '', descripcion_gasto: '', monto: 0 })
+  formData.value.detalle_destino_fondos.push({ partida: '', fuente: '', descripcion_gasto: '', monto: 0 })
 }
 
 function removeGasto(index) {
@@ -764,7 +780,7 @@ async function submitForm() {
 
     if (
       formData.value.detalle_destino_fondos.some(
-        (gasto) => !gasto.partida || !gasto.descripcion_gasto || gasto.monto <= 0,
+        (gasto) => !gasto.partida || !gasto.fuente || !gasto.descripcion_gasto || gasto.monto <= 0,
       )
     ) {
       throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
@@ -794,6 +810,7 @@ async function submitForm() {
       detalle_destino_fondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida: gasto.partida,
+          fuente: gasto.fuente,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
