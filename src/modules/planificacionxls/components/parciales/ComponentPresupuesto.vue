@@ -110,7 +110,7 @@
               <v-col cols="12" md="8">
                 <v-autocomplete
                   v-model="nuevaFuenteSeleccionada"
-                  :items="fuentesFinancierasDisponibles"
+                  :items="fuentesFinancierasFiltradas"
                   label="Seleccionar fuente financiera existente"
                   item-title="financiera"
                   item-value="id"
@@ -294,6 +294,14 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  procedenciaFondos: {
+    type: Array,
+    default: () => [],
+    validator: (value) => {
+      //Validar que sea un array de numeros
+      return Array.isArray(value) && value.every((item) => typeof item === 'number')
+    },
+  },
 })
 
 // Emits
@@ -320,6 +328,19 @@ const {
 const currentRowTotal = computed(() => {
   const total = Number(props.presupuestoTotal) || 0
   return isNaN(total) ? 0 : total
+})
+
+//Computed para filtrar fuentes por procedencia
+const fuentesFinancierasFiltradas = computed(() => {
+  //si no hay procedencia de fondos(props)
+  if (!props.procedenciaFondos || props.procedenciaFondos.length === 0) {
+    return fuentesFinancierasDisponibles
+  }
+
+  //Filtrar solo las fuentes cuyo id este en el array de procedencia de fondos
+  return fuentesFinancierasDisponibles.value.filter((fuente) => {
+    return props.procedenciaFondos.includes(fuente.id)
+  })
 })
 
 const totalDesglose = computed(() => {

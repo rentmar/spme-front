@@ -201,6 +201,7 @@
               v-model="mostrarPresupuesto"
               :presupuesto-total="selectedRowData.presupuesto"
               :desglose-inicial="selectedRowData.procedencia_fondos"
+              :procedencia-fondos="proyectoStore.proyectoActual?.instancia_gestora"
               @guardarDesglose="guardarDesglosePresupuesto"
             ></ComponentPresupuesto>
           </div>
@@ -257,16 +258,16 @@
     </div>
   </div>
 
-  <!-- Modal de Pre-Envío (Exactamente como el PEI) -->
+  <!-- Modal de Pre-Envío con motivo de cambio -->
   <v-dialog v-model="mostrandoPreEnvio" max-width="800" persistent>
     <v-card>
       <v-toolbar color="primary" dark flat>
         <v-toolbar-title>
           <v-icon start>mdi-send</v-icon>
-          Confirmar Envío de Cambios - Proyecto
+          Confirmar Envío de Cambios
         </v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn icon @click="mostrandoPreEnvio = false">
+        <v-btn icon @click="cancelarEnvio">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
@@ -294,6 +295,27 @@
             <span>Total de cambios:</span>
             <strong class="text-orange">{{ totalCambiosReales }}</strong>
           </div>
+          <v-divider></v-divider>
+          <!-- Campo de motivo del cambio - OBLIGATORIO -->
+          <v-textarea
+            v-model="motivoCambio"
+            label="Motivo del cambio *"
+            placeholder="Describa detalladamente el motivo de los cambios realizados..."
+            :error-messages="errorMotivo"
+            :counter="500"
+            rows="3"
+            maxlength="500"
+            required
+            variant="outlined"
+            class="mb-4"
+            clearable
+            @input="validarMotivo"
+          >
+            <template v-slot:prepend-inner>
+              <v-icon color="primary">mdi-comment-text-outline</v-icon>
+            </template>
+          </v-textarea>
+
           <v-divider></v-divider>
           <div class="d-flex align-center justify-space-between">
             <span>Presupuesto total:</span>
@@ -362,8 +384,13 @@
       <v-divider></v-divider>
       <v-card-actions class="pa-3">
         <v-spacer></v-spacer>
-        <v-btn variant="text" @click="mostrandoPreEnvio = false" class="mr-2">Cancelar</v-btn>
-        <v-btn color="primary" @click="confirmarEnvio" :loading="enviando">
+        <v-btn variant="text" @click="cancelarEnvio" class="mr-2">Cancelar</v-btn>
+        <v-btn
+          color="primary"
+          @click="confirmarEnvio"
+          :loading="enviando"
+          :disabled="!motivoCambio || motivoCambio.trim().length === 0"
+        >
           <v-icon start>mdi-check</v-icon>
           Confirmar Envío
         </v-btn>
@@ -439,6 +466,7 @@ const idproyecto = route.params.id
 //Stores
 const storePlanificacion = usePlanificacionStore()
 const userStore = useUserStore()
+const proyectoStore = useProyectoStore()
 
 //Composables
 const { successMsg, errorMsg, infoMsg } = useSnackbar()
@@ -526,7 +554,6 @@ const abrirModalPei = () => {
   }
   modalPei.value = true
 }
-// Manejar la selección de PEI
 // Manejar la selección de PEI
 const manejarSeleccionPei = (datosPei) => {
   console.log('🔍 DEBUG - Iniciando manejarSeleccionPei')
@@ -670,9 +697,11 @@ const manejarSeleccionPei = (datosPei) => {
   console.log('🔚 Modal cerrado')
 }
 
-/************************* PRE-ENVÍO (EXACTAMENTE COMO EL PEI) *******************************/
+/************************* PRE-ENVÍO CON MOTIVO DE CAMBIO *******************************/
 const mostrandoPreEnvio = ref(false)
 const enviando = ref(false)
+const motivoCambio = ref('')
+const errorMotivo = ref('')
 
 // Información del usuario
 const usuarioActualInfo = computed(() => ({
@@ -734,17 +763,48 @@ const actividadesPlanificadas = computed(() => {
   ).length
 })
 
+// Validar motivo
+const validarMotivo = () => {
+  if (!motivoCambio.value || motivoCambio.value.trim().length === 0) {
+    errorMotivo.value = 'El motivo del cambio es obligatorio'
+    return false
+  }
+
+  if (motivoCambio.value.trim().length < 10) {
+    errorMotivo.value = 'El motivo debe tener al menos 10 caracteres'
+    return false
+  }
+
+  errorMotivo.value = ''
+  return true
+}
+
 // Mostrar pre-envío
 const mostrarPreEnvio = () => {
   if (totalCambiosReales.value === 0) {
     infoMsg('No hay cambios para enviar')
     return
   }
+  // Limpiar campos al abrir el modal
+  motivoCambio.value = ''
+  errorMotivo.value = ''
   mostrandoPreEnvio.value = true
+}
+
+// Cancelar envío
+const cancelarEnvio = () => {
+  motivoCambio.value = ''
+  errorMotivo.value = ''
+  mostrandoPreEnvio.value = false
 }
 
 // Confirmar envío
 const confirmarEnvio = async () => {
+  // Validar motivo antes de enviar
+  if (!validarMotivo()) {
+    return
+  }
+
   enviando.value = true
   try {
     // Construir el payload en el formato requerido para proyectos
@@ -761,6 +821,9 @@ const confirmarEnvio = async () => {
         proyecto: props.proyecto.id,
         creado_por: usuarioActualInfo.value.id,
         actualizado_por: usuarioActualInfo.value.id,
+        // Añadir el motivo del cambio
+        motivo_cambio: motivoCambio.value.trim(),
+        fecha_cambio: new Date().toISOString(),
       },
     }
 
@@ -775,6 +838,10 @@ const confirmarEnvio = async () => {
     // Limpiar cambios después del envío exitoso
     registroCambios.limpiar()
     storePlanificacion.setTieneCambiosSinGuardar(false)
+
+    // Limpiar motivo
+    motivoCambio.value = ''
+    errorMotivo.value = ''
 
     mostrandoPreEnvio.value = false
   } catch (error) {
