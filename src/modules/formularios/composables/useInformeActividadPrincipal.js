@@ -118,7 +118,20 @@ export function useInformeActividadPrincipal() {
     }
   }
 
-  //Obtener los informes de una tarea usando su id
+  //Obtener un informe de tarea/subactividad principal por su id
+  async function obtenerInformeSubActividadPrincipalPorId(idInformeSubactividad) {
+    loading.value = true
+    try {
+      const respuesta =
+        await informeActividadPrinServicio.cargarInfSubActividadPorId(idInformeSubactividad)
+      informeTareaPrincipal.value = respuesta
+      return respuesta
+    } catch (err) {
+      console.error('Error al cargar el informe de actividad', err)
+    } finally {
+      loading.value = false
+    }
+  }
 
   return {
     //Estado
@@ -136,6 +149,7 @@ export function useInformeActividadPrincipal() {
     listarInformesActividadPrincipal,
     //Func Informe Tarea
     crearInformeTareaPrincipal,
+    obtenerInformeSubActividadPrincipalPorId,
     //Comprobacion
     verificarActividad,
   }

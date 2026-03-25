@@ -19,6 +19,10 @@ export const useUserPermissions = defineStore('userPermisos', () => {
     ADMINISTRACION: 3,
   }))
 
+  const proyectosAccesiblesIds = computed(() => {
+    return proyectosAccesibles.value.map((proyecto) => proyecto.id)
+  })
+
   const proyectosLectura = computed(() =>
     proyectosAccesibles.value.filter((p) => p.nivel_acceso >= nivelesAcceso.value.LECTURA),
   )
@@ -32,6 +36,7 @@ export const useUserPermissions = defineStore('userPermisos', () => {
   )
 
   // ========== ACTIONS ==========
+  //Fija los permisos del usuario
   const setPermisosGlobales = (data) => {
     console.log('💾 useUserPermissions - setPermisosGlobales:', data)
 
@@ -112,6 +117,7 @@ export const useUserPermissions = defineStore('userPermisos', () => {
     proyectosLectura,
     proyectosEdicion,
     proyectosAdministracion,
+    proyectosAccesiblesIds,
 
     //Acciones
     setPermisosGlobales,

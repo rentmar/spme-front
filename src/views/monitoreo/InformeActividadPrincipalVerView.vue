@@ -51,7 +51,7 @@
             >
               Exportar PDF
             </v-btn>
-            <v-btn
+            <!-- <v-btn
               color="success"
               variant="flat"
               prepend-icon="mdi-check"
@@ -59,7 +59,7 @@
               size="small"
             >
               Validar Informe
-            </v-btn>
+            </v-btn> -->
             <v-btn
               color="error"
               variant="flat"
@@ -108,7 +108,7 @@
                 </h3>
 
                 <v-row class="mt-2">
-                  <v-col cols="12" md="6" class="campo-formulario">
+                  <!-- <v-col cols="12" md="6" class="campo-formulario">
                     <div class="campo-etiqueta">Código de Actividad</div>
                     <div class="campo-valor">
                       {{ informeActividadPrincipal.codigoActividad || 'No especificado' }}
@@ -119,7 +119,7 @@
                     <div class="campo-valor">
                       {{ informeActividadPrincipal.nombreActividad || 'No especificado' }}
                     </div>
-                  </v-col>
+                  </v-col> -->
                   <v-col cols="12" class="campo-formulario">
                     <div class="campo-etiqueta">Objetivo de la Actividad</div>
                     <div class="campo-valor campo-texto-largo">

@@ -133,13 +133,13 @@ export const useUserStore = defineStore('user', () => {
    * @throws {Error} Si falla la carga de información
    */
   const loadUserInfo = async () => {
+    console.log('Rutina loadUserInfo')
     if (!accessToken.value) return
-
     try {
       //Obtener datos del usuario desde el enpoint de permisos
       await obtenerPermisos(accessToken.value)
+      console.log('(Debug)permisosUsuario: ', permisosUsuario)
       setUserData(permisosUsuario)
-
       //Integrando los permisos
       const userPermissions = useUserPermissions()
       userPermissions.setPermisosGlobales(permisosUsuario.value)

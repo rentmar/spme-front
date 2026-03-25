@@ -630,10 +630,13 @@ import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSub
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 import { useRouter } from 'vue-router'
 import DialogValidaciones from '@/modules/formularios/components/validadores/DialogValidaciones.vue'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 // Iniciar el store de actividades
 const storeActividad = useListaActividadStore()
 
+//Inciar el composable de mensajes
+const { successMsg, errorMsg } = useSnackbar()
 // Iniciar el composable de Subactividades
 const { crearUnaTarea, actualizarUnaTarea, eliminarUnaTarea } = useTareaSubactividad()
 
@@ -690,11 +693,13 @@ const cargar = async () => {
     await storeActividad.cargarActividadesTareas()
     console.log(storeActividad.actividadesSubactividadesLista)
     actividades.value = storeActividad.actividadesFiltradas
+    successMsg('Numero de actividades cargadas: ' + actividades.value.length)
   } catch (error) {
     console.error('Error al cargar datos:', error)
     actividades.value = []
     emptyResponse.value = true
-    mostrarSnackbar('Error al cargar datos: ' + (error.message || 'Error desconocido'), 'error')
+    errorMsg('Error al cargar datos: ' + (error.message || 'Error desconocido'), 'error')
+    // mostrarSnackbar('Error al cargar datos: ' + (error.message || 'Error desconocido'), 'error')
   } finally {
     loading.value = false
   }

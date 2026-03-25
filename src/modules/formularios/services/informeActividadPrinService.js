@@ -67,4 +67,23 @@ export const informeActividadPrinServicio = {
       throw err
     }
   },
+  /**********Cargar informes de tarea/subactividad principal *****************/
+  cargarInformesSubActividadPrincipal: async () => {
+    try {
+      const respuesta = await api.get('/informe-tarea-principal/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Error al cargar los informes de subactividad', err)
+      throw err
+    }
+  },
+  //Cargar un informe de subactividad por su ID
+  cargarInfSubActividadPorId: async (idinformesubactividad) => {
+    try {
+      const respuesta = await api.get('/informe-tarea-principal/' + idinformesubactividad + '/')
+      return respuesta.data
+    } catch (err) {
+      console.error('Error al cargar el informe de suabactividad principal con id: ', err)
+    }
+  },
 }

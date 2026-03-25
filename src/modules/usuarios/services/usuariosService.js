@@ -45,6 +45,7 @@ export const usuarioServicios = {
           'Content-Type': 'application/json',
         },
       })
+      console.log('Axios: permisos usuario', permisosData)
       return permisosData.data
     } catch (err) {
       console.error('Axios: error cargando informacion del usuario', err)

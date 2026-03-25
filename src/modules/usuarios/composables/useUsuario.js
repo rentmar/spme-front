@@ -74,6 +74,8 @@ export function useUsuario() {
       return respuesta
     } catch (err) {
       console.error('Error cargando la informacion del usuario', err)
+    } finally {
+      loading.value = false
     }
   }
 
@@ -127,8 +129,8 @@ export function useUsuario() {
   return {
     loading, //ref
     error, //ref
-    usuarios, //ref lista de kpis
-    usuario, //ref un kpi por id
+    usuarios,
+    usuario, //ref
     tokens,
     permisosUsuario,
     listaUsuariosMensajes,

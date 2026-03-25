@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useActividad } from '../composables/useActividad'
 import { useUserStore } from '@/stores/user'
 import { useValidadores } from '@/modules/formularios/composables/useValidadores'
+import { useUserPermissions } from '@/stores/useUserPermissions'
 
 export const useListaActividadStore = defineStore('actividades-tareas-lista', () => {
   //Estados
@@ -32,6 +33,10 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
 
   //Iniciar el store de usuarios
   const userStore = useUserStore()
+
+  //Iniciar el store de permisos para los usuarios
+  const usuarioPermisosStore = useUserPermissions()
+  //Getters
 
   //Cargar las actividades + Tareas
   async function cargarActividadesTareas() {
@@ -90,7 +95,7 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     }
   }
 
-  // Cargar las actividades del proyecto y Pei en una sola lista
+  // Cargar las actividades del proyecto
   const cargarListaActividadesGeneral = async (idpei) => {
     loading.value = true
     try {
@@ -169,36 +174,104 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
 
   //Filtrado de actividades
   // Si es admin carga todas
-  //Si no es admin carga solo de las q es responsable
+  //Si no es admin carga solo las actividades que pertenecen a los proyectos
+  //que el usuario tenga acceso
   const actividadesFiltradas = computed(() => {
     if (!actividadesSubactividadesLista.value) return []
 
     const usuario = userStore.userData
     const esAdmin = userStore.rol === 'admin'
 
-    return actividadesSubactividadesLista.value.filter((actividad) => {
-      // Siempre excluir inactivas y creadas
+    // Obtener IDs de proyectos a los que el usuario tiene acceso
+    const proyectosAccesiblesIds = usuarioPermisosStore.proyectosAccesiblesIds || []
+
+    console.log('------------------FILTRAR ACTIVIDADES --------------')
+    console.log('Usuario:', usuario?.user?.username)
+    console.log('Es admin:', esAdmin)
+    console.log('Proyectos accesibles IDs:', proyectosAccesiblesIds)
+    console.log('Total actividades a filtrar:', actividadesSubactividadesLista.value.length)
+
+    // Si es admin, retorna todas las actividades (excluyendo inactivas/CRD)
+    if (esAdmin) {
+      return actividadesSubactividadesLista.value.filter((actividad) => {
+        // Excluir inactivas y creadas
+        if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
+          console.log(`❌ Actividad ${actividad.id} excluida: inactiva o CRD`)
+          return false
+        }
+        console.log(`✅ Admin - Actividad ${actividad.id} incluida`)
+        return true
+      })
+    }
+
+    // Para usuarios no-admin: obtener actividades por dos criterios
+
+    // 1. Actividades donde es responsable directo
+    const actividadesPorResponsabilidad = actividadesSubactividadesLista.value.filter(
+      (actividad) => {
+        // Excluir inactivas y creadas
+        if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
+          return false
+        }
+
+        const esResponsable =
+          actividad.responsable_info?.username === usuario?.user?.username ||
+          actividad.responsable === usuario?.user?.id
+
+        if (esResponsable) {
+          console.log(
+            `✅ [Responsable] Actividad ${actividad.id} - Usuario es responsable, incluida`,
+          )
+          return true
+        }
+        return false
+      },
+    )
+
+    // 2. Actividades que pertenecen a proyectos accesibles
+    // CORRECCIÓN: Usar actividad.proyecto (no proyecto_id)
+    const actividadesPorProyecto = actividadesSubactividadesLista.value.filter((actividad) => {
+      // Excluir inactivas y creadas
       if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
         return false
       }
 
-      // Si es admin, ve todo
-      if (esAdmin) {
+      // Obtener el ID del proyecto de la actividad
+      // Los datos muestran que la propiedad es 'proyecto' directamente
+      const proyectoId = actividad.proyecto
+
+      if (proyectoId && proyectosAccesiblesIds.includes(proyectoId)) {
+        console.log(
+          `✅ [Proyecto] Actividad ${actividad.id} - Pertenece al proyecto accesible ${proyectoId}, incluida`,
+        )
         return true
       }
-
-      // Si no es admin, solo ve sus actividades
-      const esResponsable =
-        actividad.responsable_info?.username === usuario?.user?.username ||
-        actividad.responsable === usuario?.user?.id
-
-      // console.log('esResponsable', esResponsable)
-      // console.log('Actividad responsable info USERName: ', actividad.responsable_info?.username)
-      // console.log('Usuario: ', usuario?.user?.username)
-      // console.log('Actividad responsable: ', actividad.responsable)
-      // console.log('USUARIO ID: ', usuario?.user?.id)
-      return esResponsable
+      return false
     })
+
+    // 3. Combinar ambos resultados y eliminar duplicados
+    const actividadesMap = new Map()
+
+    // Agregar actividades por responsabilidad
+    actividadesPorResponsabilidad.forEach((actividad) => {
+      actividadesMap.set(actividad.id, actividad)
+    })
+
+    // Agregar actividades por proyecto (no duplica si ya existe)
+    actividadesPorProyecto.forEach((actividad) => {
+      if (!actividadesMap.has(actividad.id)) {
+        actividadesMap.set(actividad.id, actividad)
+      }
+    })
+
+    const actividadesUnicas = Array.from(actividadesMap.values())
+
+    console.log('📊 Resumen de filtrado:')
+    console.log(`- Actividades por responsabilidad: ${actividadesPorResponsabilidad.length}`)
+    console.log(`- Actividades por proyecto accesible: ${actividadesPorProyecto.length}`)
+    console.log(`- Total únicas: ${actividadesUnicas.length}`)
+
+    return actividadesUnicas
   })
 
   const actividadesPeiFiltradas = computed(() => {

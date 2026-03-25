@@ -782,11 +782,13 @@ const getAvancePorcentaje = (informe) => {
 // Métodos de navegación
 // ============================================================
 const verDetalleInforme = (informeId) => {
+  successMsg(`Ver detalle del Informe de Actividad: ${informeId}`)
   router.push('/monitoreo/informe-actividad-ver/' + informeId)
 }
 
 const verDetalleInformeTarea = (informeId) => {
-  successMsg(`Ver detalle de la tarea ${informeId} - Funcionalidad en desarrollo`)
+  successMsg(`Ver detalle del Informe Subactividad: ${informeId}`)
+  router.push('/monitoreo/informe-subactividad-ver/' + informeId)
 }
 
 const editarInforme = (informeId) => {
