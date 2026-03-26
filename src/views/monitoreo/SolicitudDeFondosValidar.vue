@@ -629,8 +629,8 @@
     </div>
   </v-container>
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
-   {{ '***************************************B' }}
-  <pre>{{ datosFormulario1 }}</pre>
+   <!-- {{ '***************************************B' }}
+  <pre>{{ datosFormulario1 }}</pre> -->
 </template>
 
 <script setup>
@@ -934,6 +934,7 @@ watch(
     formData.value.cargo = getSafeValue(datosSolicitante.cargo)
     formData.value.documento_identidad = getSafeValue(datosSolicitante.ci)
     formData.value.id_usuario = getSafeValue(datosSolicitante.id, 0)
+    formData.value.correo = getSafeValue(datosSolicitante.correo)
   },
   { deep: true },
 )
@@ -1485,7 +1486,7 @@ async function validarSolicitud() {
   const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
 
   const cuerpoMensaje = {
-    destinatario_id: datosFormulario1.value.usuario,
+    destinatario_id: datosFormulario1.value.usuario_id,
     asunto: 'Solicitud de Fondos',
     contenido: 'Solicitud Aprobada' + numeroFormulario.value + '. URL: ' + urlForm,
     tipo: 'sistema',
