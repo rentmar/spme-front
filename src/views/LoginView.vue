@@ -12,6 +12,8 @@ const passwordError = ref('')
 const showAlert = ref(false)
 const alertMessage = ref('')
 const alertType = ref('danger')
+const isLoading = ref(false) //Bandera de carga del login
+const showPassword = ref(false)
 
 // Stores y router
 const router = useRouter()
@@ -70,16 +72,10 @@ const btnlogin = async () => {
     return
   }
 
+  isLoading.value = true
+
   try {
     console.log('🔄 Iniciando login para usuario:', usuario.value)
-
-    // const response = await axios.post(
-    //   'http://127.0.0.1:8000/autenticacion_api/autenticarUsuario/',
-    //   {
-    //     usuario: usuario.value,
-    //     password: password.value,
-    //   },
-    // )
 
     const response = await userStore.login({
       username: usuario.value,
@@ -90,38 +86,17 @@ const btnlogin = async () => {
       setTimeout(() => {
         router.push('/home')
       }, 1000)
+    } else {
+      displayAlert(
+        'Credenciales incorrectas. Por favor, verifique su usuario y contraseña.',
+        'danger',
+      )
     }
-
-    // if (response.data.validacion === true) {
-    //   console.log('✅ Login exitoso, guardando datos en store...')
-
-    //   // Usar el store para guardar los datos del usuario
-    //   userStore.setUserData({
-    //     usuario: response.data.usuario,
-    //     rol: response.data.rol,
-    //     permisos: response.data.permisos,
-    //   })
-
-    //   // Mostrar datos en consola para debug
-    //   console.log('📊 Datos guardados en store:')
-    //   console.log('- Usuario:', userStore.usuario)
-    //   console.log('- Rol:', userStore.rol)
-    //   console.log('- Permisos:', userStore.permisos)
-    //   console.log('- Autenticado:', userStore.isAuthenticated)
-    //   console.log('- Datos completos:', userStore.userData)
-
-    //   displayAlert('¡Inicio de sesión exitoso!', 'success')
-
-    //   // Redirigir después de un breve delay
-    //   setTimeout(() => {
-    //     router.push('/home')
-    //   }, 1000)
-    // } else {
-    //   displayAlert(response.data.mensaje, 'danger')
-    // }
   } catch (error) {
     console.error('❌ Login failed:', error)
     displayAlert('Error de servicio. Por favor, inténtelo mas tarde.', 'danger')
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -133,6 +108,11 @@ const testStore = () => {
   console.log('- usuario:', userStore.usuario)
   console.log('- rol:', userStore.rol)
   console.log('- userData:', userStore.userData)
+}
+
+//Funcion para esconder mostrar pwd
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value
 }
 </script>
 
@@ -155,64 +135,90 @@ const testStore = () => {
             <div class="col-sm-6">
               <h2 class="text-center mb-4">Login</h2>
               <form autocomplete="off" id="formLogin" @submit.prevent="btnlogin">
-                <div class="input-group">
-                  <input
-                    type="text"
-                    class="form-control"
-                    :class="{ 'is-invalid': usuarioError }"
-                    placeholder="Usuario"
-                    id="txtusuario"
-                    v-model="usuario"
-                    required
-                    autocomplete="username"
-                  />
-                  <span class="input-group-text">
-                    <img
-                      src="../assets/img/person-circle.svg"
-                      alt="Usuario"
-                      class="icono"
-                      style="height: 1.25rem"
+                <!-- Campo de usuario -->
+                <div class="mb-3">
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      class="form-control"
+                      :class="{ 'is-invalid': usuarioError }"
+                      placeholder="Usuario"
+                      id="txtusuario"
+                      v-model="usuario"
+                      :disabled="isLoading"
+                      required
+                      autocomplete="username"
                     />
-                  </span>
-                  <div class="invalid-feedback" v-if="usuarioError">
+                    <span class="input-group-text">
+                      <img
+                        src="../assets/img/person-circle.svg"
+                        alt="Usuario"
+                        class="icono"
+                        style="height: 1.25rem"
+                      />
+                    </span>
+                  </div>
+                  <div class="invalid-feedback d-block" v-if="usuarioError">
                     {{ usuarioError }}
                   </div>
                 </div>
-                <br />
 
-                <div class="input-group has-validation">
-                  <input
-                    type="password"
-                    class="form-control"
-                    :class="{ 'is-invalid': passwordError }"
-                    placeholder="Password"
-                    id="txtpwd"
-                    v-model="password"
-                    required
-                    autocomplete="current-password"
-                  />
-                  <span class="input-group-text">
-                    <img
-                      src="../assets/img/lock-fill.svg"
-                      alt="Password"
-                      class="icono"
-                      style="height: 1.25rem"
+                <!-- Campo de contraseña con toggle -->
+                <div class="mb-3">
+                  <div class="input-group has-validation">
+                    <input
+                      :type="showPassword ? 'text' : 'password'"
+                      class="form-control"
+                      :class="{ 'is-invalid': passwordError }"
+                      placeholder="Password"
+                      id="txtpwd"
+                      v-model="password"
+                      :disabled="isLoading"
+                      required
+                      autocomplete="current-password"
                     />
-                  </span>
-                  <div class="invalid-feedback" v-if="passwordError">
+                    <button
+                      class="btn btn-outline-secondary toggle-password-btn"
+                      type="button"
+                      @click="togglePasswordVisibility"
+                      :disabled="isLoading"
+                      tabindex="-1"
+                    >
+                      <img
+                        v-if="showPassword"
+                        src="../assets/img/eye-slash-fill.svg"
+                        alt="Ocultar contraseña"
+                        style="height: 1.25rem"
+                      />
+                      <img
+                        v-else
+                        src="../assets/img/eye-fill.svg"
+                        alt="Mostrar contraseña"
+                        style="height: 1.25rem"
+                      />
+                    </button>
+                  </div>
+                  <div class="invalid-feedback d-block" v-if="passwordError">
                     {{ passwordError }}
                   </div>
                 </div>
-                <br /><br />
 
+                <!-- Botón de submit -->
                 <div class="d-grid gap-2">
-                  <button type="submit" class="btn custom-btn" id="btnlogin">Ingresar</button>
+                  <button type="submit" class="btn custom-btn" id="btnlogin" :disabled="isLoading">
+                    <span
+                      v-if="isLoading"
+                      class="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    {{ isLoading ? 'Validando...' : 'Ingresar' }}
+                  </button>
                 </div>
               </form>
 
               <!-- Información de debug (solo desarrollo) -->
               <div v-if="false" class="mt-3 p-2 border rounded">
-                <!-- Cambiar a true para ver debug -->
                 <h6>Debug Store:</h6>
                 <p><strong>Autenticado:</strong> {{ userStore.isAuthenticated }}</p>
                 <p><strong>Usuario:</strong> {{ userStore.usuario }}</p>
@@ -231,22 +237,225 @@ const testStore = () => {
 </template>
 
 <style scoped>
-body {
-  background-color: #efe0bc;
-}
-
 .card {
   background-color: #ddd3d3;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Estilos para los inputs y grupos */
+.input-group {
+  width: 100%;
+}
+
+.input-group-text {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+}
+
+.form-control {
+  border-color: #ced4da;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #db7810;
+  box-shadow: 0 0 0 0.2rem rgba(219, 120, 16, 0.25);
+}
+
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-control:disabled {
+  background-color: #e9ecef;
+  opacity: 0.7;
+}
+
+/* Estilos para el botón de toggle de contraseña */
+.toggle-password-btn {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+  border-left: none;
+  transition: all 0.2s ease;
+  padding: 0.375rem 0.75rem;
+}
+
+.toggle-password-btn:hover:not(:disabled) {
+  background-color: #dee2e6;
+  border-color: #ced4da;
+}
+
+.toggle-password-btn:focus {
+  box-shadow: none;
+  outline: none;
+}
+
+.toggle-password-btn:active:not(:disabled) {
+  background-color: #ced4da;
+}
+
+.toggle-password-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background-color: #e9ecef;
+}
+
+/* Estilos para los mensajes de error */
+.invalid-feedback {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  color: #dc3545;
+}
+
+/* Estilos para el botón personalizado */
 .custom-btn {
   background-color: #db7810;
   border-color: #db7810;
   color: white;
+  transition: all 0.2s ease;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
 }
 
-.custom-btn:hover {
+.custom-btn:hover:not(:disabled) {
   background-color: #c1670f;
   border-color: #c1670f;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.custom-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.custom-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: #db7810;
+  border-color: #db7810;
+}
+
+/* Estilos para el spinner durante carga */
+.spinner-border {
+  width: 1rem;
+  height: 1rem;
+  vertical-align: middle;
+}
+
+/* Estilos para las imágenes dentro de los inputs */
+.input-group-text img {
+  filter: brightness(0.5);
+  transition: filter 0.2s ease;
+}
+
+.input-group-text:hover img {
+  filter: brightness(0.3);
+}
+
+/* Asegurar consistencia en la altura de los elementos */
+.form-control,
+.input-group-text,
+.toggle-password-btn {
+  height: 38px;
+}
+
+/* Mejorar espaciado entre campos */
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+/* Estilos para el título */
+h2 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .card {
+    padding: 1.5rem !important;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .logo {
+    max-width: 150px;
+  }
+
+  .form-control,
+  .input-group-text,
+  .toggle-password-btn {
+    height: 35px;
+  }
+}
+
+@media (max-width: 576px) {
+  .card {
+    padding: 1rem !important;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  .logo {
+    max-width: 120px;
+  }
+}
+
+/* Estilo para el logo */
+.logo {
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.02);
+}
+
+/* Animación para las alertas */
+.alert {
+  animation: slideInDown 0.3s ease;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Mejoras en la accesibilidad */
+.form-control:focus,
+.custom-btn:focus,
+.toggle-password-btn:focus {
+  outline: none;
+}
+
+/* Estilo para los placeholders */
+.form-control::placeholder {
+  color: #6c757d;
+  opacity: 0.7;
+}
+
+/* Mejora en la separación de los elementos del input-group */
+.input-group > :not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.input-group > :not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 </style>
