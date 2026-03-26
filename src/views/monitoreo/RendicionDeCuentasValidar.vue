@@ -623,6 +623,8 @@ const coordinadoresList = ref([])
 const contadoresList = ref([])
 const administradoresList = ref([])
 
+const numeroFormulario = ref(null)
+
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)
   nombre: '',
@@ -1077,6 +1079,7 @@ watch(
         formData.value.materno = datosSolicitante.value.materno
         formData.value.documento_identidad = datosSolicitante.value.ci
         formData.value.cargo = datosSolicitante.value.cargo
+        formData.value.correo = datosSolicitante.value.correo
       } else {
         console.warn('No se encontró el solicitante con ID:', idSolicitante)
       }
@@ -1262,23 +1265,11 @@ async function validarRendicion(tipoValidador) {
     return
   }
 
-  // Verificar que el checkbox esté marcado
-  // if (!formData.value[claveValidacion]) {
-  //   alert('Debe marcar la casilla para realizar la validación.');
-  //   return;
-  // }
-
   // Crear el payload específico para la validación
   const payload = {
     //id: datosRendicionDeCuenta.value?.id || idSolicitud,
     [claveValidacion]: true,
   }
-
-  // if (!payload.id) {
-  //   alert('Error: No se encontró el ID de la rendición para validar.')
-  //   formData.value[claveValidacion] = false // Revertir
-  //   return
-  // }
 
   console.log('Payload Validar:', JSON.stringify(payload, null, 2))
 
@@ -1300,6 +1291,63 @@ async function validarRendicion(tipoValidador) {
       )
     }
 
+    //console.log('blalalb',JSON.stringify(datosRendicionDeCuenta.value, null, 2))
+    //console.log('blalalb',JSON.stringify(formData.value.correo, null, 2))
+////////////////////////envio de mensajes y correo//////////////////////
+    const data = await response.json()
+    //console.log('Rendición enviada con éxito:', responseData);
+    numeroFormulario.value = data.numero_formulario
+    const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+
+    const cuerpoMensaje = {
+      destinatario_id: datosRendicionDeCuenta.value.usuario,
+      asunto: 'Rendicion de Cuentas',
+      contenido:
+        'Solicitud Aprobada ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    ///////// Enviar notificación por correo a solicitante//////////
+    try {
+      const emailPayload = {
+        emails: [formData.value.correo].filter(
+          (email) => email,
+        ),
+        datos_solicitud: {
+          codigo: numeroFormulario.value || 'SOL-PROV',
+          titulo: 'Validacion de Rendicion de Cuentas',
+          solicitante: nombreCompletoSolicitante.value,
+          tipo: 'Rendicion de Cuentas',
+          prioridad: 'alta',
+          descripcion:
+            formData.value.descripcion_actividad || 'Rendicion de Cuentas para actividad',
+          url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+        },
+      }
+
+      console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
+
+      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailPayload),
+      })
+
+      if (emailResponse.ok) {
+        console.log('Correo de notificación enviado exitosamente')
+      } else {
+        console.warn('No se pudo enviar el correo de notificación')
+      }
+    } catch (emailError) {
+      console.error('Error al enviar correo de notificación:', emailError)
+      // No detenemos el flujo si falla el envío del correo
+    }
+//////////////////////////////////////////////////////////////////
     //const result = await response.json();
     alert('Rendición validada exitosamente.')
 

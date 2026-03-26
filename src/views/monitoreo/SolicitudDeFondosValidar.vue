@@ -629,8 +629,8 @@
     </div>
   </v-container>
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
-  <!-- {{ '***************************************B' }}
-  <pre>{{ formData.datos_forma_pago }}</pre> -->
+   {{ '***************************************B' }}
+  <pre>{{ datosFormulario1 }}</pre>
 </template>
 
 <script setup>
@@ -718,6 +718,8 @@ const loading = ref(false)
 const form = ref(null)
 const responsablesList = ref([])
 const coordinadoresList = ref([])
+
+const numeroFormulario = ref(null)
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)
@@ -1457,13 +1459,6 @@ async function validarSolicitud() {
     ...validacionData, // Incluye solo validacion_responsable O validacion_coordinador
   }
 
-  // if (!payload.id_solicitud) {
-  //   alert('Error: No se encontró el ID de la solicitud para validar.')
-  //   return
-  // }
-
-  // 4. Ejecutar la llamada PATCH
-  //console.log('payload enviado', JSON.stringify(payload, null, 2))
   loading.value = true
   try {
     const response = await fetch(baseurl + 'api/solicitud-fondos-crud/' + idSolicitud + '/', {
@@ -1480,6 +1475,55 @@ async function validarSolicitud() {
         `Error al actualizar: ${response.status} - ${errorData.detail || errorData.mensaje || 'Error desconocido'}`,
       )
     }
+
+
+  console.log('blalalb',JSON.stringify(datosFormulario1.value, null, 2))
+  /////////////////////envio de mensaje y correo///////////////////////
+  const data = await response.json()
+  //console.log("Rendicion enviada con exitos", responseData)
+  numeroFormulario.value = data.numero_formulario
+  const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+
+  const cuerpoMensaje = {
+    destinatario_id: datosFormulario1.value.usuario,
+    asunto: 'Solicitud de Fondos',
+    contenido: 'Solicitud Aprobada' + numeroFormulario.value + '. URL: ' + urlForm,
+    tipo: 'sistema',
+    prioridad: 3,
+  }
+  await enviarMensajeAutomatico(cuerpoMensaje)
+
+/////////// Enviar notificacion por correo a solicitante//////////
+  try{
+    const emailPayload = {
+      emails: [formData.value.correo].filter((email) => email),
+      datos_solicitud: {
+        codigo: numeroFormulario.value || 'SQL-PROV',
+        titulo: 'Validacion de Solicitud de Fondos',
+        solicitante: nombreCompletoSolicitante.value,
+        tipo: 'Solicitud de Fondos',
+        prioridad: 'alta',
+        descripcion: formData.value.descripcion_actividad || 'Solicitud de Fondos para actividad',
+        url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+      }
+    }
+    console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
+
+    const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(emailPayload),
+    })
+
+    if (emailResponse.ok) {
+      console.log('Correo de notificacion enviado exitosamente')
+    } else {
+      console.warm('No se pudo enviar el correo de notificacion')
+    }
+  } catch (emailError){
+    console.error('Error al enviar correo de notificacion:', emailError)
+  }
+//////////////////////////////////////////////////////////////////
 
     alert('Solicitud validada exitosamente.')
 
