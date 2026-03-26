@@ -64,6 +64,20 @@ export const useUserStore = defineStore('user', () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     sessionStorage.removeItem('userData')
+    sessionStorage.removeItem('userPermissions')
+
+    //Limpiar el session
+    sessionStorage.clear()
+    // Limpiar el store de permisos
+    try {
+      const userPermissions = useUserPermissions()
+      if (userPermissions && userPermissions.limpiarPermisos) {
+        userPermissions.limpiarPermisos()
+      }
+    } catch (e) {
+      console.error('Error limpiando permisos:', e)
+    }
+    console.log('✅ Datos limpiados completamente')
   }
 
   //Carga datos de usuario desde sessionStorage
@@ -109,6 +123,9 @@ export const useUserStore = defineStore('user', () => {
   const login = async (credentials) => {
     isLoading.value = true
     try {
+      //Eliminar datos anteriores antes del login
+      clearUserData()
+
       //Obtener tokens JWT
       await obtenerTokens(credentials)
       //Guardar los tokens en el store y localStorage
@@ -177,6 +194,7 @@ export const useUserStore = defineStore('user', () => {
         userPermissions.setPermisosGlobales(userData)
       } catch (error) {
         console.error('Error cargando permisos desde sessionStorage:', error)
+        clearUserData()
       }
     }
 

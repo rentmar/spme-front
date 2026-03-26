@@ -228,10 +228,31 @@ const showOnlineStatus = computed(() => {
   return userStore.isAuthenticated && usuario.value?.is_active === true
 })
 
-const handleLogout = () => {
-  userStore.clearUserData()
-  userPermisosStore.limpiarPermisos()
-  router.push('/')
+const handleLogout = async () => {
+  // userStore.clearUserData()
+  // userPermisosStore.limpiarPermisos()
+  // router.push('/')
+  console.log('🚪 Cerrando sesión...')
+
+  try {
+    // Limpiar datos
+    userStore.clearUserData()
+    userPermisosStore.limpiarPermisos()
+    sessionStorage.clear()
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+
+    // Redirigir al login usando Vue Router
+    await router.push('/')
+
+    // Forzar recarga después de la redirección
+    setTimeout(() => {
+      window.location.reload()
+    }, 100)
+  } catch (error) {
+    console.error('Error al cerrar sesión:', error)
+    window.location.href = '/'
+  }
 }
 
 const getDisplayName = () => {

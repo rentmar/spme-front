@@ -1,6 +1,7 @@
 //Composable useNotificaciones.js
 import { ref } from 'vue'
 import { mensajeServicios } from '../services/mensajeService'
+import { emailServicios } from '../services/emailService'
 
 //Estados
 const loading = ref(false)
@@ -283,6 +284,33 @@ export function useNotificaciones() {
     }
   }
 
+  //Enviar email de aprobacion
+  async function enviarEmailAprobacion(datosEmail) {
+    loading.value = true
+    try {
+      const respuesta = await emailServicios.emitirEmailSolAprobada(datosEmail)
+      return respuesta
+    } catch (err) {
+      error.value = err
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Enviar email de rechazo
+  async function enviarEmailRechazo(datosEmail) {
+    loading.value = true
+    try {
+      const respuesta = await emailServicios.emitirEmailSolRechazada(datosEmail)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados
     loading,
@@ -305,5 +333,8 @@ export function useNotificaciones() {
     eliminaMensajeSoft,
     cambiarEstadoMensajesArchivado,
     enviarEmailNuevoMensaje,
+    //email
+    enviarEmailAprobacion,
+    enviarEmailRechazo,
   }
 }
