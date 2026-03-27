@@ -50,8 +50,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     listaRendicionCuentasTarea,
   } = useRendicionCuentas()
 
-  //Iniciar el composable - Rendicion de cuentas
-
+  /******************************** Funciones Actividad *****************************************************/
   //Cargar formularioas de la Actividad
   //Solicitudes y Rendiciones
   const cargarFormulariosDeActividad = async (idActividad) => {
@@ -100,7 +99,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     loadingRendicionesActividad.value = true
     try {
       await obtenerListaRendicionCuentasPorIdActividad(idActividad)
-      rendicionesCuentasExistentesActividad.value = listaRendicionCuentasActividad.value
+      rendicionesCuentasExistentesActividad.value = listaRendicionCuentasActividad.value.rendiciones
     } catch (err) {
       console.error(
         'Error al cargar las rendiciones de cuenta de la actividad: ' + idActividad,

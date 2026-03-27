@@ -47,7 +47,12 @@
           <!-- Solicitud de Fondos -->
           <!-- Solicitud de Viaje -->
           <div class="form-section">
-            <VinculacionRendicionCuentas :id-actividad="idActividad"></VinculacionRendicionCuentas>
+            <VinculacionRendicionCuentas
+              ref="vinculacionRef"
+              :id-actividad="idActividad"
+              @update:vinculacion="manejarActualizacionVinculacion"
+              @ver-rendicion="manejarVerRendicion"
+            ></VinculacionRendicionCuentas>
           </div>
 
           <div class="form-section">
@@ -469,9 +474,13 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
+
+//Inicar composable de mensaje cortos
+const { successMsg, errorMsg } = useSnackbar()
 
 const router = useRouter()
 const route = useRoute()
@@ -606,6 +615,48 @@ const actividadData = ref({
   responsable: { nombre: 'María González' },
   presupuesto: 2500,
 })
+
+/****************************** Manejador de seleccion - Vinculacion a solicitudes ************************************************/
+//Referencia al componente hijo
+const vinculacionRef = ref(null)
+
+//EVENTO: update:vinculacion
+const manejarActualizacionVinculacion = (vinculacion) => {
+  console.log('Evento update:vinculacion')
+  console.log('Datos Recibidos del Componente: ', vinculacion)
+  //Caso sin vinculacion
+  if (!vinculacion) {
+    successMsg('Sin Seleccion/Se Elimino seleccion')
+    return
+  }
+  //Caso solicitud de Fondos
+  if (vinculacion.tipo === 'solicitud_fondos') {
+    successMsg(
+      'Rendicion de cuentas vinculada a la sol de fondos: ' +
+        vinculacion.detalle?.numeroFormulario +
+        ' ID: ' +
+        vinculacion.id,
+    )
+    return
+  }
+  //Caso solicitude de viaje
+  if (vinculacion.tipo === 'solicitud_viaje') {
+    successMsg(
+      'Rendicion de cuentas vinculada a la sol de viaje: ' +
+        vinculacion.detalle?.numeroFormulario +
+        ' ID: ' +
+        vinculacion.id,
+    )
+    return
+  }
+}
+
+//EVENTO: ver-rendicion
+const manejarVerRendicion = (vinculacion) => {
+  successMsg('Evento rendicion')
+  console.log('Datos del componente: ', vinculacion)
+}
+/****************************** Fin Manejador de seleccion - Vinculacion a solicitudes ************************************************/
 
 // Propiedades computadas
 const saldoPorReembolsar = computed(() => {
@@ -1643,7 +1694,6 @@ onMounted(() => {
   getSolicitudFondosInfo(idActividad, idTarea)
 })
 </script>
-
 <style scoped>
 .solicitud-fondos-container {
   max-width: 1400px;

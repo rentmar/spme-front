@@ -629,7 +629,7 @@
     </div>
   </v-container>
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
-   <!-- {{ '***************************************B' }}
+  <!-- {{ '***************************************B' }}
   <pre>{{ datosFormulario1 }}</pre> -->
 </template>
 
@@ -829,7 +829,9 @@ const nombreCoordinadorElegido = computed(() => {
 })
 
 const nombreResponsableElegido = computed(() => {
-  const responsable = responsablesList.value.find((user) => user.id === formData.value.idresponsable)
+  const responsable = responsablesList.value.find(
+    (user) => user.id === formData.value.idresponsable,
+  )
   return responsable ? getNombreCompleto(responsable) : ''
 })
 
@@ -944,19 +946,19 @@ watch(
 watch(
   () => formData.value.forma_pago,
   (newVal, oldVal) => {
-    if (newVal === oldVal) return; // No hacer nada si no cambió
+    if (newVal === oldVal) return // No hacer nada si no cambió
 
     // Obtener el nombre de la forma de pago seleccionada
-    const formaPagoSeleccionada = formasPagoOptions.value.find(fp => fp.id === newVal);
-    const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.formaPago : '';
+    const formaPagoSeleccionada = formasPagoOptions.value.find((fp) => fp.id === newVal)
+    const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.formaPago : ''
 
     // Resetear campos según la opción seleccionada
     if (nombreFormaPago === 'Transferencia Bancaria') {
       // Si seleccionó Transferencia, resetear campos de Otros
       formData.value.datos_forma_pago.otros = {
         nombre_otros: '',
-        ci_otros: ''
-      };
+        ci_otros: '',
+      }
     } else {
       // Si seleccionó cualquier otra opción, resetear campos de Transferencia
       formData.value.datos_forma_pago.transferencia = {
@@ -964,11 +966,11 @@ watch(
         ci_transferencia: '',
         entidad_bancaria: '',
         tipo_cuenta: '',
-        numero_cuenta: ''
-      };
+        numero_cuenta: '',
+      }
     }
-  }
-);
+  },
+)
 
 const formasPagoOptions = computed(() => {
   if (datosFormulario.value && datosFormulario.value.formaPago) {
@@ -1267,7 +1269,12 @@ async function cargarSolicitudFondos() {
 }
 
 function addGasto() {
-  formData.value.detalle_destino_fondos.push({ partida: '', fuente: '', descripcion_gasto: '', monto: 0 })
+  formData.value.detalle_destino_fondos.push({
+    partida: '',
+    fuente: '',
+    descripcion_gasto: '',
+    monto: 0,
+  })
 }
 
 function removeGasto(index) {
@@ -1294,10 +1301,10 @@ async function submitForm() {
 
     // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
     const coordinadorSeleccionado = coordinadoresList.value.find(
-     (coordinador) => coordinador.id === formData.value.idcoordinador
+      (coordinador) => coordinador.id === formData.value.idcoordinador,
     )
     const contadorSeleccionado = responsablesList.value.find(
-     (contador) => contador.id === formData.value.idresponsable
+      (contador) => contador.id === formData.value.idresponsable,
     )
 
     const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
@@ -1331,7 +1338,8 @@ async function submitForm() {
       descripcion_actividad: formData.value.descripcion_actividad,
       objetivo_actividad: formData.value.objetivo_actividad,
       // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
-      ...(formData.value.id_tarea && formData.value.id_tarea > 0 && { tarea: formData.value.id_tarea }),
+      ...(formData.value.id_tarea &&
+        formData.value.id_tarea > 0 && { tarea: formData.value.id_tarea }),
       datos_forma_pago: formData.value.datos_forma_pago,
       bloquearIconosSolFondos: true,
       //codigo_actividad: formData.value.codigo_actividad,
@@ -1354,11 +1362,15 @@ async function submitForm() {
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
 
-    const urlForm = `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`;
+    const urlForm = `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
     const cuerpoMensaje = {
       destinatario_id: payload.coordinador,
       asunto: 'Solicitud de Fondos - Coordinado',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Fondos pediente del formulario ' +
+        numeroFormularioSF.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1367,7 +1379,11 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.contador,
       asunto: 'Solicitud de Fondos - Contador',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Fondos pediente del formulario ' +
+        numeroFormularioSF.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1380,7 +1396,7 @@ async function submitForm() {
     ///////// Enviar notificación por correo al coordinador y al contador//////////
     try {
       const emailPayload = {
-        emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
+        emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Fondos',
@@ -1424,8 +1440,7 @@ async function submitForm() {
 }
 
 async function validarSolicitud(idValidador, ListaValidadores) {
-
-  const validadorEncontrado = ListaValidadores.find(validador => validador.id === idValidador)
+  const validadorEncontrado = ListaValidadores.find((validador) => validador.id === idValidador)
   console.log('validador', validadorEncontrado)
   const validador = getNombreCompleto(validadorEncontrado)
   console.log('VALIDADOR SELECCIONADO:', validador)
@@ -1469,12 +1484,12 @@ async function validarSolicitud(idValidador, ListaValidadores) {
   loading.value = true
   try {
     const response = await fetch(baseurl + 'api/solicitud-fondos-crud/' + idSolicitud + '/', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -1483,102 +1498,101 @@ async function validarSolicitud(idValidador, ListaValidadores) {
       )
     }
 
-  console.log('blalalb',JSON.stringify(datosFormulario1.value, null, 2))
-  /////////////////////envio de mensaje y correo///////////////////////
-  const data = await response.json()
-  //console.log("Rendicion enviada con exitos", responseData)
-  numeroFormulario.value = data.numero_formulario
-  const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+    console.log('blalalb', JSON.stringify(datosFormulario1.value, null, 2))
+    /////////////////////envio de mensaje y correo///////////////////////
+    const data = await response.json()
+    //console.log("Rendicion enviada con exitos", responseData)
+    numeroFormulario.value = data.numero_formulario
+    const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
 
-  const cuerpoMensaje = {
-    destinatario_id: datosFormulario1.value.usuario_id,
-    asunto: 'Solicitud de Fondos',
-    contenido: 'Solicitud Aprobada' + numeroFormulario.value + '. URL: ' + urlForm,
-    tipo: 'sistema',
-    prioridad: 3,
-  }
-  await enviarMensajeAutomatico(cuerpoMensaje)
+    const cuerpoMensaje = {
+      destinatario_id: datosFormulario1.value.usuario_id,
+      asunto: 'Solicitud de Fondos',
+      contenido: 'Solicitud Aprobada' + numeroFormulario.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
 
+    //////////////////////////// correo a solicitante////////////////////////
+    //Bandera de carga
+    const isLoading = ref(false)
 
-  //////////////////////////// correo a solicitante////////////////////////
-  //Bandera de carga
-  const isLoading = ref(false)
+    //Incializar el composable
+    const { enviarEmailAprobacion, enviarEmailRechazo } = useNotificaciones()
 
-  //Incializar el composable
-  const { enviarEmailAprobacion, enviarEmailRechazo } = useNotificaciones()
+    //Metodo de prueba
+    const probarEnvioEmail = async () => {
+      console.log('🔄 Ejecutando prueba...')
+      isLoading.value = true
 
-//Metodo de prueba
-const probarEnvioEmail = async () => {
-  console.log('🔄 Ejecutando prueba...')
-  isLoading.value = true
+      //Datos para el email de Aprobacion
+      const datosAprobacion = {
+        emails: [formData.value.correo], //[formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
+        datos_aprobacion: {
+          codigo: 'SOL-2024',
+          titulo: 'Solicitud de Fondos Aprobado',
+          solicitante_nombre: nombreCompletoSolicitante.value,
+          aprobador_nombre: validador,
+          numero_aprobacion: 'No de aprov',
+          url_detalles: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+        },
+      }
 
-  //Datos para el email de Aprobacion
-  const datosAprobacion = {
-    emails: [formData.value.correo],//[formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
-    datos_aprobacion: {
-      codigo: 'SOL-2024',
-      titulo: 'Solicitud de Fondos Aprobado',
-      solicitante_nombre: nombreCompletoSolicitante.value,
-      aprobador_nombre: validador,
-      numero_aprobacion: 'No de aprov',
-      url_detalles: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,,
-    },
-  }
+      // const datosRechazo = {
+      //   emails: ['rolquezamarcelo@gmail.com', 'olivguil9@gmail.com'],
+      //   datos_rechazo: {
+      //     codigo: 'SOL-2024',
+      //     titulo: 'Actividad Talleres',
+      //     solicitante_nombre: 'Marky Mark',
+      //     aprobador_nombre: 'Ale Carvajal',
+      //     motivo_rechazo: 'se rechazo la solicitud por',
+      //     url_detalles: 'URL',
+      //   },
+      // }
 
-  // const datosRechazo = {
-  //   emails: ['rolquezamarcelo@gmail.com', 'olivguil9@gmail.com'],
-  //   datos_rechazo: {
-  //     codigo: 'SOL-2024',
-  //     titulo: 'Actividad Talleres',
-  //     solicitante_nombre: 'Marky Mark',
-  //     aprobador_nombre: 'Ale Carvajal',
-  //     motivo_rechazo: 'se rechazo la solicitud por',
-  //     url_detalles: 'URL',
-  //   },
-  // }
+      try {
+        await enviarEmailAprobacion(datosAprobacion)
+        //await enviarEmailRechazo(datosRechazo)
+        console.log('Prueba ejecutada')
+      } catch (error) {
+        console.error(error)
+      } finally {
+        isLoading.value = false
+      }
+    }
 
-  try {
-    await enviarEmailAprobacion(datosAprobacion)
-    //await enviarEmailRechazo(datosRechazo)
-    console.log('Prueba ejecutada')
-  } catch (error) {
-    console.error(error)
-  } finally {
-    isLoading.value = false
-  }
-}
+    /////////// Enviar notificacion por correo a solicitante//////////
+    // try{
+    //   const emailPayload = {
+    //     emails: [formData.value.correo].filter((email) => email),
+    //     datos_solicitud: {
+    //       codigo: numeroFormulario.value || 'SQL-PROV',
+    //       titulo: 'Validacion de Solicitud de Fondos',
+    //       solicitante: nombreCompletoSolicitante.value,
+    //       tipo: 'Solicitud de Fondos',
+    //       prioridad: 'alta',
+    //       descripcion: formData.value.descripcion_actividad || 'Solicitud de Fondos para actividad',
+    //       url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+    //     }
+    //   }
+    //   console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
 
-/////////// Enviar notificacion por correo a solicitante//////////
-  // try{
-  //   const emailPayload = {
-  //     emails: [formData.value.correo].filter((email) => email),
-  //     datos_solicitud: {
-  //       codigo: numeroFormulario.value || 'SQL-PROV',
-  //       titulo: 'Validacion de Solicitud de Fondos',
-  //       solicitante: nombreCompletoSolicitante.value,
-  //       tipo: 'Solicitud de Fondos',
-  //       prioridad: 'alta',
-  //       descripcion: formData.value.descripcion_actividad || 'Solicitud de Fondos para actividad',
-  //       url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
-  //     }
-  //   }
-  //   console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
+    //   const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(emailPayload),
+    //   })
 
-  //   const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify(emailPayload),
-  //   })
-
-  //   if (emailResponse.ok) {
-  //     console.log('Correo de notificacion enviado exitosamente')
-  //   } else {
-  //     console.warm('No se pudo enviar el correo de notificacion')
-  //   }
-  // } catch (emailError){
-  //   console.error('Error al enviar correo de notificacion:', emailError)
-  // }
-//////////////////////////////////////////////////////////////////
+    //   if (emailResponse.ok) {
+    //     console.log('Correo de notificacion enviado exitosamente')
+    //   } else {
+    //     console.warm('No se pudo enviar el correo de notificacion')
+    //   }
+    // } catch (emailError){
+    //   console.error('Error al enviar correo de notificacion:', emailError)
+    // }
+    //////////////////////////////////////////////////////////////////
 
     alert('Solicitud validada exitosamente.')
 
