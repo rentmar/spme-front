@@ -4,7 +4,7 @@
 
     <v-card-subtitle class="text-h6 d-flex align-center">
       <v-icon icon="mdi-link-variant" class="mr-2" color="primary"></v-icon>
-      Vinculación de la Rendición de Cuentas - Actividad
+      Vinculación de la Rendición de Cuentas - Subactividad
       <v-chip size="small" color="info" variant="tonal" class="ml-3"> Opcional </v-chip>
     </v-card-subtitle>
     <br />
@@ -22,7 +22,7 @@
         <v-col cols="12">
           <div class="text-subtitle-2 text-grey-darken-1 mb-4">
             Seleccione el tipo de solicitud al que desea vincular esta rendición de cuentas, en
-            blanco si no desea vinculacion
+            blanco si no desea vinculación
           </div>
         </v-col>
       </v-row>
@@ -660,6 +660,11 @@ import { useSolicitudesStore } from '../../store/useSolicitudesStore'
 const props = defineProps({
   idActividad: {
     type: [Number, String],
+    required: false,
+    default: null,
+  },
+  idTarea: {
+    type: [Number, String],
     required: true,
     default: null,
   },
@@ -678,15 +683,15 @@ const solicitudViajeSeleccionada = ref(null)
 const loading = ref(false)
 const error = ref(null)
 
-// Computed para obtener datos del store
-const solicitudesFondos = computed(() => solicitudesStore.solicitudesFondosActividad || [])
-const solicitudesViaje = computed(() => solicitudesStore.solicitudesViajeActividad || [])
+// Computed para obtener datos del store (TAREA)
+const solicitudesFondos = computed(() => solicitudesStore.solicitudesFondosTarea || [])
+const solicitudesViaje = computed(() => solicitudesStore.solicitudesViajeTarea || [])
 const rendicionesExistentes = computed(
-  () => solicitudesStore.rendicionesCuentasExistentesActividad || [],
+  () => solicitudesStore.rendicionesCuentasExistentesTarea || [],
 )
 
-const cargandoFondos = computed(() => solicitudesStore.loadingFondosActividad)
-const cargandoViajes = computed(() => solicitudesStore.loadingViajesActividad)
+const cargandoFondos = computed(() => solicitudesStore.loadingFondosTarea)
+const cargandoViajes = computed(() => solicitudesStore.loadingViajesTarea)
 const cargando = computed(() => cargandoFondos.value || cargandoViajes.value)
 
 // IDs de solicitudes ya vinculadas
@@ -837,7 +842,7 @@ const getEstadoTexto = (estado) => {
 const cargarDatos = async () => {
   loading.value = true
   try {
-    await solicitudesStore.cargarFormulariosDeActividad(props.idActividad)
+    await solicitudesStore.cargarFormulariosDeTarea(props.idActividad, props.idTarea)
   } catch (err) {
     console.error('Error al cargar datos', err)
     error.value = err

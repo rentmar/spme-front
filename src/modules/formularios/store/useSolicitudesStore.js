@@ -146,7 +146,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     loadingViajesTarea.value = true
     try {
       await obtenerListaSolViajesPorIdTarea(idActividad, idTarea)
-      solicitudesFondosTarea.value = listaSolicitudViajeTarea.value.solicitudes
+      solicitudesViajeTarea.value = listaSolicitudViajeTarea.value.solicitudes
     } catch (err) {
       console.error('Error al cargar las sol de viaje de la tarea: ' + idTarea, err)
     } finally {
@@ -159,7 +159,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     loadingRendicionesTarea.value = true
     try {
       await obtenerListaRendicionCuentasPorIdTarea(idActividad, idTarea)
-      rendicionesCuentasExistentesTarea.value = listaRendicionCuentasTarea.value.solicitudes
+      rendicionesCuentasExistentesTarea.value = listaRendicionCuentasTarea.value.rendiciones
     } catch (error) {
       console.error('Error al cargar las rendiciones de la tarea: ' + idTarea, error)
     } finally {

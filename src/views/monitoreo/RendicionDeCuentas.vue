@@ -20,7 +20,13 @@
 
     <div v-if="!cargandoGeneral">
       <PaginaTituloIcono
-        :titulo="'Rendición de Cuentas'"
+        v-if="!idTarea"
+        :titulo="'Rendición de Cuentas - Actividad'"
+        :icon="'mdi-file-document-check'"
+      ></PaginaTituloIcono>
+      <PaginaTituloIcono
+        v-if="idTarea"
+        :titulo="'Rendición de Cuentas - Subactividad'"
         :icon="'mdi-file-document-check'"
       ></PaginaTituloIcono>
       <ProyectoIdHeader
@@ -46,13 +52,23 @@
           <!--SECCION: Para Vinculacion de la Rendicion de Cuentas a  -->
           <!-- Solicitud de Fondos -->
           <!-- Solicitud de Viaje -->
-          <div class="form-section">
+          <div v-if="!idTarea" class="form-section">
             <VinculacionRendicionCuentas
               ref="vinculacionRef"
               :id-actividad="idActividad"
               @update:vinculacion="manejarActualizacionVinculacion"
               @ver-rendicion="manejarVerRendicion"
             ></VinculacionRendicionCuentas>
+          </div>
+
+          <div v-if="idTarea" class="form-section">
+            <VinculacionRendicionCuentasTarea
+              ref="vinculacionTareaRef"
+              :id-actividad="idActividad"
+              :id-tarea="idTarea"
+              @update:vinculacion="manejarActualizacionVinculacionTarea"
+              @ver-rendicion="manejarVerRendicion"
+            ></VinculacionRendicionCuentasTarea>
           </div>
 
           <div class="form-section">
@@ -447,7 +463,6 @@
       </div>
     </div>
   </div>
-
   <!-- <pre>{{ formData.correo_contador }}</pre> -->
   <!-- {{ '*******************' }}
   <pre>{{ formData.correo_coordinador }}</pre> -->
@@ -468,6 +483,7 @@ import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vu
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import VinculacionRendicionCuentas from '@/modules/formularios/components/vinculacion/VinculacionRendicionCuentas.vue'
+import VinculacionRendicionCuentasTarea from '@/modules/formularios/components/vinculacion/VinculacionRendicionCuentasTarea.vue'
 
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { useUserStore } from '@/stores/user'
@@ -480,7 +496,7 @@ import { useSnackbar } from '@/composables/useSnackbar'
 const { enviarMensajeAutomatico } = useNotificaciones()
 
 //Inicar composable de mensaje cortos
-const { successMsg, errorMsg } = useSnackbar()
+const { successMsg } = useSnackbar()
 
 const router = useRouter()
 const route = useRoute()
@@ -617,9 +633,11 @@ const actividadData = ref({
 })
 
 /****************************** Manejador de seleccion - Vinculacion a solicitudes ************************************************/
+/* ACTIVIDAD */
 //Referencia al componente hijo
 const vinculacionRef = ref(null)
 
+/* ACTIVIDAD */
 //EVENTO: update:vinculacion
 const manejarActualizacionVinculacion = (vinculacion) => {
   console.log('Evento update:vinculacion')
@@ -651,11 +669,56 @@ const manejarActualizacionVinculacion = (vinculacion) => {
   }
 }
 
+/* ACTIVIDAD */
 //EVENTO: ver-rendicion
 const manejarVerRendicion = (vinculacion) => {
   successMsg('Evento rendicion')
   console.log('Datos del componente: ', vinculacion)
 }
+
+/* SUBACTIVIDAD - TAREA */
+//Referencia al componente hijo
+const vinculacionTareaRef = ref(null)
+
+/* SUBACTIVIDAD - TAREA */
+//EVENTO: update:vinculacion
+const manejarActualizacionVinculacionTarea = (vinculacion) => {
+  console.log('Evento update:vinculacion')
+  console.log('Datos Recibidos del Componente: ', vinculacion)
+  //Caso sin vinculacion
+  if (!vinculacion) {
+    successMsg('Sin Seleccion/Se Elimino seleccion - Subactividad')
+    return
+  }
+  //Caso solicitud de Fondos
+  if (vinculacion.tipo === 'solicitud_fondos') {
+    successMsg(
+      'Rendicion de cuentas vinculada a la sol de fondos subactividad: ' +
+        vinculacion.detalle?.numeroFormulario +
+        ' ID: ' +
+        vinculacion.id,
+    )
+    return
+  }
+  //Caso solicitude de viaje
+  if (vinculacion.tipo === 'solicitud_viaje') {
+    successMsg(
+      'Rendicion de cuentas vinculada a la sol de viaje subactividad: ' +
+        vinculacion.detalle?.numeroFormulario +
+        ' ID: ' +
+        vinculacion.id,
+    )
+    return
+  }
+}
+
+/* SUBACTIVIDAD - TAREA */
+//EVENTO: ver-rendicion
+const manejarVerRendicionTarea = (vinculacion) => {
+  successMsg('Evento rendicion')
+  console.log('Datos del componente: ', vinculacion)
+}
+
 /****************************** Fin Manejador de seleccion - Vinculacion a solicitudes ************************************************/
 
 // Propiedades computadas
@@ -805,7 +868,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -841,7 +904,7 @@ const cargarSolicitudesFondos = async () => {
   try {
     //console.log('Cargando solicitudes de fondos con fetch...')
 
-    const response = await fetch(baseurl + '/api/solicitud-fondos/', {
+    const response = await fetch(baseurl + 'api/solicitud-fondos/', {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -868,7 +931,7 @@ async function cargarSolicitudFondos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudFondos/', {
+    const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudFondos/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -1335,7 +1398,7 @@ async function submitForm() {
     console.log('Payload a enviar:', JSON.stringify(payload, null, 2))
 
     // Enviar la solicitud
-    const response = await fetch(baseurl + '/api/monitoreo/crear-rendicion-cuentas/', {
+    const response = await fetch(baseurl + 'api/monitoreo/crear-rendicion-cuentas/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
