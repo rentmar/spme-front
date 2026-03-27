@@ -502,7 +502,7 @@
                           (newValue) => {
                             if (newValue) {
                               nextTick(() => {
-                                validarSolicitud()
+                                validarSolicitud(formData.idresponsable, responsablesList)
                               })
                             }
                           }
@@ -534,7 +534,7 @@
                           (newValue) => {
                             if (newValue) {
                               nextTick(() => {
-                                validarSolicitud()
+                                validarSolicitud(formData.idcoordinador, coordinadoresList)
                               })
                             }
                           }
@@ -1423,7 +1423,13 @@ async function submitForm() {
   }
 }
 
-async function validarSolicitud() {
+async function validarSolicitud(idValidador, ListaValidadores) {
+
+  const validadorEncontrado = ListaValidadores.find(validador => validador.id === idValidador)
+  console.log('validador', validadorEncontrado)
+  const validador = getNombreCompleto(validadorEncontrado)
+  console.log('VALIDADOR SELECCIONADO:', validador)
+
   if (!puedeValidarResponsable.value && !puedeValidarCoordinador.value) {
     alert('Usted no está autorizado para validar esta solicitud.')
     return
@@ -1477,7 +1483,6 @@ async function validarSolicitud() {
       )
     }
 
-
   console.log('blalalb',JSON.stringify(datosFormulario1.value, null, 2))
   /////////////////////envio de mensaje y correo///////////////////////
   const data = await response.json()
@@ -1494,36 +1499,85 @@ async function validarSolicitud() {
   }
   await enviarMensajeAutomatico(cuerpoMensaje)
 
-/////////// Enviar notificacion por correo a solicitante//////////
-  try{
-    const emailPayload = {
-      emails: [formData.value.correo].filter((email) => email),
-      datos_solicitud: {
-        codigo: numeroFormulario.value || 'SQL-PROV',
-        titulo: 'Validacion de Solicitud de Fondos',
-        solicitante: nombreCompletoSolicitante.value,
-        tipo: 'Solicitud de Fondos',
-        prioridad: 'alta',
-        descripcion: formData.value.descripcion_actividad || 'Solicitud de Fondos para actividad',
-        url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
-      }
-    }
-    console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
 
-    const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(emailPayload),
-    })
+  //////////////////////////// correo a solicitante////////////////////////
+  //Bandera de carga
+  const isLoading = ref(false)
 
-    if (emailResponse.ok) {
-      console.log('Correo de notificacion enviado exitosamente')
-    } else {
-      console.warm('No se pudo enviar el correo de notificacion')
-    }
-  } catch (emailError){
-    console.error('Error al enviar correo de notificacion:', emailError)
+  //Incializar el composable
+  const { enviarEmailAprobacion, enviarEmailRechazo } = useNotificaciones()
+
+//Metodo de prueba
+const probarEnvioEmail = async () => {
+  console.log('🔄 Ejecutando prueba...')
+  isLoading.value = true
+
+  //Datos para el email de Aprobacion
+  const datosAprobacion = {
+    emails: [formData.value.correo],//[formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
+    datos_aprobacion: {
+      codigo: 'SOL-2024',
+      titulo: 'Solicitud de Fondos Aprobado',
+      solicitante_nombre: nombreCompletoSolicitante.value,
+      aprobador_nombre: validador,
+      numero_aprobacion: 'No de aprov',
+      url_detalles: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,,
+    },
   }
+
+  // const datosRechazo = {
+  //   emails: ['rolquezamarcelo@gmail.com', 'olivguil9@gmail.com'],
+  //   datos_rechazo: {
+  //     codigo: 'SOL-2024',
+  //     titulo: 'Actividad Talleres',
+  //     solicitante_nombre: 'Marky Mark',
+  //     aprobador_nombre: 'Ale Carvajal',
+  //     motivo_rechazo: 'se rechazo la solicitud por',
+  //     url_detalles: 'URL',
+  //   },
+  // }
+
+  try {
+    await enviarEmailAprobacion(datosAprobacion)
+    //await enviarEmailRechazo(datosRechazo)
+    console.log('Prueba ejecutada')
+  } catch (error) {
+    console.error(error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+/////////// Enviar notificacion por correo a solicitante//////////
+  // try{
+  //   const emailPayload = {
+  //     emails: [formData.value.correo].filter((email) => email),
+  //     datos_solicitud: {
+  //       codigo: numeroFormulario.value || 'SQL-PROV',
+  //       titulo: 'Validacion de Solicitud de Fondos',
+  //       solicitante: nombreCompletoSolicitante.value,
+  //       tipo: 'Solicitud de Fondos',
+  //       prioridad: 'alta',
+  //       descripcion: formData.value.descripcion_actividad || 'Solicitud de Fondos para actividad',
+  //       url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+  //     }
+  //   }
+  //   console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
+
+  //   const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify(emailPayload),
+  //   })
+
+  //   if (emailResponse.ok) {
+  //     console.log('Correo de notificacion enviado exitosamente')
+  //   } else {
+  //     console.warm('No se pudo enviar el correo de notificacion')
+  //   }
+  // } catch (emailError){
+  //   console.error('Error al enviar correo de notificacion:', emailError)
+  // }
 //////////////////////////////////////////////////////////////////
 
     alert('Solicitud validada exitosamente.')
