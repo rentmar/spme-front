@@ -43,6 +43,13 @@
 
       <div class="v-card-text">
         <form class="v-form" novalidate @submit.prevent="submitForm">
+          <!--SECCION: Para Vinculacion de la Rendicion de Cuentas a  -->
+          <!-- Solicitud de Fondos -->
+          <!-- Solicitud de Viaje -->
+          <div class="form-section">
+            <VinculacionRendicionCuentas :id-actividad="idActividad"></VinculacionRendicionCuentas>
+          </div>
+
           <div class="form-section">
             <v-divider class="my-4"></v-divider>
 
@@ -455,6 +462,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import VinculacionRendicionCuentas from '@/modules/formularios/components/vinculacion/VinculacionRendicionCuentas.vue'
 
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { useUserStore } from '@/stores/user'
