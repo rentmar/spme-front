@@ -382,7 +382,7 @@
                     (newValue) => {
                       if (newValue) {
                         nextTick(() => {
-                          validarRendicion('coordinador')
+                          validarRendicion('coordinador', formDataRC.idcoordinador, coordinadoresList)
                         })
                       }
                     }
@@ -414,7 +414,7 @@
                     (newValue) => {
                       if (newValue) {
                         nextTick(() => {
-                          validarRendicion('contador')
+                          validarRendicion('contador', formDataRC.idcontador, contadoresList)
                         })
                       }
                     }
@@ -446,7 +446,7 @@
                     (newValue) => {
                       if (newValue) {
                         nextTick(() => {
-                          validarRendicion('administrador')
+                          validarRendicion('administrador', formDataRC.idadministrador, administradoresList)
                         })
                       }
                     }
@@ -517,7 +517,11 @@
   </div>
   <!-- <pre>{{ formData.monto_asignado }}</pre>
   {{ "**************************************" }} -->
-<!-- <pre>{{datosRendicionDeCuenta.montoAsignado}}</pre> -->
+     <pre>{{ formDataRC.idadministrador }}</pre>
+  {{ "**************************************" }}
+     <pre>{{ administradoresList }}</pre>
+  {{ "**************************************" }}
+ <pre>{{datosRendicionDeCuenta}}</pre>
 </template>
 
 <script setup>
@@ -1232,27 +1236,40 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
   }
 }
 
-async function validarRendicion(tipoValidador) {
+async function validarRendicion(tipoValidador, idValidador, ListaValidadores) {
   // Verificar permisos según el tipo de validador
   let tienePermiso = false
   let claveValidacion = ''
+  let nombreValidador = ''
+
+  console.log('ListaValidadores:', JSON.stringify(idValidador, null, 2))
+  console.log('ListaValidadores:', JSON.stringify(ListaValidadores, null, 2))
+
+  const validadorEncontrado = ListaValidadores.find(validador => validador.id === idValidador)
+  console.log('validador', validadorEncontrado)
+  const validador = getNombreCompleto(validadorEncontrado)
+  console.log('VALIDADOR SELECCIONADO:', validador)
 
   switch (tipoValidador) {
     case 'responsable':
       tienePermiso = puedeValidarResponsable.value
       claveValidacion = 'validacionResponsable'
+      nombreValidador = validador
       break
     case 'coordinador':
       tienePermiso = puedeValidarCoordinador.value
       claveValidacion = 'validacionCoordinador'
+      nombreValidador = validador
       break
     case 'contador':
       tienePermiso = puedeValidarContador.value
       claveValidacion = 'validacionContador'
+      nombreValidador = validador
       break
     case 'administrador':
       tienePermiso = puedeValidarAdministrador.value
       claveValidacion = 'validacionAdministrador'
+      nombreValidador = validador
       break
     default:
       alert('Tipo de validador no reconocido.')
@@ -1311,43 +1328,109 @@ async function validarRendicion(tipoValidador) {
       prioridad: 3,
     }
     await enviarMensajeAutomatico(cuerpoMensaje)
+    console.log('mensaje ok')
+
+//////////////////////////// correo a solicitante////////////////////////
+//Bandera de carga
+const isLoading = ref(false)
+
+//Incializar el composable
+const { enviarEmailAprobacion, enviarEmailRechazo } = useNotificaciones()
+
+
+
+  const datosAprobacion = {
+    emails: [formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
+    datos_aprobacion: {
+      codigo: 'SOL-2024',
+      titulo: 'Actividad Talleres',
+      solicitante_nombre: nombreCompletoSolicitante.value,
+      aprobador_nombre: nombreValidador,
+      numero_aprobacion: 'No de aprov',
+      url_detalles: 'Aqui va la URL',
+    },
+  }
+
+console.log('mmmmmmmmmmmmmmmmmmmm', JSON.stringify(datosAprobacion, null, 2))
+
+//Metodo de prueba
+const probarEnvioEmail = async () => {
+  console.log('🔄 Ejecutando prueba...')
+  isLoading.value = true
+
+  //Datos para el email de Aprobacion
+  const datosAprobacion = {
+    emails: ['gaboowill@protonmail.com'],//[formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
+    datos_aprobacion: {
+      codigo: 'SOL-2024',
+      titulo: 'Actividad Talleres',
+      solicitante_nombre: nombreCompletoSolicitante.value,
+      aprobador_nombre: nombreValidador,
+      numero_aprobacion: 'No de aprov',
+      url_detalles: 'Aqui va la URL',
+    },
+  }
+
+  const datosRechazo = {
+    emails: ['rolquezamarcelo@gmail.com', 'olivguil9@gmail.com'],
+    datos_rechazo: {
+      codigo: 'SOL-2024',
+      titulo: 'Actividad Talleres',
+      solicitante_nombre: 'Marky Mark',
+      aprobador_nombre: 'Ale Carvajal',
+      motivo_rechazo: 'se rechazo la solicitud por',
+      url_detalles: 'URL',
+    },
+  }
+
+  try {
+    await enviarEmailAprobacion(datosAprobacion)
+    await enviarEmailRechazo(datosRechazo)
+    console.log('Prueba ejecutada')
+  } catch (error) {
+    console.error(error)
+  } finally {
+    isLoading.value = false
+  }
+}
+////////////////////////////////////////////////////////////////////
 
     ///////// Enviar notificación por correo a solicitante//////////
-    try {
-      const emailPayload = {
-        emails: [formData.value.correo].filter(
-          (email) => email,
-        ),
-        datos_solicitud: {
-          codigo: numeroFormulario.value || 'SOL-PROV',
-          titulo: 'Validacion de Rendicion de Cuentas',
-          solicitante: nombreCompletoSolicitante.value,
-          tipo: 'Rendicion de Cuentas',
-          prioridad: 'alta',
-          descripcion:
-            formData.value.descripcion_actividad || 'Rendicion de Cuentas para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
-        },
-      }
+    // try {
+    //   const emailPayload = {
+    //     emails: [formData.value.correo].filter(
+    //       (email) => email,
+    //     ),
+    //     datos_solicitud: {
+    //       codigo: numeroFormulario.value || 'SOL-PROV',
+    //       titulo: 'Validacion de Rendicion de Cuentas',
+    //       solicitante: nombreCompletoSolicitante.value,
+    //       tipo: 'Rendicion de Cuentas',
+    //       prioridad: 'alta',
+    //       descripcion:
+    //         formData.value.descripcion_actividad || 'Rendicion de Cuentas para actividad',
+    //       url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+    //     },
+    //   }
 
-      console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
+    //   console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
 
-      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailPayload),
-      })
+    //   const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(emailPayload),
+    //   })
 
-      if (emailResponse.ok) {
-        console.log('Correo de notificación enviado exitosamente')
-      } else {
-        console.warn('No se pudo enviar el correo de notificación')
-      }
-    } catch (emailError) {
-      console.error('Error al enviar correo de notificación:', emailError)
-      // No detenemos el flujo si falla el envío del correo
-    }
-//////////////////////////////////////////////////////////////////
+    //   if (emailResponse.ok) {
+    //     console.log('Correo de notificación enviado exitosamente')
+    //   } else {
+    //     console.warn('No se pudo enviar el correo de notificación')
+    //   }
+    // } catch (emailError) {
+    //   console.error('Error al enviar correo de notificación:', emailError)
+    //   // No detenemos el flujo si falla el envío del correo
+    // }
+////////////////////////////////////////////////////////////////////
     //const result = await response.json();
     alert('Rendición validada exitosamente.')
 
