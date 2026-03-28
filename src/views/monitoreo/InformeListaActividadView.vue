@@ -78,9 +78,15 @@
                 :class="{ 'actividad-expandida': expandedActividadId === actividad.id }"
               >
                 <template v-slot:prepend>
-                  <v-avatar :color="getStatusColor(actividad.estado)" size="40" class="mr-3">
-                    <v-icon size="20" dark>{{ getTipoIcon(actividad.estado) }}</v-icon>
-                  </v-avatar>
+                  <div
+                    @mouseenter="mostrarPopupActividad(actividad, $event)"
+                    @mouseleave="ocultarPopupActividad"
+                    style="display: inline-block"
+                  >
+                    <v-avatar :color="getStatusColor(actividad.estado)" size="40" class="mr-3">
+                      <v-icon size="20" dark>{{ getTipoIcon(actividad.estado) }}</v-icon>
+                    </v-avatar>
+                  </div>
                 </template>
 
                 <v-list-item-title class="font-weight-medium d-flex align-center">
@@ -620,6 +626,13 @@
         <v-btn variant="text" @click="snackbar.show = false"> Cerrar </v-btn>
       </template>
     </v-snackbar>
+    <PopupActividad
+      :visible="popupVisible"
+      :actividad-data="actividadPopup"
+      :position-x="popupX"
+      :position-y="popupY"
+      @close="cerrarPopup"
+    />
   </v-container>
 </template>
 
@@ -631,6 +644,7 @@ import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
 import { useRouter } from 'vue-router'
 import DialogValidaciones from '@/modules/formularios/components/validadores/DialogValidaciones.vue'
 import { useSnackbar } from '@/composables/useSnackbar'
+import PopupActividad from '@/components/popups/PopupActividad.vue'
 
 // Iniciar el store de actividades
 const storeActividad = useListaActividadStore()
@@ -1104,6 +1118,82 @@ const formatDateCorta = (dateStr) => {
 
 const abrirDialogValidaciones = () => {
   dialogValidaciones.value = true
+}
+/*******************************************************/
+// ========== POPUP ACTIVIDAD ==========
+const popupVisible = ref(false)
+const actividadPopup = ref(null)
+const popupX = ref(0)
+const popupY = ref(0)
+let popupTimeoutId = null
+
+// Calcular posición del popup ajustada a la pantalla
+const calcularPosicionPopup = (event) => {
+  const mouseX = event.clientX
+  const mouseY = event.clientY
+
+  // Dimensiones del popup (aproximadas, puedes ajustarlas)
+  const popupWidth = 400
+  const popupHeight = 350
+
+  // Límites de la ventana
+  const ventanaWidth = window.innerWidth
+  const ventanaHeight = window.innerHeight
+
+  // Calcular posición X (con offset)
+  let x = mouseX + 15
+
+  // Si se sale por la derecha, mostrar a la izquierda
+  if (x + popupWidth > ventanaWidth) {
+    x = mouseX - popupWidth - 15
+  }
+
+  // Si se sale por la izquierda, mostrar a la derecha
+  if (x < 0) {
+    x = 10
+  }
+
+  // Calcular posición Y
+  let y = mouseY + 15
+
+  // Si se sale por abajo, mostrar arriba
+  if (y + popupHeight > ventanaHeight) {
+    y = mouseY - popupHeight - 15
+  }
+
+  // Si se sale por arriba, mostrar abajo
+  if (y < 0) {
+    y = 10
+  }
+
+  return { x, y }
+}
+
+// Mostrar popup al pasar el cursor
+const mostrarPopupActividad = (actividad, event) => {
+  if (popupTimeoutId) clearTimeout(popupTimeoutId)
+
+  // Calcular posición ajustada
+  const { x, y } = calcularPosicionPopup(event)
+
+  actividadPopup.value = actividad
+  popupX.value = x
+  popupY.value = y
+  popupVisible.value = true
+}
+
+// Cerrar popup
+const cerrarPopup = () => {
+  popupVisible.value = false
+  actividadPopup.value = null
+}
+
+// Ocultar popup con retraso
+const ocultarPopupActividad = () => {
+  popupTimeoutId = setTimeout(() => {
+    popupVisible.value = false
+    actividadPopup.value = null
+  }, 200)
 }
 </script>
 
