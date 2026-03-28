@@ -1521,7 +1521,7 @@ const probarEnvioEmail = async () => {
       solicitante_nombre: nombreCompletoSolicitante.value,
       aprobador_nombre: validador,
       numero_aprobacion: 'No de aprov',
-      url_detalles: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,,
+      url_detalles: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
     },
   }
 

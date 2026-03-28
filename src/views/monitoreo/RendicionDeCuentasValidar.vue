@@ -168,7 +168,7 @@
                 <v-text-field
                   v-model="formData.monto_asignado"
                   label="Monto Asignado (Bs.)"
-                  readonly
+                  :readonly="soloLectura"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6" md="4">
@@ -517,11 +517,11 @@
   </div>
   <!-- <pre>{{ formData.monto_asignado }}</pre>
   {{ "**************************************" }} -->
-     <pre>{{ formDataRC.idadministrador }}</pre>
-  {{ "**************************************" }}
-     <pre>{{ administradoresList }}</pre>
-  {{ "**************************************" }}
- <pre>{{datosRendicionDeCuenta}}</pre>
+    <!-- <pre>{{ formDataRC.idadministrador }}</pre>
+  {{ "**************************************" }}-->
+    <!-- <pre>{{ administradoresList }}</pre>
+  {{ "**************************************" }}-->
+ <!-- <pre>{{datosRendicionDeCuenta}}</pre>-->
 </template>
 
 <script setup>
@@ -1576,6 +1576,7 @@ onMounted(async () => {
       cargarRendicionesDeCuenta(),
       cargarSolicitudFondos(),
       cargarSolicitudesFondos(),
+      getSolicitudFondosInfo(idActividad, idTarea)
     ])
   } catch (error) {
     console.error('Error al cargar todos los datos iniciales:', error)
@@ -1703,6 +1704,7 @@ async function submitForm() {
     // Preparar payload para la rendición de cuentas
     const payload = {
       //numeroFormulario: formData.value.formulario_numero || '',
+      montoAsignado: formData.value.monto_asignado,
       montoDescargado: Number(totalMontoGastado.value),
       cpteDiario: formDataRC.value.cpte_diario,
       fechaDesembolso: formDataRC.value.fecha_desembolso,
@@ -1710,6 +1712,7 @@ async function submitForm() {
       detalleDestinoFondos: formDataRC.value.detalle_gastos.map((gasto) => ({
         fecha: gasto.fecha,
         partida: gasto.partida,
+        fuente: gasto.fuente,
         factura_recibo: gasto.factura_recibo || '',
         descripcion: gasto.descripcion_gasto || '',
         monto: Number(gasto.monto) || 0,
@@ -2120,12 +2123,12 @@ function getCurrentDate1() {
 }
 
 // Hooks de ciclo de vida
-onMounted(() => {
-  cargarDatos()
-  cargarRendicionesDeCuenta()
-  cargarSolicitudesFondos()
-  getSolicitudFondosInfo(idActividad, idTarea)
-})
+// onMounted(() => {
+//   cargarDatos()
+//   cargarRendicionesDeCuenta()
+//   cargarSolicitudesFondos()
+//   getSolicitudFondosInfo(idActividad, idTarea)
+// })
 </script>
 
 <style scoped>
