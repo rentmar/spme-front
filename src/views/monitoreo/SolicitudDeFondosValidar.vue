@@ -1539,18 +1539,6 @@ async function validarSolicitud(idValidador, ListaValidadores) {
         },
       }
 
-      // const datosRechazo = {
-      //   emails: ['rolquezamarcelo@gmail.com', 'olivguil9@gmail.com'],
-      //   datos_rechazo: {
-      //     codigo: 'SOL-2024',
-      //     titulo: 'Actividad Talleres',
-      //     solicitante_nombre: 'Marky Mark',
-      //     aprobador_nombre: 'Ale Carvajal',
-      //     motivo_rechazo: 'se rechazo la solicitud por',
-      //     url_detalles: 'URL',
-      //   },
-      // }
-
       try {
         await enviarEmailAprobacion(datosAprobacion)
         //await enviarEmailRechazo(datosRechazo)
