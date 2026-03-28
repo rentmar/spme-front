@@ -29,7 +29,10 @@
       ></ProyectoIdHeader>
       <br />
       <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
-
+      <br />
+      <EncabezadoVinculacionRendicionCuentas
+        :idRendicionCuentas="5"
+      ></EncabezadoVinculacionRendicionCuentas>
       <br />
       <!-- <v-form ref="form" v-model="valid" lazy-validation>
       </v-form> -->
@@ -238,7 +241,6 @@
                       v-model="gasto.partida"
                       density="compact"
                       hide-details
-
                       required
                       :readonly="soloLectura"
                     ></v-text-field>
@@ -382,7 +384,11 @@
                     (newValue) => {
                       if (newValue) {
                         nextTick(() => {
-                          validarRendicion('coordinador', formDataRC.idcoordinador, coordinadoresList)
+                          validarRendicion(
+                            'coordinador',
+                            formDataRC.idcoordinador,
+                            coordinadoresList,
+                          )
                         })
                       }
                     }
@@ -446,7 +452,11 @@
                     (newValue) => {
                       if (newValue) {
                         nextTick(() => {
-                          validarRendicion('administrador', formDataRC.idadministrador, administradoresList)
+                          validarRendicion(
+                            'administrador',
+                            formDataRC.idadministrador,
+                            administradoresList,
+                          )
                         })
                       }
                     }
@@ -517,11 +527,11 @@
   </div>
   <!-- <pre>{{ formData.monto_asignado }}</pre>
   {{ "**************************************" }} -->
-    <!-- <pre>{{ formDataRC.idadministrador }}</pre>
+  <!-- <pre>{{ formDataRC.idadministrador }}</pre>
   {{ "**************************************" }}-->
-    <!-- <pre>{{ administradoresList }}</pre>
+  <!-- <pre>{{ administradoresList }}</pre>
   {{ "**************************************" }}-->
- <!-- <pre>{{datosRendicionDeCuenta}}</pre>-->
+  <!-- <pre>{{datosRendicionDeCuenta}}</pre>-->
 </template>
 
 <script setup>
@@ -529,6 +539,7 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import EncabezadoVinculacionRendicionCuentas from '@/modules/formularios/components/vinculacion/EncabezadoVinculacionRendicionCuentas.vue'
 import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { useUserStore } from '@/stores/user'
@@ -698,7 +709,9 @@ const formDataRC = ref({
   lugar_actividadRC: '',
   fecha_actividadRC: '',
 
-  detalle_gastos: [{ fecha: '', partida: '', fuente: '', factura_recibo: '', descripcion: '', monto: 0 }],
+  detalle_gastos: [
+    { fecha: '', partida: '', fuente: '', factura_recibo: '', descripcion: '', monto: 0 },
+  ],
   lugar_solicitudRC: '',
   fecha_solicitudRC: '',
 
@@ -869,7 +882,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -905,7 +918,7 @@ const cargarSolicitudesFondos = async () => {
   try {
     //console.log('Cargando solicitudes de fondos con fetch...')
 
-    const response = await fetch(baseurl + '/api/solicitud-fondos/', {
+    const response = await fetch(baseurl + 'api/solicitud-fondos/', {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -963,7 +976,7 @@ async function cargarSolicitudFondos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudFondos/', {
+    const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudFondos/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -1245,7 +1258,7 @@ async function validarRendicion(tipoValidador, idValidador, ListaValidadores) {
   console.log('ListaValidadores:', JSON.stringify(idValidador, null, 2))
   console.log('ListaValidadores:', JSON.stringify(ListaValidadores, null, 2))
 
-  const validadorEncontrado = ListaValidadores.find(validador => validador.id === idValidador)
+  const validadorEncontrado = ListaValidadores.find((validador) => validador.id === idValidador)
   console.log('validador', validadorEncontrado)
   const validador = getNombreCompleto(validadorEncontrado)
   console.log('VALIDADOR SELECCIONADO:', validador)
@@ -1310,7 +1323,7 @@ async function validarRendicion(tipoValidador, idValidador, ListaValidadores) {
 
     //console.log('blalalb',JSON.stringify(datosRendicionDeCuenta.value, null, 2))
     //console.log('blalalb',JSON.stringify(formData.value.correo, null, 2))
-////////////////////////envio de mensajes y correo//////////////////////
+    ////////////////////////envio de mensajes y correo//////////////////////
     const data = await response.json()
     //console.log('Rendición enviada con éxito:', responseData);
     numeroFormulario.value = data.numero_formulario
@@ -1319,81 +1332,75 @@ async function validarRendicion(tipoValidador, idValidador, ListaValidadores) {
     const cuerpoMensaje = {
       destinatario_id: datosRendicionDeCuenta.value.usuario,
       asunto: 'Rendicion de Cuentas',
-      contenido:
-        'Solicitud Aprobada ' +
-        numeroFormulario.value +
-        '. URL: ' +
-        urlForm,
+      contenido: 'Solicitud Aprobada ' + numeroFormulario.value + '. URL: ' + urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
     await enviarMensajeAutomatico(cuerpoMensaje)
     console.log('mensaje ok')
 
-//////////////////////////// correo a solicitante////////////////////////
-//Bandera de carga
-const isLoading = ref(false)
+    //////////////////////////// correo a solicitante////////////////////////
+    //Bandera de carga
+    const isLoading = ref(false)
 
-//Incializar el composable
-const { enviarEmailAprobacion, enviarEmailRechazo } = useNotificaciones()
+    //Incializar el composable
+    const { enviarEmailAprobacion, enviarEmailRechazo } = useNotificaciones()
 
+    const datosAprobacion = {
+      emails: [formData.value.correo], //['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
+      datos_aprobacion: {
+        codigo: 'SOL-2024',
+        titulo: 'Actividad Talleres',
+        solicitante_nombre: nombreCompletoSolicitante.value,
+        aprobador_nombre: nombreValidador,
+        numero_aprobacion: 'No de aprov',
+        url_detalles: 'Aqui va la URL',
+      },
+    }
 
+    console.log('mmmmmmmmmmmmmmmmmmmm', JSON.stringify(datosAprobacion, null, 2))
 
-  const datosAprobacion = {
-    emails: [formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
-    datos_aprobacion: {
-      codigo: 'SOL-2024',
-      titulo: 'Actividad Talleres',
-      solicitante_nombre: nombreCompletoSolicitante.value,
-      aprobador_nombre: nombreValidador,
-      numero_aprobacion: 'No de aprov',
-      url_detalles: 'Aqui va la URL',
-    },
-  }
+    //Metodo de prueba
+    const probarEnvioEmail = async () => {
+      console.log('🔄 Ejecutando prueba...')
+      isLoading.value = true
 
-console.log('mmmmmmmmmmmmmmmmmmmm', JSON.stringify(datosAprobacion, null, 2))
+      //Datos para el email de Aprobacion
+      const datosAprobacion = {
+        emails: ['gaboowill@protonmail.com'], //[formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
+        datos_aprobacion: {
+          codigo: 'SOL-2024',
+          titulo: 'Actividad Talleres',
+          solicitante_nombre: nombreCompletoSolicitante.value,
+          aprobador_nombre: nombreValidador,
+          numero_aprobacion: 'No de aprov',
+          url_detalles: 'Aqui va la URL',
+        },
+      }
 
-//Metodo de prueba
-const probarEnvioEmail = async () => {
-  console.log('🔄 Ejecutando prueba...')
-  isLoading.value = true
+      const datosRechazo = {
+        emails: ['rolquezamarcelo@gmail.com', 'olivguil9@gmail.com'],
+        datos_rechazo: {
+          codigo: 'SOL-2024',
+          titulo: 'Actividad Talleres',
+          solicitante_nombre: 'Marky Mark',
+          aprobador_nombre: 'Ale Carvajal',
+          motivo_rechazo: 'se rechazo la solicitud por',
+          url_detalles: 'URL',
+        },
+      }
 
-  //Datos para el email de Aprobacion
-  const datosAprobacion = {
-    emails: ['gaboowill@protonmail.com'],//[formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
-    datos_aprobacion: {
-      codigo: 'SOL-2024',
-      titulo: 'Actividad Talleres',
-      solicitante_nombre: nombreCompletoSolicitante.value,
-      aprobador_nombre: nombreValidador,
-      numero_aprobacion: 'No de aprov',
-      url_detalles: 'Aqui va la URL',
-    },
-  }
-
-  const datosRechazo = {
-    emails: ['rolquezamarcelo@gmail.com', 'olivguil9@gmail.com'],
-    datos_rechazo: {
-      codigo: 'SOL-2024',
-      titulo: 'Actividad Talleres',
-      solicitante_nombre: 'Marky Mark',
-      aprobador_nombre: 'Ale Carvajal',
-      motivo_rechazo: 'se rechazo la solicitud por',
-      url_detalles: 'URL',
-    },
-  }
-
-  try {
-    await enviarEmailAprobacion(datosAprobacion)
-    await enviarEmailRechazo(datosRechazo)
-    console.log('Prueba ejecutada')
-  } catch (error) {
-    console.error(error)
-  } finally {
-    isLoading.value = false
-  }
-}
-////////////////////////////////////////////////////////////////////
+      try {
+        await enviarEmailAprobacion(datosAprobacion)
+        await enviarEmailRechazo(datosRechazo)
+        console.log('Prueba ejecutada')
+      } catch (error) {
+        console.error(error)
+      } finally {
+        isLoading.value = false
+      }
+    }
+    ////////////////////////////////////////////////////////////////////
 
     ///////// Enviar notificación por correo a solicitante//////////
     // try {
@@ -1430,7 +1437,7 @@ const probarEnvioEmail = async () => {
     //   console.error('Error al enviar correo de notificación:', emailError)
     //   // No detenemos el flujo si falla el envío del correo
     // }
-////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
     //const result = await response.json();
     alert('Rendición validada exitosamente.')
 
@@ -1576,7 +1583,7 @@ onMounted(async () => {
       cargarRendicionesDeCuenta(),
       cargarSolicitudFondos(),
       cargarSolicitudesFondos(),
-      getSolicitudFondosInfo(idActividad, idTarea)
+      getSolicitudFondosInfo(idActividad, idTarea),
     ])
   } catch (error) {
     console.error('Error al cargar todos los datos iniciales:', error)
