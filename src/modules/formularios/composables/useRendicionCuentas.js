@@ -10,6 +10,7 @@ export function useRendicionCuentas() {
   const listaRendicionCuentasTarea = ref(null)
   const listaRendicionCuentasActividadPei = ref(null)
   const listaRendicionCuentasTareaPei = ref(null)
+  const rendicionCuentas = ref(null)
 
   //Listar Rendicion de cuentas de una Actividad
   async function obtenerListaRendicionCuentasPorIdActividad(idactividad) {
@@ -75,6 +76,21 @@ export function useRendicionCuentas() {
     }
   }
 
+  //Rendicion de cuentas mas Solicitudes relacionadas
+  async function obtenerRendicionCuentasMasSolicitudes(idRendicionCuentas) {
+    loading.value = true
+    try {
+      const respuesta =
+        await rendicionCuentasServicio.solRendicionCuentasMasSolicitudes(idRendicionCuentas)
+      rendicionCuentas.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
@@ -82,9 +98,11 @@ export function useRendicionCuentas() {
     listaRendicionCuentasTarea,
     listaRendicionCuentasActividadPei,
     listaRendicionCuentasTareaPei,
+    rendicionCuentas,
     obtenerListaRendicionCuentasPorIdActividad,
     obtenerListaRendicionCuentasPorIdTarea,
     obtenerListaRendicionCuentasPorIdActividadPei,
     obtenerListaRendicionCuentasPorIdTareaPei,
+    obtenerRendicionCuentasMasSolicitudes,
   }
 }

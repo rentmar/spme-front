@@ -27,6 +27,8 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
   //Estados de carga
   const loading = ref(false)
   const error = ref(null)
+  //Estado formularios
+  const rendicionCuentasActual = ref(null)
 
   //Iniciar el composable -Sol de fondos
   const {
@@ -48,6 +50,8 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     listaRendicionCuentasActividad,
     obtenerListaRendicionCuentasPorIdTarea,
     listaRendicionCuentasTarea,
+    obtenerRendicionCuentasMasSolicitudes,
+    rendicionCuentas,
   } = useRendicionCuentas()
 
   /******************************** Funciones Actividad *****************************************************/
@@ -167,6 +171,19 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     }
   }
 
+  //Cargar rendicion de cuentas mas solicitudes
+  const cargarRendicionCuentasMasSolicitudesRelacionadas = async (idRendicionCuentas) => {
+    loadingRendicionesActividad.value = true
+    try {
+      await obtenerRendicionCuentasMasSolicitudes(idRendicionCuentas)
+      rendicionCuentasActual.value = rendicionCuentas.value
+    } catch (error) {
+      console.error('Error al cargar la rendicion de cuentas mas solicitudes', error)
+    } finally {
+      loadingRendicionesActividad.value = false
+    }
+  }
+
   return {
     //estados -actividad
     solicitudesFondosActividad,
@@ -184,6 +201,8 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     loadingRendicionesTarea,
     error,
     loading,
+    //Estado formulario Actual
+    rendicionCuentasActual,
     //Func - act
     cargarFormulariosDeActividad,
     cargarSolicitudFondosActividad,
@@ -194,5 +213,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     cargarSolicitudFondosTarea,
     cargarSolicitudViajesTarea,
     cargarRendicionCuentasTarea,
+    //func
+    cargarRendicionCuentasMasSolicitudesRelacionadas,
   }
 })

@@ -28,12 +28,11 @@
         :proyecto-id="datosFormulario.actividad?.proyecto ?? '999999'"
       ></ProyectoIdHeader>
       <br />
-      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
+      <ActividadInformacion v-if="datosFormulario?.actividad" :actividad-id="idActividad" />
       <br />
       <EncabezadoVinculacionRendicionCuentas
-        :idRendicionCuentas="5"
+        :idRendicionCuentas="idSolicitud"
       ></EncabezadoVinculacionRendicionCuentas>
-      <br />
       <!-- <v-form ref="form" v-model="valid" lazy-validation>
       </v-form> -->
     </div>
@@ -838,7 +837,7 @@ watch(
       }
     }
   },
-  { deep: true },
+  { deep: true, immediate: true },
 )
 
 const filtrarProcedenciaFondos = () => {
@@ -968,7 +967,6 @@ async function cargarRendicionesDeCuenta() {
     console.error('Ha ocurrido un error:', err)
   } finally {
     isLoading.value = false
-    cargandoGeneral.value = false
   }
 }
 
@@ -1151,7 +1149,7 @@ watch(
       }
     }
   },
-  { deep: true, immediate: true },
+  { deep: true },
 )
 
 // Función para actualizar datosFormulario con los valores de la solicitud
@@ -1577,9 +1575,11 @@ onMounted(async () => {
   try {
     cargandoGeneral.value = true
 
+    await cargarDatos()
+
     // Ejecutar todas las cargas de datos en paralelo
     await Promise.all([
-      cargarDatos(),
+      //cargarDatos(),
       cargarRendicionesDeCuenta(),
       cargarSolicitudFondos(),
       cargarSolicitudesFondos(),

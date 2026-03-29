@@ -96,4 +96,17 @@ export const rendicionCuentasServicio = {
       throw error
     }
   },
+  /************************* Rendicion Cuentas con solicitudes relacionadas ************************************************/
+  solRendicionCuentasMasSolicitudes: async (idRendicionCuentas) => {
+    try {
+      const respuesta = await api.get('/rendicion-con-solicitudes/' + idRendicionCuentas + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error(
+        'Axios: Error al cargar la informacion de la rendicion de cuendas con id ' +
+          idRendicionCuentas,
+        error,
+      )
+    }
+  },
 }
