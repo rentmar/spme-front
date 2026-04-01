@@ -1353,35 +1353,35 @@ const { enviarEmailAprobacion, enviarEmailRechazo } = useNotificaciones()
 
 console.log('mmmmmmmmmmmmmmmmmmmm', JSON.stringify(datosAprobacion, null, 2))
 
-//Metodo de prueba
-const probarEnvioEmail = async () => {
-  console.log('🔄 Ejecutando prueba...')
-  isLoading.value = true
+// //Metodo de prueba
+// const probarEnvioEmail = async () => {
+//   console.log('🔄 Ejecutando prueba...')
+//   isLoading.value = true
 
-  //Datos para el email de Aprobacion
-  const datosAprobacion = {
-    emails: ['gaboowill@protonmail.com'],//[formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
-    datos_aprobacion: {
-      codigo: 'SOL-2024',
-      titulo: 'Actividad Talleres',
-      solicitante_nombre: nombreCompletoSolicitante.value,
-      aprobador_nombre: nombreValidador,
-      numero_aprobacion: 'No de aprov',
-      url_detalles: 'Aqui va la URL',
-    },
-  }
+//   //Datos para el email de Aprobacion
+//   const datosAprobacion = {
+//     emails: ['gaboowill@protonmail.com'],//[formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
+//     datos_aprobacion: {
+//       codigo: 'SOL-2024',
+//       titulo: 'Actividad Talleres',
+//       solicitante_nombre: nombreCompletoSolicitante.value,
+//       aprobador_nombre: nombreValidador,
+//       numero_aprobacion: 'No de aprov',
+//       url_detalles: 'Aqui va la URL',
+//     },
+//   }
 
-  const datosRechazo = {
-    emails: ['rolquezamarcelo@gmail.com', 'olivguil9@gmail.com'],
-    datos_rechazo: {
-      codigo: 'SOL-2024',
-      titulo: 'Actividad Talleres',
-      solicitante_nombre: 'Marky Mark',
-      aprobador_nombre: 'Ale Carvajal',
-      motivo_rechazo: 'se rechazo la solicitud por',
-      url_detalles: 'URL',
-    },
-  }
+//   const datosRechazo = {
+//     emails: ['rolquezamarcelo@gmail.com', 'olivguil9@gmail.com'],
+//     datos_rechazo: {
+//       codigo: 'SOL-2024',
+//       titulo: 'Actividad Talleres',
+//       solicitante_nombre: 'Marky Mark',
+//       aprobador_nombre: 'Ale Carvajal',
+//       motivo_rechazo: 'se rechazo la solicitud por',
+//       url_detalles: 'URL',
+//     },
+//   }
 
   try {
     await enviarEmailAprobacion(datosAprobacion)
@@ -1392,7 +1392,7 @@ const probarEnvioEmail = async () => {
   } finally {
     isLoading.value = false
   }
-}
+//}
 ////////////////////////////////////////////////////////////////////
 
     ///////// Enviar notificación por correo a solicitante//////////

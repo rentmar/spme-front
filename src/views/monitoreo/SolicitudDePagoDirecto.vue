@@ -544,7 +544,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formData.validacion_coordinador"
-                        label="Aprobado por Coordinación o Dirección"
+                        label="Aprobado por Coordinación"
                         :disabled="isFrozen"
                       ></v-checkbox>
                     </v-col>

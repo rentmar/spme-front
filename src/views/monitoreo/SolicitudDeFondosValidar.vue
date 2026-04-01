@@ -485,7 +485,7 @@
                         :items="responsablesList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Contador"
+                        label="Responsable Contable"
                         variant="outlined"
                         bg-color="blue-lighten-5"
                         :readonly="soloLectura"
@@ -494,7 +494,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formDatSF.validacionResponsablesf"
-                        :label="`Aprobado por Contador ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                        :label="`Aprobado por Contable ${puedeValidarResponsable ? '(Usted)' : ''}`"
                         :disabled="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :readonly="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :color="puedeValidarResponsable ? 'primary' : 'grey'"
@@ -517,7 +517,7 @@
                         :items="coordinadoresList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Coordinador"
+                        label="Responsable Coordinación"
                         variant="outlined"
                         bg-color="blue-lighten-5"
                         :readonly="soloLectura"
@@ -526,7 +526,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formDatSF.validacionCoordinadorsf"
-                        :label="`Aprobado por Coordinador ${puedeValidarCoordinador ? '(Usted)' : ''}`"
+                        :label="`Aprobado por Coordinación ${puedeValidarCoordinador ? '(Usted)' : ''}`"
                         :disabled="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :readonly="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :color="puedeValidarCoordinador ? 'primary' : 'grey'"
@@ -1503,7 +1503,7 @@ async function validarSolicitud(idValidador, ListaValidadores) {
     const data = await response.json()
     //console.log("Rendicion enviada con exitos", responseData)
     numeroFormulario.value = data.numero_formulario
-    const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+    const urlForm = `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
 
     const cuerpoMensaje = {
       destinatario_id: datosFormulario1.value.usuario_id,
@@ -1535,7 +1535,7 @@ async function validarSolicitud(idValidador, ListaValidadores) {
           solicitante_nombre: nombreCompletoSolicitante.value,
           aprobador_nombre: validador,
           numero_aprobacion: 'No de aprov',
-          url_detalles: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+          url_detalles: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
         },
       }
 

@@ -354,7 +354,7 @@
                     (newValue) => {
                       if (newValue) {
                         nextTick(() => {
-                          validarViaje('responsable')
+                          validarViaje('responsable', formData.id_responsable, responsablesList)
                         })
                       }
                     }
@@ -386,7 +386,7 @@
                     (newValue) => {
                       if (newValue) {
                         nextTick(() => {
-                          validarViaje('coordinador')
+                          validarViaje('coordinador', formData.id_coordinador, coordinadoresList)
                         })
                       }
                     }
@@ -646,6 +646,10 @@ const totalMontoSolicitado = computed(() => {
     (total, gasto) => total + Number(gasto.monto || 0),
     0,
   )
+})
+
+const nombreCompletoSolicitante = computed(() => {
+  return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
 })
 
 // WATCH PARA AUTO-LLENAR FORMULARIO CUANDO LLEGUEN LOS DATOS
@@ -1602,7 +1606,11 @@ const puedeValidarCoordinador = computed(() => {
   return idUsuarioLogueado === idCoordinadorAsignado
 })
 
-async function validarViaje(tipoValidador) {
+async function validarViaje(tipoValidador, idValidador, ListaValidadores) {
+  const validadorEncontrado = ListaValidadores.find((validador) => validador.id === idValidador)
+  console.log('validador', validadorEncontrado)
+  const validador = getNombreCompleto(validadorEncontrado)
+  console.log('VALIDADOR SELECCIONADO:', validador)
   // Verificar permisos según el tipo de validador
   let tienePermiso = false
   let claveValidacion = ''
@@ -1632,7 +1640,7 @@ async function validarViaje(tipoValidador) {
     id_solicitud_viaje: solicitudDeViaje.value?.id || idSolicitud,
     [claveValidacion]: true, //validacion_responsable: true o validacion_coordinador: true
   }
-  console.log('888888888888888888888', JSON.stringify(payload, null, 2))
+  console.log('Payload enviado', JSON.stringify(payload, null, 2))
 
   if (!payload.id_solicitud_viaje) {
     alert('Error: No se encontró el ID de la reposicion para validar.')
@@ -1658,6 +1666,90 @@ async function validarViaje(tipoValidador) {
         `Error al actualizar: ${response.status} - ${errorData.detail || errorData.mensaje || 'Error desconocido'}`,
       )
     }
+
+    console.log('blalalb', JSON.stringify(datosFormulario1.value, null, 2))
+    /////////////////////envio de mensaje y correo///////////////////////
+    const data = await response.json()
+    //console.log("Rendicion enviada con exitos", responseData)
+    numeroFormulario.value = data.numero_formulario
+    const urlForm = `${window.location.origin}/monitoreo/formulario055/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+
+    const cuerpoMensaje = {
+      destinatario_id: datosFormulario1.value.usuario_id,
+      asunto: 'Solicitud de Fondos',
+      contenido: 'Solicitud Aprobada' + numeroFormulario.value + '. URL: ' + urlForm,
+      tipo: 'sistema',
+      prioridad: 3,
+    }
+    await enviarMensajeAutomatico(cuerpoMensaje)
+
+    //////////////////////////// correo a solicitante////////////////////////
+    //Bandera de carga
+    const isLoading = ref(false)
+
+    //Incializar el composable
+    const { enviarEmailAprobacion, enviarEmailRechazo } = useNotificaciones()
+
+    //Metodo de prueba
+    const probarEnvioEmail = async () => {
+      console.log('🔄 Ejecutando prueba...')
+      isLoading.value = true
+
+      //Datos para el email de Aprobacion
+      const datosAprobacion = {
+        emails: [formData.value.correo], //[formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
+        datos_aprobacion: {
+          codigo: 'SOL-2024',
+          titulo: 'Solicitud de Fondos Aprobado',
+          solicitante_nombre: nombreCompletoSolicitante.value,
+          aprobador_nombre: validador,
+          numero_aprobacion: 'No de aprov',
+          url_detalles: `${window.location.origin}/monitoreo/formulario055/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+        },
+      }
+
+      try {
+        await enviarEmailAprobacion(datosAprobacion)
+        //await enviarEmailRechazo(datosRechazo)
+        console.log('Prueba ejecutada')
+      } catch (error) {
+        console.error(error)
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    /////////// Enviar notificacion por correo a solicitante//////////
+    // try{
+    //   const emailPayload = {
+    //     emails: [formData.value.correo].filter((email) => email),
+    //     datos_solicitud: {
+    //       codigo: numeroFormulario.value || 'SQL-PROV',
+    //       titulo: 'Validacion de Solicitud de Fondos',
+    //       solicitante: nombreCompletoSolicitante.value,
+    //       tipo: 'Solicitud de Fondos',
+    //       prioridad: 'alta',
+    //       descripcion: formData.value.descripcion_actividad || 'Solicitud de Fondos para actividad',
+    //       url_revision: `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+    //     }
+    //   }
+    //   console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
+
+    //   const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(emailPayload),
+    //   })
+
+    //   if (emailResponse.ok) {
+    //     console.log('Correo de notificacion enviado exitosamente')
+    //   } else {
+    //     console.warm('No se pudo enviar el correo de notificacion')
+    //   }
+    // } catch (emailError){
+    //   console.error('Error al enviar correo de notificacion:', emailError)
+    // }
+    //////////////////////////////////////////////////////////////////
 
     //const result = await response.json();
     alert('Solicitud de Viaje validada exitosamente.')
