@@ -79,6 +79,15 @@ export const validadoresServicio = {
       throw new Error(error)
     }
   },
+  /* Resetear validaciones */
+  resetValidacionesInformeActividad: async (datosReset) => {
+    try {
+      const respuesta = await apiValid.post('/resetear-validaciones/', datosReset)
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al resetear las validaciones', error)
+    }
+  },
 
   /**************************** Validadores Informe SubActividad/Tarea *******************/
 }

@@ -135,6 +135,20 @@ apiValid.interceptors.request.use(
   },
 )
 
+//INterceptores para agregar token a api
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('access_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
+
 //Interceptor comun para ambas instancias
 const errorInterceptor = (error) => {
   console.error('Error en petición:', error.response?.data || error.message)

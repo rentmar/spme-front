@@ -291,7 +291,41 @@
 
                 <v-divider class="my-4"></v-divider>
 
-                <!-- Sección 8: Medios de Verificación -->
+                <!-- Seccion 8 - Vincular Solicitud de Viaje -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 primary--text mb-0">
+                    <v-icon color="primary" class="mr-2">mdi-link-variant</v-icon>
+                    Vincular Solicitud de Viaje
+                  </h3>
+
+                  <!-- Switch para activar/desactivar la sección -->
+                  <div class="mb-4">
+                    <v-switch
+                      v-model="seccionVincularSolicitud"
+                      :label="seccionVincularSolicitud ? 'Sección activada' : 'Sección desactivada'"
+                      color="primary"
+                      hide-details
+                      inset
+                    ></v-switch>
+                  </div>
+
+                  <!-- Contenido condicional -->
+                  <div v-if="seccionVincularSolicitud">
+                    <VinculacionInformeActividad
+                      ref="solicitudViajeComponent"
+                      :idActividad="idactividad"
+                    />
+                  </div>
+
+                  <div v-else class="text-caption text-grey mt-2">
+                    La sección de vinculación de solicitud de viaje está desactivada. No se
+                    vinculará ninguna solicitud de viaje al informe.
+                  </div>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <!-- Sección 9: Medios de Verificación -->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-file-document-check</v-icon>
@@ -326,7 +360,7 @@
 
                 <v-divider class="my-4"></v-divider>
 
-                <!-- Seccio 9: Comentarios y recomendaciones-->
+                <!-- Seccio 10: Comentarios y recomendaciones-->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-comment-text-multiple</v-icon>
@@ -344,7 +378,7 @@
                   </v-row>
                 </div>
 
-                <!-- Seccio 10: Validadores del informe-->
+                <!-- Seccio 11: Validadores del informe-->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-account-check</v-icon>
@@ -419,6 +453,7 @@ import InformacionCuantitativaV2 from '@/modules/formularios/components/Informac
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
 import ProcedenciaFondosPresupuesto from '@/modules/procedenciaFondos/components/ProcedenciaFondosPresupuesto.vue'
 import ValidadorInformeActividad from '@/modules/formularios/components/validadores/ValidadorInformeActividad.vue'
+import VinculacionInformeActividad from '@/modules/formularios/components/vinculacion/VinculacionInformeActividad.vue'
 //Auxiliares
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useInformeActividadPrincipal } from '@/modules/formularios/composables/useInformeActividadPrincipal'
@@ -740,6 +775,10 @@ const manejarEstadoHabilitacion = (estado) => {
   }
   console.log('INFO ESTADO:', infoCuantitativaEstado.value)
 }
+/************************ Seccion para vincular Solicitud de VIaje  ***************************************************/
+//Bandera de habiliatacion
+const solicitudViajeComponent = ref(null)
+const seccionVincularSolicitud = ref(false)
 </script>
 
 <style scoped>

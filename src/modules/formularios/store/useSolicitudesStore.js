@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { useSolucitudFondos } from '../composables/useSolicitudFondos'
 import { useSolicitudViaje } from '../composables/useSolicitudViaje'
 import { useRendicionCuentas } from '../composables/useRendicionCuentas'
+import { useVinculacionesInformeActividad } from '../composables/useVinculacionesInformeActividad'
 
 export const useSolicitudesStore = defineStore('solicitudes-formularios', () => {
   //Estados - formularios actividad
@@ -29,6 +30,8 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
   const error = ref(null)
   //Estado formularios
   const rendicionCuentasActual = ref(null)
+  //Estado - Solicitudes de Viaje vinculados del informe de Actividad Actual
+  const solicitudesViajeInformeActividadActual = ref([])
 
   //Iniciar el composable -Sol de fondos
   const {
@@ -53,6 +56,10 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     obtenerRendicionCuentasMasSolicitudes,
     rendicionCuentas,
   } = useRendicionCuentas()
+
+  //Iniciar el composable vinculacion solicitudes de viajes a Inf de Actividad
+  const { listaSolViajesVinculadasInformeActividad, obtenerSolsViajePorInformeActividad } =
+    useVinculacionesInformeActividad()
 
   /******************************** Funciones Actividad *****************************************************/
   //Cargar formularioas de la Actividad
@@ -184,6 +191,20 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     }
   }
 
+  /************ Vinculacion de Sol de Viajes a Informe Actividad ******************************************/
+  //Cargar las solicitudes de viaje vinculadas a un informe de actividad
+  const cargarSolViajesVinculadasInformeActividad = async (idInformeActividad) => {
+    loadingViajesActividad.value = true
+    try {
+      await obtenerSolsViajePorInformeActividad(idInformeActividad)
+      solicitudesViajeInformeActividadActual.value = listaSolViajesVinculadasInformeActividad.value
+    } catch (error) {
+      console.error('Error al cargar el informe de actividad y sus sol de viajes', error)
+    } finally {
+      loadingViajesActividad.value = false
+    }
+  }
+
   return {
     //estados -actividad
     solicitudesFondosActividad,
@@ -203,6 +224,8 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     loading,
     //Estado formulario Actual
     rendicionCuentasActual,
+    //Estado Informe Actividad
+    solicitudesViajeInformeActividadActual,
     //Func - act
     cargarFormulariosDeActividad,
     cargarSolicitudFondosActividad,
@@ -215,5 +238,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     cargarRendicionCuentasTarea,
     //func
     cargarRendicionCuentasMasSolicitudesRelacionadas,
+    //func Informe de Actividad
+    cargarSolViajesVinculadasInformeActividad,
   }
 })
