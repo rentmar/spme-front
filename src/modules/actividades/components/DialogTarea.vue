@@ -148,6 +148,7 @@
                           variant="underlined"
                           density="compact"
                           placeholder="No partida"
+                          :rules="[validadoresDesglose.partida]"
                           @update:model-value="calcularTotales"
                         >
                         </v-text-field>
@@ -158,6 +159,7 @@
                           variant="underlined"
                           density="compact"
                           placeholder="Descripción del item"
+                          :rules="[validadoresDesglose.descripcion]"
                           @update:model-value="calcularTotales"
                         ></v-text-field>
                       </td>
@@ -170,6 +172,7 @@
                           variant="underlined"
                           density="compact"
                           prefix="Bs."
+                          :rules="[validadoresDesglose.monto]"
                           @update:model-value="calcularTotales"
                         ></v-text-field>
                       </td>
@@ -240,7 +243,8 @@
                       Presupuesto asignado correctamente
                     </v-alert>
                     <v-alert v-else type="warning" density="compact" class="mt-2">
-                      Complete los items del desglose o oculte esta sección si no desea utilizarla
+                      Complete todos los campos (Partida, Descripción y Monto) de los items del
+                      desglose, u oculte esta sección si no desea utilizarla
                     </v-alert>
                   </v-card-text>
                 </v-card>
@@ -338,6 +342,44 @@ const validaciones = {
   numeroPositivo: (v) => !v || Number(v) >= 0 || 'El valor debe ser positivo',
 }
 
+//Validadores para el desglose
+const validadoresDesglose = {
+  partida: (v) => {
+    if (!v || v.trim() === '') {
+      return 'La partida es requerida'
+    }
+    if (v.length > 50) {
+      return 'La partida no puede exceder 50 caracteres'
+    }
+    return true
+  },
+  descripcion: (v) => {
+    if (!v || v.trim() === '') {
+      return 'La descripción es requerida'
+    }
+    if (v.length > 200) {
+      return 'La descripción no puede exceder 200 caracteres'
+    }
+    return true
+  },
+  monto: (v) => {
+    if (!v && v !== 0) {
+      return 'El monto es requerido'
+    }
+    const montoNum = Number(v)
+    if (isNaN(montoNum)) {
+      return 'Debe ser un número válido'
+    }
+    if (montoNum <= 0) {
+      return 'El monto debe ser mayor a 0'
+    }
+    if (montoNum > 999999999.99) {
+      return 'El monto excede el límite permitido'
+    }
+    return true
+  },
+}
+
 // Computed
 const isEditando = computed(() => !!props.tarea?.id)
 const tituloDialog = computed(() =>
@@ -356,11 +398,20 @@ const resumenColor = computed(() => {
   if (diferenciaPresupuesto.value > 0) return 'info'
   return 'success'
 })
+
+//Comprobacion de los items
 const tieneItemsValidos = computed(() => {
-  return itemsDesglose.value.some(
-    (item) => item.partida && item.descripcion && item.monto && item.monto !== '0',
-  )
+  return itemsDesglose.value.some((item) => {
+    // Verificar que todos los campos estén llenos y válidos
+    const partidaValida = item.partida && item.partida.trim() !== ''
+    const descripcionValida = item.descripcion && item.descripcion.trim() !== ''
+    const montoValido = item.monto && item.monto !== '' && Number(item.monto) > 0
+
+    return partidaValida && descripcionValida && montoValido
+  })
 })
+
+//Validador de formulario
 const formularioValido = computed(() => {
   // El formulario es válido si:
   // 1. No se muestra el desglose, O

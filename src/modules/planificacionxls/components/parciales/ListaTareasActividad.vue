@@ -115,11 +115,25 @@
                       </v-btn>
                     </template>
                     <v-list density="compact">
-                      <v-list-item @click="imprimirTarea(tarea)">
+                      <v-list-item
+                        @click="imprimirTarea(tarea)"
+                        :disabled="imprimiendoTareaId === tarea.id"
+                      >
                         <template #prepend>
+                          <v-progress-circular
+                            v-if="imprimiendoTareaId === tarea.id"
+                            size="16"
+                            width="2"
+                            indeterminate
+                            color="red-darken-2"
+                          />
                           <v-icon size="16" color="red-darken-2">mdi-file-pdf-box</v-icon>
                         </template>
-                        <v-list-item-title>Exportar PDF</v-list-item-title>
+                        <v-list-item-title>
+                          {{
+                            imprimiendoTareaId === tarea.id ? 'Generando PDF...' : 'Exportar PDF'
+                          }}
+                        </v-list-item-title>
                       </v-list-item>
                       <v-list-item @click="editarTarea(tarea)">
                         <template #prepend>
@@ -298,6 +312,8 @@ import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
 import ValidationBar from '@/modules/formularios/components/ValidationBar.vue'
 import ValidationTareaBar from '@/modules/formularios/components/ValidationTareaBar.vue'
 import { useSnackbar } from '@/composables/useSnackbar'
+//Composable para impresion
+import { useImpresionTarea } from '@/modules/impresiones/composables/useImpresionTarea'
 
 const props = defineProps({
   actividad: {
@@ -313,8 +329,11 @@ const storeInfActividad = useInformeActividadStore()
 const { crearUnaTarea, actualizarUnaTarea, eliminarUnaTarea } = useTareaSubactividad()
 const { openConfirmDialog } = useConfirmDialog()
 
+//Iniciar el composable de impresion
+const { generarPdfTarea } = useImpresionTarea()
+
 //Iniciar el composable de mensajes
-const { infoMsg } = useSnackbar()
+const { infoMsg, errorMsg } = useSnackbar()
 
 // Estados locales
 const busqueda = ref('')
@@ -342,9 +361,22 @@ const snackbar = ref({
 })
 
 // 🔥 FUNCIÓN PARA IMPRIMIR LA TAREA
+const imprimiendoTareaId = ref(null)
+
 const imprimirTarea = async (tarea) => {
-  infoMsg('Imprimir la tarea')
-  console.log(tarea)
+  imprimiendoTareaId.value = tarea.id
+  try {
+    infoMsg(`Generando PDF para "${tarea.titulo}"...`)
+    await generarPdfTarea(tarea.id)
+  } catch (error) {
+    errorMsg(`❌ Error al generar PDF: ${tarea.titulo}`, error)
+  } finally {
+    imprimiendoTareaId.value = null
+  }
+
+  // infoMsg('Imprimir la tarea')
+  // console.log(tarea)
+  // await generarPdfTarea(tarea.id)
 }
 
 // 🔥 FUNCIÓN PARA ABRIR DIALOG DE CAMBIO DE ESTADO
