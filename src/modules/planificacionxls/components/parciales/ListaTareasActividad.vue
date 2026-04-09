@@ -115,6 +115,12 @@
                       </v-btn>
                     </template>
                     <v-list density="compact">
+                      <v-list-item @click="imprimirTarea(tarea)">
+                        <template #prepend>
+                          <v-icon size="16" color="red-darken-2">mdi-file-pdf-box</v-icon>
+                        </template>
+                        <v-list-item-title>Exportar PDF</v-list-item-title>
+                      </v-list-item>
                       <v-list-item @click="editarTarea(tarea)">
                         <template #prepend>
                           <v-icon size="16">mdi-pencil</v-icon>
@@ -291,6 +297,7 @@ import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
 import ValidationBar from '@/modules/formularios/components/ValidationBar.vue'
 import ValidationTareaBar from '@/modules/formularios/components/ValidationTareaBar.vue'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 const props = defineProps({
   actividad: {
@@ -305,6 +312,9 @@ const storeInfActividad = useInformeActividadStore()
 // Iniciar el composable
 const { crearUnaTarea, actualizarUnaTarea, eliminarUnaTarea } = useTareaSubactividad()
 const { openConfirmDialog } = useConfirmDialog()
+
+//Iniciar el composable de mensajes
+const { infoMsg } = useSnackbar()
 
 // Estados locales
 const busqueda = ref('')
@@ -330,6 +340,12 @@ const snackbar = ref({
   message: '',
   color: 'success',
 })
+
+// 🔥 FUNCIÓN PARA IMPRIMIR LA TAREA
+const imprimirTarea = async (tarea) => {
+  infoMsg('Imprimir la tarea')
+  console.log(tarea)
+}
 
 // 🔥 FUNCIÓN PARA ABRIR DIALOG DE CAMBIO DE ESTADO
 const cambiarEstadoTarea = (tarea) => {

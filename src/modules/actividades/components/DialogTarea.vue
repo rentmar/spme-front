@@ -133,14 +133,25 @@
                 <v-table density="compact" class="mb-4">
                   <thead>
                     <tr>
-                      <th width="40%">Descripción</th>
-                      <th width="30%">Monto (Bs.)</th>
-                      <th width="20%">% del Total</th>
+                      <th width="30%">Partida</th>
+                      <th width="30%">Descripción</th>
+                      <th width="25%">Monto (Bs.)</th>
+                      <th width="15%">% del Total</th>
                       <th width="10%">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="(item, index) in itemsDesglose" :key="index">
+                      <td>
+                        <v-text-field
+                          v-model="item.partida"
+                          variant="underlined"
+                          density="compact"
+                          placeholder="No partida"
+                          @update:model-value="calcularTotales"
+                        >
+                        </v-text-field>
+                      </td>
                       <td>
                         <v-text-field
                           v-model="item.descripcion"
@@ -309,7 +320,7 @@ const formData = ref({
 })
 
 // Desglose de presupuesto
-const itemsDesglose = ref([{ descripcion: '', monto: '' }])
+const itemsDesglose = ref([{ partida: '', descripcion: '', monto: '' }])
 const totalDesglose = ref(0)
 const diferenciaPresupuesto = ref(0)
 
@@ -346,7 +357,9 @@ const resumenColor = computed(() => {
   return 'success'
 })
 const tieneItemsValidos = computed(() => {
-  return itemsDesglose.value.some((item) => item.descripcion && item.monto && item.monto !== '0')
+  return itemsDesglose.value.some(
+    (item) => item.partida && item.descripcion && item.monto && item.monto !== '0',
+  )
 })
 const formularioValido = computed(() => {
   // El formulario es válido si:
@@ -400,16 +413,17 @@ const inicializarFormulario = () => {
       if (itemsExistentes.length > 0) {
         // Convertir montos a string para el formulario
         itemsDesglose.value = itemsExistentes.map((item) => ({
+          partida: item.partida || '',
           descripcion: item.descripcion || '',
           monto: item.monto ? item.monto.toString() : '',
         }))
         mostrarDesglose.value = true
       } else {
-        itemsDesglose.value = [{ descripcion: '', monto: '' }]
+        itemsDesglose.value = [{ partida: '', descripcion: '', monto: '' }]
         mostrarDesglose.value = false
       }
     } else {
-      itemsDesglose.value = [{ descripcion: '', monto: '' }]
+      itemsDesglose.value = [{ partida: '', descripcion: '', monto: '' }]
       mostrarDesglose.value = false
     }
   } else {
@@ -430,7 +444,7 @@ const inicializarFormulario = () => {
       presupuestoDesglose: null,
     })
 
-    itemsDesglose.value = [{ descripcion: '', monto: '' }]
+    itemsDesglose.value = [{ partida: '', descripcion: '', monto: '' }]
     mostrarDesglose.value = false
   }
 
@@ -448,7 +462,7 @@ const toggleDesglose = () => {
   mostrarDesglose.value = !mostrarDesglose.value
   if (!mostrarDesglose.value) {
     // Limpiar items cuando se oculta el desglose
-    itemsDesglose.value = [{ descripcion: '', monto: '' }]
+    itemsDesglose.value = [{ partida: '', descripcion: '', monto: '' }]
     calcularTotales()
   }
 }
@@ -470,7 +484,7 @@ const calcularPorcentaje = (monto) => {
 
 const agregarItemDesglose = () => {
   if (itemsDesglose.value.length < 10) {
-    itemsDesglose.value.push({ descripcion: '', monto: '' })
+    itemsDesglose.value.push({ partida: '', descripcion: '', monto: '' })
   }
 }
 
@@ -492,8 +506,12 @@ const prepararDesgloseParaAPI = () => {
 
   // Filtrar items válidos y convertir montos a números
   const itemsValidos = itemsDesglose.value
-    .filter((item) => item.descripcion && item.monto && item.monto !== '' && item.monto !== '0')
+    .filter(
+      (item) =>
+        item.partida && item.descripcion && item.monto && item.monto !== '' && item.monto !== '0',
+    )
     .map((item) => ({
+      partida: item.partida.trim(),
       descripcion: item.descripcion.trim(),
       monto: Number(item.monto),
     }))
