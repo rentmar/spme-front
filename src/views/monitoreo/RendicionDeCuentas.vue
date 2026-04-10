@@ -418,7 +418,7 @@
                   bg-color="blue-lighten-5"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Responsable Administración"
+                  label="Responsable Dirección Administrativa"
                   required
                 ></v-select>
               </v-col>
@@ -835,7 +835,7 @@ watch(
         responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
         coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
         contadoresList.value = newVal.validadores.filter((user) => user.cargo === 'contable')
-        administradoresList.value = newVal.validadores.filter((user) => user.cargo === 'admin')
+        administradoresList.value = newVal.validadores.filter((user) => user.cargo === 'dir-administrativo')  //'admin')
       }
     }
   },

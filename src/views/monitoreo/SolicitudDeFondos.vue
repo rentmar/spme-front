@@ -504,7 +504,7 @@
                         :items="coordinadoresList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Responsable Coordinación"
+                        label="Responsable Dirección Administrativa"
                         variant="outlined"
                         bg-color="blue-lighten-5"
                         required
@@ -513,7 +513,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formData.validacion_coordinador"
-                        label="Aprobado por Coordinación o Dirección"
+                        label="Aprobado por Dirección Administrativa"
                         :disabled="isFrozen"
                       ></v-checkbox>
                     </v-col>
@@ -803,7 +803,7 @@ watch(
         contadoresList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
         coordinadoresList.value =
-          newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo' ) || [] //'coordinador') || []
       } else {
         responsablesList.value = []
         contadoresList.value = []
