@@ -531,7 +531,7 @@
                         :items="coordinadoresList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Responsable Coordinación"
+                        label="Responsable Dirección Administrativa"
                         variant="outlined"
                         :readonly="soloLectura"
                       ></v-select>
@@ -539,7 +539,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formDatSF.validacionCoordinadorsf"
-                        :label="`Aprobado por Coordinación ${puedeValidarCoordinador ? '(Usted)' : ''}`"
+                        :label="`Aprobado por Dirección Administrativa ${puedeValidarCoordinador ? '(Usted)' : ''}`"
                         :disabled="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :readonly="!puedeValidarCoordinador || formDatSF.validacionCoordinadorsf"
                         :color="puedeValidarCoordinador ? 'primary' : 'grey'"

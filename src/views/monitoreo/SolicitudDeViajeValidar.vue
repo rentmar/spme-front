@@ -370,7 +370,7 @@
                   :items="coordinadoresList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Responsable Coordinación"
+                  label="Responsable Dirección Administrativa"
                   required
                   :readonly="soloLectura"
                 ></v-select>
@@ -378,7 +378,7 @@
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
                   v-model="solicitudDeViaje.validacionCoordinador"
-                  :label="`Aprobado por Coordinación ${puedeValidarCoordinador ? '(Usted)' : ''}`"
+                  :label="`Aprobado por Dirección Administrativa ${puedeValidarCoordinador ? '(Usted)' : ''}`"
                   :disabled="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
                   :readonly="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
                   :color="puedeValidarCoordinador ? 'primary' : 'grey'"

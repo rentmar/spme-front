@@ -430,7 +430,7 @@
                   :items="administradoresList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Responsable Administración"
+                  label="Responsable Dirección Administrativa"
                   required
                   :readonly="soloLectura"
                 ></v-select>
@@ -438,7 +438,7 @@
               <v-col cols="12" md="6">
                 <v-checkbox
                   v-model="formData.validacion_administrador"
-                  :label="`Aprobado por Administración ${puedeValidarAdministrador ? '(Usted)' : ''}`"
+                  :label="`Aprobado por Dirección Administrativa ${puedeValidarAdministrador ? '(Usted)' : ''}`"
                   :disabled="!puedeValidarAdministrador || formData.validacion_administrador"
                   :readonly="!puedeValidarAdministrador || formData.validacion_administrador"
                   :color="puedeValidarAdministrador ? 'primary' : 'grey'"
