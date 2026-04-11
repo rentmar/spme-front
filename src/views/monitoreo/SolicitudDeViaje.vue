@@ -390,14 +390,14 @@
                   :items="coordinadoresList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Responsable Coordinación"
+                  label="Responsable Dirección Administrativa"
                   required
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
                   v-model="formData.validacion_coordinador"
-                  label="Aprobado por Coordinación"
+                  label="Aprobado por Dirección Administrativa"
                   :disabled="isFrozen"
                 ></v-checkbox>
               </v-col>
@@ -729,7 +729,7 @@ async function cargarUsuarios() {
     const response = await axios.get(baseurl + 'autenticacion_api/listaUsuarios/')
     const allUsers = response.data.usuarios
     responsablesList.value = allUsers.filter((user) => user.cargo === 'contable')
-    coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador')
+    coordinadoresList.value = allUsers.filter((user) => user.cargo === 'dir-administrativo')  //'coordinador')
     if (datosSolicitante.value) {
       solicitante.value = getNombreCompleto(datosSolicitante.value)
     }

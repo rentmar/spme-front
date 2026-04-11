@@ -418,14 +418,14 @@
                   bg-color="blue-lighten-5"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Responsable Administración"
+                  label="Responsable Dirección Administrativa"
                   required
                 ></v-select>
               </v-col>
               <v-col cols="12" md="6">
                 <v-checkbox
                   v-model="formData.validacion_administrador"
-                  label="Aprobado por Administración"
+                  label="Aprobado por Dirección Administrativa"
                   :disabled="!isAdmin"
                 ></v-checkbox>
               </v-col>
@@ -636,6 +636,9 @@ const actividadData = ref({
 /* ACTIVIDAD */
 //Referencia al componente hijo
 const vinculacionRef = ref(null)
+const solicitudFondosSeleccionada = ref(null)
+const solicitudViajeSeleccionada = ref(null)
+
 
 /* ACTIVIDAD */
 //EVENTO: update:vinculacion
@@ -645,6 +648,8 @@ const manejarActualizacionVinculacion = (vinculacion) => {
   //Caso sin vinculacion
   if (!vinculacion) {
     successMsg('Sin Seleccion/Se Elimino seleccion')
+    solicitudFondosSeleccionada.value = null
+    solicitudViajeSeleccionada.value = null
     return
   }
   //Caso solicitud de Fondos
@@ -655,6 +660,8 @@ const manejarActualizacionVinculacion = (vinculacion) => {
         ' ID: ' +
         vinculacion.id,
     )
+    solicitudFondosSeleccionada.value = vinculacion.id
+    solicitudViajeSeleccionada.value = null
     return
   }
   //Caso solicitude de viaje
@@ -665,6 +672,8 @@ const manejarActualizacionVinculacion = (vinculacion) => {
         ' ID: ' +
         vinculacion.id,
     )
+    solicitudFondosSeleccionada.value = null
+    solicitudViajeSeleccionada.value = vinculacion.id
     return
   }
 }
@@ -688,6 +697,8 @@ const manejarActualizacionVinculacionTarea = (vinculacion) => {
   //Caso sin vinculacion
   if (!vinculacion) {
     successMsg('Sin Seleccion/Se Elimino seleccion - Subactividad')
+    solicitudFondosSeleccionada.value = null
+    solicitudViajeSeleccionada.value = null
     return
   }
   //Caso solicitud de Fondos
@@ -698,6 +709,8 @@ const manejarActualizacionVinculacionTarea = (vinculacion) => {
         ' ID: ' +
         vinculacion.id,
     )
+    solicitudFondosSeleccionada.value = vinculacion.id
+    solicitudViajeSeleccionada.value = null
     return
   }
   //Caso solicitude de viaje
@@ -708,6 +721,8 @@ const manejarActualizacionVinculacionTarea = (vinculacion) => {
         ' ID: ' +
         vinculacion.id,
     )
+    solicitudFondosSeleccionada.value = null
+    solicitudViajeSeleccionada.value = vinculacion.id
     return
   }
 }
@@ -820,7 +835,7 @@ watch(
         responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
         coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
         contadoresList.value = newVal.validadores.filter((user) => user.cargo === 'contable')
-        administradoresList.value = newVal.validadores.filter((user) => user.cargo === 'admin')
+        administradoresList.value = newVal.validadores.filter((user) => user.cargo === 'dir-administrativo')  //'admin')
       }
     }
   },
@@ -1390,9 +1405,9 @@ async function submitForm() {
       fechaActividad: formData.value.fecha_actividad,
       bloquearIconoRC: true,
       idSolicitudReembolso: null,
-      idSolicitudViaje: null,
+      idSolicitudViaje: solicitudViajeSeleccionada.value,
       idSolicitudPagoDirecto: null,
-      idSolicitudFondos: solicitudInfo ? solicitudInfo.id : null,
+      idSolicitudFondos: solicitudFondosSeleccionada.value,
     }
 
     console.log('Payload a enviar:', JSON.stringify(payload, null, 2))

@@ -28,11 +28,9 @@
         :proyecto-id="datosFormulario.actividad?.proyecto ?? '999999'"
       ></ProyectoIdHeader>
       <br />
-      <ActividadInformacion v-if="datosFormulario?.actividad" :actividad-id="idActividad" />
+      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
+
       <br />
-      <EncabezadoVinculacionRendicionCuentas
-        :idRendicionCuentas="idSolicitud"
-      ></EncabezadoVinculacionRendicionCuentas>
       <!-- <v-form ref="form" v-model="valid" lazy-validation>
       </v-form> -->
     </div>
@@ -538,7 +536,6 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
-import EncabezadoVinculacionRendicionCuentas from '@/modules/formularios/components/vinculacion/EncabezadoVinculacionRendicionCuentas.vue'
 import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { useUserStore } from '@/stores/user'
@@ -837,7 +834,7 @@ watch(
       }
     }
   },
-  { deep: true, immediate: true },
+  { deep: true },
 )
 
 const filtrarProcedenciaFondos = () => {
@@ -881,7 +878,7 @@ async function cargarDatos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + 'api/monitoreo/obtener-datos-formulario/', {
+    const response = await fetch(baseurl + '/api/monitoreo/obtener-datos-formulario/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -917,7 +914,7 @@ const cargarSolicitudesFondos = async () => {
   try {
     //console.log('Cargando solicitudes de fondos con fetch...')
 
-    const response = await fetch(baseurl + 'api/solicitud-fondos/', {
+    const response = await fetch(baseurl + '/api/solicitud-fondos/', {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -967,6 +964,7 @@ async function cargarRendicionesDeCuenta() {
     console.error('Ha ocurrido un error:', err)
   } finally {
     isLoading.value = false
+    cargandoGeneral.value = false
   }
 }
 
@@ -974,7 +972,7 @@ async function cargarSolicitudFondos() {
   isLoading.value = true
   error.value = null
   try {
-    const response = await fetch(baseurl + 'monitoreo_api/obtenerSolicitudFondos/', {
+    const response = await fetch(baseurl + '/monitoreo_api/obtenerSolicitudFondos/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -1149,7 +1147,7 @@ watch(
       }
     }
   },
-  { deep: true },
+  { deep: true, immediate: true },
 )
 
 // Función para actualizar datosFormulario con los valores de la solicitud
@@ -1358,46 +1356,46 @@ async function validarRendicion(tipoValidador, idValidador, ListaValidadores) {
 
     console.log('mmmmmmmmmmmmmmmmmmmm', JSON.stringify(datosAprobacion, null, 2))
 
-    //Metodo de prueba
-    const probarEnvioEmail = async () => {
-      console.log('🔄 Ejecutando prueba...')
-      isLoading.value = true
+    // //Metodo de prueba
+    // const probarEnvioEmail = async () => {
+    //   console.log('🔄 Ejecutando prueba...')
+    //   isLoading.value = true
 
-      //Datos para el email de Aprobacion
-      const datosAprobacion = {
-        emails: ['gaboowill@protonmail.com'], //[formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
-        datos_aprobacion: {
-          codigo: 'SOL-2024',
-          titulo: 'Actividad Talleres',
-          solicitante_nombre: nombreCompletoSolicitante.value,
-          aprobador_nombre: nombreValidador,
-          numero_aprobacion: 'No de aprov',
-          url_detalles: 'Aqui va la URL',
-        },
-      }
+    //   //Datos para el email de Aprobacion
+    //   const datosAprobacion = {
+    //     emails: ['gaboowill@protonmail.com'],//[formData.value.correo],//['gaboowill@protonmail.com', 'olivguil9@gmail.com'],
+    //     datos_aprobacion: {
+    //       codigo: 'SOL-2024',
+    //       titulo: 'Actividad Talleres',
+    //       solicitante_nombre: nombreCompletoSolicitante.value,
+    //       aprobador_nombre: nombreValidador,
+    //       numero_aprobacion: 'No de aprov',
+    //       url_detalles: 'Aqui va la URL',
+    //     },
+    //   }
 
-      const datosRechazo = {
-        emails: ['rolquezamarcelo@gmail.com', 'olivguil9@gmail.com'],
-        datos_rechazo: {
-          codigo: 'SOL-2024',
-          titulo: 'Actividad Talleres',
-          solicitante_nombre: 'Marky Mark',
-          aprobador_nombre: 'Ale Carvajal',
-          motivo_rechazo: 'se rechazo la solicitud por',
-          url_detalles: 'URL',
-        },
-      }
+    //   const datosRechazo = {
+    //     emails: ['rolquezamarcelo@gmail.com', 'olivguil9@gmail.com'],
+    //     datos_rechazo: {
+    //       codigo: 'SOL-2024',
+    //       titulo: 'Actividad Talleres',
+    //       solicitante_nombre: 'Marky Mark',
+    //       aprobador_nombre: 'Ale Carvajal',
+    //       motivo_rechazo: 'se rechazo la solicitud por',
+    //       url_detalles: 'URL',
+    //     },
+    //   }
 
-      try {
-        await enviarEmailAprobacion(datosAprobacion)
-        await enviarEmailRechazo(datosRechazo)
-        console.log('Prueba ejecutada')
-      } catch (error) {
-        console.error(error)
-      } finally {
-        isLoading.value = false
-      }
+    try {
+      await enviarEmailAprobacion(datosAprobacion)
+      await enviarEmailRechazo(datosRechazo)
+      console.log('Prueba ejecutada')
+    } catch (error) {
+      console.error(error)
+    } finally {
+      isLoading.value = false
     }
+    //}
     ////////////////////////////////////////////////////////////////////
 
     ///////// Enviar notificación por correo a solicitante//////////
@@ -1575,11 +1573,9 @@ onMounted(async () => {
   try {
     cargandoGeneral.value = true
 
-    await cargarDatos()
-
     // Ejecutar todas las cargas de datos en paralelo
     await Promise.all([
-      //cargarDatos(),
+      cargarDatos(),
       cargarRendicionesDeCuenta(),
       cargarSolicitudFondos(),
       cargarSolicitudesFondos(),
