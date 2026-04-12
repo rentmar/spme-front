@@ -925,7 +925,7 @@ watch(
         responsablesList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
         coordinadoresList.value =
-          newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || []  //'coordinador') || []
       } else {
         responsablesList.value = []
         coordinadoresList.value = []
@@ -1938,7 +1938,7 @@ function actualizarListasValidadores() {
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
   coordinadoresList.value = datosFormulario.value.validadores.filter(
-    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador'),
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('dir-administrativo'), //'coordinador'),
   )
 }
 

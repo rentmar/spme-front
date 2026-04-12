@@ -821,7 +821,7 @@ watch(
         responsablesList.value = newVal.validadores.filter((user) => user.cargo === 'responsable')
         coordinadoresList.value = newVal.validadores.filter((user) => user.cargo === 'coordinador')
         contadoresList.value = newVal.validadores.filter((user) => user.cargo === 'contable')
-        administradoresList.value = newVal.validadores.filter((user) => user.cargo === 'admin')
+        administradoresList.value = newVal.validadores.filter((user) => user.cargo === 'dir-administrativo')  //'admin')
       }
     }
   },

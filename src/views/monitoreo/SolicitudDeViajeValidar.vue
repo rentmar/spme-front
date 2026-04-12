@@ -703,7 +703,7 @@ watch(
         responsablesList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
         coordinadoresList.value =
-          newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || []  //'coordinador') || []
       } else {
         responsablesList.value = []
         coordinadoresList.value = []
@@ -865,7 +865,7 @@ async function cargarUsuarios() {
     const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/')
     const allUsers = response.data.usuarios
     responsablesList.value = allUsers.filter((user) => user.cargo === 'contable')
-    coordinadoresList.value = allUsers.filter((user) => user.cargo === 'coordinador')
+    coordinadoresList.value = allUsers.filter((user) => user.cargo === 'dir-administrativo')  //'coordinador')
     datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
     if (datosSolicitante.value) {
       //solicitante.value = getNombreCompleto(datosSolicitante.value)
@@ -1591,7 +1591,7 @@ function actualizarListasValidadores() {
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
   coordinadoresList.value = datosFormulario.value.validadores.filter(
-    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador'),
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('dir-administrativo'), //'coordinador'),
   )
 }
 const puedeValidarResponsable = computed(() => {
