@@ -728,7 +728,8 @@ async function cargarUsuarios() {
   try {
     const response = await axios.get(baseurl + 'autenticacion_api/listaUsuarios/')
     const allUsers = response.data.usuarios
-    responsablesList.value = allUsers.filter((user) => user.cargo === 'contable')
+    console.log('Usuarios obtenidos:', allUsers)
+    responsablesList.value = allUsers.filter((user) => user.cargo === 'contable' && user.es_activo === true) //'contador')
     coordinadoresList.value = allUsers.filter((user) => user.cargo === 'dir-administrativo')  //'coordinador')
     if (datosSolicitante.value) {
       solicitante.value = getNombreCompleto(datosSolicitante.value)
