@@ -32,6 +32,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
   const rendicionCuentasActual = ref(null)
   //Estado - Solicitudes de Viaje vinculados del informe de Actividad Actual
   const solicitudesViajeInformeActividadActual = ref([])
+  const solicitudesViajeDisponibles = ref([])
 
   //Iniciar el composable -Sol de fondos
   const {
@@ -58,8 +59,12 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
   } = useRendicionCuentas()
 
   //Iniciar el composable vinculacion solicitudes de viajes a Inf de Actividad
-  const { listaSolViajesVinculadasInformeActividad, obtenerSolsViajePorInformeActividad } =
-    useVinculacionesInformeActividad()
+  const {
+    listaSolViajesVinculadasInformeActividad,
+    obtenerSolsViajePorInformeActividad,
+    listaSolViajesDisponibles,
+    obtenerSolViajesDisponiblesPorIdActividad,
+  } = useVinculacionesInformeActividad()
 
   /******************************** Funciones Actividad *****************************************************/
   //Cargar formularioas de la Actividad
@@ -205,6 +210,18 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     }
   }
 
+  //Cargar las solicitudes de viaje disponibles por id de actividad
+  const cargarSolViajeDisponiblePorIdActividad = async (idActividad) => {
+    loadingViajesActividad.value = true
+    try {
+      await obtenerSolViajesDisponiblesPorIdActividad(idActividad)
+    } catch (error) {
+      console.error('Error al cargar las sol de viajes disponibles', error)
+    } finally {
+      loadingViajesActividad.value = false
+    }
+  }
+
   return {
     //estados -actividad
     solicitudesFondosActividad,
@@ -226,6 +243,8 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     rendicionCuentasActual,
     //Estado Informe Actividad
     solicitudesViajeInformeActividadActual,
+    solicitudesViajeDisponibles,
+
     //Func - act
     cargarFormulariosDeActividad,
     cargarSolicitudFondosActividad,
@@ -240,5 +259,6 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     cargarRendicionCuentasMasSolicitudesRelacionadas,
     //func Informe de Actividad
     cargarSolViajesVinculadasInformeActividad,
+    cargarSolViajeDisponiblePorIdActividad,
   }
 })
