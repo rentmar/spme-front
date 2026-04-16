@@ -245,6 +245,8 @@
           :rowHeights="40"
           :autoRowSize="false"
           :viewportColumnRenderingOffset="20"
+          :filters="true"
+          :dropdownMenu="dropdownMenuConfig"
         ></HotTable>
       </div>
 
@@ -873,7 +875,7 @@ const hiddenColumnsConfig = computed(() => {
 const columns = ref([
   { data: 'id', title: 'Id', type: 'numeric', width: 50, readOnly: true },
   { data: 'codigo', title: 'Código', width: 100 },
-  { data: 'nombreCorto', title: 'Nombre', width: 100 },
+  { data: 'nombreCorto', title: 'Nombre', width: 200 },
   {
     data: 'tipo',
     title: 'Tipo de Actividad',
@@ -926,7 +928,7 @@ const columns = ref([
   {
     data: 'presupuesto',
     title: 'Presupuesto',
-    width: 100,
+    width: 150,
     type: 'numeric',
     numericFormat: {
       pattern: '0,0.00',
@@ -937,7 +939,7 @@ const columns = ref([
     data: 'presupuestoGlobal',
     title: 'Presupuesto Global',
     type: 'numeric',
-    width: 110,
+    width: 150,
     numericFormat: {
       pattern: '0,0.00',
     },
@@ -947,7 +949,7 @@ const columns = ref([
     title: 'Total Reportado',
     type: 'numeric',
     readOnly: true,
-    width: 100,
+    width: 150,
     numericFormat: {
       pattern: '0,0.00',
     },
@@ -956,7 +958,7 @@ const columns = ref([
     data: 'totalEjecutado',
     title: 'Total Ejecutado',
     type: 'numeric',
-    width: 100,
+    width: 150,
     numericFormat: {
       pattern: '0,0.00',
     },
@@ -965,7 +967,7 @@ const columns = ref([
     data: 'saldo',
     title: 'Saldo',
     type: 'numeric',
-    width: 100,
+    width: 150,
     numericFormat: {
       pattern: '0,0.00',
     },
@@ -974,7 +976,7 @@ const columns = ref([
     data: 'estado',
     type: 'text',
     title: 'ESTADO',
-    width: 120,
+    width: 150,
     readOnly: true,
   },
   {
@@ -982,7 +984,7 @@ const columns = ref([
     type: 'dropdown',
     title: 'Grado Ejecucion',
     readOnly: true,
-    width: 120,
+    width: 150,
     source: [
       'PLANIFICADA',
       'RETRASO',
@@ -1160,6 +1162,38 @@ const contextMenuConfig = computed(() => {
 
   return finalItems
 })
+/************************* Configuracion de filtros  **************************/
+// Configuración de filtros - EXCLUYENDO la columna.
+const columnasConFiltros = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+const dropdownMenuConfig = {
+  items: {
+    filter_by_condition: {
+      hidden: function () {
+        const range = this.getSelectedRangeLast()
+        if (!range) return true
+        const currentCol = range.to.col
+        return !columnasConFiltros.includes(currentCol)
+      },
+    },
+    filter_by_value: {
+      hidden: function () {
+        const range = this.getSelectedRangeLast()
+        if (!range) return true
+        const currentCol = range.to.col
+        return !columnasConFiltros.includes(currentCol)
+      },
+    },
+    filter_action_bar: {
+      hidden: function () {
+        const range = this.getSelectedRangeLast()
+        if (!range) return true
+        const currentCol = range.to.col
+        return !columnasConFiltros.includes(currentCol)
+      },
+    },
+  },
+}
 </script>
 
 <style scoped>
