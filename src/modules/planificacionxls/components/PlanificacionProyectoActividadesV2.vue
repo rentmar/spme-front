@@ -227,27 +227,30 @@
             </v-card>
           </v-dialog>
         </v-toolbar>
-
-        <HotTable
-          v-if="inicializado"
-          ref="hotTable"
-          :data="tableData"
-          :columns="columns"
-          :colHeaders="headers"
-          :rowHeaders="true"
-          :height="1500"
-          :contextMenu="contextMenuConfig"
-          :language="'es-Mx'"
-          :afterChange="handleChange"
-          :afterSelection="handleSelection"
-          :licenseKey="'non-commercial-and-evaluation'"
-          :hiddenColumns="hiddenColumnsConfig"
-          :rowHeights="40"
-          :autoRowSize="false"
-          :viewportColumnRenderingOffset="20"
-          :filters="true"
-          :dropdownMenu="dropdownMenuConfig"
-        ></HotTable>
+        <div class="table-scroll-wrapper">
+          <HotTable
+            v-if="inicializado"
+            ref="hotTable"
+            :data="tableData"
+            :columns="columns"
+            :colHeaders="headers"
+            :rowHeaders="true"
+            :height="tableHeight"
+            :width="'100%'"
+            :stretchH="'none'"
+            :contextMenu="contextMenuConfig"
+            :language="'es-Mx'"
+            :afterChange="handleChange"
+            :afterSelection="handleSelection"
+            :licenseKey="'non-commercial-and-evaluation'"
+            :hiddenColumns="hiddenColumnsConfig"
+            :rowHeights="40"
+            :autoRowSize="false"
+            :viewportColumnRenderingOffset="20"
+            :filters="true"
+            :dropdownMenu="dropdownMenuConfig"
+          ></HotTable>
+        </div>
       </div>
 
       <!-- Panel Derecho - Contenido Adicional -->
@@ -1162,7 +1165,29 @@ const contextMenuConfig = computed(() => {
 
   return finalItems
 })
-/************************* Configuracion de filtros  **************************/
+/************************* Configura<HotTable
+  v-if="inicializado"
+  ref="hotTable"
+  :data="tableData"
+  :columns="columns"
+  :colHeaders="headers"
+  :rowHeaders="true"
+  :height="tableHeight"
+  :width="'100%'"
+  :stretchH="'none'"
+  :contextMenu="contextMenuConfig"
+  :language="'es-Mx'"
+  :afterChange="handleChange"
+  :afterSelection="handleSelection"
+  :licenseKey="'non-commercial-and-evaluation'"
+  :hiddenColumns="hiddenColumnsConfig"
+  :rowHeights="40"
+  :autoRowSize="false"
+  :viewportColumnRenderingOffset="20"
+  :filters="true"
+  :dropdownMenu="dropdownMenuConfig"
+></HotTable>cion de filtros  **************************/
+const tableHeight = ref(800) //
 // Configuración de filtros - EXCLUYENDO la columna.
 const columnasConFiltros = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
@@ -1389,5 +1414,17 @@ const dropdownMenuConfig = {
 .toolbar-btn.v-btn--disabled .changes-dot {
   background-color: #ccc;
   animation: none;
+}
+
+/* Scroll */
+.table-scroll-wrapper {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.table-scroll-wrapper :deep(.handsontable) {
+  min-width: max-content;
 }
 </style>
