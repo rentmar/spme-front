@@ -25,7 +25,7 @@ export const vinculacionInformeActividadServicio = {
         '/vinculacion-sv-iap/solicitudes-disponibles?tipo_solicitud=solo_actividad&&actividad_id=' +
           idActividad,
       )
-      return respuesta
+      return respuesta.data
     } catch (error) {
       console.error(
         'Axios: Error al cargar las sol de viajes de la actividad: ' + idActividad,

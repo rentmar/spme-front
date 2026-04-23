@@ -616,7 +616,7 @@ const cancelar = () => {
   router.push('/actividades/informe/')
 }
 
-// ✅ MODIFICADO: Enviar Formulario con indicadores y usuario_creador
+// Enviar Formulario con indicadores y usuario_creador
 const submitForm = async () => {
   loading.value = true
   //Matriz de errores

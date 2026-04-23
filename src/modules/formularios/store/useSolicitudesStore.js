@@ -215,6 +215,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     loadingViajesActividad.value = true
     try {
       await obtenerSolViajesDisponiblesPorIdActividad(idActividad)
+      solicitudesViajeDisponibles.value = listaSolViajesDisponibles.value.solicitudes
     } catch (error) {
       console.error('Error al cargar las sol de viajes disponibles', error)
     } finally {
