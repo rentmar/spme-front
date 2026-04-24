@@ -10,6 +10,7 @@ export function useVinculacionesInformeActividad() {
   //Estados
   const listaSolViajesVinculadasInformeActividad = ref(null)
   const listaSolViajesDisponibles = ref(null)
+  const listaSolViajeDisponiblesTarea = ref([])
 
   //Solicitudes de viaje vinculadas al Informe de Actividad
   async function obtenerSolsViajePorInformeActividad(idInformeActividad) {
@@ -49,6 +50,24 @@ export function useVinculacionesInformeActividad() {
     }
   }
 
+  //Solicitudes de viaje disponibles por id de Tarea y actividad
+  async function obtenerSolViajesDisponiblesPorIdTarea(idActividad, idTarea) {
+    loading.value = true
+    try {
+      const respuesta = await vinculacionInformeActividadServicio.solViajeDisponiblePorIdTarea(
+        idActividad,
+        idTarea,
+      )
+      listaSolViajeDisponiblesTarea.value = respuesta
+      return respuesta
+    } catch (err) {
+      console.error('Error al obtener las sol de viajes disponibles de la tarea', err)
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados generales
     loading,
@@ -56,8 +75,10 @@ export function useVinculacionesInformeActividad() {
     //Estados
     listaSolViajesVinculadasInformeActividad,
     listaSolViajesDisponibles,
+    listaSolViajeDisponiblesTarea,
     //Func
     obtenerSolsViajePorInformeActividad,
     obtenerSolViajesDisponiblesPorIdActividad,
+    obtenerSolViajesDisponiblesPorIdTarea,
   }
 }

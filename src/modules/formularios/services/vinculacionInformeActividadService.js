@@ -33,4 +33,16 @@ export const vinculacionInformeActividadServicio = {
       )
     }
   },
+  /*Sol de viaje sin vincular por idTarea*/
+  solViajeDisponiblePorIdTarea: async (idActividad, idTarea) => {
+    try {
+      const respuesta = await api.get('/vinculacion-sv-iap/solicitudes-disponibles', {
+        params: { actividad_id: idActividad, tarea_id: idTarea },
+      })
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al cargar las sol de viajes por id tarea', error)
+      throw error
+    }
+  },
 }

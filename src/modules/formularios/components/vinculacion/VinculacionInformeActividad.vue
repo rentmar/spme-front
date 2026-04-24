@@ -138,7 +138,7 @@
       <v-expand-transition>
         <div v-if="solicitudesViajeSeleccionadas && solicitudesViajeSeleccionadas.length > 0">
           <v-divider class="my-4"></v-divider>
-          
+
           <div class="d-flex align-center mb-3">
             <v-icon icon="mdi-check-circle" color="success" class="mr-2"></v-icon>
             <span class="text-subtitle-1 font-weight-medium">
@@ -180,7 +180,11 @@
                 </div>
               </v-expansion-panel-title>
               <v-expansion-panel-text>
-                <v-card variant="tonal" :color="getEstadoColor(solicitud.estado_validacion)" rounded="lg">
+                <v-card
+                  variant="tonal"
+                  :color="getEstadoColor(solicitud.estado_validacion)"
+                  rounded="lg"
+                >
                   <v-card-text class="pa-4">
                     <div class="d-flex justify-space-between align-start mb-2">
                       <div>
@@ -257,7 +261,9 @@
                     <!-- Detalle de gastos del viaje - EDITABLE -->
                     <div class="mt-4">
                       <div class="d-flex align-center mb-2">
-                        <div class="text-caption text-grey font-weight-bold">Detalle de Gastos (Editable):</div>
+                        <div class="text-caption text-grey font-weight-bold">
+                          Detalle de Gastos (Editable):
+                        </div>
                         <v-spacer></v-spacer>
                         <v-btn
                           size="x-small"
@@ -350,7 +356,9 @@
                         </tbody>
                         <tfoot v-if="solicitud.detalleGasto?.items?.length">
                           <tr>
-                            <td colspan="3" class="text-right font-weight-bold text-caption">Total:</td>
+                            <td colspan="3" class="text-right font-weight-bold text-caption">
+                              Total:
+                            </td>
                             <td class="font-weight-bold text-success text-caption">
                               {{ formatMonto(calcularMontoSolicitud(solicitud)) }}
                             </td>
@@ -383,7 +391,11 @@
                         </template>
                         <template v-else-if="solicitud.formaPago === 2">
                           <v-icon icon="mdi-bank-transfer" size="16" class="mr-1"></v-icon>
-                          Transferencia: {{ solicitud.datos_forma_pago.transferencia?.nombre_transferencia || 'N/A' }} -
+                          Transferencia:
+                          {{
+                            solicitud.datos_forma_pago.transferencia?.nombre_transferencia || 'N/A'
+                          }}
+                          -
                           {{ solicitud.datos_forma_pago.transferencia?.entidad_bancaria || 'N/A' }}
                         </template>
                       </div>
@@ -402,9 +414,9 @@
                         <div>
                           <strong>El monto ha sido modificado</strong>
                           <div class="text-caption">
-                            Original: {{ formatMonto(solicitud.montoSolicitado) }} |
-                            Actual: {{ formatMonto(calcularMontoSolicitud(solicitud)) }} |
-                            Diferencia: {{ formatMonto(calcularDiferenciaMonto(solicitud)) }}
+                            Original: {{ formatMonto(solicitud.montoSolicitado) }} | Actual:
+                            {{ formatMonto(calcularMontoSolicitud(solicitud)) }} | Diferencia:
+                            {{ formatMonto(calcularDiferenciaMonto(solicitud)) }}
                           </div>
                         </div>
                       </div>
@@ -550,8 +562,10 @@ const solicitudesViajeDisponibles = computed(() => {
   if (!solicitudesViaje.value.length) return []
 
   return solicitudesViaje.value
-    .filter(solicitud => solicitud.fecha_vinculacion === null && solicitud.puede_vincularse === true)
-    .map(solicitud => {
+    .filter(
+      (solicitud) => solicitud.fecha_vinculacion === null && solicitud.puede_vincularse === true,
+    )
+    .map((solicitud) => {
       // Asegurar que detalleGasto tenga la estructura correcta
       if (!solicitud.detalleGasto) {
         solicitud.detalleGasto = { items: [] }
@@ -559,7 +573,7 @@ const solicitudesViajeDisponibles = computed(() => {
       if (!solicitud.detalleGasto.items) {
         solicitud.detalleGasto.items = []
       }
-      
+
       return {
         ...solicitud,
         displayText: `${solicitud.numeroFormulario} - ${solicitud.evento} (${solicitud.lugarEvento})`,
@@ -570,7 +584,7 @@ const solicitudesViajeDisponibles = computed(() => {
 const solicitudesViajeVinculadas = computed(() => {
   if (!solicitudesViaje.value.length) return []
 
-  return solicitudesViaje.value.filter(solicitud => solicitud.fecha_vinculacion !== null)
+  return solicitudesViaje.value.filter((solicitud) => solicitud.fecha_vinculacion !== null)
 })
 
 // Totales
@@ -627,7 +641,7 @@ const getEstadoTexto = (estado) => {
 // Calcular monto de una solicitud basado en sus items
 const calcularMontoSolicitud = (solicitud) => {
   if (!solicitud.detalleGasto?.items?.length) return 0
-  
+
   return solicitud.detalleGasto.items.reduce((total, item) => {
     return total + (parseFloat(item.monto) || 0)
   }, 0)
@@ -636,7 +650,7 @@ const calcularMontoSolicitud = (solicitud) => {
 // Calcular monto total de todas las solicitudes seleccionadas
 const calcularMontoTotalSolicitud = () => {
   if (!solicitudesViajeSeleccionadas.value?.length) return 0
-  
+
   return solicitudesViajeSeleccionadas.value.reduce((total, solicitud) => {
     return total + calcularMontoSolicitud(solicitud)
   }, 0)
@@ -665,28 +679,28 @@ const actualizarMontoSolicitud = (index) => {
 // Agregar nuevo item de gasto
 const agregarItemGasto = (index) => {
   const solicitud = solicitudesViajeSeleccionadas.value[index]
-  
+
   if (!solicitud.detalleGasto) {
     solicitud.detalleGasto = { items: [] }
   }
   if (!solicitud.detalleGasto.items) {
     solicitud.detalleGasto.items = []
   }
-  
+
   solicitud.detalleGasto.items.push({
     partida: '',
     fuente: '',
     concepto: '',
-    monto: 0
+    monto: 0,
   })
-  
+
   actualizarMontoSolicitud(index)
 }
 
 // Eliminar item de gasto
 const eliminarItemGasto = (solicitudIndex, itemIndex) => {
   const solicitud = solicitudesViajeSeleccionadas.value[solicitudIndex]
-  
+
   if (solicitud.detalleGasto?.items) {
     solicitud.detalleGasto.items.splice(itemIndex, 1)
     actualizarMontoSolicitud(solicitudIndex)
@@ -698,7 +712,7 @@ const guardarGastosOriginales = (solicitud) => {
   if (!gastosOriginales.value.has(solicitud.id)) {
     gastosOriginales.value.set(solicitud.id, {
       detalleGasto: JSON.parse(JSON.stringify(solicitud.detalleGasto || { items: [] })),
-      montoSolicitado: solicitud.montoSolicitado
+      montoSolicitado: solicitud.montoSolicitado,
     })
   }
 }
@@ -707,7 +721,7 @@ const guardarGastosOriginales = (solicitud) => {
 const restaurarGastosOriginales = (index) => {
   const solicitud = solicitudesViajeSeleccionadas.value[index]
   const original = gastosOriginales.value.get(solicitud.id)
-  
+
   if (original) {
     solicitud.detalleGasto = JSON.parse(JSON.stringify(original.detalleGasto))
     solicitud.montoSolicitado = original.montoSolicitado
@@ -719,14 +733,14 @@ const restaurarGastosOriginales = (index) => {
 // Remover solicitud de la selección
 const removerSolicitud = (idSolicitud) => {
   solicitudesViajeSeleccionadas.value = solicitudesViajeSeleccionadas.value.filter(
-    s => s.id !== idSolicitud
+    (s) => s.id !== idSolicitud,
   )
   gastosOriginales.value.delete(idSolicitud)
 }
 
 // Ver informe vinculado
 const verInformeVinculado = (solicitudId) => {
-  const solicitud = solicitudesViajeVinculadas.value.find(s => s.id === solicitudId)
+  const solicitud = solicitudesViajeVinculadas.value.find((s) => s.id === solicitudId)
   if (solicitud) {
     emit('verInforme', {
       solicitud_id: solicitudId,
@@ -750,28 +764,36 @@ const cargarDatos = async () => {
 }
 
 // Watcher para guardar copias originales cuando se seleccionan nuevas solicitudes
-watch(solicitudesViajeSeleccionadas, (nuevas, antiguas) => {
-  // Guardar originales para nuevas solicitudes
-  nuevas.forEach(solicitud => {
-    guardarGastosOriginales(solicitud)
-  })
-  
-  // Limpiar originales de solicitudes removidas
-  const idsActuales = new Set(nuevas.map(s => s.id))
-  const idsAntiguas = new Set(antiguas?.map(s => s.id) || [])
-  
-  idsAntiguas.forEach(id => {
-    if (!idsActuales.has(id)) {
-      gastosOriginales.value.delete(id)
-    }
-  })
-}, { deep: true })
+watch(
+  solicitudesViajeSeleccionadas,
+  (nuevas, antiguas) => {
+    // Guardar originales para nuevas solicitudes
+    nuevas.forEach((solicitud) => {
+      guardarGastosOriginales(solicitud)
+    })
+
+    // Limpiar originales de solicitudes removidas
+    const idsActuales = new Set(nuevas.map((s) => s.id))
+    const idsAntiguas = new Set(antiguas?.map((s) => s.id) || [])
+
+    idsAntiguas.forEach((id) => {
+      if (!idsActuales.has(id)) {
+        gastosOriginales.value.delete(id)
+      }
+    })
+  },
+  { deep: true },
+)
 
 // Watcher para emitir cambios de vinculación
-watch([solicitudesViajeSeleccionadas], () => {
-  const vinculacion = getVinculacion()
-  emit('update:vinculacion', vinculacion)
-}, { deep: true })
+watch(
+  [solicitudesViajeSeleccionadas],
+  () => {
+    const vinculacion = getVinculacion()
+    emit('update:vinculacion', vinculacion)
+  },
+  { deep: true },
+)
 
 // Métodos públicos
 const reset = () => {
@@ -786,11 +808,11 @@ const getVinculacion = () => {
   }
 
   // Construir JSON completo para el endpoint con los gastos editados
-  const solicitudesVinculadas = solicitudesViajeSeleccionadas.value.map(solicitud => {
+  const solicitudesVinculadas = solicitudesViajeSeleccionadas.value.map((solicitud) => {
     const montoActual = calcularMontoSolicitud(solicitud)
     const montoOriginal = parseFloat(solicitud.montoSolicitado) || 0
     const tieneModificaciones = Math.abs(montoOriginal - montoActual) > 0.01
-    
+
     return {
       id_solicitud_viaje: solicitud.id,
       numero_formulario: solicitud.numeroFormulario,
@@ -816,9 +838,12 @@ const getVinculacion = () => {
     informe_id: props.idInforme,
     fecha_vinculacion: new Date().toISOString(),
     total_solicitudes: solicitudesVinculadas.length,
-    monto_total_original: solicitudesViajeSeleccionadas.value.reduce((sum, s) => sum + (parseFloat(s.montoSolicitado) || 0), 0),
+    monto_total_original: solicitudesViajeSeleccionadas.value.reduce(
+      (sum, s) => sum + (parseFloat(s.montoSolicitado) || 0),
+      0,
+    ),
     monto_total_actual: calcularMontoTotalSolicitud(),
-    tiene_modificaciones_global: solicitudesVinculadas.some(s => s.tiene_modificaciones),
+    tiene_modificaciones_global: solicitudesVinculadas.some((s) => s.tiene_modificaciones),
     solicitudes_vinculadas: solicitudesVinculadas,
     metadatos: {
       fecha_generacion: new Date().toISOString(),
@@ -837,7 +862,7 @@ const confirmarVinculacion = () => {
 
 // Método para obtener solo los IDs (compatibilidad)
 const obtenerIdsVinculadas = () => {
-  return solicitudesViajeSeleccionadas.value.map(s => s.id)
+  return solicitudesViajeSeleccionadas.value.map((s) => s.id)
 }
 
 // Exponer métodos para el componente padre
@@ -925,7 +950,7 @@ onMounted(() => {
   .form-section-vinculacion {
     padding: 16px;
   }
-  
+
   .gastos-table {
     font-size: 11px;
   }

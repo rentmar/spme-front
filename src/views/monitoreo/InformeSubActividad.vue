@@ -371,8 +371,41 @@
                     </v-col>
                   </v-row>
                 </div>
+
                 <v-divider class="my-4"></v-divider>
-                <!-- Sección 8: Medios de verificacion -->
+                <!--Seccion 8: Vinculacion de sol de viajes-->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-link-variant</v-icon>
+                    Vincular Solicitud de Viaje
+                  </h3>
+                  <!-- Switch para activar/desactivar la sección -->
+                  <div class="mb-4">
+                    <v-switch
+                      v-model="seccionVincularSolicitud"
+                      :label="seccionVincularSolicitud ? 'Sección activada' : 'Sección desactivada'"
+                      color="primary"
+                      hide-details
+                      inset
+                    ></v-switch>
+                  </div>
+                  <!-- Contenido condicional -->
+                  <div v-if="seccionVincularSolicitud">
+                    <VinculacionInformeTarea
+                      v-if="storeInfTarea.actividad"
+                      :idActividad="storeInfTarea.actividad?.id"
+                      :idTarea="idtarea"
+                    ></VinculacionInformeTarea>
+                  </div>
+
+                  <div v-else class="text-caption text-grey mt-2">
+                    La sección de vinculación de solicitud de viaje está desactivada. No se
+                    vinculará ninguna solicitud de viaje al informe.
+                  </div>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+                <!-- Sección 9: Medios de verificacion -->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-file-check</v-icon>
@@ -517,6 +550,7 @@ import {
   formatearFecha,
   formatearPresupuesto,
 } from '@/modules/formularios/utils/estadoTareaUtils'
+import VinculacionInformeTarea from '@/modules/formularios/components/vinculacion/VinculacionInformeTarea.vue'
 
 // Router - captura id del informe
 const router = useRouter()
@@ -617,6 +651,8 @@ const registrarHerramientas = async (info) => {
   successMsg('Herramientas Aplicadas Registradas')
 }
 
+/*********************************** Vinculacion de sol de viajes tarea *******************************************************/
+const seccionVincularSolicitud = ref(false)
 /****************************** AUXILIARES ************************************************/
 //Formatear el Estado
 const estadoFormateado = computed(() => {

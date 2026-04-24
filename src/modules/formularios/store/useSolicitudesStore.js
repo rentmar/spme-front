@@ -33,6 +33,8 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
   //Estado - Solicitudes de Viaje vinculados del informe de Actividad Actual
   const solicitudesViajeInformeActividadActual = ref([])
   const solicitudesViajeDisponibles = ref([])
+  //Estado - Sol de viaje vinculadadas al informe de tarea/subactividad
+  const solicitudesViajeDisponiblesTarea = ref([])
 
   //Iniciar el composable -Sol de fondos
   const {
@@ -64,6 +66,8 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     obtenerSolsViajePorInformeActividad,
     listaSolViajesDisponibles,
     obtenerSolViajesDisponiblesPorIdActividad,
+    listaSolViajeDisponiblesTarea,
+    obtenerSolViajesDisponiblesPorIdTarea,
   } = useVinculacionesInformeActividad()
 
   /******************************** Funciones Actividad *****************************************************/
@@ -223,6 +227,19 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     }
   }
 
+  //Cargar las solicitudes de viaje disponibles por id de tarea y actividad
+  const cargarSolViajeDisponiblePorIdTarea = async (idActividad, idTarea) => {
+    loadingViajesTarea.value = false
+    try {
+      await obtenerSolViajesDisponiblesPorIdTarea(idActividad, idTarea)
+      solicitudesViajeDisponiblesTarea.value = listaSolViajeDisponiblesTarea.value.solicitudes
+    } catch (error) {
+      console.error('Error al cargar las sol de viajes disponibles de la tarea', error)
+    } finally {
+      loadingViajesTarea.value = false
+    }
+  }
+
   return {
     //estados -actividad
     solicitudesFondosActividad,
@@ -245,6 +262,8 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     //Estado Informe Actividad
     solicitudesViajeInformeActividadActual,
     solicitudesViajeDisponibles,
+    //Estado informe de subactividad/tarea
+    solicitudesViajeDisponiblesTarea,
 
     //Func - act
     cargarFormulariosDeActividad,
@@ -261,5 +280,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     //func Informe de Actividad
     cargarSolViajesVinculadasInformeActividad,
     cargarSolViajeDisponiblePorIdActividad,
+    //func informe de tarea/subactividad
+    cargarSolViajeDisponiblePorIdTarea,
   }
 })
