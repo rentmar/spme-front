@@ -338,7 +338,7 @@
                   :items="responsablesList"
                   :item-title="getNombreCompleto"
                   item-value="id"
-                  label="Responsable Contable"
+                  label="Responsable Coordinación"
                   required
                   :readonly="soloLectura"
                 ></v-select>
@@ -346,7 +346,7 @@
               <v-col cols="12" md="6" class="d-flex align-center">
                 <v-checkbox
                   v-model="solicitudDeViaje.validacionResponsable"
-                  :label="`Aprobado por Contable ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                  :label="`Aprobado por Coordinación ${puedeValidarResponsable ? '(Usted)' : ''}`"
                   :disabled="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
                   :readonly="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
                   :color="puedeValidarResponsable ? 'primary' : 'grey'"
@@ -701,7 +701,7 @@ watch(
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
         //console.log('Cargando validadores:', newVal.validadores)
         responsablesList.value =
-          newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
         coordinadoresList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || []  //'coordinador') || []
       } else {
@@ -864,7 +864,7 @@ async function cargarUsuarios() {
   try {
     const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/')
     const allUsers = response.data.usuarios
-    responsablesList.value = allUsers.filter((user) => user.cargo === 'contable')
+    responsablesList.value = allUsers.filter((user) => user.cargo === 'coordinador')
     coordinadoresList.value = allUsers.filter((user) => user.cargo === 'dir-administrativo')  //'coordinador')
     datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
     if (datosSolicitante.value) {
@@ -1586,7 +1586,7 @@ function actualizarListasValidadores() {
 
   // Filtrar responsables (puedes ajustar la lógica según el cargo)
   responsablesList.value = datosFormulario.value.validadores.filter(
-    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('contable'),
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador'),
   )
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
