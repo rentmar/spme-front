@@ -513,7 +513,7 @@
                         :items="contadoresList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Responsable Contable"
+                        label="Responsable Coordinación"
                         variant="outlined"
                         bg-color="blue-lighten-5"
                         required
@@ -522,7 +522,7 @@
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formData.validacion_responsable"
-                        label="Aprobado por Contable"
+                        label="Aprobado por Coordinación"
                         :disabled="isFrozen"
                       ></v-checkbox>
                     </v-col>
@@ -867,7 +867,7 @@ watch(
         responsablesList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'responsable') || []
         contadoresList.value =
-          newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
         coordinadoresList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || []  //'coordinador') || []
       } else {

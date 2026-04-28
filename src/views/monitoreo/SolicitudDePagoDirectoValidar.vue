@@ -450,23 +450,24 @@
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
                   </h3>
+
                   <v-row>
                     <v-col cols="12" md="6">
                       <v-select
                         v-model="formData.idresponsable"
-                        bg-color="blue-lighten-5"
                         :items="responsablesList"
                         :item-title="getNombreCompleto"
                         item-value="id"
-                        label="Responsable Contable"
+                        label="Responsable Coordinación"
                         variant="outlined"
+                        bg-color="blue-lighten-5"
                         :readonly="soloLectura"
                       ></v-select>
                     </v-col>
                     <v-col cols="12" md="6" class="d-flex align-center">
                       <v-checkbox
                         v-model="formDatSF.validacionResponsablesf"
-                        :label="`Aprobado por Contable ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                        :label="`Aprobado por Coordinación ${puedeValidarResponsable ? '(Usted)' : ''}`"
                         :disabled="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :readonly="!puedeValidarResponsable || formDatSF.validacionResponsablesf"
                         :color="puedeValidarResponsable ? 'primary' : 'grey'"
@@ -873,7 +874,7 @@ watch(
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
         //console.log('Cargando validadores:', newVal.validadores)
         responsablesList.value =
-          newVal.validadores.filter((user) => user && user.cargo === 'contable') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
         coordinadoresList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || []  //'coordinador') || []
       } else {
@@ -1889,7 +1890,7 @@ function actualizarListasValidadores() {
 
   // Filtrar responsables (puedes ajustar la lógica según el cargo)
   responsablesList.value = datosFormulario.value.validadores.filter(
-    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('contable')
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('coordinador')
   )
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
