@@ -4,7 +4,7 @@
 
     <v-card-subtitle class="text-h6 d-flex align-center">
       <v-icon icon="mdi-link-variant" class="mr-2" color="primary"></v-icon>
-      Vinculación de Solicitudes de Viaje - Informe de Actividad
+      Vinculación de Solicitudes de Viaje - Informe de Subactividad
       <v-chip size="small" color="info" variant="tonal" class="ml-3"> Opcional </v-chip>
     </v-card-subtitle>
     <br />
@@ -21,7 +21,7 @@
       <v-row>
         <v-col cols="12">
           <div class="text-subtitle-2 text-grey-darken-1 mb-4">
-            Seleccione las solicitudes de viaje que desea vincular a este informe de actividad.
+            Seleccione las solicitudes de viaje que desea vincular a este informe de subactividad.
             Puede editar el desglose de gastos de cada solicitud si es necesario.
           </div>
         </v-col>
@@ -30,7 +30,7 @@
       <!-- Mostrar parámetros actuales (debug) -->
       <v-alert type="info" variant="tonal" density="compact" class="mb-3">
         <div class="text-caption">
-          Actividad ID: {{ props.idActividad }} | Tarea ID: {{ props.idTarea }}
+          Actividad ID: {{ props.idActividad }} | Subactividad ID: {{ props.idTarea }}
         </div>
       </v-alert>
 
@@ -52,6 +52,7 @@
         closable-chips
         class="mb-3"
         return-object
+        no-data-text="No hay solicitudes de viaje aprobadas para esta subactividad"
       >
         <template v-slot:item="{ props, item }">
           <v-list-item v-bind="props">
@@ -119,7 +120,7 @@
           <div>
             <div class="font-weight-medium">No hay solicitudes disponibles</div>
             <div class="text-caption">
-              No se encontraron solicitudes de viaje aprobadas para la actividad
+              No se encontraron solicitudes de viaje aprobadas para la subactividad
               {{ props.idActividad }} y tarea {{ props.idTarea }}
             </div>
           </div>
