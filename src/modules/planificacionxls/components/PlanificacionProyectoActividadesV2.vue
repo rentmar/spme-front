@@ -444,6 +444,8 @@ import {
   registroCambios,
 } from '@/modules/planificacionpeixls/utils/changeHandlers'
 
+import { renders } from './renders'
+
 // Props del componente
 const props = defineProps({
   proyecto: {
@@ -936,8 +938,15 @@ const columns = ref([
     numericFormat: {
       pattern: '0,0.00',
     },
+    renderer: renders.presupuesto,
   },
-  { data: 'procedencia_fondos', title: 'Proc. Fondos' },
+  {
+    data: 'procedencia_fondos',
+    title: 'Proc. Fondos',
+    width: 250,
+    renderer: renders.procedenciaFondos,
+    readOnly: true,
+  },
   {
     data: 'presupuestoGlobal',
     title: 'Presupuesto Global',
