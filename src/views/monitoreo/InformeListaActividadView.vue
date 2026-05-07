@@ -43,7 +43,6 @@
               bg-color="grey-lighten-4"
               hide-details
               class="mb-4"
-              @input="currentPage = 1"
             ></v-text-field>
 
             <div class="d-flex flex-wrap gap-2">
@@ -638,6 +637,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { useListaActividadStore } from '@/modules/proyecto/store/useListaActividadesStore'
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
 import DialogTarea from '@/modules/actividades/components/DialogTarea.vue'
@@ -1194,6 +1194,22 @@ const ocultarPopupActividad = () => {
     popupVisible.value = false
     actividadPopup.value = null
   }, 200)
+}
+
+/************************** FUNCIONES DEBOUNCE ***************************************/
+//Debounce para la búsqueda
+const debouncedSearch = useDebounceFn((query) => {
+  // Esta función se ejecuta después de 300ms de inactividad
+  console.log('🔍 Buscando:', query) // Para debugging
+  currentPage.value = 1 // Resetear paginación
+  // La búsqueda se aplica automáticamente porque searchQuery ya está actualizada
+  // y filteredActividades es una computed que depende de searchQuery
+}, 300) // 300ms de delay (puedes ajustar: 200-500ms)
+
+//Manejar cambios en la búsqueda
+const handleSearchInput = (value) => {
+  searchQuery.value = value || '' // Actualizar el valor inmediatamente
+  debouncedSearch(value) // Ejecutar la búsqueda con debounce
 }
 </script>
 
