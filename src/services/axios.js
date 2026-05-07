@@ -121,6 +121,17 @@ const apiValid = axios.create({
   },
 })
 
+//Instancia para reportes de PEI
+const apiRepPei = axios.create({
+  //baseURL: import.meta.env.VITE_API_URL_PLAN,
+  baseURL: import.meta.env.VITE_API_BASE_REPPEI,
+  withCredentials: false,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
 // Interceptor para agregar token SOLO a apiValid
 apiValid.interceptors.request.use(
   (config) => {
@@ -166,6 +177,7 @@ apiMsg.interceptors.response.use((response) => response, errorInterceptor)
 apiFf.interceptors.response.use((response) => response, errorInterceptor)
 apiPrint.interceptors.response.use((response) => response, errorInterceptor)
 apiValid.interceptors.response.use((response) => response, errorInterceptor)
+apiRepPei.interceptors.response.use((response) => response, errorInterceptor)
 // Interceptor para manejar errores globales
 // api.interceptors.response.use(
 //   (response) => response,
@@ -187,4 +199,5 @@ export {
   apiFf,
   apiPrint,
   apiValid,
+  apiRepPei,
 }
