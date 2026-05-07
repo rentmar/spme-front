@@ -314,6 +314,7 @@
                     <VinculacionInformeActividad
                       ref="solicitudViajeComponent"
                       :idActividad="idactividad"
+                      @update:vinculacion="manejarActualizacionVinculacion"
                     />
                   </div>
 
@@ -649,7 +650,18 @@ const submitForm = async () => {
       }
     }
 
-    //Deve seleccionar un validador
+    //VALIDAR: Verificar vinculacion si la seccion esta activada
+    if (seccionVincularSolicitud.value) {
+      const tieneVinculacion =
+        vinculacionSolicitudes.value !== null &&
+        vinculacionSolicitudes.value.solicitudes_vinculadas?.length > 0
+
+      if (!tieneVinculacion) {
+        errores.push('Debe seleccionar al menos una solicitud de viaje para vincular')
+      }
+    }
+
+    //Debe seleccionar un validador
     if (!nuevosValidadores.value || nuevosValidadores.value.length === 0) {
       errores.push('Debe asignar al menos un validador para el informe')
     }
@@ -701,10 +713,24 @@ const submitForm = async () => {
       informeData.avanceIndicadores = null
     }
 
+    //Incluir vinculacion de solicitudes si la seccion esta activada
+    let vinculacionSolViajes = null
+    if (seccionVincularSolicitud.value && vinculacionSolicitudes.value) {
+      vinculacionSolViajes = vinculacionSolicitudes.value
+
+      console.log('✅ Vinculación incluida en el payload:', {
+        total_solicitudes: vinculacionSolicitudes.value.total_solicitudes,
+        monto_total: vinculacionSolicitudes.value.monto_total_actual,
+      })
+    } else {
+      console.log('No se incluye vinculacion de solicitudes')
+    }
+
     //Preparar el payload
     const payload = {
-      informeData: informeData,
-      validadores: nuevosValidadores.value,
+      informeData: informeData, //Datos del informe
+      validadores: nuevosValidadores.value, // Datos de los validadores
+      vinculacionSolViajes: vinculacionSolViajes, //Datos de las sol de viajes vinculados
     }
 
     console.log('📦 Enviando payload al RestAPI:', payload)
@@ -777,8 +803,25 @@ const manejarEstadoHabilitacion = (estado) => {
 }
 /************************ Seccion para vincular Solicitud de VIaje  ***************************************************/
 //Bandera de habiliatacion
-const solicitudViajeComponent = ref(null)
-const seccionVincularSolicitud = ref(false)
+const solicitudViajeComponent = ref(null) //Referencia al componente de vinculacion
+const seccionVincularSolicitud = ref(false) //Bandera de activacion
+const vinculacionSolicitudes = ref(null) //Almacenar los datos de vinculacion
+
+/*
+ * Maneja las actualizaciones del componente de vinculacion
+ * Recibe datos en tiempo real, mientras el usuario edita
+ */
+const manejarActualizacionVinculacion = (datosVinculacion) => {
+  console.log('Vinculacion actualizada', datosVinculacion)
+  vinculacionSolicitudes.value = datosVinculacion
+  //Mostrar resumen en UI
+  if (datosVinculacion) {
+    console.log(`✅ ${datosVinculacion.total_solicitudes} solicitud(es) vinculadas`)
+    console.log(`💰 Monto total: ${datosVinculacion.monto_total_actual} Bs.`)
+  } else {
+    console.log('❌ No hay solicitudes seleccionadas')
+  }
+}
 </script>
 
 <style scoped>

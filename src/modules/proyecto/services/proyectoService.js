@@ -120,6 +120,46 @@ export const proyectoServicios = {
       throw error
     }
   },
+  /* Lista de proyectos habilitados */
+  listaProyectosHabilitados: async () => {
+    try {
+      const respuesta = await api.get('/proyectos-habilitados/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se puede listar los proyectos habilitados', error)
+      throw error
+    }
+  },
+  /* Lista de Ids proyectos habilitados */
+  listaIdsProyectosHabilitados: async () => {
+    try {
+      const respuesta = await api.get('/proyectos-habilitados/solo-ids/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se puede obtener la lista de IDs de proyectos habilitados', error)
+      throw error
+    }
+  },
+  /* Lista de proyectos habilitados resumida */
+  listaProyectosHabilitadosResumen: async () => {
+    try {
+      const respuesta = await api.get('/proyectos-habilitados/resumen/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se puede obtener la lista de proyectos resumida', error)
+      throw error
+    }
+  },
+  /* Informacion detallada de un proyecto */
+  listaProyectoDetalle: async (idProy) => {
+    try {
+      const respuesta = await api.get('/proyectos-habilitados/' + idProy + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: No se puede obtener los detalles del proyecto con id ' + idProy, error)
+      throw error
+    }
+  },
 }
 
 export const proyectoObjetivos = {

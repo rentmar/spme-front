@@ -4,6 +4,7 @@ import { useActividad } from '../composables/useActividad'
 import { useUserStore } from '@/stores/user'
 import { useValidadores } from '@/modules/formularios/composables/useValidadores'
 import { useUserPermissions } from '@/stores/useUserPermissions'
+import { proyectoServicios } from '../services/proyectoService'
 
 export const useListaActividadStore = defineStore('actividades-tareas-lista', () => {
   //Estados
@@ -17,6 +18,8 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
   const actividadesSubactividadesListaPei = ref() //Lista de Actividades mas tareas
   //Listado general de actividades
   const actividadesListaGeneral = ref([])
+  //Listado de IDs de proyectos habilitados
+  const listaIdsProyectosHabilitados = ref([])
 
   //Validaciones pendientes
   const misValidaciones = ref([])
@@ -48,6 +51,7 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
       const [, validaciones] = await Promise.all([
         obtenerListaActividadesConTareas(),
         obtenerMisValidaciones(),
+        cargarListaIdsProyectosHabilitados(),
       ])
       misValidaciones.value = validaciones
       actividadesSubactividadesLista.value = actividadesTareasListas.value.actividades
@@ -119,6 +123,19 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     }
   }
 
+  //Cargar los proyectos habilitados, solo ids
+  const cargarListaIdsProyectosHabilitados = async () => {
+    loading.value = true
+    try {
+      const respuesta = await proyectoServicios.listaIdsProyectosHabilitados()
+      listaIdsProyectosHabilitados.value = respuesta.ids
+    } catch (err) {
+      console.error('Error al cargar la lista de id de proyectos habilitados', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   //Filtrado de actividades
   const actividadesFiltradasTotales = computed(() => {
     // Obtener arrays
@@ -176,6 +193,104 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
   // Si es admin carga todas
   //Si no es admin carga solo las actividades que pertenecen a los proyectos
   //que el usuario tenga acceso
+  // const actividadesFiltradas = computed(() => {
+  //   if (!actividadesSubactividadesLista.value) return []
+
+  //   const usuario = userStore.userData
+  //   const esAdmin = userStore.rol === 'admin'
+
+  //   // Obtener IDs de proyectos a los que el usuario tiene acceso
+  //   const proyectosAccesiblesIds = usuarioPermisosStore.proyectosAccesiblesIds || []
+
+  //   console.log('------------------FILTRAR ACTIVIDADES --------------')
+  //   console.log('Usuario:', usuario?.user?.username)
+  //   console.log('Es admin:', esAdmin)
+  //   console.log('Proyectos accesibles IDs:', proyectosAccesiblesIds)
+  //   console.log('Total actividades a filtrar:', actividadesSubactividadesLista.value.length)
+
+  //   // Si es admin, retorna todas las actividades (excluyendo inactivas/CRD)
+  //   if (esAdmin) {
+  //     return actividadesSubactividadesLista.value.filter((actividad) => {
+  //       // Excluir inactivas y creadas
+  //       if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
+  //         console.log(`❌ Actividad ${actividad.id} excluida: inactiva o CRD`)
+  //         return false
+  //       }
+  //       console.log(`✅ Admin - Actividad ${actividad.id} incluida`)
+  //       return true
+  //     })
+  //   }
+
+  //   // Para usuarios no-admin: obtener actividades por dos criterios
+
+  //   // 1. Actividades donde es responsable directo
+  //   const actividadesPorResponsabilidad = actividadesSubactividadesLista.value.filter(
+  //     (actividad) => {
+  //       // Excluir inactivas y creadas
+  //       if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
+  //         return false
+  //       }
+
+  //       const esResponsable =
+  //         actividad.responsable_info?.username === usuario?.user?.username ||
+  //         actividad.responsable === usuario?.user?.id
+
+  //       if (esResponsable) {
+  //         console.log(
+  //           `✅ [Responsable] Actividad ${actividad.id} - Usuario es responsable, incluida`,
+  //         )
+  //         return true
+  //       }
+  //       return false
+  //     },
+  //   )
+
+  //   // 2. Actividades que pertenecen a proyectos accesibles
+  //   // CORRECCIÓN: Usar actividad.proyecto (no proyecto_id)
+  //   const actividadesPorProyecto = actividadesSubactividadesLista.value.filter((actividad) => {
+  //     // Excluir inactivas y creadas
+  //     if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
+  //       return false
+  //     }
+
+  //     // Obtener el ID del proyecto de la actividad
+  //     // Los datos muestran que la propiedad es 'proyecto' directamente
+  //     const proyectoId = actividad.proyecto
+
+  //     if (proyectoId && proyectosAccesiblesIds.includes(proyectoId)) {
+  //       console.log(
+  //         `✅ [Proyecto] Actividad ${actividad.id} - Pertenece al proyecto accesible ${proyectoId}, incluida`,
+  //       )
+  //       return true
+  //     }
+  //     return false
+  //   })
+
+  //   // 3. Combinar ambos resultados y eliminar duplicados
+  //   const actividadesMap = new Map()
+
+  //   // Agregar actividades por responsabilidad
+  //   actividadesPorResponsabilidad.forEach((actividad) => {
+  //     actividadesMap.set(actividad.id, actividad)
+  //   })
+
+  //   // Agregar actividades por proyecto (no duplica si ya existe)
+  //   actividadesPorProyecto.forEach((actividad) => {
+  //     if (!actividadesMap.has(actividad.id)) {
+  //       actividadesMap.set(actividad.id, actividad)
+  //     }
+  //   })
+
+  //   const actividadesUnicas = Array.from(actividadesMap.values())
+
+  //   console.log('📊 Resumen de filtrado:')
+  //   console.log(`- Actividades por responsabilidad: ${actividadesPorResponsabilidad.length}`)
+  //   console.log(`- Actividades por proyecto accesible: ${actividadesPorProyecto.length}`)
+  //   console.log(`- Total únicas: ${actividadesUnicas.length}`)
+
+  //   return actividadesUnicas
+  // })
+
   const actividadesFiltradas = computed(() => {
     if (!actividadesSubactividadesLista.value) return []
 
@@ -185,15 +300,32 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     // Obtener IDs de proyectos a los que el usuario tiene acceso
     const proyectosAccesiblesIds = usuarioPermisosStore.proyectosAccesiblesIds || []
 
+    // NUEVO: Obtener IDs de proyectos habilitados
+    const proyectosHabilitadosIds = listaIdsProyectosHabilitados.value || []
+
     console.log('------------------FILTRAR ACTIVIDADES --------------')
     console.log('Usuario:', usuario?.user?.username)
     console.log('Es admin:', esAdmin)
     console.log('Proyectos accesibles IDs:', proyectosAccesiblesIds)
+    console.log('Proyectos habilitados IDs:', proyectosHabilitadosIds)
     console.log('Total actividades a filtrar:', actividadesSubactividadesLista.value.length)
 
-    // Si es admin, retorna todas las actividades (excluyendo inactivas/CRD)
+    // NUEVO PASO 0: Filtrar solo actividades de proyectos habilitados
+    const actividadesHabilitadas = actividadesSubactividadesLista.value.filter((actividad) => {
+      const proyectoId = actividad.proyecto
+      const estaHabilitado = proyectosHabilitadosIds.includes(proyectoId)
+
+      if (!estaHabilitado) {
+        console.log(`❌ Actividad ${actividad.id} excluida - Proyecto ${proyectoId} no habilitado`)
+      }
+      return estaHabilitado
+    })
+
+    console.log(`Actividades de proyectos habilitados: ${actividadesHabilitadas.length}`)
+
+    // Si es admin, retorna todas las actividades habilitadas (excluyendo inactivas/CRD)
     if (esAdmin) {
-      return actividadesSubactividadesLista.value.filter((actividad) => {
+      return actividadesHabilitadas.filter((actividad) => {
         // Excluir inactivas y creadas
         if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
           console.log(`❌ Actividad ${actividad.id} excluida: inactiva o CRD`)
@@ -207,37 +339,31 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     // Para usuarios no-admin: obtener actividades por dos criterios
 
     // 1. Actividades donde es responsable directo
-    const actividadesPorResponsabilidad = actividadesSubactividadesLista.value.filter(
-      (actividad) => {
-        // Excluir inactivas y creadas
-        if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
-          return false
-        }
-
-        const esResponsable =
-          actividad.responsable_info?.username === usuario?.user?.username ||
-          actividad.responsable === usuario?.user?.id
-
-        if (esResponsable) {
-          console.log(
-            `✅ [Responsable] Actividad ${actividad.id} - Usuario es responsable, incluida`,
-          )
-          return true
-        }
+    const actividadesPorResponsabilidad = actividadesHabilitadas.filter((actividad) => {
+      // Excluir inactivas y creadas
+      if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
         return false
-      },
-    )
+      }
+
+      const esResponsable =
+        actividad.responsable_info?.username === usuario?.user?.username ||
+        actividad.responsable === usuario?.user?.id
+
+      if (esResponsable) {
+        console.log(`✅ [Responsable] Actividad ${actividad.id} - Usuario es responsable, incluida`)
+        return true
+      }
+      return false
+    })
 
     // 2. Actividades que pertenecen a proyectos accesibles
-    // CORRECCIÓN: Usar actividad.proyecto (no proyecto_id)
-    const actividadesPorProyecto = actividadesSubactividadesLista.value.filter((actividad) => {
+    const actividadesPorProyecto = actividadesHabilitadas.filter((actividad) => {
       // Excluir inactivas y creadas
       if (actividad.estaInactiva === true || actividad.estado === 'CRD') {
         return false
       }
 
       // Obtener el ID del proyecto de la actividad
-      // Los datos muestran que la propiedad es 'proyecto' directamente
       const proyectoId = actividad.proyecto
 
       if (proyectoId && proyectosAccesiblesIds.includes(proyectoId)) {
@@ -267,6 +393,7 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     const actividadesUnicas = Array.from(actividadesMap.values())
 
     console.log('📊 Resumen de filtrado:')
+    console.log(`- Actividades de proyectos habilitados: ${actividadesHabilitadas.length}`)
     console.log(`- Actividades por responsabilidad: ${actividadesPorResponsabilidad.length}`)
     console.log(`- Actividades por proyecto accesible: ${actividadesPorProyecto.length}`)
     console.log(`- Total únicas: ${actividadesUnicas.length}`)
@@ -311,6 +438,8 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     actividadesFiltradas,
     actividadesPeiFiltradas,
     actividadesListaGeneral,
+    //Proyectos habilitados
+    listaIdsProyectosHabilitados,
     //Validaciones
     misValidaciones,
     //Getters
@@ -320,5 +449,6 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     cargarActividadesPeiTareas,
     cargarListaActividadesGeneral,
     cargarActividadesPeiTareasPorIdPei,
+    cargarListaIdsProyectosHabilitados,
   }
 })

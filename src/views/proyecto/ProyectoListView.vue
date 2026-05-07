@@ -768,7 +768,8 @@ const cargarProyectos = async () => {
     loading.value = true
     error.value = null
     emptyResponse.value = false
-    await proyectoStore.obtenerProyectos()
+    // await proyectoStore.obtenerProyectos()
+    await proyectoStore.obtenerProyectosHabilitados()
     cargarInstancias()
     fetchOptions()
     if (proyectoStore.proyectos.length === 0) {

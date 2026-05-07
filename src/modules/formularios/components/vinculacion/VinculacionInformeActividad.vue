@@ -29,7 +29,7 @@
 
       <!-- Selector de Solicitud de Viaje (usando autocomplete con selección múltiple) -->
       <v-autocomplete
-        v-model="solicitudesViajeSeleccionadas"
+        v-model="solicitudesSeleccionadasIds"
         :items="solicitudesViajeDisponibles"
         :loading="cargandoViajes"
         item-title="displayText"
@@ -44,7 +44,6 @@
         chips
         closable-chips
         class="mb-3"
-        return-object
       >
         <template v-slot:item="{ props, item }">
           <v-list-item v-bind="props">
@@ -543,21 +542,32 @@ const emit = defineEmits(['update:vinculacion', 'confirmar', 'verInforme'])
 const solicitudesStore = useSolicitudesStore()
 const { successMsg, errorMsg } = useSnackbar()
 
-// Estado local
-const solicitudesViajeSeleccionadas = ref([])
+// Estado local - TRABAJAMOS CON COPIAS LOCALES
+const solicitudesViajeSeleccionadas = ref([]) // Copias locales de solicitudes seleccionadas
 const panelSolicitudesAbiertas = ref([])
 const cargando = ref(false)
 const error = ref(null)
 
-// Almacenar copias originales de los gastos para restaurar
+// Cache de datos originales para restaurar
 const gastosOriginales = ref(new Map())
 
-// Computed para obtener datos del store
+// Computed para obtener datos del store (SOLO LECTURA)
 const solicitudesViaje = computed(() => solicitudesStore.solicitudesViajeDisponibles || [])
-
 const cargandoViajes = computed(() => solicitudesStore.loadingViajesDisponibles || false)
 
-// Separar solicitudes disponibles y vinculadas
+// Computed para manejar IDs seleccionados (para el autocomplete)
+const solicitudesSeleccionadasIds = computed({
+  get: () => solicitudesViajeSeleccionadas.value.map((s) => s.id),
+  set: (ids) => {
+    const nuevasSelecciones = ids
+      .map((id) => solicitudesViajeDisponibles.value.find((s) => s.id === id))
+      .filter((s) => s !== undefined)
+
+    manejarSeleccion(nuevasSelecciones)
+  },
+})
+
+// Separar solicitudes disponibles y vinculadas (SOLO LECTURA)
 const solicitudesViajeDisponibles = computed(() => {
   if (!solicitudesViaje.value.length) return []
 
@@ -565,31 +575,61 @@ const solicitudesViajeDisponibles = computed(() => {
     .filter(
       (solicitud) => solicitud.fecha_vinculacion === null && solicitud.puede_vincularse === true,
     )
-    .map((solicitud) => {
-      // Asegurar que detalleGasto tenga la estructura correcta
-      if (!solicitud.detalleGasto) {
-        solicitud.detalleGasto = { items: [] }
-      }
-      if (!solicitud.detalleGasto.items) {
-        solicitud.detalleGasto.items = []
-      }
-
-      return {
-        ...solicitud,
-        displayText: `${solicitud.numeroFormulario} - ${solicitud.evento} (${solicitud.lugarEvento})`,
-      }
-    })
+    .map((solicitud) => ({
+      ...solicitud,
+      displayText: `${solicitud.numeroFormulario} - ${solicitud.evento} (${solicitud.lugarEvento})`,
+    }))
 })
 
 const solicitudesViajeVinculadas = computed(() => {
   if (!solicitudesViaje.value.length) return []
-
   return solicitudesViaje.value.filter((solicitud) => solicitud.fecha_vinculacion !== null)
 })
 
 // Totales
 const hayViajesDisponibles = computed(() => solicitudesViajeDisponibles.value.length > 0)
 const totalViajesVinculadas = computed(() => solicitudesViajeVinculadas.value.length)
+
+// Función para crear una copia profunda de una solicitud
+const crearCopiaLocal = (solicitud) => {
+  if (!solicitud) return null
+
+  try {
+    // Crear una copia profunda independiente
+    const copia = JSON.parse(
+      JSON.stringify({
+        ...solicitud,
+        // Asegurar estructura de detalleGasto
+        detalleGasto: solicitud.detalleGasto || { items: [] },
+      }),
+    )
+
+    // Asegurar que detalleGasto.items sea un array
+    if (!copia.detalleGasto?.items) {
+      copia.detalleGasto = { items: [] }
+    }
+
+    // Asegurar que los montos sean números
+    if (copia.montoSolicitado) {
+      copia.montoSolicitado = parseFloat(copia.montoSolicitado) || 0
+    }
+
+    return copia
+  } catch (err) {
+    console.error('Error al crear copia local:', err)
+    return null
+  }
+}
+
+// Función para inicializar gastos originales
+const inicializarGastosOriginales = (id, detalleGasto, montoSolicitado) => {
+  if (!gastosOriginales.value.has(id)) {
+    gastosOriginales.value.set(id, {
+      detalleGasto: JSON.parse(JSON.stringify(detalleGasto || { items: [] })),
+      montoSolicitado: montoSolicitado,
+    })
+  }
+}
 
 // Métodos auxiliares
 const formatMonto = (monto) => {
@@ -640,10 +680,11 @@ const getEstadoTexto = (estado) => {
 
 // Calcular monto de una solicitud basado en sus items
 const calcularMontoSolicitud = (solicitud) => {
-  if (!solicitud.detalleGasto?.items?.length) return 0
+  if (!solicitud?.detalleGasto?.items?.length) return 0
 
   return solicitud.detalleGasto.items.reduce((total, item) => {
-    return total + (parseFloat(item.monto) || 0)
+    const monto = typeof item.monto === 'number' ? item.monto : parseFloat(item.monto) || 0
+    return total + monto
   }, 0)
 }
 
@@ -672,14 +713,19 @@ const calcularDiferenciaMonto = (solicitud) => {
 
 // Actualizar el monto total de la solicitud cuando se modifican los items
 const actualizarMontoSolicitud = (index) => {
-  // Forzar actualización reactiva
-  solicitudesViajeSeleccionadas.value = [...solicitudesViajeSeleccionadas.value]
+  // Forzar actualización reactiva reemplazando el objeto
+  if (index !== undefined && solicitudesViajeSeleccionadas.value[index]) {
+    const solicitudActualizada = { ...solicitudesViajeSeleccionadas.value[index] }
+    solicitudesViajeSeleccionadas.value.splice(index, 1, solicitudActualizada)
+  }
 }
 
 // Agregar nuevo item de gasto
 const agregarItemGasto = (index) => {
   const solicitud = solicitudesViajeSeleccionadas.value[index]
+  if (!solicitud) return
 
+  // Asegurar estructura
   if (!solicitud.detalleGasto) {
     solicitud.detalleGasto = { items: [] }
   }
@@ -687,24 +733,27 @@ const agregarItemGasto = (index) => {
     solicitud.detalleGasto.items = []
   }
 
-  solicitud.detalleGasto.items.push({
+  // Agregar nuevo item
+  const nuevoItem = {
     partida: '',
     fuente: '',
     concepto: '',
     monto: 0,
-  })
+  }
 
+  solicitud.detalleGasto.items.push(nuevoItem)
+
+  // Trigger actualización reactiva
   actualizarMontoSolicitud(index)
 }
 
 // Eliminar item de gasto
 const eliminarItemGasto = (solicitudIndex, itemIndex) => {
   const solicitud = solicitudesViajeSeleccionadas.value[solicitudIndex]
+  if (!solicitud?.detalleGasto?.items) return
 
-  if (solicitud.detalleGasto?.items) {
-    solicitud.detalleGasto.items.splice(itemIndex, 1)
-    actualizarMontoSolicitud(solicitudIndex)
-  }
+  solicitud.detalleGasto.items.splice(itemIndex, 1)
+  actualizarMontoSolicitud(solicitudIndex)
 }
 
 // Guardar copia original de los gastos al seleccionar una solicitud
@@ -720,9 +769,11 @@ const guardarGastosOriginales = (solicitud) => {
 // Restaurar gastos originales
 const restaurarGastosOriginales = (index) => {
   const solicitud = solicitudesViajeSeleccionadas.value[index]
-  const original = gastosOriginales.value.get(solicitud.id)
+  if (!solicitud) return
 
+  const original = gastosOriginales.value.get(solicitud.id)
   if (original) {
+    // Restaurar desde la copia original
     solicitud.detalleGasto = JSON.parse(JSON.stringify(original.detalleGasto))
     solicitud.montoSolicitado = original.montoSolicitado
     actualizarMontoSolicitud(index)
@@ -730,12 +781,38 @@ const restaurarGastosOriginales = (index) => {
   }
 }
 
+// Manejar selección de solicitudes - CREA COPIAS LOCALES
+const manejarSeleccion = (nuevasSelecciones) => {
+  // Crear copias locales de las nuevas solicitudes seleccionadas
+  const nuevasCopias = nuevasSelecciones
+    .map((solicitudOriginal) => {
+      // Verificar si ya tenemos una copia local seleccionada
+      const copiaExistente = solicitudesViajeSeleccionadas.value.find(
+        (s) => s.id === solicitudOriginal.id,
+      )
+      if (copiaExistente) {
+        return copiaExistente // Usar la copia existente si ya está seleccionada
+      }
+
+      // Crear nueva copia local
+      const copiaLocal = crearCopiaLocal(solicitudOriginal)
+      if (copiaLocal) {
+        guardarGastosOriginales(copiaLocal)
+      }
+      return copiaLocal
+    })
+    .filter((copia) => copia !== null)
+
+  solicitudesViajeSeleccionadas.value = nuevasCopias
+}
+
 // Remover solicitud de la selección
 const removerSolicitud = (idSolicitud) => {
-  solicitudesViajeSeleccionadas.value = solicitudesViajeSeleccionadas.value.filter(
-    (s) => s.id !== idSolicitud,
-  )
-  gastosOriginales.value.delete(idSolicitud)
+  const index = solicitudesViajeSeleccionadas.value.findIndex((s) => s.id === idSolicitud)
+  if (index !== -1) {
+    solicitudesViajeSeleccionadas.value.splice(index, 1)
+    gastosOriginales.value.delete(idSolicitud)
+  }
 }
 
 // Ver informe vinculado
@@ -754,6 +831,8 @@ const cargarDatos = async () => {
   cargando.value = true
   try {
     await solicitudesStore.cargarSolViajeDisponiblePorIdActividad(props.idActividad)
+    // Limpiar selecciones anteriores al recargar datos
+    reset()
   } catch (err) {
     console.error('Error al cargar datos de solicitudes de viaje', err)
     error.value = err
@@ -763,36 +842,19 @@ const cargarDatos = async () => {
   }
 }
 
-// Watcher para guardar copias originales cuando se seleccionan nuevas solicitudes
+// Watcher para emitir cambios de vinculación (optimizado)
 watch(
-  solicitudesViajeSeleccionadas,
-  (nuevas, antiguas) => {
-    // Guardar originales para nuevas solicitudes
-    nuevas.forEach((solicitud) => {
-      guardarGastosOriginales(solicitud)
-    })
-
-    // Limpiar originales de solicitudes removidas
-    const idsActuales = new Set(nuevas.map((s) => s.id))
-    const idsAntiguas = new Set(antiguas?.map((s) => s.id) || [])
-
-    idsAntiguas.forEach((id) => {
-      if (!idsActuales.has(id)) {
-        gastosOriginales.value.delete(id)
-      }
-    })
-  },
-  { deep: true },
-)
-
-// Watcher para emitir cambios de vinculación
-watch(
-  [solicitudesViajeSeleccionadas],
+  () =>
+    solicitudesViajeSeleccionadas.value.map((s) => ({
+      id: s.id,
+      montoTotal: calcularMontoSolicitud(s),
+      itemsCount: s.detalleGasto?.items?.length,
+    })),
   () => {
     const vinculacion = getVinculacion()
     emit('update:vinculacion', vinculacion)
   },
-  { deep: true },
+  { deep: false }, // Ya no es necesario deep watch porque mapeamos los valores relevantes
 )
 
 // Métodos públicos

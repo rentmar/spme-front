@@ -71,6 +71,21 @@ export const useProyectoStore = defineStore('proyecto', () => {
     }
   }
 
+  //Obtener todos los proyectos habilitados
+  const obtenerProyectosHabilitados = async () => {
+    cargando.value = true
+    error.value = null
+    try {
+      const response = await proyectoServicios.listaProyectosHabilitados()
+      proyectos.value = response.proyectos
+      return response
+    } catch (err) {
+      error.value = err
+    } finally {
+      cargando.value = false
+    }
+  }
+
   //Obtener un proyecto por ID
   const obtenerProyectoPorId = async (id) => {
     cargando.value = true
@@ -137,7 +152,11 @@ export const useProyectoStore = defineStore('proyecto', () => {
 
     try {
       // 1. Obtener todos los proyectos
-      const todosProyectos = await proyectoServicios.obtenerTodosPlanificacion(idpei)
+      const proyectosPlanificacion = await proyectoServicios.obtenerTodosPlanificacion(idpei)
+
+      const todosProyectos = proyectosPlanificacion.filter(
+        (proyecto) => proyecto.esta_habilitado === true,
+      )
 
       // 2. Verificar si es admin
       const rol = storeUsuarios.rol?.toLowerCase() || ''
@@ -396,6 +415,7 @@ export const useProyectoStore = defineStore('proyecto', () => {
     buscarNodoPorTipoId, //Busqueda de un nodo por type e Identificado4
     buscarNodosPorId, //Busqueda de todos los nodos que tengan el mismo id
     almacenarNodosProcedenciaActividad,
+    obtenerProyectosHabilitados,
   }
 })
 
