@@ -17,7 +17,103 @@
       </v-card-text>
     </v-card>
 
-    <v-row v-else>
+    <!-- ✅ NUEVO: Barra de herramientas para agrupación -->
+    <v-card v-if="!emptyResponse && !loading" class="mb-4" elevation="2" rounded="lg">
+      <v-card-text class="pa-3">
+        <div class="d-flex align-center justify-space-between flex-wrap gap-3">
+          <div class="d-flex align-center">
+            <v-icon color="primary" class="mr-2">mdi-group</v-icon>
+            <span class="text-subtitle-2 font-weight-medium">Vista de Actividades</span>
+          </div>
+
+          <v-btn-toggle
+            v-model="agrupacionSeleccionada"
+            mandatory
+            divided
+            density="comfortable"
+            color="primary"
+          >
+            <v-btn value="ninguna" size="small">
+              <v-icon left size="18">mdi-format-list-bulleted</v-icon>
+              Lista
+            </v-btn>
+            <v-btn value="proyecto" size="small">
+              <v-icon left size="18">mdi-folder-group</v-icon>
+              Por Proyecto
+            </v-btn>
+            <v-btn value="responsable" size="small">
+              <v-icon left size="18">mdi-account-group</v-icon>
+              Por Responsable
+            </v-btn>
+          </v-btn-toggle>
+        </div>
+
+        <!-- Estadísticas cuando está agrupado -->
+        <div v-if="agrupacionSeleccionada !== 'ninguna'" class="mt-3">
+          <v-divider class="mb-3"></v-divider>
+          <div class="d-flex flex-wrap gap-3 align-center">
+            <v-chip size="x-small" color="primary" variant="tonal">
+              <v-icon left size="14">mdi-folder-multiple</v-icon>
+              {{ datosAgrupados.length }} grupos
+            </v-chip>
+            <v-chip size="x-small" color="info" variant="tonal">
+              <v-icon left size="14">mdi-playlist-check</v-icon>
+              {{ totalActividadesAgrupadas }} actividades
+            </v-chip>
+            <v-chip size="x-small" color="success" variant="tonal">
+              <v-icon left size="14">mdi-cash</v-icon>
+              {{ formatCurrency(presupuestoTotalAgrupado) }}
+            </v-chip>
+
+            <v-spacer></v-spacer>
+
+            <v-btn size="x-small" variant="text" color="primary" @click="expandirTodos">
+              <v-icon left size="16">mdi-arrow-expand-all</v-icon>
+              Expandir todo
+            </v-btn>
+            <v-btn size="x-small" variant="text" color="secondary" @click="colapsarTodos">
+              <v-icon left size="16">mdi-arrow-collapse-all</v-icon>
+              Colapsar todo
+            </v-btn>
+          </div>
+        </div>
+      </v-card-text>
+    </v-card>
+
+    <!-- ✅ VISTA AGRUPADA POR PROYECTO -->
+    <div v-if="!emptyResponse && !loading && agrupacionSeleccionada === 'proyecto'">
+      <GrupoProyecto
+        v-for="grupo in proyectosFiltrados"
+        :key="`proyecto-${grupo.proyectoId}`"
+        :proyecto="grupo"
+        :expandido="gruposExpandidos[`proyecto-${grupo.proyectoId}`] || false"
+        @toggle="toggleGrupo(`proyecto-${grupo.proyectoId}`)"
+        @ver-actividad="toggleExpanded"
+        @add-tarea="openTareaDialog"
+        @edit-tarea="(payload) => openTareaDialog(payload.actividadId, payload.tarea)"
+        @delete-tarea="(payload) => confirmDeleteTarea(payload.actividadId, payload.tarea)"
+        @ver-informe-tarea="irInformeSubactividad"
+      />
+    </div>
+
+    <!-- ✅ VISTA AGRUPADA POR RESPONSABLE -->
+    <div v-if="!emptyResponse && !loading && agrupacionSeleccionada === 'responsable'">
+      <GrupoResponsable
+        v-for="grupo in responsablesFiltrados"
+        :key="`resp-${grupo.responsableId}`"
+        :responsable="grupo"
+        :expandido="gruposExpandidos[`resp-${grupo.responsableId}`] || false"
+        @toggle="toggleGrupo(`resp-${grupo.responsableId}`)"
+        @ver-actividad="toggleExpanded"
+        @add-tarea="openTareaDialog"
+        @edit-tarea="(payload) => openTareaDialog(payload.actividadId, payload.tarea)"
+        @delete-tarea="(payload) => confirmDeleteTarea(payload.actividadId, payload.tarea)"
+        @ver-informe-tarea="irInformeSubactividad"
+      />
+    </div>
+
+    <!-- ✅ VISTA TRADICIONAL SIN AGRUPAR (CÓDIGO ORIGINAL) -->
+    <v-row v-if="!emptyResponse && !loading && agrupacionSeleccionada === 'ninguna'">
       <!-- Columna principal -->
       <v-col cols="12" md="9" lg="9">
         <v-card class="pa-4 tarjeta-principal" elevation="2" rounded="lg">
@@ -43,10 +139,10 @@
               bg-color="grey-lighten-4"
               hide-details
               class="mb-4"
+              @update:model-value="handleSearchInput"
             ></v-text-field>
 
             <div class="d-flex flex-wrap gap-2">
-              <!-- Filtros por estado -->
               <v-chip-group v-model="statusFilters" multiple column>
                 <v-chip
                   v-for="status in availableStatuses"
@@ -89,7 +185,6 @@
                 </template>
 
                 <v-list-item-title class="font-weight-medium d-flex align-center">
-                  <!-- CHIP PARA DISTINGUIR TIPO DE ACTIVIDAD -->
                   <v-chip
                     v-if="actividad.pei_id"
                     color="green"
@@ -138,10 +233,8 @@
                   </div>
                 </v-list-item-subtitle>
 
-                <!-- iconos de acciones -->
                 <template v-slot:append>
                   <div class="d-flex acciones-container">
-                    <!-- Informe de Actividad -->
                     <v-tooltip text="Informe de Actividad" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
@@ -156,7 +249,6 @@
                       </template>
                     </v-tooltip>
 
-                    <!-- Informe de Tarea (para la actividad principal) -->
                     <v-tooltip text="Ver Informe de Actividad/Subactividad" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
@@ -203,7 +295,6 @@
                         </v-btn>
                       </div>
 
-                      <!-- Lista de subactividades mejorada -->
                       <v-list density="compact" class="py-0 bg-transparent">
                         <v-list-item
                           v-for="tarea in actividad.tareasOrdenadas"
@@ -264,7 +355,6 @@
                                   {{ formatCurrency(tarea.presupuesto) }}
                                 </span>
 
-                                <!-- INDICADOR DE PRESUPUESTO DESGLOSADO CON LEYENDA -->
                                 <div
                                   v-if="
                                     tarea.presupuestoDesglose !== null &&
@@ -283,7 +373,6 @@
                                     >Con Desglose</span
                                   >
 
-                                  <!-- Tooltip con detalle -->
                                   <v-tooltip location="top">
                                     <template v-slot:activator="{ props }">
                                       <v-icon
@@ -318,7 +407,6 @@
                               {{ truncarTexto(tarea.descripcion, 80) }}
                             </div>
 
-                            <!-- Mostrar resumen del desglose si existe -->
                             <div
                               v-if="
                                 tarea.presupuestoDesglose && tarea.presupuestoDesglose.length > 0
@@ -339,7 +427,6 @@
 
                           <template v-slot:append>
                             <div class="d-flex acciones-container">
-                              <!-- Informe de Subactividad -->
                               <v-tooltip text="Informe de Subactividad" location="top">
                                 <template v-slot:activator="{ props }">
                                   <v-btn
@@ -359,7 +446,6 @@
                                 </template>
                               </v-tooltip>
 
-                              <!-- Editar -->
                               <v-tooltip text="Editar subactividad" location="top">
                                 <template v-slot:activator="{ props }">
                                   <v-btn
@@ -374,7 +460,6 @@
                                 </template>
                               </v-tooltip>
 
-                              <!-- Eliminar -->
                               <v-tooltip text="Eliminar Subactividad" location="top">
                                 <template v-slot:activator="{ props }">
                                   <v-btn
@@ -483,7 +568,7 @@
           </v-list>
         </v-card>
 
-        <!-- TARJETA DE VALIDACIONES MEJORADA -->
+        <!-- Tarjeta de validaciones -->
         <v-card elevation="2" rounded="lg" class="tarjeta-validaciones tarjeta-flotante">
           <v-card-item class="pa-4">
             <template v-slot:prepend>
@@ -506,7 +591,6 @@
           </v-card-item>
 
           <v-card-text class="pa-4 pt-0">
-            <!-- Resumen rápido en chips -->
             <div class="d-flex gap-2 mb-4">
               <v-chip size="small" color="warning" variant="tonal" class="flex-grow-1">
                 <span class="font-weight-bold mr-1">{{ totalPendientes }}</span> Pendientes
@@ -519,7 +603,6 @@
               </v-chip>
             </div>
 
-            <!-- Últimas validaciones -->
             <div v-if="ultimasValidaciones.length > 0">
               <div class="text-caption font-weight-medium text-grey mb-2">ÚLTIMAS ASIGNACIONES</div>
               <v-list density="compact" class="pa-0 bg-transparent">
@@ -557,7 +640,6 @@
               </v-list>
             </div>
 
-            <!-- Mensaje cuando no hay validaciones -->
             <div v-else class="text-center py-2">
               <v-icon size="32" color="grey-lighten-2" class="mb-1">mdi-bell-off</v-icon>
               <div class="text-caption text-grey">Sin validaciones pendientes</div>
@@ -593,6 +675,7 @@
       @cancelar="cancelarTarea"
     />
 
+    <!-- Diálogo de confirmación para eliminar -->
     <v-dialog v-model="deleteTareaDialog" max-width="400">
       <v-card rounded="lg">
         <v-card-title class="text-h6 pa-4">Confirmar eliminación</v-card-title>
@@ -619,12 +702,15 @@
       :validaciones="storeActividad.misValidaciones?.results || []"
     />
 
+    <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
       {{ snackbar.text }}
       <template v-slot:actions>
-        <v-btn variant="text" @click="snackbar.show = false"> Cerrar </v-btn>
+        <v-btn variant="text" @click="snackbar.show = false">Cerrar</v-btn>
       </template>
     </v-snackbar>
+
+    <!-- Popup de actividad -->
     <PopupActividad
       :visible="popupVisible"
       :actividad-data="actividadPopup"
@@ -636,7 +722,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useListaActividadStore } from '@/modules/proyecto/store/useListaActividadesStore'
 import { useTareaSubactividad } from '@/modules/proyecto/composables/useTareaSubactividad'
@@ -645,14 +731,21 @@ import { useRouter } from 'vue-router'
 import DialogValidaciones from '@/modules/formularios/components/validadores/DialogValidaciones.vue'
 import { useSnackbar } from '@/composables/useSnackbar'
 import PopupActividad from '@/components/popups/PopupActividad.vue'
+//COMPONENTES DE AGRUPACION
+import GrupoProyecto from '@/modules/proyecto/components/partials/GrupoProyecto.vue'
+import GrupoResponsable from '@/modules/proyecto/components/partials/GrupoResponsable.vue'
 
 // Iniciar el store de actividades
 const storeActividad = useListaActividadStore()
 
-//Inciar el composable de mensajes
+// Iniciar el composable de mensajes
 const { successMsg, errorMsg } = useSnackbar()
+
 // Iniciar el composable de Subactividades
 const { crearUnaTarea, actualizarUnaTarea, eliminarUnaTarea } = useTareaSubactividad()
+
+// Router
+const router = useRouter()
 
 // --- ESTADOS REACTIVOS ---
 const loading = ref(true)
@@ -683,6 +776,17 @@ const snackbar = ref({ show: false, text: '', color: 'success' })
 // Diálogo de validaciones
 const dialogValidaciones = ref(false)
 
+// ✅ NUEVOS ESTADOS PARA AGRUPACIÓN
+const agrupacionSeleccionada = ref('ninguna')
+const gruposExpandidos = ref({})
+
+// Popup
+const popupVisible = ref(false)
+const actividadPopup = ref(null)
+const popupX = ref(0)
+const popupY = ref(0)
+let popupTimeoutId = null
+
 // Estados disponibles para actividades y tareas
 const availableStatuses = [
   { value: 'CRD', text: 'Creada' },
@@ -694,32 +798,46 @@ const availableStatuses = [
   { value: 'FIN', text: 'Finalizado' },
 ]
 
-// --- MÉTODOS Y COMPUTADAS ---
+// --- DEBOUNCE PARA BÚSQUEDA ---
+const debouncedSearch = useDebounceFn((query) => {
+  console.log('Buscando:', query)
+  currentPage.value = 1
+}, 300)
 
-// Carga inicial de datos
-onMounted(async () => {
-  await cargar()
-})
-
-const cargar = async () => {
-  loading.value = true
-  try {
-    await storeActividad.cargarActividadesTareas()
-    console.log(storeActividad.actividadesSubactividadesLista)
-    actividades.value = storeActividad.actividadesFiltradas
-    successMsg('Numero de actividades cargadas: ' + actividades.value.length)
-  } catch (error) {
-    console.error('Error al cargar datos:', error)
-    actividades.value = []
-    emptyResponse.value = true
-    errorMsg('Error al cargar datos: ' + (error.message || 'Error desconocido'), 'error')
-    // mostrarSnackbar('Error al cargar datos: ' + (error.message || 'Error desconocido'), 'error')
-  } finally {
-    loading.value = false
-  }
+const handleSearchInput = (value) => {
+  searchQuery.value = value || ''
+  debouncedSearch(value)
 }
 
-// Estadísticas computadas
+// --- COMPUTADAS ---
+
+// ✅ NUEVAS COMPUTADAS PARA AGRUPACIÓN
+const datosAgrupados = computed(() => {
+  if (agrupacionSeleccionada.value === 'proyecto') {
+    return storeActividad.actividadesPorProyecto
+  } else if (agrupacionSeleccionada.value === 'responsable') {
+    return storeActividad.actividadesPorResponsable
+  }
+  return []
+})
+
+const totalActividadesAgrupadas = computed(() => {
+  return datosAgrupados.value.reduce((sum, g) => sum + g.totalActividades, 0)
+})
+
+const presupuestoTotalAgrupado = computed(() => {
+  return datosAgrupados.value.reduce((sum, g) => sum + g.presupuestoTotal, 0)
+})
+
+const proyectosFiltrados = computed(() => {
+  return storeActividad.actividadesPorProyecto || []
+})
+
+const responsablesFiltrados = computed(() => {
+  return storeActividad.actividadesPorResponsable || []
+})
+
+// Estadísticas computadas (original)
 const estadisticas = computed(() => {
   return [
     {
@@ -767,7 +885,7 @@ const estadisticas = computed(() => {
   ]
 })
 
-// Computed mejoradas para las actividades
+// Computed para las actividades (original)
 const filteredActividades = computed(() => {
   if (!Array.isArray(actividades.value)) return []
 
@@ -778,7 +896,6 @@ const filteredActividades = computed(() => {
     }),
   }))
 
-  // Filtrar por búsqueda
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(
@@ -796,7 +913,6 @@ const filteredActividades = computed(() => {
     )
   }
 
-  // Filtrar por estado
   if (statusFilters.value.length > 0) {
     filtered = filtered.filter((actividad) => statusFilters.value.includes(actividad.estado))
   }
@@ -854,11 +970,63 @@ const countByStatus = (status) => {
   return filteredActividades.value.filter((a) => a.estado === status).length
 }
 
+// Validaciones computadas
+const totalPendientes = computed(() => {
+  const validaciones = storeActividad.misValidaciones?.results || []
+  return validaciones.filter((v) => v.estado === 'PENDIENTE').length
+})
+
+const totalAprobados = computed(() => {
+  const validaciones = storeActividad.misValidaciones?.results || []
+  return validaciones.filter((v) => v.estado === 'APROBADO').length
+})
+
+const totalRechazados = computed(() => {
+  const validaciones = storeActividad.misValidaciones?.results || []
+  return validaciones.filter((v) => v.estado === 'RECHAZADO').length
+})
+
+const ultimasValidaciones = computed(() => {
+  const validaciones = storeActividad.misValidaciones?.results || []
+  return validaciones
+    .sort((a, b) => new Date(b.fechaAsignacion) - new Date(a.fechaAsignacion))
+    .slice(0, 3)
+})
+
+// --- WATCHERS ---
+watch(agrupacionSeleccionada, (nuevoValor) => {
+  cambiarAgrupacion(nuevoValor)
+})
+
+// --- MÉTODOS ---
+
+// Carga inicial de datos
+onMounted(async () => {
+  await cargar()
+})
+
+const cargar = async () => {
+  loading.value = true
+  try {
+    await storeActividad.cargarActividadesTareas()
+    console.log(storeActividad.actividadesSubactividadesLista)
+    actividades.value = storeActividad.actividadesFiltradas
+    successMsg('Numero de actividades cargadas: ' + actividades.value.length)
+  } catch (error) {
+    console.error('Error al cargar datos:', error)
+    actividades.value = []
+    emptyResponse.value = true
+    errorMsg('Error al cargar datos: ' + (error.message || 'Error desconocido'), 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
 const toggleExpanded = (id) => {
   expandedActividadId.value = expandedActividadId.value === id ? null : id
 }
 
-// --- MÉTODOS AUXILIARES  ---
+// --- MÉTODOS AUXILIARES ---
 const truncarTexto = (texto, max) => {
   if (!texto) return ''
   return texto.length > max ? texto.substring(0, max) + '...' : texto
@@ -872,7 +1040,6 @@ const formatearCodigo = (codigo) => {
   return tieneCodigoValido(codigo) ? codigo.trim().toUpperCase() : ''
 }
 
-// --- MÉTODOS PARA DESGLOSE ---
 const getDesgloseIcon = (desglose) => {
   if (!desglose || desglose.length === 0) return 'mdi-cash'
   return 'mdi-cash-multiple'
@@ -960,7 +1127,7 @@ const deleteTarea = async () => {
   }
 }
 
-// Funciones auxiliares mejoradas
+// Funciones auxiliares
 const getStatusColor = (status) => {
   const colors = {
     CRD: 'grey',
@@ -1058,35 +1225,10 @@ const mostrarSnackbar = (texto, color = 'success') => {
   }
 }
 
-/******************************* Redireccionadores *************************************/
-const router = useRouter()
-
+// Redireccionadores
 const irInformeActividad = async (actividadId, esPei) => {
   router.push('/monitoreo/informe-actividad/' + actividadId)
 }
-
-// Validaciones computadas
-const totalPendientes = computed(() => {
-  const validaciones = storeActividad.misValidaciones?.results || []
-  return validaciones.filter((v) => v.estado === 'PENDIENTE').length
-})
-
-const totalAprobados = computed(() => {
-  const validaciones = storeActividad.misValidaciones?.results || []
-  return validaciones.filter((v) => v.estado === 'APROBADO').length
-})
-
-const totalRechazados = computed(() => {
-  const validaciones = storeActividad.misValidaciones?.results || []
-  return validaciones.filter((v) => v.estado === 'RECHAZADO').length
-})
-
-const ultimasValidaciones = computed(() => {
-  const validaciones = storeActividad.misValidaciones?.results || []
-  return validaciones
-    .sort((a, b) => new Date(b.fechaAsignacion) - new Date(a.fechaAsignacion))
-    .slice(0, 3)
-})
 
 // Métodos para validaciones
 const getEstadoColor = (estado) => {
@@ -1119,49 +1261,28 @@ const formatDateCorta = (dateStr) => {
 const abrirDialogValidaciones = () => {
   dialogValidaciones.value = true
 }
-/*******************************************************/
-// ========== POPUP ACTIVIDAD ==========
-const popupVisible = ref(false)
-const actividadPopup = ref(null)
-const popupX = ref(0)
-const popupY = ref(0)
-let popupTimeoutId = null
 
-// Calcular posición del popup ajustada a la pantalla
+// --- POPUP ACTIVIDAD ---
 const calcularPosicionPopup = (event) => {
   const mouseX = event.clientX
   const mouseY = event.clientY
-
-  // Dimensiones del popup (aproximadas, puedes ajustarlas)
   const popupWidth = 400
   const popupHeight = 350
-
-  // Límites de la ventana
   const ventanaWidth = window.innerWidth
   const ventanaHeight = window.innerHeight
 
-  // Calcular posición X (con offset)
   let x = mouseX + 15
-
-  // Si se sale por la derecha, mostrar a la izquierda
   if (x + popupWidth > ventanaWidth) {
     x = mouseX - popupWidth - 15
   }
-
-  // Si se sale por la izquierda, mostrar a la derecha
   if (x < 0) {
     x = 10
   }
 
-  // Calcular posición Y
   let y = mouseY + 15
-
-  // Si se sale por abajo, mostrar arriba
   if (y + popupHeight > ventanaHeight) {
     y = mouseY - popupHeight - 15
   }
-
-  // Si se sale por arriba, mostrar abajo
   if (y < 0) {
     y = 10
   }
@@ -1169,26 +1290,20 @@ const calcularPosicionPopup = (event) => {
   return { x, y }
 }
 
-// Mostrar popup al pasar el cursor
 const mostrarPopupActividad = (actividad, event) => {
   if (popupTimeoutId) clearTimeout(popupTimeoutId)
-
-  // Calcular posición ajustada
   const { x, y } = calcularPosicionPopup(event)
-
   actividadPopup.value = actividad
   popupX.value = x
   popupY.value = y
   popupVisible.value = true
 }
 
-// Cerrar popup
 const cerrarPopup = () => {
   popupVisible.value = false
   actividadPopup.value = null
 }
 
-// Ocultar popup con retraso
 const ocultarPopupActividad = () => {
   popupTimeoutId = setTimeout(() => {
     popupVisible.value = false
@@ -1196,32 +1311,68 @@ const ocultarPopupActividad = () => {
   }, 200)
 }
 
-/************************** FUNCIONES DEBOUNCE ***************************************/
-//Debounce para la búsqueda
-const debouncedSearch = useDebounceFn((query) => {
-  // Esta función se ejecuta después de 300ms de inactividad
-  console.log('🔍 Buscando:', query) // Para debugging
-  currentPage.value = 1 // Resetear paginación
-  // La búsqueda se aplica automáticamente porque searchQuery ya está actualizada
-  // y filteredActividades es una computed que depende de searchQuery
-}, 300) // 300ms de delay (puedes ajustar: 200-500ms)
+// ✅ NUEVAS FUNCIONES PARA AGRUPACIÓN
+const cambiarAgrupacion = (tipo) => {
+  agrupacionSeleccionada.value = tipo
+  storeActividad.cambiarAgrupacion(tipo)
+  gruposExpandidos.value = {}
+  if (tipo === 'ninguna') {
+    expandedActividadId.value = null
+  }
+}
 
-//Manejar cambios en la búsqueda
-const handleSearchInput = (value) => {
-  searchQuery.value = value || '' // Actualizar el valor inmediatamente
-  debouncedSearch(value) // Ejecutar la búsqueda con debounce
+const toggleGrupo = (grupoId) => {
+  gruposExpandidos.value = {
+    ...gruposExpandidos.value,
+    [grupoId]: !gruposExpandidos.value[grupoId],
+  }
+}
+
+const expandirTodos = () => {
+  const nuevosEstados = {}
+  datosAgrupados.value.forEach((grupo) => {
+    const grupoId =
+      agrupacionSeleccionada.value === 'proyecto'
+        ? `proyecto-${grupo.proyectoId}`
+        : `resp-${grupo.responsableId}`
+    nuevosEstados[grupoId] = true
+  })
+  gruposExpandidos.value = nuevosEstados
+}
+
+const colapsarTodos = () => {
+  gruposExpandidos.value = {}
+  expandedActividadId.value = null
+}
+
+const irInformeSubactividad = (tarea) => {
+  const actividad = findActividadByTarea(tarea.id)
+  if (actividad?.pei_id) {
+    router.push(`/monitoreo/informe-subactividad-pei/${tarea.id}`)
+  } else {
+    router.push(`/monitoreo/informe-subactividad/${tarea.id}`)
+  }
+}
+
+const findActividadByTarea = (tareaId) => {
+  for (const grupo of datosAgrupados.value) {
+    for (const actividad of grupo.actividades) {
+      if (actividad.tareas?.some((t) => t.id === tareaId)) {
+        return actividad
+      }
+    }
+  }
+  return null
 }
 </script>
 
 <style scoped>
-/* Estilos base */
 .v-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px 16px;
 }
 
-/* Tarjetas principales */
 .tarjeta-principal {
   background: white;
   transition: all 0.2s ease;
@@ -1231,7 +1382,6 @@ const handleSearchInput = (value) => {
   background: white;
 }
 
-/* Efecto flotante para tarjetas laterales */
 .tarjeta-flotante {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -1244,7 +1394,6 @@ const handleSearchInput = (value) => {
   z-index: 10;
 }
 
-/* Items de actividad */
 .actividad-item {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid transparent;
@@ -1269,7 +1418,6 @@ const handleSearchInput = (value) => {
   box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2) !important;
 }
 
-/* Acciones */
 .acciones-container {
   display: flex;
   gap: 4px;
@@ -1289,7 +1437,6 @@ const handleSearchInput = (value) => {
   background-color: rgba(25, 118, 210, 0.1) !important;
 }
 
-/* Subactividades */
 .subactividad-item {
   background: white;
   border: 1px solid #eee;
@@ -1310,7 +1457,6 @@ const handleSearchInput = (value) => {
   transition: all 0.3s ease;
 }
 
-/* Estadísticas */
 .stat-item {
   min-height: 40px;
   padding: 4px 16px;
@@ -1322,7 +1468,6 @@ const handleSearchInput = (value) => {
   transform: translateX(2px);
 }
 
-/* Tarjeta de validaciones mejorada */
 .tarjeta-validaciones {
   background: white;
   border: 1px solid #e0e0e0;
@@ -1350,13 +1495,11 @@ const handleSearchInput = (value) => {
   transform: translateX(2px);
 }
 
-/* Chips y badges */
 .chip-codigo {
   font-size: 0.7rem;
   letter-spacing: 0.3px;
 }
 
-/* Utilidades */
 .gap-2 {
   gap: 8px;
 }
@@ -1367,21 +1510,22 @@ const handleSearchInput = (value) => {
   text-overflow: ellipsis;
 }
 
-/* Estados de texto */
 .text-error {
   color: #f44336;
 }
+
 .text-warning {
   color: #ff9800;
 }
+
 .text-info {
   color: #2196f3;
 }
+
 .text-success {
   color: #4caf50;
 }
 
-/* Scroll personalizado */
 .v-list::-webkit-scrollbar {
   width: 4px;
 }
@@ -1396,12 +1540,10 @@ const handleSearchInput = (value) => {
   border-radius: 4px;
 }
 
-/* Posicionamiento relativo */
 .position-relative {
   position: relative;
 }
 
-/* Icono de desglose */
 .desglose-icon {
   cursor: help;
   transition: all 0.2s ease;
@@ -1411,7 +1553,6 @@ const handleSearchInput = (value) => {
   transform: scale(1.2);
 }
 
-/* Badge de desglose con leyenda */
 .desglose-badge {
   background-color: rgba(33, 150, 243, 0.1);
   padding: 2px 8px;
@@ -1426,13 +1567,11 @@ const handleSearchInput = (value) => {
   border-color: rgba(33, 150, 243, 0.5);
 }
 
-/* Estilo para el resumen de desglose */
 .desglose-resumen {
   border-top: 1px dashed #e0e0e0;
   padding-top: 4px;
 }
 
-/* Tooltip personalizado */
 .v-tooltip .v-overlay__content {
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
@@ -1441,7 +1580,6 @@ const handleSearchInput = (value) => {
   border-radius: 4px;
 }
 
-/* Responsive */
 @media (max-width: 960px) {
   .v-container {
     padding: 12px;

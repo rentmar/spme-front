@@ -24,6 +24,12 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
   //Validaciones pendientes
   const misValidaciones = ref([])
 
+  //Estados para agrupacion
+  const agrupacionActual = ref('ninguna') //'ninguna', 'proyecto', 'responsable'
+  const proyectoSeleccionado = ref(null)
+  const responsableSeleccionado = ref(null)
+  const proyectosCatalogo = ref([])
+
   //Iniciar los composables
   const {
     actividadesTareasListas,
@@ -52,6 +58,7 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
         obtenerListaActividadesConTareas(),
         obtenerMisValidaciones(),
         cargarListaIdsProyectosHabilitados(),
+        cargarCatalogoProyectos(),
       ])
       misValidaciones.value = validaciones
       actividadesSubactividadesLista.value = actividadesTareasListas.value.actividades
@@ -428,6 +435,167 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     })
   })
 
+  /*****************************************************************************/
+  /*      GETTERS POR AGRUPACION                                               */
+  /*****************************************************************************/
+  //Actividades por Proyecto
+  const actividadesPorProyecto = computed(() => {
+    const actividades = actividadesFiltradas.value || []
+    const agrupadas = {}
+
+    actividades.forEach((actividad) => {
+      const proyectoId = actividad.proyecto || 'sin_proyecto'
+
+      if (!agrupadas[proyectoId]) {
+        // ✅ BUSCAR datos del proyecto en el catálogo
+        const proyectoInfo = proyectosCatalogo.value?.find(
+          (p) => p.id === proyectoId || p.id === Number(proyectoId),
+        )
+
+        agrupadas[proyectoId] = {
+          proyectoId,
+          proyectoCodigo: proyectoInfo?.codigo || `PROY-${proyectoId}`,
+          proyectoNombre: proyectoInfo?.titulo || proyectoInfo?.nombre || `Proyecto ${proyectoId}`,
+          actividades: [],
+          totalActividades: 0,
+          presupuestoTotal: 0,
+          estados: {},
+        }
+      }
+
+      agrupadas[proyectoId].actividades.push({
+        ...actividad,
+        tareasOrdenadas: [...(actividad.tareas || [])].sort((a, b) => b.id - a.id),
+      })
+      agrupadas[proyectoId].totalActividades++
+      agrupadas[proyectoId].presupuestoTotal += Number(actividad.presupuesto || 0)
+
+      const estado = actividad.estado
+      agrupadas[proyectoId].estados[estado] = (agrupadas[proyectoId].estados[estado] || 0) + 1
+    })
+
+    return Object.values(agrupadas).sort((a, b) => b.totalActividades - a.totalActividades)
+  })
+  //Actividades por Responsable
+  const actividadesPorResponsable = computed(() => {
+    const actividades = actividadesFiltradas.value || []
+    const agrupadas = {}
+
+    actividades.forEach((actividad) => {
+      const responsableId = actividad.responsable || 'sin_responsable'
+      const responsableNombre = actividad.responsable_info?.nombre_completo || 'Sin asignar'
+
+      if (!agrupadas[responsableId]) {
+        agrupadas[responsableId] = {
+          responsableId,
+          responsableNombre,
+          responsableUsername: actividad.responsable_info?.username || '',
+          actividades: [],
+          totalActividades: 0,
+          presupuestoTotal: 0,
+          estados: {},
+          proyectos: new Set(),
+        }
+      }
+
+      agrupadas[responsableId].actividades.push({
+        ...actividad,
+        tareasOrdenadas: [...(actividad.tareas || [])].sort((a, b) => b.id - a.id),
+      })
+      agrupadas[responsableId].totalActividades++
+      agrupadas[responsableId].presupuestoTotal += Number(actividad.presupuesto || 0)
+
+      const estado = actividad.estado
+      agrupadas[responsableId].estados[estado] = (agrupadas[responsableId].estados[estado] || 0) + 1
+
+      if (actividad.proyecto) {
+        agrupadas[responsableId].proyectos.add(actividad.proyecto)
+      }
+    })
+
+    return Object.values(agrupadas).map((grupo) => ({
+      ...grupo,
+      proyectos: Array.from(grupo.proyectos),
+    }))
+  })
+
+  //Proyectos disponibles
+  const proyectosDisponibles = computed(() => {
+    const proyectos = new Map()
+    const actividades = actividadesFiltradas.value || []
+
+    actividades.forEach((actividad) => {
+      const proyectoId = actividad.proyecto
+      if (proyectoId && !proyectos.has(proyectoId)) {
+        proyectos.set(proyectoId, {
+          id: proyectoId,
+          nombre: actividad.proyecto_nombre || `Proyecto ${proyectoId}`,
+          totalActividades: 0,
+        })
+      }
+      if (proyectoId) {
+        proyectos.get(proyectoId).totalActividades++
+      }
+    })
+
+    return Array.from(proyectos.values()).sort((a, b) => b.totalActividades - a.totalActividades)
+  })
+
+  //Responsables disponibles
+  const responsablesDisponibles = computed(() => {
+    const responsables = new Map()
+    const actividades = actividadesFiltradas.value || []
+
+    actividades.forEach((actividad) => {
+      const responsableId = actividad.responsable
+      const responsableNombre = actividad.responsable_info?.nombre_completo || 'Sin asignar'
+
+      if (!responsables.has(responsableId)) {
+        responsables.set(responsableId, {
+          id: responsableId,
+          nombre: responsableNombre,
+          username: actividad.responsable_info?.username || '',
+          totalActividades: 0,
+        })
+      }
+      if (responsables.has(responsableId)) {
+        responsables.get(responsableId).totalActividades++
+      }
+    })
+
+    return Array.from(responsables.values()).sort((a, b) => b.totalActividades - a.totalActividades)
+  })
+
+  //FUNCIONES: Acciones de agrupación
+  function cambiarAgrupacion(tipo) {
+    agrupacionActual.value = tipo
+    if (tipo === 'ninguna') {
+      proyectoSeleccionado.value = null
+      responsableSeleccionado.value = null
+    }
+  }
+
+  function filtrarPorProyecto(proyectoId) {
+    proyectoSeleccionado.value = proyectoId
+    agrupacionActual.value = 'proyecto'
+  }
+
+  function filtrarPorResponsable(responsableId) {
+    responsableSeleccionado.value = responsableId
+    agrupacionActual.value = 'responsable'
+  }
+
+  const cargarCatalogoProyectos = async () => {
+    try {
+      const respuesta = await proyectoServicios.listaProyectosHabilitadosResumen()
+      // proyectosCatalogo.value = respuesta.results || respuesta.data || respuesta
+      proyectosCatalogo.value = respuesta.proyectos
+      console.log('Catálogo de proyectos cargado:', proyectosCatalogo.value)
+    } catch (error) {
+      console.error('Error al cargar catálogo de proyectos:', error)
+    }
+  }
+
   return {
     loading,
     error,
@@ -444,11 +612,25 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     misValidaciones,
     //Getters
     actividadesFiltradasTotales,
+    //Estados y getters de agrupacion
+    agrupacionActual,
+    proyectoSeleccionado,
+    responsableSeleccionado,
+    actividadesPorProyecto,
+    actividadesPorResponsable,
+    proyectosDisponibles,
+    responsablesDisponibles,
+    proyectosCatalogo,
     //Funciones
     cargarActividadesTareas,
     cargarActividadesPeiTareas,
     cargarListaActividadesGeneral,
     cargarActividadesPeiTareasPorIdPei,
     cargarListaIdsProyectosHabilitados,
+    //Acciones de agrupacion
+    cambiarAgrupacion,
+    filtrarPorProyecto,
+    filtrarPorResponsable,
+    cargarCatalogoProyectos,
   }
 })
