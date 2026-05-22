@@ -1909,7 +1909,7 @@ const puedeValidarResponsable = computed(() => {
   // El usuario puede validar si:
   // 1. Es el responsable asignado
   // 2. Tiene el cargo correspondiente
-  return usuarioActualId === responsableAsignadoId && usuarioActualCargo?.includes('contable')
+  return usuarioActualId === responsableAsignadoId && usuarioActualCargo?.includes('coordinador')//('contable')
 })
 
 const puedeValidarCoordinador = computed(() => {
@@ -1919,7 +1919,7 @@ const puedeValidarCoordinador = computed(() => {
   // El usuario puede validar si:
   // 1. Es el coordinador asignado
   // 2. Tiene el cargo correspondiente
-  return usuarioActualId === coordinadorAsignadoId && usuarioActualCargo?.includes('coordinador')
+  return usuarioActualId === coordinadorAsignadoId && usuarioActualCargo?.includes('dir-administrativo')//('coordinador')
 })
 
 // Ciclo de vida
