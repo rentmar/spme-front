@@ -127,7 +127,7 @@
           <div>
             <div class="font-weight-medium">No hay solicitudes disponibles</div>
             <div class="text-caption">
-              No se encontraron solicitudes de viaje aprobadas para esta actividad
+              No se encontraron solicitudes de viaje aprobadas para esta actividad.
             </div>
           </div>
         </div>

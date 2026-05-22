@@ -297,18 +297,85 @@
                     :max="maxDiscapacidad"
                     variant="outlined"
                     :error="errorTotalDiscapacidad"
-                    :error-messages="errorTotalDiscapacidad ? [`Máximo: ${maxDiscapacidad}`] : []"
+                    :error-messages="
+                      errorTotalDiscapacidad
+                        ? [`No puede exceder el total de participantes (${totalParticipantes})`]
+                        : []
+                    "
                     @update:model-value="validarDiscapacidad"
-                  ></v-text-field>
+                  >
+                    <template v-slot:append-inner>
+                      <v-chip
+                        v-if="totalConDiscapacidad > 0"
+                        color="info"
+                        size="small"
+                        variant="flat"
+                        class="mt-1"
+                      >
+                        {{ totalConDiscapacidad }} persona(s)
+                      </v-chip>
+                    </template>
+                  </v-text-field>
                 </v-col>
               </v-row>
 
               <!-- Tipos de discapacidad -->
               <div class="mb-4">
                 <v-card variant="outlined" class="pa-4">
-                  <v-card-title class="text-subtitle-2 font-weight-medium pb-2">
-                    Distribución por tipo de discapacidad
+                  <v-card-title class="d-flex align-center justify-space-between pb-2">
+                    <div class="text-subtitle-2 font-weight-medium">
+                      Distribución por tipo de discapacidad
+                    </div>
+
+                    <!-- Contador de estado -->
+                    <v-chip
+                      :color="errorSumaDiscapacidad ? 'error' : 'success'"
+                      size="small"
+                      variant="flat"
+                    >
+                      <v-icon
+                        :icon="errorSumaDiscapacidad ? 'mdi-alert-circle' : 'mdi-check-circle'"
+                        size="small"
+                        class="mr-1"
+                      ></v-icon>
+                      {{ sumaDiscapacidades }} / {{ totalConDiscapacidad || 0 }}
+                    </v-chip>
                   </v-card-title>
+
+                  <!-- Barra de progreso visual -->
+                  <div class="mb-4" v-if="totalConDiscapacidad > 0">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                      <span class="text-caption">Progreso de asignación</span>
+                      <span class="text-caption font-weight-medium">
+                        {{ restanteDiscapacidad }} restante(s)
+                      </span>
+                    </div>
+                    <v-progress-linear
+                      :model-value="
+                        totalConDiscapacidad > 0
+                          ? (sumaDiscapacidades / totalConDiscapacidad) * 100
+                          : 0
+                      "
+                      :color="errorSumaDiscapacidad ? 'error' : 'primary'"
+                      height="8"
+                      rounded
+                    ></v-progress-linear>
+                  </div>
+
+                  <!-- Mensaje de advertencia si faltan por asignar -->
+                  <v-alert
+                    v-if="
+                      totalConDiscapacidad > 0 && restanteDiscapacidad > 0 && !errorSumaDiscapacidad
+                    "
+                    type="info"
+                    density="compact"
+                    variant="tonal"
+                    class="mb-3"
+                  >
+                    <v-icon icon="mdi-information" class="mr-1"></v-icon>
+                    Aún quedan {{ restanteDiscapacidad }} persona(s) por asignar a los tipos de
+                    discapacidad
+                  </v-alert>
 
                   <v-row
                     v-for="(discapacidad, index) in tiposDiscapacidad"
@@ -321,7 +388,13 @@
                         :label="`Tipo de discapacidad ${index + 1}`"
                         variant="outlined"
                         density="compact"
-                        readonly
+                        :readonly="discapacidad.esPredefinido"
+                        :hint="
+                          !discapacidad.esPredefinido
+                            ? 'Ingrese el nombre del tipo de discapacidad'
+                            : ''
+                        "
+                        :persistent-hint="!discapacidad.esPredefinido"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="4" md="3">
@@ -334,12 +407,28 @@
                         variant="outlined"
                         density="compact"
                         :error="errorCantidadDiscapacidad(index)"
+                        :error-messages="
+                          errorCantidadDiscapacidad(index)
+                            ? [mensajeErrorCantidadDiscapacidad(index)]
+                            : []
+                        "
                         @update:model-value="validarDiscapacidadIndividual(index)"
-                      ></v-text-field>
+                      >
+                        <template v-slot:append-inner>
+                          <v-chip
+                            v-if="discapacidad.cantidad > 0"
+                            color="primary"
+                            size="x-small"
+                            variant="flat"
+                          >
+                            {{ discapacidad.cantidad }}
+                          </v-chip>
+                        </template>
+                      </v-text-field>
                     </v-col>
                     <v-col cols="12" sm="1" md="1" class="d-flex align-center">
                       <v-btn
-                        v-if="tiposDiscapacidad.length > 1"
+                        v-if="!discapacidad.esPredefinido || tiposDiscapacidad.length > 1"
                         icon
                         size="small"
                         variant="text"
@@ -376,15 +465,18 @@
                 ></v-textarea>
               </div>
 
-              <v-alert
-                v-if="errorDiscapacidad && habilitadoDiscapacidad"
-                type="error"
-                density="compact"
-                class="mt-2"
-              >
+              <!-- Alertas de error -->
+              <v-alert v-if="errorTotalDiscapacidad" type="error" density="compact" class="mt-2">
                 <v-icon icon="mdi-alert-circle" class="mr-1"></v-icon>
-                La suma por tipo de discapacidad ({{ sumaDiscapacidades }}) no coincide con el total
-                registrado ({{ totalConDiscapacidad }})
+                El total de personas con discapacidad ({{ totalConDiscapacidad }}) no puede exceder
+                el total de participantes ({{ totalParticipantes }})
+              </v-alert>
+
+              <v-alert v-if="errorSumaDiscapacidad" type="error" density="compact" class="mt-2">
+                <v-icon icon="mdi-alert-circle" class="mr-1"></v-icon>
+                La suma por tipo de discapacidad ({{ sumaDiscapacidades }}) excede el total
+                registrado ({{ totalConDiscapacidad }}). Debe reducir
+                {{ sumaDiscapacidades - totalConDiscapacidad }} persona(s).
               </v-alert>
             </div>
           </v-slide-y-transition>
@@ -478,7 +570,7 @@
           </v-slide-y-transition>
         </div>
 
-        <!-- Sección de Localidades - MODIFICADA CON v-select PARA DEPARTAMENTOS -->
+        <!-- Sección de Localidades -->
         <div class="mb-6 seccion-con-toggle">
           <div class="seccion-header">
             <div class="d-flex align-center justify-space-between">
@@ -534,7 +626,6 @@
               >
                 <v-row>
                   <v-col cols="12" sm="3">
-                    <!-- DEPARTAMENTO: Cambiado a v-select con lista de departamentos de Bolivia -->
                     <v-select
                       v-model="localidad.departamento"
                       :label="`Departamento ${index + 1}`"
@@ -719,7 +810,6 @@
 
           <v-slide-y-transition>
             <div v-if="habilitadoArchivos">
-              <!-- Input principal para agregar archivos -->
               <div class="mb-4">
                 <v-file-input
                   v-model="nuevoArchivo"
@@ -737,7 +827,6 @@
                 ></v-file-input>
               </div>
 
-              <!-- Lista de archivos existentes -->
               <div v-if="archivos.length > 0" class="mt-3">
                 <v-card variant="outlined">
                   <v-card-title class="text-subtitle-1 bg-grey-lighten-4">
@@ -839,7 +928,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 
 // ============================
-// DEPARTAMENTOS DE BOLIVIA (nuevo array)
+// DEPARTAMENTOS DE BOLIVIA
 // ============================
 const departamentosBolivia = [
   'Beni',
@@ -880,7 +969,7 @@ const habilitadoArchivos = ref(false)
 const registrando = ref(false)
 
 // ============================
-// DATOS REACTIVOS (ESTRUCTURA ORIGINAL)
+// DATOS REACTIVOS
 // ============================
 const totalParticipantes = ref(0)
 const varones = ref(0)
@@ -894,12 +983,12 @@ const nuevoArchivo = ref([])
 const totalConDiscapacidad = ref(0)
 const necesidadesAccesibilidad = ref('')
 const tiposDiscapacidad = ref([
-  { tipo: 'Discapacidad Visual', cantidad: 0 },
-  { tipo: 'Discapacidad Auditiva', cantidad: 0 },
-  { tipo: 'Discapacidad Fisica', cantidad: 0 },
-  { tipo: 'Discapacidad Psiquico/mental', cantidad: 0 },
-  { tipo: 'Discapacidad Intelectual', cantidad: 0 },
-  { tipo: 'Discapacidad Multiple', cantidad: 0 },
+  { tipo: 'Discapacidad Visual', cantidad: 0, esPredefinido: true },
+  { tipo: 'Discapacidad Auditiva', cantidad: 0, esPredefinido: true },
+  { tipo: 'Discapacidad Fisica', cantidad: 0, esPredefinido: true },
+  { tipo: 'Discapacidad Psiquico/mental', cantidad: 0, esPredefinido: true },
+  { tipo: 'Discapacidad Intelectual', cantidad: 0, esPredefinido: true },
+  { tipo: 'Discapacidad Multiple', cantidad: 0, esPredefinido: true },
 ])
 
 // Grupos de edad
@@ -923,7 +1012,7 @@ const grupoEdadValues = reactive({
 // Ocupaciones
 const ocupaciones = ref([{ nombre: '', cantidad: 0 }])
 
-// Localidades (ahora con departamento como v-select)
+// Localidades
 const localidades = ref([
   {
     departamento: '',
@@ -940,6 +1029,8 @@ const organizacionCantidades = ref([0])
 // ============================
 // COMPUTED PROPERTIES
 // ============================
+
+// Suma de género
 const sumaGenero = computed(() => {
   if (!habilitadoGenero.value) return 0
   return (
@@ -950,6 +1041,7 @@ const sumaGenero = computed(() => {
   )
 })
 
+// Suma de edades
 const sumaEdades = computed(() => {
   if (!habilitadoEdades.value) return 0
   return Object.values(grupoEdadValues).reduce((sum, value) => {
@@ -957,6 +1049,7 @@ const sumaEdades = computed(() => {
   }, 0)
 })
 
+// Suma de discapacidades
 const sumaDiscapacidades = computed(() => {
   if (!habilitadoDiscapacidad.value) return 0
   return tiposDiscapacidad.value.reduce((sum, discapacidad) => {
@@ -964,6 +1057,13 @@ const sumaDiscapacidades = computed(() => {
   }, 0)
 })
 
+// Cantidad restante disponible para asignar en discapacidad
+const restanteDiscapacidad = computed(() => {
+  const total = parseInt(totalConDiscapacidad.value || 0)
+  return Math.max(0, total - sumaDiscapacidades.value)
+})
+
+// Suma de ocupaciones
 const sumaOcupaciones = computed(() => {
   if (!habilitadoOcupaciones.value) return 0
   return ocupaciones.value.reduce((sum, ocupacion) => {
@@ -971,6 +1071,7 @@ const sumaOcupaciones = computed(() => {
   }, 0)
 })
 
+// Suma de localidades
 const sumaLocalidades = computed(() => {
   if (!habilitadoLocalidades.value) return 0
   return localidades.value.reduce((sum, localidad) => {
@@ -978,6 +1079,7 @@ const sumaLocalidades = computed(() => {
   }, 0)
 })
 
+// Suma de organizaciones
 const sumaOrganizaciones = computed(() => {
   if (!habilitadoOrganizaciones.value) return 0
   return organizacionCantidades.value.reduce((sum, cantidad) => {
@@ -985,47 +1087,64 @@ const sumaOrganizaciones = computed(() => {
   }, 0)
 })
 
-// Validaciones de consistencia
+// ============================
+// VALIDACIONES
+// ============================
+
+// Error de género
 const errorGenero = computed(() => {
   if (!habilitadoGenero.value) return false
   return sumaGenero.value !== parseInt(totalParticipantes.value || 0)
 })
 
+// Error de edades
 const errorEdades = computed(() => {
   if (!habilitadoEdades.value) return false
   return sumaEdades.value !== parseInt(totalParticipantes.value || 0)
 })
 
-const errorDiscapacidad = computed(() => {
+// Error de suma de discapacidad vs total registrado
+const errorSumaDiscapacidad = computed(() => {
   if (!habilitadoDiscapacidad.value) return false
-  return sumaDiscapacidades.value !== parseInt(totalConDiscapacidad.value || 0)
+  return sumaDiscapacidades.value > parseInt(totalConDiscapacidad.value || 0)
 })
 
+// Error de discapacidad general (combinado)
+const errorDiscapacidad = computed(() => {
+  if (!habilitadoDiscapacidad.value) return false
+  return errorSumaDiscapacidad.value || errorTotalDiscapacidad.value
+})
+
+// Error de ocupaciones
 const errorOcupaciones = computed(() => {
   if (!habilitadoOcupaciones.value) return false
   return sumaOcupaciones.value !== parseInt(totalParticipantes.value || 0)
 })
 
+// Error de localidades
 const errorLocalidades = computed(() => {
   if (!habilitadoLocalidades.value) return false
   return sumaLocalidades.value !== parseInt(totalParticipantes.value || 0)
 })
 
+// Error de organizaciones
 const errorOrganizaciones = computed(() => {
   if (!habilitadoOrganizaciones.value) return false
   return sumaOrganizaciones.value !== parseInt(totalParticipantes.value || 0)
 })
 
-// Validaciones para discapacidad
+// Máximo de discapacidad
 const maxDiscapacidad = computed(() => {
   return parseInt(totalParticipantes.value || 0)
 })
 
+// Error total de discapacidad
 const errorTotalDiscapacidad = computed(() => {
   if (!habilitadoDiscapacidad.value) return false
   return parseInt(totalConDiscapacidad.value || 0) > parseInt(totalParticipantes.value || 0)
 })
 
+// Máximo individual de discapacidad
 const maxDiscapacidadIndividual = (index) => {
   const totalDiscapacidad = parseInt(totalConDiscapacidad.value || 0)
   const sumaRestante = tiposDiscapacidad.value.reduce((sum, disc, i) => {
@@ -1038,11 +1157,19 @@ const maxDiscapacidadIndividual = (index) => {
   return Math.max(0, totalDiscapacidad - sumaRestante)
 }
 
+// Error en cantidad individual de discapacidad
 const errorCantidadDiscapacidad = (index) => {
   if (!habilitadoDiscapacidad.value) return false
   const cantidad = parseInt(tiposDiscapacidad.value[index]?.cantidad || 0)
   const maxPermitido = maxDiscapacidadIndividual(index)
   return cantidad > maxPermitido
+}
+
+// Mensaje de error para cantidad de discapacidad
+const mensajeErrorCantidadDiscapacidad = (index) => {
+  if (!errorCantidadDiscapacidad(index)) return ''
+  const maxPermitido = maxDiscapacidadIndividual(index)
+  return `Máximo permitido: ${maxPermitido}`
 }
 
 // Resumen de subsecciones
@@ -1058,6 +1185,7 @@ const subseccionesResumen = computed(() => {
   ]
 })
 
+// Verificar si hay subsecciones activas
 const tieneSubseccionesActivas = computed(() => {
   return [
     habilitadoGenero.value,
@@ -1070,7 +1198,7 @@ const tieneSubseccionesActivas = computed(() => {
   ].some(Boolean)
 })
 
-// Validación general (solo aplica si la sección está habilitada)
+// Validación general de errores
 const tieneErroresValidacion = computed(() => {
   if (!seccionHabilitada.value) return false
 
@@ -1078,7 +1206,7 @@ const tieneErroresValidacion = computed(() => {
 
   if (habilitadoGenero.value && errorGenero.value) errores.push('genero')
   if (habilitadoEdades.value && errorEdades.value) errores.push('edades')
-  if (habilitadoDiscapacidad.value && (errorDiscapacidad.value || errorTotalDiscapacidad.value))
+  if (habilitadoDiscapacidad.value && (errorSumaDiscapacidad.value || errorTotalDiscapacidad.value))
     errores.push('discapacidad')
   if (habilitadoOcupaciones.value && errorOcupaciones.value) errores.push('ocupaciones')
   if (habilitadoLocalidades.value && errorLocalidades.value) errores.push('localidades')
@@ -1087,7 +1215,7 @@ const tieneErroresValidacion = computed(() => {
   return errores.length > 0
 })
 
-// Computed para organizaciones con datos combinados
+// Organizaciones con cantidad
 const organizacionesConCantidad = computed(() => {
   if (!habilitadoOrganizaciones.value) return []
   return organizaciones.value
@@ -1098,16 +1226,13 @@ const organizacionesConCantidad = computed(() => {
     .filter((org) => org.nombre || org.cantidad > 0)
 })
 
-// Validador principal que habilita/deshabilita el registro
+// Puede registrar
 const puedeRegistrar = computed(() => {
-  // 1. La sección debe estar habilitada
   if (!seccionHabilitada.value) return false
 
-  // 2. Total de participantes es obligatorio y válido
   const totalValido = parseInt(totalParticipantes.value || 0) > 0
   if (!totalValido) return false
 
-  // 3. Si hay subsecciones activas, no deben tener errores
   if (tieneSubseccionesActivas.value && tieneErroresValidacion.value) {
     return false
   }
@@ -1124,23 +1249,17 @@ const registrarInformacion = async () => {
   registrando.value = true
 
   try {
-    // Si la sección NO está habilitada, enviar null
     if (!seccionHabilitada.value) {
       emit('registrar-informacion', null)
       return
     }
 
-    // Preparar los datos para registrar (RESPETANDO LA ESTRUCTURA JSON ORIGINAL)
     const datosParaRegistrar = {
-      // Metadatos (original)
       timestamp: new Date().toISOString(),
       estado: 'registrado',
       seccionHabilitada: seccionHabilitada.value,
-
-      // Datos principales (original)
       totalParticipantes: parseInt(totalParticipantes.value) || 0,
 
-      // Género (original - solo si está habilitado)
       genero: habilitadoGenero.value
         ? {
             varones: parseInt(varones.value) || 0,
@@ -1154,7 +1273,6 @@ const registrarInformacion = async () => {
           }
         : null,
 
-      // Edades (original - solo si está habilitado)
       edades: habilitadoEdades.value
         ? {
             ...grupoEdadValues,
@@ -1165,7 +1283,6 @@ const registrarInformacion = async () => {
           }
         : null,
 
-      // Discapacidad (original - solo si está habilitado)
       discapacidad: habilitadoDiscapacidad.value
         ? {
             total: parseInt(totalConDiscapacidad.value) || 0,
@@ -1181,7 +1298,6 @@ const registrarInformacion = async () => {
           }
         : null,
 
-      // Ocupaciones (original - solo si está habilitado)
       ocupaciones: habilitadoOcupaciones.value
         ? {
             datos: ocupaciones.value.map((o) => ({
@@ -1195,7 +1311,6 @@ const registrarInformacion = async () => {
           }
         : null,
 
-      // Localidades (original - solo si está habilitado)
       localidades: habilitadoLocalidades.value
         ? {
             datos: localidades.value.map((l) => ({
@@ -1213,7 +1328,6 @@ const registrarInformacion = async () => {
           }
         : null,
 
-      // Organizaciones (original - solo si está habilitado)
       organizaciones: habilitadoOrganizaciones.value
         ? {
             datos: organizacionesConCantidad.value,
@@ -1226,7 +1340,6 @@ const registrarInformacion = async () => {
           }
         : null,
 
-      // Archivos (original - solo si está habilitado)
       archivos: habilitadoArchivos.value
         ? {
             total: archivos.value.length,
@@ -1241,7 +1354,6 @@ const registrarInformacion = async () => {
           }
         : null,
 
-      // Validaciones (original)
       validaciones: {
         genero: habilitadoGenero.value ? !errorGenero.value : null,
         edades: habilitadoEdades.value ? !errorEdades.value : null,
@@ -1254,7 +1366,6 @@ const registrarInformacion = async () => {
         tieneErrores: calcularErroresTotales(),
       },
 
-      // Estadísticas (original)
       estadisticas: {
         sumaTotal: sumaGenero.value,
         archivosTotal: archivos.value.length,
@@ -1266,10 +1377,7 @@ const registrarInformacion = async () => {
       },
     }
 
-    // Emitir el evento al componente padre
     emit('registrar-informacion', datosParaRegistrar)
-
-    // Simular un pequeño delay para mostrar el estado de carga
     await new Promise((resolve) => setTimeout(resolve, 800))
   } catch (error) {
     console.error('Error al registrar información:', error)
@@ -1303,7 +1411,7 @@ const calcularErroresTotales = () => {
 
   if (habilitadoGenero.value && errorGenero.value) errores = true
   if (habilitadoEdades.value && errorEdades.value) errores = true
-  if (habilitadoDiscapacidad.value && (errorDiscapacidad.value || errorTotalDiscapacidad.value))
+  if (habilitadoDiscapacidad.value && (errorSumaDiscapacidad.value || errorTotalDiscapacidad.value))
     errores = true
   if (habilitadoOcupaciones.value && errorOcupaciones.value) errores = true
   if (habilitadoLocalidades.value && errorLocalidades.value) errores = true
@@ -1354,12 +1462,14 @@ const calcularSubseccionesActivas = () => {
 // ============================
 // MÉTODOS AUXILIARES
 // ============================
+
 const agregarDiscapacidad = () => {
-  tiposDiscapacidad.value.push({ tipo: '', cantidad: 0 })
+  tiposDiscapacidad.value.push({ tipo: '', cantidad: 0, esPredefinido: false })
 }
 
 const eliminarDiscapacidad = (index) => {
-  if (tiposDiscapacidad.value.length > 1) {
+  const tipoActual = tiposDiscapacidad.value[index]
+  if (!tipoActual.esPredefinido || tiposDiscapacidad.value.length > 1) {
     tiposDiscapacidad.value.splice(index, 1)
   }
 }
@@ -1369,7 +1479,16 @@ const validarDiscapacidad = () => {
 }
 
 const validarDiscapacidadIndividual = (index) => {
-  // Validación automática
+  const cantidad = parseInt(tiposDiscapacidad.value[index]?.cantidad || 0)
+  const maxPermitido = maxDiscapacidadIndividual(index)
+
+  if (cantidad > maxPermitido) {
+    tiposDiscapacidad.value[index].cantidad = maxPermitido
+  }
+
+  if (cantidad < 0) {
+    tiposDiscapacidad.value[index].cantidad = 0
+  }
 }
 
 const agregarOcupacion = () => {
@@ -1435,7 +1554,6 @@ const actualizarTotales = () => {
 // Watch para resetear datos cuando se deshabilita la sección
 watch(seccionHabilitada, (nuevoValor) => {
   if (!nuevoValor) {
-    // Resetear todos los datos cuando se deshabilita la sección
     totalParticipantes.value = 0
     varones.value = 0
     mujeres.value = 0
@@ -1444,12 +1562,12 @@ watch(seccionHabilitada, (nuevoValor) => {
     totalConDiscapacidad.value = 0
     necesidadesAccesibilidad.value = ''
     tiposDiscapacidad.value = [
-      { tipo: 'Discapacidad Visual', cantidad: 0 },
-      { tipo: 'Discapacidad Auditiva', cantidad: 0 },
-      { tipo: 'Discapacidad Fisica', cantidad: 0 },
-      { tipo: 'Discapacidad Psiquico/mental', cantidad: 0 },
-      { tipo: 'Discapacidad Intelectual', cantidad: 0 },
-      { tipo: 'Discapacidad Multiple', cantidad: 0 },
+      { tipo: 'Discapacidad Visual', cantidad: 0, esPredefinido: true },
+      { tipo: 'Discapacidad Auditiva', cantidad: 0, esPredefinido: true },
+      { tipo: 'Discapacidad Fisica', cantidad: 0, esPredefinido: true },
+      { tipo: 'Discapacidad Psiquico/mental', cantidad: 0, esPredefinido: true },
+      { tipo: 'Discapacidad Intelectual', cantidad: 0, esPredefinido: true },
+      { tipo: 'Discapacidad Multiple', cantidad: 0, esPredefinido: true },
     ]
     Object.keys(grupoEdadValues).forEach((key) => {
       grupoEdadValues[key] = 0
@@ -1468,7 +1586,6 @@ watch(seccionHabilitada, (nuevoValor) => {
     archivos.value = []
     nuevoArchivo.value = []
 
-    // Deshabilitar todas las subsecciones
     habilitadoGenero.value = false
     habilitadoEdades.value = false
     habilitadoDiscapacidad.value = false
@@ -1479,7 +1596,9 @@ watch(seccionHabilitada, (nuevoValor) => {
   }
 })
 
-/************************************ FUNCIONES PARA LA VALIDACION *******************************/
+// ============================
+// FUNCIONES PARA LA VALIDACIÓN
+// ============================
 const emitirEstadoHabilitacion = () => {
   emit('estado-habilitacion', {
     seccionHabilitada: seccionHabilitada.value,
@@ -1487,7 +1606,6 @@ const emitirEstadoHabilitacion = () => {
   })
 }
 
-//Watcher para emitir estado estado
 watch(
   seccionHabilitada,
   (nuevoValor) => {
@@ -1497,7 +1615,6 @@ watch(
   { immediate: true },
 )
 
-//Emitir cambios totalParticipantes
 watch(totalParticipantes, (nuevoTotal) => {
   console.log('🔄 Total participantes cambió a:', nuevoTotal)
   emitirEstadoHabilitacion()

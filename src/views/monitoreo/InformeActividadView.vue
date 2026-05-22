@@ -736,10 +736,10 @@ const submitForm = async () => {
     console.log('📦 Enviando payload al RestAPI:', payload)
 
     // Enviar al backend
-    await crearInformeActividadPrincipal(payload)
-    resetForm()
-    successMsg('Informe enviado exitosamente')
-    router.push('/actividades/informe/')
+    //await crearInformeActividadPrincipal(payload)
+    //resetForm()
+    //successMsg('Informe enviado exitosamente')
+    //router.push('/actividades/informe/')
   } catch (error) {
     console.error('Error al enviar el informe:', error)
     alert(`Error: ${error.message}`)
