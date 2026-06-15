@@ -18,6 +18,24 @@
         class="mb-4"
       ></v-progress-linear>
 
+      <!-- Alerta de error -->
+      <v-alert
+        v-if="error"
+        type="error"
+        variant="tonal"
+        class="mb-3"
+        closable
+        @click:close="error = null"
+      >
+        <div class="d-flex align-center">
+          <v-icon icon="mdi-alert-circle" size="24" class="mr-3"></v-icon>
+          <div>
+            <div class="font-weight-medium">Error al cargar solicitudes</div>
+            <div class="text-caption">{{ error.message || 'Error desconocido' }}</div>
+          </div>
+        </div>
+      </v-alert>
+
       <v-row>
         <v-col cols="12">
           <div class="text-subtitle-2 text-grey-darken-1 mb-4">
@@ -37,7 +55,7 @@
       <!-- Selector de Solicitud de Viaje (usando autocomplete con selección múltiple) -->
       <v-autocomplete
         v-model="solicitudesViajeSeleccionadas"
-        :items="solicitudesViajeDisponibles"
+        :items="solicitudesViajeClonadas"
         :loading="cargandoViajes"
         item-title="displayText"
         item-value="id"
@@ -329,6 +347,7 @@
                                 step="0.01"
                                 placeholder="0.00"
                                 class="gasto-input"
+                                :rules="[validarMontoRule]"
                                 @input="actualizarMontoSolicitud(index)"
                               ></v-text-field>
                             </td>
@@ -450,6 +469,27 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useSolicitudesStore } from '../../store/useSolicitudesStore'
 import { useSnackbar } from '@/composables/useSnackbar'
 
+/**
+ * @typedef {Object} GastoItem
+ * @property {string} partida - Código de partida presupuestaria
+ * @property {string} fuente - Fuente de financiamiento
+ * @property {string} concepto - Descripción del gasto
+ * @property {number} monto - Monto del gasto
+ */
+
+/**
+ * @typedef {Object} SolicitudViaje
+ * @property {number} id - ID de la solicitud
+ * @property {string} numeroFormulario - Número de formulario
+ * @property {string} evento - Nombre del evento
+ * @property {string} lugarEvento - Lugar del evento
+ * @property {string} fechaEvento - Fecha del evento
+ * @property {number} montoSolicitado - Monto original solicitado
+ * @property {Object} detalleGasto - Detalle de gastos
+ * @property {GastoItem[]} detalleGasto.items - Items de gasto
+ * @property {string} estado_validacion - Estado de validación
+ */
+
 // Props
 const props = defineProps({
   idActividad: {
@@ -489,30 +529,57 @@ const solicitudesViaje = computed(() => solStore.solicitudesViajeDisponiblesTare
 
 const cargandoViajes = computed(() => solStore.loadingViajesDisponibles || false)
 
-// Separar solicitudes disponibles (todas las que vienen del store ya son las filtradas por actividad y tarea)
-const solicitudesViajeDisponibles = computed(() => {
+/**
+ * Crea una copia profunda de un objeto sin mutar el original
+ * @param {Object} obj - Objeto a clonar
+ * @returns {Object} Copia profunda del objeto
+ */
+const clonarObjeto = (obj) => {
+  if (obj === null || obj === undefined) return obj
+  return JSON.parse(JSON.stringify(obj))
+}
+
+/**
+ * Solicitudes de viaje disponibles clonadas para evitar mutación del store
+ */
+const solicitudesViajeClonadas = computed(() => {
   if (!solicitudesViaje.value.length) return []
 
   return solicitudesViaje.value
     .filter((solicitud) => solicitud.puede_vincularse === true)
     .map((solicitud) => {
-      // Asegurar que detalleGasto tenga la estructura correcta
-      if (!solicitud.detalleGasto) {
-        solicitud.detalleGasto = { items: [] }
+      const solicitudClonada = clonarObjeto(solicitud)
+
+      if (!solicitudClonada.detalleGasto) {
+        solicitudClonada.detalleGasto = { items: [] }
       }
-      if (!solicitud.detalleGasto.items) {
-        solicitud.detalleGasto.items = []
+      if (!solicitudClonada.detalleGasto.items) {
+        solicitudClonada.detalleGasto.items = []
       }
 
-      return {
-        ...solicitud,
-        displayText: `${solicitud.numeroFormulario} - ${solicitud.evento} (${solicitud.lugarEvento})`,
+      solicitudClonada.detalleGasto = {
+        items: solicitudClonada.detalleGasto.items.map((item) => ({ ...item })),
       }
+
+      solicitudClonada.displayText = `${solicitudClonada.numeroFormulario} - ${solicitudClonada.evento} (${solicitudClonada.lugarEvento})`
+
+      return solicitudClonada
     })
 })
 
-// Totales
-const hayViajesDisponibles = computed(() => solicitudesViajeDisponibles.value.length > 0)
+const hayViajesDisponibles = computed(() => solicitudesViajeClonadas.value.length > 0)
+
+/**
+ * Regla de validación para montos
+ */
+const validarMontoRule = (value) => {
+  if (value === '' || value === null || value === undefined) return 'El monto es requerido'
+  const num = parseFloat(value)
+  if (isNaN(num)) return 'Debe ser un número válido'
+  if (num < 0) return 'El monto no puede ser negativo'
+  if (num > 999999.99) return 'El monto excede el límite permitido'
+  return true
+}
 
 // Métodos auxiliares
 const formatMonto = (monto) => {
@@ -535,7 +602,7 @@ const formatFecha = (fecha) => {
       day: 'numeric',
     })
   } catch (error) {
-    console.error(error)
+    console.error('Error al formatear fecha:', error)
     return fecha
   }
 }
@@ -543,34 +610,44 @@ const formatFecha = (fecha) => {
 const getEstadoColor = (estado) => {
   if (!estado) return 'default'
   const estadoLower = estado.toLowerCase()
-  if (estadoLower === 'aprobado' || estadoLower === 'aprobada') return 'success'
-  if (estadoLower === 'rechazado' || estadoLower === 'rechazada') return 'error'
-  if (estadoLower === 'pendiente') return 'warning'
-  if (estadoLower === 'revisión' || estadoLower === 'revision') return 'info'
-  if (estadoLower === 'enviado' || estadoLower === 'enviada') return 'primary'
-  return 'default'
+  const colores = {
+    aprobado: 'success',
+    aprobada: 'success',
+    rechazado: 'error',
+    rechazada: 'error',
+    pendiente: 'warning',
+    revisión: 'info',
+    revision: 'info',
+    enviado: 'primary',
+    enviada: 'primary',
+  }
+  return colores[estadoLower] || 'default'
 }
 
 const getEstadoTexto = (estado) => {
   if (!estado) return 'Pendiente'
   const estadoLower = estado.toLowerCase()
-  if (estadoLower === 'aprobado' || estadoLower === 'aprobada') return 'Aprobado'
-  if (estadoLower === 'rechazado' || estadoLower === 'rechazada') return 'Rechazado'
-  if (estadoLower === 'pendiente') return 'Pendiente'
-  if (estadoLower === 'revisión') return 'En Revisión'
-  return estado
+  const textos = {
+    aprobado: 'Aprobado',
+    aprobada: 'Aprobado',
+    rechazado: 'Rechazado',
+    rechazada: 'Rechazado',
+    pendiente: 'Pendiente',
+    revisión: 'En Revisión',
+    revision: 'En Revisión',
+  }
+  return textos[estadoLower] || estado
 }
 
-// Calcular monto de una solicitud basado en sus items
 const calcularMontoSolicitud = (solicitud) => {
-  if (!solicitud.detalleGasto?.items?.length) return 0
+  if (!solicitud?.detalleGasto?.items?.length) return 0
 
   return solicitud.detalleGasto.items.reduce((total, item) => {
-    return total + (parseFloat(item.monto) || 0)
+    const monto = parseFloat(item.monto) || 0
+    return total + Math.max(0, monto)
   }, 0)
 }
 
-// Calcular monto total de todas las solicitudes seleccionadas
 const calcularMontoTotalSolicitud = () => {
   if (!solicitudesViajeSeleccionadas.value?.length) return 0
 
@@ -579,27 +656,26 @@ const calcularMontoTotalSolicitud = () => {
   }, 0)
 }
 
-// Verificar si hay diferencia entre monto original y actual
 const hayDiferenciaMonto = (solicitud) => {
   const montoOriginal = parseFloat(solicitud.montoSolicitado) || 0
   const montoActual = calcularMontoSolicitud(solicitud)
   return Math.abs(montoOriginal - montoActual) > 0.01
 }
 
-// Calcular diferencia de monto
 const calcularDiferenciaMonto = (solicitud) => {
   const montoOriginal = parseFloat(solicitud.montoSolicitado) || 0
   const montoActual = calcularMontoSolicitud(solicitud)
   return montoActual - montoOriginal
 }
 
-// Actualizar el monto total de la solicitud cuando se modifican los items
 const actualizarMontoSolicitud = (index) => {
-  // Forzar actualización reactiva
-  solicitudesViajeSeleccionadas.value = [...solicitudesViajeSeleccionadas.value]
+  solicitudesViajeSeleccionadas.value = [
+    ...solicitudesViajeSeleccionadas.value.slice(0, index),
+    { ...solicitudesViajeSeleccionadas.value[index] },
+    ...solicitudesViajeSeleccionadas.value.slice(index + 1),
+  ]
 }
 
-// Agregar nuevo item de gasto
 const agregarItemGasto = (index) => {
   const solicitud = solicitudesViajeSeleccionadas.value[index]
 
@@ -620,7 +696,6 @@ const agregarItemGasto = (index) => {
   actualizarMontoSolicitud(index)
 }
 
-// Eliminar item de gasto
 const eliminarItemGasto = (solicitudIndex, itemIndex) => {
   const solicitud = solicitudesViajeSeleccionadas.value[solicitudIndex]
 
@@ -630,30 +705,29 @@ const eliminarItemGasto = (solicitudIndex, itemIndex) => {
   }
 }
 
-// Guardar copia original de los gastos al seleccionar una solicitud
 const guardarGastosOriginales = (solicitud) => {
   if (!gastosOriginales.value.has(solicitud.id)) {
     gastosOriginales.value.set(solicitud.id, {
-      detalleGasto: JSON.parse(JSON.stringify(solicitud.detalleGasto || { items: [] })),
+      detalleGasto: clonarObjeto(solicitud.detalleGasto || { items: [] }),
       montoSolicitado: solicitud.montoSolicitado,
     })
   }
 }
 
-// Restaurar gastos originales
 const restaurarGastosOriginales = (index) => {
   const solicitud = solicitudesViajeSeleccionadas.value[index]
   const original = gastosOriginales.value.get(solicitud.id)
 
   if (original) {
-    solicitud.detalleGasto = JSON.parse(JSON.stringify(original.detalleGasto))
+    solicitud.detalleGasto = clonarObjeto(original.detalleGasto)
     solicitud.montoSolicitado = original.montoSolicitado
     actualizarMontoSolicitud(index)
     successMsg('Gastos restaurados a los valores originales')
+  } else {
+    errorMsg('No se encontraron los gastos originales')
   }
 }
 
-// Remover solicitud de la selección
 const removerSolicitud = (idSolicitud) => {
   solicitudesViajeSeleccionadas.value = solicitudesViajeSeleccionadas.value.filter(
     (s) => s.id !== idSolicitud,
@@ -661,18 +735,20 @@ const removerSolicitud = (idSolicitud) => {
   gastosOriginales.value.delete(idSolicitud)
 }
 
-// Cargar datos del store usando el método específico por actividad y tarea
 const cargarDatos = async () => {
   if (!props.idActividad || !props.idTarea) {
     console.warn('Faltan idActividad o idTarea para cargar solicitudes')
+    error.value = new Error('Faltan parámetros requeridos: idActividad y idTarea')
     return
   }
 
   cargando.value = true
+  error.value = null
+
   try {
     await solStore.cargarSolViajeDisponiblePorIdTarea(props.idActividad, props.idTarea)
   } catch (err) {
-    console.error('Error al cargar datos de solicitudes de viaje', err)
+    console.error('Error al cargar datos de solicitudes de viaje:', err)
     error.value = err
     errorMsg('Error al cargar las solicitudes de viaje')
   } finally {
@@ -680,43 +756,63 @@ const cargarDatos = async () => {
   }
 }
 
-// Watcher para guardar copias originales cuando se seleccionan nuevas solicitudes
+/**
+ * ✅ WATCHER ÚNICO MEJORADO
+ * Detecta TODOS los cambios: partida, fuente, concepto, monto, agregar/eliminar items
+ * Reemplaza los dos watchers anteriores
+ */
 watch(
-  solicitudesViajeSeleccionadas,
-  (nuevas, antiguas) => {
-    // Guardar originales para nuevas solicitudes
-    nuevas.forEach((solicitud) => {
-      guardarGastosOriginales(solicitud)
-    })
+  () =>
+    solicitudesViajeSeleccionadas.value.map((s) => ({
+      id: s.id,
+      montoTotal: calcularMontoSolicitud(s),
+      itemsCount: s.detalleGasto?.items?.length,
+      // Detecta cambios en partida, fuente y concepto
+      resumenTextos: s.detalleGasto?.items
+        ?.map((i) => `${i.partida || ''}|${i.fuente || ''}|${i.concepto || ''}`)
+        .join('||'),
+      // Detecta cambios en montos individuales
+      resumenMontos: s.detalleGasto?.items?.map((i) => i.monto || 0).join(','),
+    })),
+  (nuevoValor, antiguoValor) => {
+    // Guardar originales cuando se agregan nuevas solicitudes
+    if (nuevoValor.length > (antiguoValor?.length || 0)) {
+      const solicitudesActuales = solicitudesViajeSeleccionadas.value
+      solicitudesActuales.forEach((solicitud) => {
+        if (!gastosOriginales.value.has(solicitud.id)) {
+          guardarGastosOriginales(solicitud)
+        }
+      })
+    }
 
     // Limpiar originales de solicitudes removidas
-    const idsActuales = new Set(nuevas.map((s) => s.id))
-    const idsAntiguas = new Set(antiguas?.map((s) => s.id) || [])
-
-    idsAntiguas.forEach((id) => {
+    const idsActuales = new Set(solicitudesViajeSeleccionadas.value.map((s) => s.id))
+    const idsEnOriginales = Array.from(gastosOriginales.value.keys())
+    idsEnOriginales.forEach((id) => {
       if (!idsActuales.has(id)) {
         gastosOriginales.value.delete(id)
       }
     })
+
+    // Emitir cambios al padre
+    emitVinculacionActualizada()
   },
-  { deep: true },
+  { deep: false },
 )
 
-// Watcher para emitir cambios de vinculación
-watch(
-  [solicitudesViajeSeleccionadas],
-  () => {
-    const vinculacion = getVinculacion()
-    emit('update:vinculacion', vinculacion)
-  },
-  { deep: true },
-)
+/**
+ * Emitir evento de actualización de vinculación
+ */
+const emitVinculacionActualizada = () => {
+  const vinculacion = getVinculacion()
+  emit('update:vinculacion', vinculacion)
+}
 
-// Métodos públicos
 const reset = () => {
   solicitudesViajeSeleccionadas.value = []
   panelSolicitudesAbiertas.value = []
   gastosOriginales.value.clear()
+  error.value = null
 }
 
 const getVinculacion = () => {
@@ -724,7 +820,6 @@ const getVinculacion = () => {
     return null
   }
 
-  // Construir JSON completo para el endpoint con los gastos editados
   const solicitudesVinculadas = solicitudesViajeSeleccionadas.value.map((solicitud) => {
     const montoActual = calcularMontoSolicitud(solicitud)
     const montoOriginal = parseFloat(solicitud.montoSolicitado) || 0
@@ -775,15 +870,16 @@ const confirmarVinculacion = () => {
   const vinculacion = getVinculacion()
   if (vinculacion) {
     emit('confirmar', vinculacion)
+    successMsg('Vinculación confirmada exitosamente')
+  } else {
+    errorMsg('No hay solicitudes para confirmar')
   }
 }
 
-// Método para obtener solo los IDs (compatibilidad)
 const obtenerIdsVinculadas = () => {
   return solicitudesViajeSeleccionadas.value.map((s) => s.id)
 }
 
-// Exponer métodos para el componente padre
 defineExpose({
   reset,
   getVinculacion,
@@ -792,7 +888,6 @@ defineExpose({
   cargarDatos,
 })
 
-// Hook de ciclo de vida
 onMounted(() => {
   cargarDatos()
 })

@@ -849,12 +849,16 @@ watch(
       id: s.id,
       montoTotal: calcularMontoSolicitud(s),
       itemsCount: s.detalleGasto?.items?.length,
+      //Detectar cambios en partida, fuente y concepto
+      resumenTextos: s.detalleGasto?.items
+        ?.map((i) => `${i.partida || ''}|${i.fuente || ''}|${i.concepto || ''}`)
+        .join('||'),
     })),
   () => {
     const vinculacion = getVinculacion()
     emit('update:vinculacion', vinculacion)
   },
-  { deep: false }, // Ya no es necesario deep watch porque mapeamos los valores relevantes
+  { deep: false },
 )
 
 // Métodos públicos

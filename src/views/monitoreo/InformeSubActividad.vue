@@ -243,7 +243,6 @@
                     <v-icon color="primary" class="mr-2">mdi-chart-line</v-icon>
                     Registro de Indicadores
                   </h3>
-                  <!-- Switch para activar/desactivar la sección -->
                   <div class="mb-4">
                     <v-switch
                       v-model="habilitarIndicadores"
@@ -257,7 +256,6 @@
                       información de indicadores.
                     </div>
                   </div>
-                  <!-- Contenido condicional -->
                   <v-expand-transition>
                     <div v-if="habilitarIndicadores">
                       <v-row>
@@ -284,7 +282,6 @@
                             </div>
                           </v-alert>
 
-                          <!-- COMPONENTE DE INDICADORES CON REF Y EVENTOS -->
                           <RegistroAvanceIndicadoresTareaV3
                             ref="indicadoresComponent"
                             @indicadores-cargados="manejarIndicadoresCargados"
@@ -373,12 +370,14 @@
                 </div>
 
                 <v-divider class="my-4"></v-divider>
-                <!--Seccion 8: Vinculacion de sol de viajes-->
+
+                <!-- ✅ Seccion 8: Vinculacion de sol de viajes (COMPLETA) -->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-link-variant</v-icon>
                     Vincular Solicitud de Viaje
                   </h3>
+
                   <!-- Switch para activar/desactivar la sección -->
                   <div class="mb-4">
                     <v-switch
@@ -389,12 +388,42 @@
                       inset
                     ></v-switch>
                   </div>
+
+                  <!-- ✅ Resumen de vinculación en tiempo real -->
+                  <v-alert
+                    v-if="seccionVincularSolicitud && vinculacionSolicitudes"
+                    type="info"
+                    variant="tonal"
+                    density="compact"
+                    class="mb-3"
+                  >
+                    <div class="d-flex align-center">
+                      <v-icon icon="mdi-link-variant" size="20" class="mr-2"></v-icon>
+                      <div>
+                        <strong>{{ vinculacionSolicitudes.total_solicitudes }}</strong>
+                        solicitud(es) vinculada(s) | Monto total:
+                        <strong>{{
+                          formatMontoLocal(vinculacionSolicitudes.monto_total_actual)
+                        }}</strong>
+                        <span
+                          v-if="vinculacionSolicitudes.tiene_modificaciones_global"
+                          class="text-warning ml-2"
+                        >
+                          ⚠️ Con modificaciones
+                        </span>
+                      </div>
+                    </div>
+                  </v-alert>
+
                   <!-- Contenido condicional -->
                   <div v-if="seccionVincularSolicitud">
+                    <!-- ✅ Componente con ref y evento de sincronización -->
                     <VinculacionInformeTarea
+                      ref="vinculacionTareaComponent"
                       v-if="storeInfTarea.actividad"
                       :idActividad="storeInfTarea.actividad?.id"
                       :idTarea="idtarea"
+                      @update:vinculacion="manejarActualizacionVinculacion"
                     ></VinculacionInformeTarea>
                   </div>
 
@@ -405,6 +434,7 @@
                 </div>
 
                 <v-divider class="my-4"></v-divider>
+
                 <!-- Sección 9: Medios de verificacion -->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
@@ -479,6 +509,7 @@
                 </div>
 
                 <v-divider class="my-4"></v-divider>
+
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
                   <v-btn
@@ -519,11 +550,6 @@
       </v-row>
     </div>
   </v-container>
-  <!-- Datos formulario:
-  {{ formData }}
-  <br /><br /><br /><br />
-  Validadores:
-  {{ nuevosValidadores }} -->
 </template>
 
 <script setup>
@@ -541,6 +567,7 @@ import InformacionCuantitativaV2 from '@/modules/formularios/components/Informac
 import PresupuestoSubactividad from '@/modules/formularios/components/PresupuestoSubactividad.vue'
 import HerramientasAplicadasResultados from '@/modules/formularios/components/HerramientasAplicadasResultados.vue'
 import ValidadorInformeActividad from '@/modules/formularios/components/validadores/ValidadorInformeActividad.vue'
+import VinculacionInformeTarea from '@/modules/formularios/components/vinculacion/VinculacionInformeTarea.vue'
 //Composable
 import { useSnackbar } from '@/composables/useSnackbar'
 //utils
@@ -550,7 +577,6 @@ import {
   formatearFecha,
   formatearPresupuesto,
 } from '@/modules/formularios/utils/estadoTareaUtils'
-import VinculacionInformeTarea from '@/modules/formularios/components/vinculacion/VinculacionInformeTarea.vue'
 
 // Router - captura id del informe
 const router = useRouter()
@@ -577,7 +603,7 @@ const usuarioRol = computed(() => usuarioStore.rol)
 const formData = ref({
   fechaEjecucion: null,
   contribucionProyecto: '',
-  avanceIndicadores: null, // Inicializado como null, no como string vacío
+  avanceIndicadores: null,
   informacionCuantitativa: '',
   herramientasEvaluacion: '',
   mediosVerificacion: '',
@@ -604,37 +630,35 @@ const recibirDatosContribucion = (payload) => {
 }
 
 /******************************* Registro de Indicadores *********************************/
-//Habilitar/Deshabilitar indicadores
 const habilitarIndicadores = ref(false)
 
-//Manejador cuando los indicadores se cargan
 const manejarIndicadoresCargados = (payload) => {
   console.log('📊 Indicadores cargados inicialmente:', payload)
 }
 const manejarIndicadoresActualizados = (payload) => {
   console.log('🔄 Indicadores actualizados:', payload)
 }
+
 /******************************** Informacion Cuantitativa *********************************/
-//Estado de la Informacion cuantitativa
 const infoCuantitativaEstado = ref({
   seccionHabilitada: false,
   totalParticipantes: 0,
 })
-//Manejador del estado de habilitacion
+
 const manejarEstadoHabilitacion = (estado) => {
   console.log('📊 Estado info cuantitativa:', estado)
   infoCuantitativaEstado.value = {
     seccionHabilitada: estado.seccionHabilitada,
     totalParticipantes: estado.totalParticipantes,
   }
-  console.log('INFO ESTADO:', infoCuantitativaEstado.value)
 }
-//Informacion cuantitativa
+
 const manejarRegistro = async (datos) => {
   console.log('informacion registrada: ', datos)
   formData.value.informacionCuantitativa = datos
   successMsg('Informacion cuantitativa registrada')
 }
+
 /******************************** Registrar Presupuesto ************************************/
 const registrarPresupuestos = async (datos) => {
   console.log('Procedencia Fondos: ', datos)
@@ -651,20 +675,58 @@ const registrarHerramientas = async (info) => {
   successMsg('Herramientas Aplicadas Registradas')
 }
 
-/*********************************** Vinculacion de sol de viajes tarea *******************************************************/
+/*********************************** ✅ VINCULACION DE SOLICITUDES DE VIAJE ***************************************/
 const seccionVincularSolicitud = ref(false)
+const vinculacionTareaComponent = ref(null)
+const vinculacionSolicitudes = ref(null)
+
+/**
+ * ✅ Maneja las actualizaciones en tiempo real del componente de vinculación
+ * Se ejecuta cada vez que el usuario modifica cualquier campo en la tabla de gastos
+ */
+const manejarActualizacionVinculacion = (datosVinculacion) => {
+  console.log('🔄 Vinculación actualizada en tiempo real:', {
+    total_solicitudes: datosVinculacion?.total_solicitudes,
+    monto_original: datosVinculacion?.monto_total_original,
+    monto_actual: datosVinculacion?.monto_total_actual,
+    tiene_modificaciones: datosVinculacion?.tiene_modificaciones_global,
+    timestamp: new Date().toISOString(),
+  })
+
+  vinculacionSolicitudes.value = datosVinculacion
+
+  if (datosVinculacion) {
+    console.log(`✅ ${datosVinculacion.total_solicitudes} solicitud(es) vinculada(s)`)
+    console.log(`💰 Monto total: ${datosVinculacion.monto_total_actual} Bs.`)
+    if (datosVinculacion.tiene_modificaciones_global) {
+      console.log('⚠️ Se detectaron modificaciones en los gastos')
+    }
+  } else {
+    console.log('❌ No hay solicitudes seleccionadas')
+  }
+}
+
+/**
+ * ✅ Formatear monto para mostrar en el resumen
+ */
+const formatMontoLocal = (monto) => {
+  if (!monto && monto !== 0) return 'Bs. 0.00'
+  return new Intl.NumberFormat('es-BO', {
+    style: 'currency',
+    currency: 'BOB',
+    minimumFractionDigits: 2,
+  }).format(Number(monto))
+}
+
 /****************************** AUXILIARES ************************************************/
-//Formatear el Estado
 const estadoFormateado = computed(() => {
   if (!storeInfTarea.tarea?.estado) return 'SIN_ESTADO - No especificado'
   return formatearEstadoTarea(storeInfTarea.tarea.estado)
 })
 
 /****************************** Metodo del Formulario *******************************************/
-//Referencia al componente de indicadores
 const indicadoresComponent = ref(null)
 
-//Resetear todos los registros de lo indicadores
 const resetearIndicadores = () => {
   if (indicadoresComponent.value) {
     indicadoresComponent.value.resetearRegistros()
@@ -672,7 +734,6 @@ const resetearIndicadores = () => {
   }
 }
 
-// Cancelar
 const cancelar = () => {
   router.push('/actividades/informe/')
 }
@@ -699,29 +760,24 @@ const resetForm = () => {
   }
   habilitarIndicadores.value = false
   resetearIndicadores()
+
+  // ✅ Resetear vinculación
+  vinculacionSolicitudes.value = null
 }
+
 const submitForm = async () => {
   console.log('Iniciar Envio de los datos')
   loading.value = true
-  //Matriz de errores
   const errores = []
+
   try {
     //Validar el registro de indicadores
     if (habilitarIndicadores.value) {
-      //Obtener el json de indicadores del componente
       const jsonIndicadores = indicadoresComponent.value?.obtenerJSONIndicadores()
-      //Verificar si hay al menos un registro  (total_general > 0)
       const tieneRegistros = jsonIndicadores?.metadatos?.total_general > 0
       if (!tieneRegistros) {
         errores.push('Debe registrar al menos un avance de indicadores')
       }
-      console.log('📊 Validación indicadores:', {
-        habilitado: true,
-        tieneRegistros,
-        total: jsonIndicadores?.metadatos?.total_general,
-      })
-    } else {
-      console.log('Validacion indicadores: seccion desactivida')
     }
 
     //VALIDAR: Informacion cuantitativa
@@ -732,21 +788,31 @@ const submitForm = async () => {
       }
     }
 
-    //Debe seleeccionar un validador
+    // ✅ Validar vinculación de solicitudes
+    if (seccionVincularSolicitud.value) {
+      const tieneVinculacion =
+        vinculacionSolicitudes.value !== null &&
+        vinculacionSolicitudes.value.solicitudes_vinculadas?.length > 0
+
+      if (!tieneVinculacion) {
+        errores.push('Debe seleccionar al menos una solicitud de viaje para vincular')
+      }
+    }
+
+    //Debe seleccionar un validador
     if (!nuevosValidadores.value || nuevosValidadores.value.length === 0) {
       errores.push('Debe asignar al menos un validador para el informe')
     }
 
-    //MOstrar errores si existen
+    //Mostrar errores si existen
     if (errores.length > 0) {
-      const mensajeError = 'Por favor complete los siguientes campos:\n• ' + errores.join('<br>• ')
+      const mensajeError = 'Por favor complete los siguientes campos:\n• ' + errores.join('\n• ')
       errorMsg(mensajeError)
       loading.value = false
       return
     }
 
     /******************************* Envio de datos ****************************************/
-    // Preparar los datos del informe para el envio
     const informeData = {
       fechaEjecucion: formData.value.fechaEjecucion,
       contribucionProyecto: formData.value.contribucionProyecto,
@@ -768,34 +834,39 @@ const submitForm = async () => {
     // Obtener indicadores del componente si la sección está habilitada
     if (habilitarIndicadores.value && indicadoresComponent.value) {
       const jsonIndicadores = indicadoresComponent.value.obtenerJSONIndicadores()
-
-      // Solo incluir si hay registros
       if (jsonIndicadores && jsonIndicadores.metadatos?.total_general > 0) {
         informeData.avanceIndicadores = jsonIndicadores
-        console.log('✅ JSON de indicadores incluido:', jsonIndicadores)
       } else {
         informeData.avanceIndicadores = null
-        console.log('ℹ️ No hay registros de indicadores')
       }
     } else {
       informeData.avanceIndicadores = null
     }
 
-    //Preparar el pyload
+    // ✅ Incluir vinculación de solicitudes en el payload
+    let vinculacionSolViajes = null
+    if (seccionVincularSolicitud.value && vinculacionSolicitudes.value) {
+      vinculacionSolViajes = vinculacionSolicitudes.value
+      console.log('✅ Vinculación incluida en el payload:', {
+        total_solicitudes: vinculacionSolicitudes.value.total_solicitudes,
+        monto_total: vinculacionSolicitudes.value.monto_total_actual,
+      })
+    }
+
+    //Preparar el payload
     const payload = {
       informeData: informeData,
       validadores: nuevosValidadores.value,
+      vinculacionSolViajes: vinculacionSolViajes,
     }
 
     console.log('📦 Enviando payload al RestAPI:', payload)
-    console.log('Envio de datos')
-    console.log(payload)
 
     // Enviar al backend
-    await crearInformeTareaPrincipal(payload)
-    resetForm()
-    successMsg('Informe enviado exitosamente')
-    router.push('/actividades/informe/')
+    //await crearInformeTareaPrincipal(payload)
+    //resetForm()
+    //successMsg('Informe enviado exitosamente')
+    //router.push('/actividades/informe/')
   } catch (err) {
     console.error('Error al enviar el informe:', err)
     errorMsg(`Error: ${err.message}`)
@@ -805,16 +876,12 @@ const submitForm = async () => {
 }
 
 /****************************** Carga de Informacion **********************************************/
-
-//Carga de informacion
 const cargarInformacion = async () => {
   cargandoGeneral.value = true
   try {
     if (idtarea.value) {
       await storeInfTarea.obtenerTareasPorIdMasDetalles(idtarea.value)
-      // Rellenar datos automáticamente si hay información de la tarea
       if (storeInfTarea.tarea) {
-        //Tipo de Actividad
         formData.value.tipoActividad =
           storeInfTarea.tarea.actividad.tipo_info.sigla +
           ' - ' +
@@ -835,4 +902,69 @@ onMounted(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.informe-actividad-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+.v-card {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.form-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border: 1px solid #e0e0e0;
+}
+
+.form-section h3 {
+  color: #1976d2;
+  border-bottom: 2px solid #1976d2;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.text-warning {
+  color: #f57c00;
+}
+
+@media (max-width: 960px) {
+  .informe-actividad-container {
+    padding: 16px 12px;
+  }
+  .form-section {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .d-flex.justify-end {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .d-flex.justify-end .v-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .v-card {
+    margin: 8px 0;
+  }
+  .form-section {
+    padding: 16px;
+  }
+}
+</style>
