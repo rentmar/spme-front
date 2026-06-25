@@ -227,7 +227,7 @@
             </v-card>
           </v-dialog>
         </v-toolbar>
-        <div class="table-scroll-wrapper">
+        <div class="table-scroll-wrapper" ref="tableContainerRef">
           <HotTable
             v-if="inicializado"
             ref="hotTable"
@@ -246,9 +246,17 @@
             :hiddenColumns="hiddenColumnsConfig"
             :rowHeights="40"
             :autoRowSize="false"
+            :autoColumnSize="false"
+            :manualColumnResize="true"
             :viewportColumnRenderingOffset="20"
             :filters="true"
             :dropdownMenu="dropdownMenuConfig"
+            :preventOverflow="'horizontal'"
+            :autoWrapRow="false"
+            :autoWrapCol="false"
+            :renderAllRows="false"
+            :viewportRowRenderingOffset="10"
+            :colWidths="colWidthsConfig"
           ></HotTable>
         </div>
       </div>
@@ -412,7 +420,7 @@ import { registerLanguageDictionary } from 'handsontable/i18n'
 import { esMX } from 'handsontable/i18n'
 import 'handsontable/dist/handsontable.full.css'
 //Vue
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 //Composables
 import { useActividad } from '../../proyecto/composables/useActividad'
@@ -481,6 +489,7 @@ const { crearUnaTarea } = useTareaSubactividad()
 const { actualizarPlanificacionProyecto } = useSeguimientoPlanificacion()
 
 /************************* CONTROL DE LA INTERFAZ *******************************/
+const tableContainerRef = ref(null)
 //Agregar nueva actividad
 const mostrarModalActividad = ref(false)
 const abrirNuevaActividad = () => {
@@ -1026,6 +1035,34 @@ const columns = ref([
   },
 ])
 
+// Después de la definición de columns, agrega:
+const colWidthsConfig = computed(() => {
+  // Solo devolver si está inicializado
+  if (!inicializado.value) return undefined
+
+  return [
+    50, // id
+    100, // codigo
+    200, // nombreCorto
+    250, // tipo
+    110, // responsable
+    100, // fecha_inicio
+    100, // fecha_cierre
+    100, // supuestos
+    100, // riesgos
+    150, // presupuesto
+    250, // procedencia_fondos
+    150, // presupuestoGlobal
+    150, // totalReportado
+    150, // totalEjecutado
+    150, // saldo
+    150, // estado
+    150, // gradoEjecucion
+    100, // objetivo_pei
+    100, // indicador_pei
+    150, // factoresCriticos
+  ]
+})
 /************************* Handle Interfaz Excel  *******************************/
 const selectedRowData = ref(null)
 
@@ -1099,6 +1136,14 @@ const cargar = async () => {
       tableData.value = storePlanificacion.tableData
       successMsg(storePlanificacion.tableData.length + ' Actividades Cargadas')
     }
+
+    // Esperar al nextTick antes de inicializar
+    await nextTick()
+
+    // Pequeño delay para asegurar que el DOM esté listo
+    setTimeout(() => {
+      inicializado.value = true
+    }, 100)
 
     inicializado.value = true
   } catch (e) {
