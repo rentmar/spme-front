@@ -60,7 +60,7 @@ const { proyectoEstructuraNodos: proyecto, cargando: cargandoProyecto } = storeT
 const { obtenerProyectoEstructuraNodosPorId } = proyectoStore
 
 //Inyectar el proyecto y su estructura
-provide('proyectoEstructura', readonly(proyecto))
+provide('proyectoEstructura', proyecto)
 
 onMounted(async () => {
   await cargarDatos()
