@@ -470,7 +470,7 @@
                 <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 5: Firmas -->
-                <div class="form-section mb-6">
+                <div class="form-section mb-6" v-if="esVisible">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
@@ -516,6 +516,21 @@
                         label="Aprobado por Dirección Administrativa"
                         :disabled="isFrozen"
                       ></v-checkbox>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <!--Seccion Firmas-->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Firmas y Validaciones
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <SeleccionValidadoresSolicitudes
+                        ref="validadoresRef"
+                      ></SeleccionValidadoresSolicitudes>
                     </v-col>
                   </v-row>
                 </div>
@@ -572,10 +587,41 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+//Componentes
+import SeleccionValidadoresSolicitudes from '@/modules/formularios/components/validadores/SeleccionValidadoresSolicitudes.vue'
+//Composables
+import { useValidadoresSolFondos } from '@/modules/formularios/composables/useValidadoresSolFondos'
 
+/*****COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
+//Esconder la anterior validacion
+const esVisible = ref(false)
+//Referncia al componente
+const validadoresRef = ref(null)
+
+//Obtener los ids de los validadores
+const idvalidadores = computed(() => {
+  return validadoresRef.value?.datosValidadores.validadoresIds
+})
+
+//Bandera para validar la seleccion de los responsables
+const validadoresEstanSeleccionados = computed(() => {
+  return validadoresRef.value?.validacionCompleta
+})
+
+//Obtener el coordinador seleccionado
+const coordinadorSel = computed(() => {
+  return validadoresRef.value?.coordinacionSelected
+})
+
+//Obtener el administrativo seleccionado
+const administradorSel = computed(() => {
+  return validadoresRef.value?.administrativoSelected
+})
+
+/*****FIN COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
-
+const { asignarValidadoresSolo } = useValidadoresSolFondos()
 //Routes
 const router = useRouter()
 const route = useRoute()
@@ -803,7 +849,7 @@ watch(
         contadoresList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
         coordinadoresList.value =
-          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo' ) || [] //'coordinador') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || [] //'coordinador') || []
       } else {
         responsablesList.value = []
         contadoresList.value = []
@@ -992,7 +1038,12 @@ function strictSanitizeData(data) {
 
 function addGasto() {
   //esta funcion adiciona una fila de detalle de gasto al vista
-  formData.value.detalle_destino_fondos.push({ partida: '', fuente: '', descripcion_gasto: '', monto: 0 })
+  formData.value.detalle_destino_fondos.push({
+    partida: '',
+    fuente: '',
+    descripcion_gasto: '',
+    monto: 0,
+  })
 }
 
 function removeGasto(index) {
@@ -1014,12 +1065,19 @@ async function submitForm() {
       throw new Error('Error: No se puede crear el formulario sin una tarea válida.')
     }
 
+    //Validar que los validadores para el formulario se hayan seleccionado
+    if (!validadoresEstanSeleccionados.value) {
+      throw new Error(
+        'Debe seleccionar ambos validadores (Coordinación y Dirección Administrativa)',
+      )
+    }
+
+    // Obtener los IDs para el payload
+    const idsVals = idvalidadores.value
+    console.log('✅ Validadores seleccionados ids:', idsVals)
+
     //Validar si el formulario está completo
-    if (
-      !formData.value.lugar_solicitud ||
-      !formData.value.forma_pago ||
-      !formData.value.idcoordinador
-    ) {
+    if (!formData.value.lugar_solicitud || !formData.value.forma_pago) {
       throw new Error('Por favor, completa todos los campos obligatorios del formulario.')
     }
     if (totalMontoSolicitado.value <= 0) {
@@ -1034,8 +1092,10 @@ async function submitForm() {
       (contador) => contador.id === formData.value.idcontador,
     )
 
-    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
-    const correoContadorActual = contadorSeleccionado?.correo || ''
+    //const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+    //const correoContadorActual = contadorSeleccionado?.correo || ''
+    const correoCoordinadorActual = coordinadorSel.value?.correo
+    const correoContadorActual = administradorSel.value?.correo
 
     // Actualizar los valores en formData
     formData.value.correo_coordinador = correoCoordinadorActual
@@ -1057,9 +1117,9 @@ async function submitForm() {
       fecha_realizacion_actividad: formData.value.fecha_ejecucion,
       monto_solicitado: totalMontoSolicitado.value,
       validacion_responsable: formData.value.validacion_contador,
-      contador_id: formData.value.idcontador,
+      contador_id: administradorSel.value.id,
       validacion_coordinador: formData.value.validacion_coordinador,
-      id_coordinador: formData.value.idcoordinador,
+      id_coordinador: coordinadorSel.value.id,
       id_usuario: formData.value.id_usuario,
       id_actividad: formData.value.id_actividad,
       descripcion_actividad: formData.value.descripcion_actividad,
@@ -1088,6 +1148,9 @@ async function submitForm() {
     const data = await response.json()
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
+
+    //Crear las validaciones
+    await asignarValidadoresSolo(data.id, idsVals)
 
     //const urlForm = `${baseurl}/api/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
     const urlForm = `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
