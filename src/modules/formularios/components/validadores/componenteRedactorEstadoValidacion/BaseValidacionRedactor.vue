@@ -98,7 +98,7 @@
 </template>
 
 <script setup>
-const props = defineProps({
+defineProps({
   mostrarEstadoDocumento: {
     type: Boolean,
     default: true,

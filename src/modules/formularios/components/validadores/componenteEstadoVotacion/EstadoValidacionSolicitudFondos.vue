@@ -9,7 +9,7 @@
 
     <!-- Titulo -->
     <template #titulo>
-      <v-tooltip :text="storeSolFondos.estadoDocumento" location="bottom">
+      <v-tooltip text="Revisores asignados al Documento" location="bottom">
         <template v-slot:activator="{ props }">
           <span v-bind="props" class="titulo-completo"> REVISORES </span>
         </template>
@@ -23,7 +23,7 @@
 
     <!-- Información -->
     <template #informacion>
-      <div class="info-container">
+      <div v-if="storeSolFondos.solicitudFondosActual" class="info-container">
         <!-- Cabecera con datos principales -->
         <div class="info-header mb-3">
           <div class="d-flex align-center">

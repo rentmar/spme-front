@@ -52,6 +52,16 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
     return miValidacion.value.estado !== 'PENDIENTE'
   })
 
+  //Verificar si el usuario actual es el redactor
+  const esRedactor = computed(() => {
+    const redactor = redactorDocumento.value
+    const usuarioId = storeUsuario.id
+
+    if (!redactor || !usuarioId) return false
+
+    return redactor.id === usuarioId
+  })
+
   //Tipo de solicitud
   const tipoSolicitud = computed(() => {
     if (!estadoSolicitudFondosActual.value) return ''
@@ -78,6 +88,49 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
     if (!estadoSolicitudFondosActual.value) return []
     if (!Array.isArray(estadoSolicitudFondosActual.value.detalle_validadores)) return []
     return estadoSolicitudFondosActual.value.detalle_validadores
+  })
+
+  //Redactor del documento - CORREGIDO
+  const redactorDocumento = computed(() => {
+    // Verificar que exista el estado y los validadores
+    if (!estadoSolicitudFondosActual.value) {
+      return null
+    }
+
+    const detalle = estadoSolicitudFondosActual.value.detalle_validadores
+
+    // Verificar que detalle_validadores existe y es un array
+    if (!detalle || !Array.isArray(detalle)) {
+      console.warn('redactorDocumento: detalle_validadores no es un array', detalle)
+      return null
+    }
+
+    // Verificar que el array tiene elementos
+    if (detalle.length === 0) {
+      console.warn('redactorDocumento: detalle_validadores está vacío')
+      return null
+    }
+
+    // Verificar que el primer elemento tiene redactor
+    if (!detalle[0].redactor) {
+      console.warn('redactorDocumento: el primer validador no tiene redactor', detalle[0])
+      return null
+    }
+
+    return detalle[0].redactor
+  })
+
+  //Version del documento
+  const versionDocumento = computed(() => {
+    if (!estadoSolicitudFondosActual.value) return null
+    if (!validadoresAsignados.value.length) return null
+    // La versión está en el primer validador (todos tienen la misma versión)
+    return validadoresAsignados.value[0]?.version_documento || null
+  })
+
+  // También puedes obtener el ID de la solicitud
+  const idSolicitud = computed(() => {
+    return solicitudFondosActual.value?.id || null
   })
 
   /****************************** Funciones Solicitud de Fondos *******************************************************/
@@ -148,10 +201,14 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
     miValidacion,
     esValidador,
     yaValido,
+    esRedactor,
     tipoSolicitud,
     estadoDocumento,
     resumenSolicitud,
     validadoresAsignados,
+    redactorDocumento,
+    versionDocumento,
+    idSolicitud,
 
     //Func
     cargarSolicitudFondos,
