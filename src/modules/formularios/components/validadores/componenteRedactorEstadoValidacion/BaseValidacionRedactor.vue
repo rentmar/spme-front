@@ -1,8 +1,8 @@
 <template>
   <v-card elevation="3" rounded="lg" class="base-card">
     <v-card-item>
-      <!-- Icono-->
-      <template v-slot:prepend>
+      <!-- Icono -->
+      <template #prepend>
         <slot name="icono">
           <v-avatar color="primary" size="40">
             <v-icon color="white">mdi-card</v-icon>
@@ -15,41 +15,39 @@
         <slot name="titulo">Título por defecto</slot>
       </v-card-title>
 
-      <!-- Slot para el subtitulo-->
+      <!-- Slot para el subtítulo -->
       <v-card-subtitle>
-        <slot name="subtitulo">Subtitulo por defecto</slot>
+        <slot name="subtitulo">Subtítulo por defecto</slot>
       </v-card-subtitle>
     </v-card-item>
 
-    <!-- Contenido principal-->
+    <!-- Contenido principal -->
     <v-card-text>
-      <!-- Sección de Información General (personalizable) -->
-      <div class="section-informacion">
+      <!-- Sección Información Documento / Estado -->
+      <div v-if="mostrarEstadoDocumento" class="section-documento">
         <div class="section-header">
-          <v-icon size="16" color="primary" class="mr-1">mdi-information-outline</v-icon>
-          <span class="section-title">
-            <slot name="titulo-seccion-informacion">Información del Documento</slot>
-          </span>
+          <v-icon size="16" color="primary" class="mr-1">mdi-file-document</v-icon>
+          <span class="section-title">Estado del Documento</span>
         </div>
 
         <div class="section-content">
-          <slot name="informacion">
+          <slot name="estado-documento">
             <div class="empty-state">
-              <v-icon size="24" color="grey-lighten-1">mdi-information-off</v-icon>
-              <p class="text-caption text-grey">No hay información disponible</p>
+              <v-icon size="24" color="grey-lighten-1">mdi-file-document-outline</v-icon>
+              <p class="text-caption text-grey">No hay información del documento</p>
             </div>
           </slot>
         </div>
       </div>
 
-      <!-- Divisor -->
-      <v-divider class="my-4"></v-divider>
+      <!-- Divisor (solo se muestra si ambas secciones son visibles) -->
+      <v-divider v-if="mostrarEstadoDocumento && mostrarRevisores" class="my-4" />
 
       <!-- Sección de Revisores -->
-      <div class="section-revisores">
+      <div v-if="mostrarRevisores" class="section-revisores">
         <div class="section-header">
           <v-icon size="16" color="primary" class="mr-1">mdi-account-group</v-icon>
-          <span class="section-title">Revisores Asignados</span>
+          <span class="section-title">Revisores</span>
         </div>
 
         <div class="section-content">
@@ -62,21 +60,35 @@
         </div>
       </div>
 
-      <!-- Divisor -->
-      <v-divider class="my-4"></v-divider>
+      <!-- Divisor (se muestra si al menos una sección anterior es visible) -->
+      <v-divider
+        v-if="(mostrarEstadoDocumento || mostrarRevisores) && mostrarRedactor"
+        class="my-4"
+      />
 
-      <!-- Sección de Revisor Actual -->
-      <div class="section-revisor-actual">
+      <!-- Sección de Redactor Actual -->
+      <div v-if="mostrarRedactor" class="section-redactor-actual">
         <div class="section-header">
-          <v-icon size="16" color="primary" class="mr-1">mdi-account-check</v-icon>
-          <span class="section-title">Mi Validación</span>
+          <v-icon size="16" color="primary" class="mr-1">mdi-account-edit</v-icon>
+          <span class="section-title">Redactor</span>
         </div>
 
-        <div class="section-content">
-          <slot name="revisor-actual">
+        <!-- Información del redactor -->
+        <div class="section-content mb-3">
+          <slot name="info-redactor">
             <div class="empty-state">
               <v-icon size="24" color="grey-lighten-1">mdi-account-question</v-icon>
-              <p class="text-caption text-grey">No tienes validación pendiente</p>
+              <p class="text-caption text-grey">No hay redactor asignado</p>
+            </div>
+          </slot>
+        </div>
+
+        <!-- Acciones para el redactor -->
+        <div class="section-content">
+          <slot name="acciones-redactor">
+            <div class="empty-state">
+              <v-icon size="24" color="grey-lighten-1">mdi-gesture-tap-button</v-icon>
+              <p class="text-caption text-grey">No hay acciones disponibles</p>
             </div>
           </slot>
         </div>
@@ -85,7 +97,22 @@
   </v-card>
 </template>
 
-<script setup></script>
+<script setup>
+const props = defineProps({
+  mostrarEstadoDocumento: {
+    type: Boolean,
+    default: true,
+  },
+  mostrarRevisores: {
+    type: Boolean,
+    default: true,
+  },
+  mostrarRedactor: {
+    type: Boolean,
+    default: true,
+  },
+})
+</script>
 
 <style scoped>
 .base-card {
@@ -162,6 +189,21 @@
   min-height: 40px;
 }
 
+/* Espaciado entre elementos */
+.mb-3 {
+  margin-bottom: 12px;
+}
+
+/* Secciones con espaciado */
+.section-documento,
+.section-revisores {
+  margin-bottom: 16px;
+}
+
+.section-redactor-actual {
+  margin-bottom: 0;
+}
+
 /* Estado vacío */
 .empty-state {
   display: flex;
@@ -180,15 +222,14 @@
 }
 
 /* Animación suave para contenido dinámico */
-.section-informacion,
+.section-documento,
 .section-revisores,
-.section-revisor-actual {
+.section-redactor-actual {
   transition: all 0.3s ease;
 }
 
 /* Estilo para el divisor */
 :deep(.v-divider) {
   border-color: rgba(0, 0, 0, 0.08);
-  margin: 16px 0;
 }
 </style>

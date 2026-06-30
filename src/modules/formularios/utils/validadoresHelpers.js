@@ -104,3 +104,17 @@ export const formatDateCorta = (dateStr) => {
     year: 'numeric',
   })
 }
+// Funciones helper
+export const getIconoTipoSolicitud = (tipo) => {
+  const iconos = {
+    solicitud_fondos: 'mdi-cash-multiple',
+    solicitud_viaje: 'mdi-airplane',
+    solicitud_pago_directo: 'mdi-credit-card',
+    solicitud_reposicion: 'mdi-cash-refund',
+    rendicion_cuentas: 'mdi-file-document-check',
+    anticipo: 'mdi-cash-fast',
+    reembolso: 'mdi-cash-plus',
+    default: 'mdi-file-document',
+  }
+  return iconos[tipo] || iconos.default
+}

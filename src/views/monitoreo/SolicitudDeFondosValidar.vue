@@ -59,6 +59,7 @@
 
           <!--Componente para el estado y validdacion de la Solicitud-->
           <EstadoValidacionSolicitudFondos></EstadoValidacionSolicitudFondos>
+          <ValidacionRedactorSolFondos></ValidacionRedactorSolFondos>
 
           <!-- Tarjeta de resumen rápido -->
           <!-- <v-card elevation="2" rounded="lg" class="mb-4">
@@ -660,6 +661,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
 //Componente Validacion
 import EstadoValidacionSolicitudFondos from '@/modules/formularios/components/validadores/componenteEstadoVotacion/EstadoValidacionSolicitudFondos.vue'
+import ValidacionRedactorSolFondos from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/ValidacionRedactorSolFondos.vue'
 //Iniciar el estore
 import { useSolicitudFondosStore } from '@/modules/formularios/store/useSolicitudDeFondosStore'
 
