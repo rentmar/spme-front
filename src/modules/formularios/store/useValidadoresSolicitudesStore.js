@@ -1,4 +1,6 @@
 // Store useValidadoresSolicitudesStore.js
+// Responsables seleccionables
+// Listas completas
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/user'

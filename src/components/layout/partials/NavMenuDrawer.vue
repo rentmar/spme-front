@@ -140,6 +140,18 @@
         </template>
         <v-list-item-title class="text-wrap">Informe Actividad PEI</v-list-item-title>
       </v-list-item>
+
+      <!-- Lista de Solicitudes pendientes -->
+      <v-list-item
+        value="monitoring-solicitudes-pendientes"
+        to="/monitoreo/lista-solicitudes-pendientes/"
+      >
+        <template v-slot:prepend>
+          <v-chip size="x-small" class="mr-2" density="compact">SOL</v-chip>
+          <v-icon icon="mdi-alert-circle-outline" color="warning"></v-icon>
+        </template>
+        <v-list-item-title class="text-wrap">Solicitudes Pendientes</v-list-item-title>
+      </v-list-item>
     </v-list-group>
 
     <!-- Reportes -->

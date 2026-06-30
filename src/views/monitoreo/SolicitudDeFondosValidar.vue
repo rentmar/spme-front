@@ -57,6 +57,9 @@
             </v-card-text>
           </v-card>
 
+          <!--Componente para el estado y validdacion de la Solicitud-->
+          <EstadoValidacionSolicitudFondos></EstadoValidacionSolicitudFondos>
+
           <!-- Tarjeta de resumen rápido -->
           <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
@@ -544,6 +547,18 @@
                   </v-row>
                 </div>
 
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Firmas y Validaciones
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <EstadoValidacionSolicitudFondos></EstadoValidacionSolicitudFondos>
+                    </v-col>
+                  </v-row>
+                </div>
+
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
                   <!-- <v-btn
@@ -643,9 +658,16 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+//Componente Validacion
+import EstadoValidacionSolicitudFondos from '@/modules/formularios/components/validadores/componenteEstadoVotacion/EstadoValidacionSolicitudFondos.vue'
+//Iniciar el estore
+import { useSolicitudFondosStore } from '@/modules/formularios/store/useSolicitudDeFondosStore'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
+// Inciar el store
+const storeSolFondos = useSolicitudFondosStore()
+
 /*************************** Generar PDFs *******************************************/
 const loadingPdfSolicitud = ref(false)
 const loadingPdfSubactividad = ref(false)
@@ -903,7 +925,7 @@ watch(
         responsablesList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
         coordinadoresList.value =
-          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || []  //'coordinador') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || [] //'coordinador') || []
       } else {
         responsablesList.value = []
         coordinadoresList.value = []
@@ -2001,7 +2023,7 @@ const puedeValidarResponsable = computed(() => {
   // El usuario puede validar si:
   // 1. Es el responsable asignado
   // 2. Tiene el cargo correspondiente
-  return usuarioActualId === responsableAsignadoId && usuarioActualCargo?.includes('coordinador')//('contable')
+  return usuarioActualId === responsableAsignadoId && usuarioActualCargo?.includes('coordinador') //('contable')
 })
 
 const puedeValidarCoordinador = computed(() => {
@@ -2011,7 +2033,9 @@ const puedeValidarCoordinador = computed(() => {
   // El usuario puede validar si:
   // 1. Es el coordinador asignado
   //  2. Tiene el cargo correspondiente
-  return usuarioActualId === coordinadorAsignadoId && usuarioActualCargo?.includes('dir-administrativo')//('coordinador')
+  return (
+    usuarioActualId === coordinadorAsignadoId && usuarioActualCargo?.includes('dir-administrativo')
+  ) //('coordinador')
 })
 
 // Ciclo de vida
@@ -2048,6 +2072,9 @@ onMounted(async () => {
     await cargarSolicitudFondos()
 
     //console.log('4. Carga completa. Mostrando formulario...')
+
+    //Cargar el store para la solicitud de fondos
+    await storeSolFondos.cargarSolicitud(idSolicitud)
   } catch (error) {
     console.error('Error durante la carga:', error)
     // Redirigir si hay error

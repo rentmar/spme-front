@@ -350,6 +350,11 @@ const router = createRouter({
       component: () => import('@/views/monitoreo/SolicitudDePagoDirectoValidar.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/monitoreo/lista-solicitudes-pendientes/',
+      component: () => import('@/views/monitoreo/ListaSolicitudesPendientesView.vue'),
+      meta: { requiresAuth: true },
+    },
     ////////////////////////////////pei//////////////////////////////
     {
       path: '/monitoreo/pei/formulariopei01/:id',

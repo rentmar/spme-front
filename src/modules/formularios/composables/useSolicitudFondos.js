@@ -71,6 +71,20 @@ export function useSolucitudFondos() {
     }
   }
 
+  //obtener solicitud de fondos
+  async function obtenerSolFondosPorId(idSolFondos) {
+    loading.value = true
+    try {
+      const respuesta = await solicitudDeFondosServico.solFondosPorId(idSolFondos)
+      solucitudFondos.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados
     loading,
@@ -87,5 +101,6 @@ export function useSolucitudFondos() {
     obtenerListaSolFondosPorIdTarea,
     obtenerListaSolFondosPorIdActividadPei,
     obtenerListaSolFondosPorIdTareaPei,
+    obtenerSolFondosPorId,
   }
 }

@@ -37,7 +37,7 @@ export const validadoresSolFondosServicio = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al asignar validadores', error)
-      throw new Error(error)
+      throw error
     }
   },
   /**
@@ -56,7 +56,7 @@ export const validadoresSolFondosServicio = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al aprobar la sol de fondos id: ' + idSolFondos)
-      throw new Error(error)
+      throw error
     }
   },
   /**
@@ -65,17 +65,17 @@ export const validadoresSolFondosServicio = {
    * @param {number} idValidacion - ID de la validación
    * @param {string} comentarios - Comentarios
    */
-  rechazarSolFondos: async (idSolFondos, idValidacion, comentarios) => {
+  rechazarSolFondos: async (idSolFondos, idValidacion, coment) => {
     try {
       const respuesta = await apiValid.post('/solicitud-fondos/' + idSolFondos + '/votar/', {
         validacion_id: idValidacion,
         estado: 'RECHAZADO',
-        comentarios: comentarios,
+        comentarios: coment,
       })
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al rechazar la sol de fondos id: ' + idSolFondos)
-      throw new Error(error)
+      throw error
     }
   },
   /**
@@ -93,7 +93,7 @@ export const validadoresSolFondosServicio = {
         'Axios: Error al obtener el estado de validacion de la sol fondos: ' + idSolFondos,
         error,
       )
-      throw new Error(error)
+      throw error
     }
   },
   /**
@@ -103,13 +103,16 @@ export const validadoresSolFondosServicio = {
    */
   resetValidacionSolFondos: async (idSolFondos, version) => {
     try {
-      const respuesta = await apiValid.post('/solicitud-fondos/24/resetear-validaciones/', {
-        nueva_version: version,
-      })
+      const respuesta = await apiValid.post(
+        '/solicitud-fondos/' + idSolFondos + '/resetear-validaciones/',
+        {
+          nueva_version: version,
+        },
+      )
       return respuesta.data
     } catch (error) {
       console.error('Axios: error al resetear la validacion', error)
-      throw new Error(error)
+      throw error
     }
   },
   /**
@@ -123,7 +126,7 @@ export const validadoresSolFondosServicio = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: error al obtener historial de ls sol fondos: ' + idSolFondos, error)
-      throw new Error(error)
+      throw error
     }
   },
   /**
@@ -135,7 +138,7 @@ export const validadoresSolFondosServicio = {
       return respuesta.data
     } catch (error) {
       console.error('Axios: error al obtener las validaciones pendientes', error)
-      throw new Error(error)
+      throw error
     }
   },
 }

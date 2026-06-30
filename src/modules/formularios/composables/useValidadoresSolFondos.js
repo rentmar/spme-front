@@ -45,6 +45,100 @@ export function useValidadoresSolFondos() {
     }
   }
 
+  /**
+   * Aprobar una solicitud de fondos
+   * @param {number} idSolFondos - ID de la solicitud
+   * @param {number} idValidacion - ID de la validación
+   * @param {string} comentarios - Comentarios (opcional)
+   */
+  async function aprobarSolicitudFondos(idSolFondos, idValidacion, comentarios) {
+    loading.value = true
+    try {
+      const respuesta = await validadoresSolFondosServicio.aprobarSolFondos(
+        idSolFondos,
+        idValidacion,
+        comentarios,
+      )
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Rechazar una solicitud de fondos
+   * @param {number} idSolFondos - ID de la solicitud
+   * @param {number} idValidacion - ID de la validación
+   * @param {string} comentarios - Comentarios
+   */
+  async function rechazarSolicitudFondos(idSolFondos, idValidacion, comentarios) {
+    loading.value = true
+    try {
+      const respuesta = await validadoresSolFondosServicio.rechazarSolFondos(
+        idSolFondos,
+        idValidacion,
+        comentarios,
+      )
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Estado de la validacion de la Sol de Fondos
+   * @param {number} idSolFondos - ID de la solicitud
+   */
+  async function estadoSolicitudFondos(idSolFondos) {
+    loading.value = true
+    try {
+      const respuesta = await validadoresSolFondosServicio.estadoValidacionSolFondos(idSolFondos)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Resetear la Validacion de una Sol de Fondos
+   * @param {number} idSolFondos - ID de la solicitud
+   * @param {number} version - Version de la validacion
+   */
+  async function resetearSolicitudFondos(idSolFondos, version) {
+    loading.value = true
+    try {
+      const respuesta = await validadoresSolFondosServicio.resetValidacionSolFondos(
+        idSolFondos,
+        version,
+      )
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /* Obtener las validaciones pendientes de un usuario
+   */
+  async function obtenerMisValidacionesPendientes() {
+    loading.value = true
+    try {
+      const respuesta = await validadoresSolFondosServicio.misValidacionesPendientesSolFondos()
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados de carga
     loading,
@@ -52,5 +146,10 @@ export function useValidadoresSolFondos() {
     //func
     asignarValidadores,
     asignarValidadoresSolo,
+    obtenerMisValidacionesPendientes,
+    aprobarSolicitudFondos,
+    rechazarSolicitudFondos,
+    resetearSolicitudFondos,
+    estadoSolicitudFondos,
   }
 }
