@@ -26,7 +26,7 @@ export function useValidadoresSolFondos() {
     }
   }
 
-  /* Aprobar una solicitud de fondos, sin generar emails y mensajeria interna
+  /* Asignar una solicitud de fondos, sin generar emails y mensajeria interna
    * @param {number} idSolFondos - ID de la solicitud
    * @param {array} iDsValidadores - IDs de los usuarios validadores
    */

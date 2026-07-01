@@ -96,8 +96,14 @@
 
     <!--Redactor-->
     <template #acciones-redactor>
+      <AsignarRevisoresSolicitud
+        v-if="storeSolFondos.estadoDocumento === 'SIN_VALIDACIONES'"
+        :id-solicitud="storeSolFondos.idSolicitud"
+        :contenido-documento="storeSolFondos.solicitudFondosActual"
+        @revisores-asignados="handleRevisoresAsignados"
+      ></AsignarRevisoresSolicitud>
       <AccionesRedactor
-        v-if="storeSolFondos.esRedactor"
+        v-else-if="storeSolFondos.esRedactor"
         :estado-documento="storeSolFondos.estadoDocumento"
         :validadores="storeSolFondos.validadoresAsignados"
         :resumen="storeSolFondos.resumenSolicitud"
@@ -124,6 +130,7 @@ import { computed } from 'vue'
 import LIstaRevisores from '../componenteEstadoVotacion/partials/LIstaRevisores.vue'
 import RedactorInfo from './partials/RedactorInfo.vue'
 import AccionesRedactor from './partials/AccionesRedactor.vue'
+import AsignarRevisoresSolicitud from '../AsignarRevisoresSolicitud.vue'
 //Composables
 import { useSnackbar } from '@/composables/useSnackbar.js'
 import { useValidadoresSolFondos } from '@/modules/formularios/composables/useValidadoresSolFondos.js'
@@ -133,7 +140,7 @@ const storeSolFondos = useSolicitudFondosStore()
 
 //Inicializar composables
 const { successMsg, errorMsg } = useSnackbar()
-const { resetearSolicitudFondos } = useValidadoresSolFondos()
+const { resetearSolicitudFondos, asignarValidadores } = useValidadoresSolFondos()
 
 // Computed properties para chips
 const chipTipoColor = computed(() => {
@@ -148,6 +155,22 @@ const chipEstadoIcono = computed(() => {
   return getIconoEstadoConsolidado(storeSolFondos.estadoDocumento)
 })
 
+const handleRevisoresAsignados = async (payload) => {
+  //console.log('Datos Rx: ', payload)
+  try {
+    //Enviar al API, asignar revisores
+    await asignarValidadores(payload.solicitudId, payload.validadoresIds)
+    // Recargar datos
+    await storeSolFondos.cargarSolicitud(storeSolFondos.idSolicitud)
+    payload.onSuccess()
+    successMsg('✅ Revisores asignados correctamente')
+  } catch (error) {
+    console.error('❌ Error:', error)
+    payload.onError()
+    errorMsg('Error al asignar revisores')
+  }
+}
+
 const handleSolicitarRevision = async (payload) => {
   // payload contiene:
   // - solicitudId: ID de la solicitud
@@ -155,9 +178,9 @@ const handleSolicitarRevision = async (payload) => {
   // - onSuccess: callback de éxito
   // - onError: callback de error
 
-  console.log('Solicitando revisión para:')
-  console.log('ID Solicitud:', payload.solicitudId)
-  console.log('Versión Documento:', payload.versionDocumento)
+  // console.log('Solicitando revisión para:')
+  // console.log('ID Solicitud:', payload.solicitudId)
+  // console.log('Versión Documento:', payload.versionDocumento)
 
   try {
     const nuevaVersion = parseInt(payload.versionDocumento) + 1
