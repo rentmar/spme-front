@@ -6,6 +6,9 @@ export function useSolicitudViaje() {
   //Estados
   const loading = ref(false)
   const error = ref(null)
+  //Solicitud de viajes
+  const solicitudViaje = ref(null)
+  //Listas
   const listaSolicitudViajeActividad = ref(null)
   const listaSolicitudViajeTarea = ref(null)
   const listaSolicitudViajeActividadPei = ref(null)
@@ -67,9 +70,24 @@ export function useSolicitudViaje() {
     }
   }
 
+  //Obtener solicitud de viaje por id
+  async function obtenerSolicitudViajesPorId(idsolviaje) {
+    loading.value = true
+    try {
+      const respuesta = await solicitudViajeServicio.solViajePorId(idsolviaje)
+      solicitudViaje.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
+    solicitudViaje,
     listaSolicitudViajeActividad,
     listaSolicitudViajeTarea,
     listaSolicitudViajeActividadPei,
@@ -79,5 +97,6 @@ export function useSolicitudViaje() {
     obtenerListaSolViajesPorIdTarea,
     obtenerListaSolViajesPorIdActividadPei,
     obtenerListaSolViajesPorIdTareaPei,
+    obtenerSolicitudViajesPorId,
   }
 }

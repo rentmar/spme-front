@@ -1,459 +1,644 @@
 <template>
-  <v-container class="v-container v-locale--is-ltr">
-    <v-card id="formulario-pdf" class="pa-6">
+  <v-container class="solicitud-viaje-container">
+    <!-- Overlay de carga -->
+    <v-overlay
+      :model-value="cargandoGeneral"
+      class="align-center justify-center"
+      persistent
+      opacity="0.8"
+    >
+      <div class="text-center">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="64"
+          width="6"
+        ></v-progress-circular>
+        <p class="mt-4 text-h6">Cargando formulario de solicitud...</p>
+      </div>
+    </v-overlay>
+
+    <div v-if="!cargandoGeneral">
+      <!--Titulo de la pagina-->
       <PaginaTituloIcono
         :titulo="'Validar Solicitud de Viaje'"
         :icon="'mdi-file-document-multiple'"
       ></PaginaTituloIcono>
-      <br />
+      <!--Encabezado del Proyecto-->
       <ProyectoIdHeader
         v-if="datosFormulario"
-        :proyecto-id="datosFormulario.actividad?.proyecto"
+        :proyecto-id="datosFormulario.actividad?.proyecto ?? '99999'"
       ></ProyectoIdHeader>
       <br />
-      <ActividadInformacion v-if="idActividad" :actividad-id="idActividad"></ActividadInformacion>
-      <br />
+      <!--Encabezado de la Actividad-->
+      <ActividadInformacion v-if="idActividad" :actividad-id="idActividad" />
 
-      <v-card-text>
-        <v-form @submit.prevent="submitForm">
-          <div class="form-section">
-            <v-text-field
-              v-model="formData.evento"
-              label="Nombre del Seminario, curso, taller o reunión"
-              bg-color="blue-lighten-5"
-              required
-              :readonly="soloLectura"
-            ></v-text-field>
+      <v-row>
+        <!-- Panel lateral de información -->
+        <v-col cols="12" md="4" lg="3">
+          <v-card elevation="2" rounded="lg" class="mb-4">
+            <v-toolbar color="primary" density="compact">
+              <v-toolbar-title class="text-white">Información General</v-toolbar-title>
+            </v-toolbar>
+            <v-card-text class="pa-4">
+              <div class="info-item mb-3">
+                <div class="text-subtitle-2 text-medium-emphasis">Solicitante:</div>
+                <div class="text-body-1 font-weight-medium">
+                  {{ solicitante || 'No disponible' }}
+                </div>
+              </div>
+              <div class="info-item mb-3">
+                <div class="text-subtitle-2 text-medium-emphasis">Evento:</div>
+                <div class="text-body-1 font-weight-medium">
+                  {{ formData.evento || 'No especificado' }}
+                </div>
+              </div>
+              <div class="info-item mb-3">
+                <div class="text-subtitle-2 text-medium-emphasis">Estado:</div>
+                <v-chip color="warning" size="small" class="mt-1">
+                  <v-icon small class="mr-1">mdi-progress-clock</v-icon>
+                  Pendiente
+                </v-chip>
+              </div>
+            </v-card-text>
+          </v-card>
 
-            <v-row>
-              <v-col cols="12" sm="6">
-                <v-text-field
-                  v-model="formData.fecha_evento"
-                  label="Fecha de Evento"
-                  bg-color="blue-lighten-5"
-                  type="date"
-                  required
-                  :readonly="soloLectura"
-                  :max="formData.fecha_fin"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" sm="6"> </v-col>
-            </v-row>
+          <!--Componente para el estado y validacion de la Solicitud (placeholder) -->
+          <v-card elevation="2" rounded="lg" class="mb-4">
+            <v-toolbar color="secondary" density="compact">
+              <v-toolbar-title class="text-white">Estado de Validación</v-toolbar-title>
+            </v-toolbar>
+            <v-card-text class="pa-4 text-center">
+              <p class="text-caption text-medium-emphasis">
+                Aquí se integrará el componente de estado de validación
+              </p>
+            </v-card-text>
+          </v-card>
 
-            <v-text-field
-              v-model="formData.lugar_evento"
-              label="Lugar de realización"
-              bg-color="blue-lighten-5"
-              required
-              :readonly="soloLectura"
-            ></v-text-field>
+          <!--Componente para el redactor/revisor (placeholder) -->
+          <v-card elevation="2" rounded="lg" class="mb-4">
+            <v-toolbar color="secondary" density="compact">
+              <v-toolbar-title class="text-white">Redactor / Revisor</v-toolbar-title>
+            </v-toolbar>
+            <v-card-text class="pa-4 text-center">
+              <p class="text-caption text-medium-emphasis">
+                Aquí se integrará el componente de redactor y revisor
+              </p>
+            </v-card-text>
+          </v-card>
 
-            <v-text-field
-              v-model="formData.instituciones_participantes"
-              label="Organizaciones Participantes"
-              bg-color="blue-lighten-5"
-              required
-              :readonly="soloLectura"
-            ></v-text-field>
+          <!-- Tarjeta de resumen rápido de la solicitud -->
+          <v-card elevation="2" rounded="lg" class="mb-4">
+            <v-toolbar color="secondary" density="compact">
+              <v-toolbar-title class="text-white">Resumen de Solicitud</v-toolbar-title>
+            </v-toolbar>
+            <v-card-text class="pa-4">
+              <div class="d-flex justify-space-between align-center mb-2">
+                <span class="text-subtitle-2 text-medium-emphasis">Monto solicitado:</span>
+                <span class="text-body-1 font-weight-bold text-primary">
+                  Bs. {{ totalMontoSolicitado.toLocaleString() }}
+                </span>
+              </div>
+              <div class="d-flex justify-space-between align-center mb-2">
+                <span class="text-subtitle-2 text-medium-emphasis">Items de gasto:</span>
+                <span class="text-body-1 font-weight-medium">
+                  {{ formData.detalle_destino_fondos.length }}
+                </span>
+              </div>
+              <v-divider class="my-2"></v-divider>
+              <div class="d-flex justify-space-between align-center mb-2">
+                <span class="text-subtitle-2 text-medium-emphasis">Fecha de Evento:</span>
+                <span class="text-body-1 font-weight-medium">
+                  {{ formData.fecha_evento || 'No especificada' }}
+                </span>
+              </div>
+              <div class="d-flex justify-space-between align-center">
+                <span class="text-subtitle-2 text-medium-emphasis">Lugar:</span>
+                <span class="text-body-1 font-weight-medium text-truncate" style="max-width: 150px">
+                  {{ formData.lugar_evento || 'No especificado' }}
+                </span>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
 
-            <v-text-field
-              v-model="formData.organizador"
-              label="Institución que invita"
-              bg-color="blue-lighten-5"
-              required
-              :readonly="soloLectura"
-            ></v-text-field>
+        <!-- Formulario principal -->
+        <v-col cols="12" md="8" lg="9">
+          <v-card elevation="2" rounded="lg">
+            <v-toolbar color="primary" density="compact">
+              <v-toolbar-title class="text-white">
+                <v-icon class="mr-2">mdi-form-textbox</v-icon>
+                Formulario de Solicitud
+              </v-toolbar-title>
+            </v-toolbar>
 
-            <v-text-field
-              v-model="formData.quien_cubregastos"
-              label="Quien cubre los gastos de estadía, transporte y viáticos"
-              bg-color="blue-lighten-5"
-              required
-              :readonly="soloLectura"
-            ></v-text-field>
+            <v-card-text class="pa-4">
+              <v-form @submit.prevent="submitForm">
+                <!-- Sección 1: Información del Evento -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-calendar-text</v-icon>
+                    Información del Evento
+                  </h3>
 
-            <v-text-field
-              v-model="formData.fondos_unitas"
-              label="Fondos UNITAS"
-              bg-color="blue-lighten-5"
-              required
-              :readonly="soloLectura"
-            ></v-text-field>
+                  <v-text-field
+                    v-model="formData.evento"
+                    label="Nombre del Seminario, curso, taller o reunión"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="blue-lighten-5"
+                    required
+                    :readonly="soloLectura"
+                  ></v-text-field>
 
-            <v-text-field
-              v-model="solicitante"
-              label="Persona que presenta la solicitud"
-              readonly
-            ></v-text-field>
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="formData.fecha_evento"
+                        label="Fecha de Evento"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="blue-lighten-5"
+                        type="date"
+                        required
+                        :readonly="soloLectura"
+                        :max="formData.fecha_fin"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="formData.lugar_evento"
+                        label="Lugar de realización"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="blue-lighten-5"
+                        required
+                        :readonly="soloLectura"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
 
-            <v-textarea
-              v-model="formData.justificacion_asistencia"
-              label="Justificación de la importancia de asistir al evento y su relación con el trabajo que desarrolla"
-              bg-color="blue-lighten-5"
-              rows="3"
-              required
-              :readonly="soloLectura"
-            ></v-textarea>
+                  <v-text-field
+                    v-model="formData.instituciones_participantes"
+                    label="Organizaciones Participantes"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="blue-lighten-5"
+                    required
+                    :readonly="soloLectura"
+                  ></v-text-field>
 
-            <v-textarea
-              v-model="formData.tareas_previas"
-              label="Tareas previas que debe cumplir para asistir al evento"
-              bg-color="blue-lighten-5"
-              rows="3"
-              required
-              :readonly="soloLectura"
-            ></v-textarea>
-          </div>
+                  <v-text-field
+                    v-model="formData.organizador"
+                    label="Institución que invita"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="blue-lighten-5"
+                    required
+                    :readonly="soloLectura"
+                  ></v-text-field>
 
-          <v-divider class="my-4"></v-divider>
+                  <v-text-field
+                    v-model="formData.quien_cubregastos"
+                    label="Quien cubre los gastos de estadía, transporte y viáticos"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="blue-lighten-5"
+                    required
+                    :readonly="soloLectura"
+                  ></v-text-field>
 
-          <div class="form-section">
-            <h3 class="mb-4">Detalle del Destino de Fondos</h3>
-            <div class="d-flex justify-space-between align-center mb-4">
-              <v-btn
-                variant="flat"
-                class="text-grey-darken-3 bg-white"
-                rounded="lg"
-                :elevation="3"
-                @click="addGasto"
-                :disabled="soloLectura"
-              >
-                Agregar Gasto
-              </v-btn>
-              <v-chip class="text-subtitle-1" color="grey-darken-2" variant="outlined">
-                Monto Total Solicitado (Bs.): {{ totalMontoSolicitado }}
-              </v-chip>
-            </div>
-            <v-table>
-              <thead>
-                <tr>
-                  <th>Partida</th>
-                  <th>Fuente</th>
-                  <th>Descripción del Gasto</th>
-                  <th>Monto (Bs.)</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
-                  <td>
-                    <v-text-field
-                      v-model="gasto.partida"
-                      density="compact"
-                      hide-details
+                  <v-text-field
+                    v-model="formData.fondos_unitas"
+                    label="Fondos UNITAS"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="blue-lighten-5"
+                    required
+                    :readonly="soloLectura"
+                  ></v-text-field>
 
-                      bg-color="blue-lighten-5"
+                  <v-text-field
+                    v-model="solicitante"
+                    label="Persona que presenta la solicitud"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
 
+                  <v-textarea
+                    v-model="formData.justificacion_asistencia"
+                    label="Justificación de la importancia de asistir al evento y su relación con el trabajo que desarrolla"
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    rows="3"
+                    required
+                    :readonly="soloLectura"
+                  ></v-textarea>
 
-                      :readonly="soloLectura"
-                    ></v-text-field>
-                  </td>
-                  <td>
-                    <v-text-field
-                      v-model="gasto.fuente"
-                      density="compact"
-                      hide-details
-                      bg-color="blue-lighten-5"
-                      placeholder="Financiador"
-                    ></v-text-field>
-                  </td>
-                  <td>
-                    <v-text-field
-                      v-model="gasto.descripcion_gasto"
-                      bg-color="blue-lighten-5"
-                      hide-details
-                      density="compact"
-                      :readonly="soloLectura"
-                    ></v-text-field>
-                  </td>
-                  <td>
-                    <v-text-field
-                      v-model="gasto.monto"
-                      bg-color="blue-lighten-5"
-                      type="number"
-                      hide-details
-                      density="compact"
-                      min="0"
-                      :readonly="soloLectura"
-                    ></v-text-field>
-                  </td>
-                  <td>
+                  <v-textarea
+                    v-model="formData.tareas_previas"
+                    label="Tareas previas que debe cumplir para asistir al evento"
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    rows="3"
+                    required
+                    :readonly="soloLectura"
+                  ></v-textarea>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <!-- Sección 2: Detalle de Gastos -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-cash</v-icon>
+                    Detalle del Destino de Fondos
+                  </h3>
+
+                  <div class="d-flex justify-space-between align-center mb-4">
                     <v-btn
-                      variant="text"
-                      icon
-                      color="error"
-                      @click="removeGasto(index)"
+                      color="primary"
+                      variant="outlined"
+                      prepend-icon="mdi-plus"
+                      @click="addGasto"
                       :disabled="soloLectura"
                     >
-                      <v-icon>mdi-delete</v-icon>
+                      Agregar Item
                     </v-btn>
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
-          </div>
+                    <v-chip class="text-subtitle-1" color="primary" variant="outlined">
+                      Monto Total Solicitado (Bs.): {{ totalMontoSolicitado.toLocaleString() }}
+                    </v-chip>
+                  </div>
 
-          <v-divider class="my-4"></v-divider>
+                  <v-table class="elevation-1 rounded-lg mb-4 users-table">
+                    <thead>
+                      <tr>
+                        <th class="text-subtitle-2 font-weight-bold">Partida</th>
+                        <th class="text-subtitle-2 font-weight-bold">Fuente</th>
+                        <th class="text-subtitle-2 font-weight-bold">Descripción</th>
+                        <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
+                        <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
+                        <td class="narrow-column">
+                          <v-text-field
+                            v-model="gasto.partida"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            bg-color="blue-lighten-5"
+                            placeholder="1.1.1"
+                            class="compact-field"
+                            :readonly="soloLectura"
+                          ></v-text-field>
+                        </td>
+                        <td class="narrow-column">
+                          <v-text-field
+                            v-model="gasto.fuente"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            bg-color="blue-lighten-5"
+                            placeholder="Financiador"
+                            :readonly="soloLectura"
+                          ></v-text-field>
+                        </td>
+                        <td class="wide-column">
+                          <v-text-field
+                            v-model="gasto.descripcion_gasto"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            bg-color="blue-lighten-5"
+                            placeholder="Descripción del gasto"
+                            :readonly="soloLectura"
+                          ></v-text-field>
+                        </td>
+                        <td class="narrow-column">
+                          <v-text-field
+                            v-model.number="gasto.monto"
+                            type="number"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            bg-color="blue-lighten-5"
+                            placeholder="0.00"
+                            min="0"
+                            class="compact-field"
+                            :readonly="soloLectura"
+                          ></v-text-field>
+                        </td>
+                        <td class="text-center action-column">
+                          <v-btn
+                            icon
+                            color="error"
+                            size="small"
+                            variant="text"
+                            @click="removeGasto(index)"
+                            :disabled="soloLectura"
+                          >
+                            <v-icon>mdi-delete</v-icon>
+                          </v-btn>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                </div>
 
-          <!-- Sección 4: Información Adicional -->
-          <div class="form-section mb-6">
-            <!-- <h3 class="text-h6 mb-4 primary--text">
+                <v-divider class="my-4"></v-divider>
+
+                <!-- Sección 3: Información Adicional -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-information</v-icon>
                     Información Adicional
-                  </h3> -->
+                  </h3>
 
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="formData.lugar_solicitud"
-                  label="Lugar de la Solicitud"
-                  variant="outlined"
-                  bg-color="blue-lighten-5"
-                  required
-                  :readonly="soloLectura"
-                ></v-text-field>
-                <!-- <v-select
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="formData.lugar_solicitud"
+                        label="Lugar de la Solicitud"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                        :readonly="soloLectura"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="formData.fecha_solicitud"
+                        label="Fecha de la Solicitud"
+                        type="date"
+                        variant="outlined"
+                        density="compact"
+                        bg-color="grey-lighten-4"
+                        readonly
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-select
                         v-model="formData.forma_pago"
-                        :items="formasPagoOptions"
+                        :items="formasPago"
                         item-title="formaPago"
                         item-value="id"
                         label="Forma de Pago"
                         variant="outlined"
                         bg-color="blue-lighten-5"
                         required
-                      ></v-select> -->
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="formData.fecha_solicitud"
-                  label="Fecha de la Solicitud"
-                  type="date"
-                  variant="outlined"
-                  density="compact"
-                  bg-color="grey-lighten-4"
-                  readonly
-                ></v-text-field>
-              </v-col>
-            </v-row>
+                        :readonly="soloLectura"
+                      ></v-select>
+                    </v-col>
+                  </v-row>
 
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.forma_pago"
-                  :items="formasPago"
-                  item-title="formaPago"
-                  item-value="id"
-                  label="Forma de Pago"
-                  variant="outlined"
-                  bg-color="blue-lighten-5"
-                  required
-                  :readonly="soloLectura"
-                ></v-select>
-              </v-col>
-            </v-row>
+                  <div v-if="MostrarCamposOtros">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.otros.nombre_otros"
+                          label="Nombre a quien se realiza el pago"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.otros.ci_otros"
+                          label="Documento de Identidad C.I."
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </div>
 
-            <div v-if="MostrarCamposOtros">
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.datos_forma_pago.otros.nombre_otros"
-                    label="Nombre a quien se realiza el pago"
-                    variant="outlined"
-                    bg-color="blue-lighten-5"
-                    :readonly="soloLectura"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.datos_forma_pago.otros.ci_otros"
-                    label="Documento de Identidad C.I."
-                    variant="outlined"
-                    bg-color="blue-lighten-5"
-                    :readonly="soloLectura"
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-            </div>
-            <div v-if="MostrarCamposTransferencia">
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.datos_forma_pago.transferencia.nombre_transferencia"
-                    label="Nombre completo a quien se realiza la transferencia"
-                    variant="outlined"
-                    bg-color="blue-lighten-5"
-                    :readonly="soloLectura"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.datos_forma_pago.transferencia.ci_transferencia"
-                    label="Documento de Identidad C.I."
-                    variant="outlined"
-                    bg-color="blue-lighten-5"
-                    :readonly="soloLectura"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.datos_forma_pago.transferencia.entidad_bancaria"
-                    label="Nombre de Entidad Bancaria"
-                    variant="outlined"
-                    bg-color="blue-lighten-5"
-                    :readonly="soloLectura"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-select
-                    v-model="formData.datos_forma_pago.transferencia.tipo_cuenta"
-                    :items="['Ahorro', 'Corriente']"
-                    label="Tipo de Cuenta (Ahorro/ Corriente)"
-                    variant="outlined"
-                    bg-color="blue-lighten-5"
-                    :readonly="soloLectura"
-                  ></v-select>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.datos_forma_pago.transferencia.numero_cuenta"
-                    label="Número de Cuenta Bancaria"
-                    variant="outlined"
-                    bg-color="blue-lighten-5"
-                    :readonly="soloLectura"
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-            </div>
-          </div>
+                  <div v-if="MostrarCamposTransferencia">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.nombre_transferencia"
+                          label="Nombre completo a quien se realiza la transferencia"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.ci_transferencia"
+                          label="Documento de Identidad C.I."
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.entidad_bancaria"
+                          label="Nombre de Entidad Bancaria"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-select
+                          v-model="formData.datos_forma_pago.transferencia.tipo_cuenta"
+                          :items="['Ahorro', 'Corriente']"
+                          label="Tipo de Cuenta (Ahorro/ Corriente)"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
+                        ></v-select>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="formData.datos_forma_pago.transferencia.numero_cuenta"
+                          label="Número de Cuenta Bancaria"
+                          variant="outlined"
+                          bg-color="blue-lighten-5"
+                          :readonly="soloLectura"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </div>
+                </div>
 
-          <v-divider class="my-4"></v-divider>
+                <v-divider class="my-4"></v-divider>
 
-          <div class="form-section">
-            <div class="text-subtitle-1 font-weight-bold mb-2">Firmas</div>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.id_responsable"
-                  bg-color="blue-lighten-5"
-                  :items="responsablesList"
-                  :item-title="getNombreCompleto"
-                  item-value="id"
-                  label="Responsable Coordinación"
-                  required
-                  :readonly="soloLectura"
-                ></v-select>
-              </v-col>
-              <v-col cols="12" md="6" class="d-flex align-center">
-                <v-checkbox
-                  v-model="solicitudDeViaje.validacionResponsable"
-                  :label="`Aprobado por Coordinación ${puedeValidarResponsable ? '(Usted)' : ''}`"
-                  :disabled="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
-                  :readonly="!puedeValidarResponsable || solicitudDeViaje.validacionResponsable"
-                  :color="puedeValidarResponsable ? 'primary' : 'grey'"
-                  @update:modelValue="
-                    (newValue) => {
-                      if (newValue) {
-                        nextTick(() => {
-                          validarViaje('responsable', formData.id_responsable, responsablesList)
-                        })
-                      }
-                    }
-                  "
-                ></v-checkbox>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.id_coordinador"
-                  bg-color="blue-lighten-5"
-                  :items="coordinadoresList"
-                  :item-title="getNombreCompleto"
-                  item-value="id"
-                  label="Responsable Dirección Administrativa"
-                  required
-                  :readonly="soloLectura"
-                ></v-select>
-              </v-col>
-              <v-col cols="12" md="6" class="d-flex align-center">
-                <v-checkbox
-                  v-model="solicitudDeViaje.validacionCoordinador"
-                  :label="`Aprobado por Dirección Administrativa ${puedeValidarCoordinador ? '(Usted)' : ''}`"
-                  :disabled="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
-                  :readonly="!puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador"
-                  :color="puedeValidarCoordinador ? 'primary' : 'grey'"
-                  @update:modelValue="
-                    (newValue) => {
-                      if (newValue) {
-                        nextTick(() => {
-                          validarViaje('coordinador', formData.id_coordinador, coordinadoresList)
-                        })
-                      }
-                    }
-                  "
-                ></v-checkbox>
-              </v-col>
-            </v-row>
-          </div>
+                <!-- Sección 4: Firmas -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Firmas y Validaciones
+                  </h3>
 
-          <div class="d-flex justify-end gap-3 mt-8">
-            <v-btn
-              v-if="idActividad && !idTarea"
-              color="info"
-              size="large"
-              prepend-icon="mdi-file-pdf-box"
-              @click="generarPdfSolicitudFondosFunc"
-              :loading="loadingPdfSolicitud"
-              :disabled="!idActividad || loadingPdfSolicitud"
-            >
-              SV
-            </v-btn>
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="formData.id_responsable"
+                        :items="responsablesList"
+                        :item-title="getNombreCompleto"
+                        item-value="id"
+                        label="Responsable Coordinación"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                        :readonly="soloLectura"
+                      ></v-select>
+                    </v-col>
+                    <v-col cols="12" md="6" class="d-flex align-center">
+                      <v-checkbox
+                        v-model="solicitudDeViaje.validacionResponsable"
+                        :label="`Aprobado por Coordinación ${puedeValidarResponsable ? '(Usted)' : ''}`"
+                        :disabled="
+                          !puedeValidarResponsable || solicitudDeViaje.validacionResponsable
+                        "
+                        :readonly="
+                          !puedeValidarResponsable || solicitudDeViaje.validacionResponsable
+                        "
+                        :color="puedeValidarResponsable ? 'primary' : 'grey'"
+                        @update:modelValue="
+                          (newValue) => {
+                            if (newValue) {
+                              nextTick(() => {
+                                validarViaje(
+                                  'responsable',
+                                  formData.id_responsable,
+                                  responsablesList,
+                                )
+                              })
+                            }
+                          }
+                        "
+                      ></v-checkbox>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="formData.id_coordinador"
+                        :items="coordinadoresList"
+                        :item-title="getNombreCompleto"
+                        item-value="id"
+                        label="Responsable Dirección Administrativa"
+                        variant="outlined"
+                        bg-color="blue-lighten-5"
+                        required
+                        :readonly="soloLectura"
+                      ></v-select>
+                    </v-col>
+                    <v-col cols="12" md="6" class="d-flex align-center">
+                      <v-checkbox
+                        v-model="solicitudDeViaje.validacionCoordinador"
+                        :label="`Aprobado por Dirección Administrativa ${puedeValidarCoordinador ? '(Usted)' : ''}`"
+                        :disabled="
+                          !puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador
+                        "
+                        :readonly="
+                          !puedeValidarCoordinador || solicitudDeViaje.validacionCoordinador
+                        "
+                        :color="puedeValidarCoordinador ? 'primary' : 'grey'"
+                        @update:modelValue="
+                          (newValue) => {
+                            if (newValue) {
+                              nextTick(() => {
+                                validarViaje(
+                                  'coordinador',
+                                  formData.id_coordinador,
+                                  coordinadoresList,
+                                )
+                              })
+                            }
+                          }
+                        "
+                      ></v-checkbox>
+                    </v-col>
+                  </v-row>
+                </div>
 
-            <v-btn
-              v-if="idActividad && idTarea"
-              color="info"
-              prepend-icon="mdi-file-pdf-box"
-              @click="generarPdfSolicitudSubactividadFunc"
-              :loading="loadingPdfSubactividad"
-              :disabled="!idActividad || !idTarea || loadingPdfSubactividad"
-            >
-              SVS
-            </v-btn>
-            <v-btn
-              color="error"
-              variant="outlined"
-              size="large"
-              class="mr-2"
-              prepend-icon="mdi-backspace-outline"
-              @click="resetForm"
-              disabled
-            >
-              Limpiar
-            </v-btn>
-            <v-btn
-              color="primary"
-              variant="flat"
-              size="large"
-              prepend-icon="mdi-send"
-              disabled
-            >
-              Enviar Solicitud
-            </v-btn>
-            <v-btn
-              color="primary"
-              variant="flat"
-              size="large"
-              prepend-icon="mdi-update"
-              type="submit"
-              :loading="loading"
-              :disabled="soloLectura"
-            >
-              Actualizar
-            </v-btn>
-          </div>
-        </v-form>
-      </v-card-text>
-    </v-card>
+                <!-- Botones de acción -->
+                <div class="d-flex justify-end gap-3 mt-8">
+                  <v-btn
+                    color="error"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-cancel"
+                    :to="`/pei/listaactividades?showButton=1`"
+                  >
+                    Cancelar
+                  </v-btn>
+                  <v-btn
+                    v-if="idActividad && !idTarea"
+                    color="info"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-file-pdf-box"
+                    @click="generarPdfSolicitudFondosFunc"
+                    :loading="loadingPdfSolicitud"
+                    :disabled="!idActividad || loadingPdfSolicitud"
+                  >
+                    SV
+                  </v-btn>
+
+                  <v-btn
+                    v-if="idActividad && idTarea"
+                    color="info"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-file-pdf-box"
+                    @click="generarPdfSolicitudSubactividadFunc"
+                    :loading="loadingPdfSubactividad"
+                    :disabled="!idActividad || !idTarea || loadingPdfSubactividad"
+                  >
+                    SVS
+                  </v-btn>
+                  <v-btn
+                    color="secondary"
+                    variant="outlined"
+                    size="large"
+                    prepend-icon="mdi-backspace-outline"
+                    @click="resetForm"
+                    disabled
+                  >
+                    Limpiar
+                  </v-btn>
+                  <v-btn
+                    color="primary"
+                    variant="flat"
+                    size="large"
+                    prepend-icon="mdi-send"
+                    disabled
+                  >
+                    Enviar Solicitud
+                  </v-btn>
+                  <v-btn
+                    color="primary"
+                    variant="flat"
+                    size="large"
+                    prepend-icon="mdi-update"
+                    type="submit"
+                    :loading="loading"
+                    :disabled="soloLectura"
+                  >
+                    Actualizar
+                  </v-btn>
+                </div>
+              </v-form>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </div>
   </v-container>
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
   <!-- {{ '*********************B' }}
@@ -466,7 +651,8 @@ import { ref, onMounted, computed, nextTick, watch } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
-
+//Store para la Solicitud de viajes
+import { useSolicitudDeViajesStore } from '@/modules/formularios/store/useSolicitudDeViajesStore'
 import axios from 'axios'
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
@@ -474,6 +660,9 @@ import { useRoute, useRouter } from 'vue-router'
 //Composable de impresion
 import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+
+//Iniciar el store para la sol de viajes
+const storeSolViajes = useSolicitudDeViajesStore()
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
@@ -703,7 +892,7 @@ watch(
         responsablesList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
         coordinadoresList.value =
-          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || []  //'coordinador') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || [] //'coordinador') || []
       } else {
         responsablesList.value = []
         coordinadoresList.value = []
@@ -815,7 +1004,9 @@ watch(
       //console.log('ID Solicitante:', idSolicitante)
       //console.log('Datos Formulario:', datosFormulario.value)
 
-      datosSolicitante.value = datosFormulario.value?.validadores?.find((fp) => fp.id === idSolicitante)
+      datosSolicitante.value = datosFormulario.value?.validadores?.find(
+        (fp) => fp.id === idSolicitante,
+      )
       //console.log('Datos Solicitante:', JSON.stringify(datosSolicitante.value, null, 2))
 
       if (datosSolicitante.value) {
@@ -826,7 +1017,7 @@ watch(
       // Opcional: mostrar notificación al usuario
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 // borra los campos no seleccionados en "forma de pago"
@@ -834,19 +1025,19 @@ watch(
 watch(
   () => formData.value.forma_pago,
   (newVal, oldVal) => {
-    if (newVal === oldVal) return; // No hacer nada si no cambió
+    if (newVal === oldVal) return // No hacer nada si no cambió
 
     // Obtener el nombre de la forma de pago seleccionada
-    const formaPagoSeleccionada = formasPagoOptions.value.find(fp => fp.id === newVal);
-    const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.formaPago : '';
+    const formaPagoSeleccionada = formasPagoOptions.value.find((fp) => fp.id === newVal)
+    const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.formaPago : ''
 
     // Resetear campos según la opción seleccionada
     if (nombreFormaPago === 'Transferencia Bancaria') {
       // Si seleccionó Transferencia, resetear campos de Otros
       formData.value.datos_forma_pago.otros = {
         nombre_otros: '',
-        ci_otros: ''
-      };
+        ci_otros: '',
+      }
     } else {
       // Si seleccionó cualquier otra opción, resetear campos de Transferencia
       formData.value.datos_forma_pago.transferencia = {
@@ -854,18 +1045,18 @@ watch(
         ci_transferencia: '',
         entidad_bancaria: '',
         tipo_cuenta: '',
-        numero_cuenta: ''
-      };
+        numero_cuenta: '',
+      }
     }
-  }
-);
+  },
+)
 
 async function cargarUsuarios() {
   try {
     const response = await axios.get(baseurl + '/autenticacion_api/listaUsuarios/')
     const allUsers = response.data.usuarios
     responsablesList.value = allUsers.filter((user) => user.cargo === 'coordinador')
-    coordinadoresList.value = allUsers.filter((user) => user.cargo === 'dir-administrativo')  //'coordinador')
+    coordinadoresList.value = allUsers.filter((user) => user.cargo === 'dir-administrativo') //'coordinador')
     datosSolicitante.value = allUsers.find((user) => user.id === usuario.value.id)
     if (datosSolicitante.value) {
       //solicitante.value = getNombreCompleto(datosSolicitante.value)
@@ -950,6 +1141,7 @@ async function cargarSolicitudesDeViaje() {
     //console.log('00000000000000000000000000000', JSON.stringify(response,null,2) )
 
     if (!response.ok) {
+      onMounted
       const errorData = await response.json()
       throw new Error(
         `Error en la solicitud: ${response.status} - ${errorData.detail || 'Error desconocido'}`,
@@ -963,7 +1155,8 @@ async function cargarSolicitudesDeViaje() {
     formData.value.evento = solicitudDeViaje.value.evento || ''
     formData.value.fecha_evento = solicitudDeViaje.value.fechaEvento || ''
     formData.value.lugar_evento = solicitudDeViaje.value.lugarEvento || ''
-    formData.value.instituciones_participantes = solicitudDeViaje.value.institucionesParticipantes || ''
+    formData.value.instituciones_participantes =
+      solicitudDeViaje.value.institucionesParticipantes || ''
     formData.value.organizador = solicitudDeViaje.value.organizador || ''
     formData.value.quien_cubregastos = solicitudDeViaje.value.quienCubreGastos || ''
     formData.value.fondos_unitas = solicitudDeViaje.value.fondosUnitas || ''
@@ -1007,7 +1200,12 @@ async function cargarSolicitudesDeViaje() {
 }
 
 function addGasto() {
-  formData.value.detalle_destino_fondos.push({ partida: '', fuente: '', descripcion_gasto: '', monto: 0 })
+  formData.value.detalle_destino_fondos.push({
+    partida: '',
+    fuente: '',
+    descripcion_gasto: '',
+    monto: 0,
+  })
 }
 
 function removeGasto(index) {
@@ -1067,48 +1265,49 @@ async function submitForm() {
 
     const payload = {
       //...formData.value, //esta linea incluye todas las propiedades de formData
-      "evento": formData.value.evento,
-      "lugarEvento": formData.value.lugar_evento,
-      "institucionesParticipantes": formData.value.instituciones_participantes,
-      "organizador": formData.value.organizador,
-      "quienCubreGastos": formData.value.quien_cubregastos || '',
-      "justificacionAsistencia": formData.value.justificacion_asistencia || '',
-      "fondosUnitas": formData.value.fondos_unitas || '',
-      "tareasPrevias": formData.value.tareas_previas || '',
-      "bloquearIconos": true,
-      "lugarSolicitud": formData.value.lugar_solicitud || '',
-      "fechaSolicitud": formData.value.fecha_solicitud || '',
-      "fechaEvento": formData.value.fecha_evento || '',
-      "detalleGasto": {
+      evento: formData.value.evento,
+      lugarEvento: formData.value.lugar_evento,
+      institucionesParticipantes: formData.value.instituciones_participantes,
+      organizador: formData.value.organizador,
+      quienCubreGastos: formData.value.quien_cubregastos || '',
+      justificacionAsistencia: formData.value.justificacion_asistencia || '',
+      fondosUnitas: formData.value.fondos_unitas || '',
+      tareasPrevias: formData.value.tareas_previas || '',
+      bloquearIconos: true,
+      lugarSolicitud: formData.value.lugar_solicitud || '',
+      fechaSolicitud: formData.value.fecha_solicitud || '',
+      fechaEvento: formData.value.fecha_evento || '',
+      detalleGasto: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida: gasto.partida,
           fuente: gasto.fuente,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
-        }))
+        })),
       },
-      "validacionResponsable": false,
-      "validacionCoordinador": false,
-      "datos_forma_pago": {
-        "otros": {
-          "nombre_otros": formData.value.datos_forma_pago.otros.nombre_otros,
-          "ci_otros": formData.value.datos_forma_pago.otros.ci_otros || ''
+      validacionResponsable: false,
+      validacionCoordinador: false,
+      datos_forma_pago: {
+        otros: {
+          nombre_otros: formData.value.datos_forma_pago.otros.nombre_otros,
+          ci_otros: formData.value.datos_forma_pago.otros.ci_otros || '',
         },
-        "transferencia": {
-          "nombre_transferencia": formData.value.datos_forma_pago.transferencia.nombre_transferencia || '',
-          "ci_transferencia": formData.value.datos_forma_pago.transferencia.ci_transferencia || '',
-          "entidad_bancaria": formData.value.datos_forma_pago.transferencia.entidad_bancaria || '',
-          "tipo_cuenta": formData.value.datos_forma_pago.transferencia.tipo_cuenta || '',
-          "numero_cuenta": formData.value.datos_forma_pago.transferencia.numero_cuenta || ''
-        }
+        transferencia: {
+          nombre_transferencia:
+            formData.value.datos_forma_pago.transferencia.nombre_transferencia || '',
+          ci_transferencia: formData.value.datos_forma_pago.transferencia.ci_transferencia || '',
+          entidad_bancaria: formData.value.datos_forma_pago.transferencia.entidad_bancaria || '',
+          tipo_cuenta: formData.value.datos_forma_pago.transferencia.tipo_cuenta || '',
+          numero_cuenta: formData.value.datos_forma_pago.transferencia.numero_cuenta || '',
+        },
       },
-      "formaPago": formData.value.forma_pago || '',
-      "responsable": formData.value.id_responsable || null,
-      "coordinador": formData.value.id_coordinador || null,
-      "usuario": usuario.value.id || 0,
-      "actividad": idActividad || 0,
-      "tarea": idTarea || null,
-      "montoSolicitado": totalMontoSolicitado.value,
+      formaPago: formData.value.forma_pago || '',
+      responsable: formData.value.id_responsable || null,
+      coordinador: formData.value.id_coordinador || null,
+      usuario: usuario.value.id || 0,
+      actividad: idActividad || 0,
+      tarea: idTarea || null,
+      montoSolicitado: totalMontoSolicitado.value,
     }
     //console.log('Payload completo que se enviará:', JSON.stringify(payload, null, 2))
 
@@ -1127,11 +1326,15 @@ async function submitForm() {
     numeroFormulario.value = response.numero_formulario
     //console.log('hhhhhhhhhhhhhhhhhhhidSOLICITUD:', JSON.stringify(idSolicitud, null, 2))
 
-    const urlForm = `${window.location.origin}/monitoreo/formulario055/${idActividad}?solicitud_id=${idSolicitud}${idTarea ? `&tarea_id=${idTarea}` : ''}`;
+    const urlForm = `${window.location.origin}/monitoreo/formulario055/${idActividad}?solicitud_id=${idSolicitud}${idTarea ? `&tarea_id=${idTarea}` : ''}`
     const cuerpoMensaje = {
       destinatario_id: payload.coordinador,
       asunto: 'Solicitud de Viaje',
-      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Viaje pediente del formulario ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
       // accion_url: '',
@@ -1142,7 +1345,11 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.responsable,
       asunto: 'Solicitud de Viaje',
-      contenido: 'Solicitud de Viaje pediente del formulario ' + numeroFormulario.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Viaje pediente del formulario ' +
+        numeroFormulario.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1152,7 +1359,7 @@ async function submitForm() {
     //resetForm()
     await enviarMensajeAutomatico(cuerpoMensaje2)
 
-        ///////// Enviar notificación por correo al coordinador y al contador//////////
+    ///////// Enviar notificación por correo al coordinador y al contador//////////
     try {
       const emailPayload = {
         emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
@@ -1651,7 +1858,9 @@ async function validarViaje(tipoValidador, idValidador, ListaValidadores) {
   // Ejecutar la llamada PATCH
   loading.value = true
   try {
-    const response = await fetch(baseurl + '/monitoreo_api/actualizar-validacion-solicitud-viaje/', {
+    const response = await fetch(
+      baseurl + '/monitoreo_api/actualizar-validacion-solicitud-viaje/',
+      {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -1772,11 +1981,12 @@ onMounted(async () => {
   await cargarDatos()
   await cargarSolicitudesDeViaje()
   await cargarFormasDePago()
+  await storeSolViajes.cargarSolicitud(idSolicitud)
 })
 </script>
 
 <style scoped>
-.solicitud-fondos-container {
+.solicitud-viaje-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px 16px;
@@ -1833,7 +2043,7 @@ onMounted(async () => {
 
 /* Ajustes responsivos */
 @media (max-width: 960px) {
-  .solicitud-fondos-container {
+  .solicitud-viaje-container {
     padding: 16px 12px;
   }
 
