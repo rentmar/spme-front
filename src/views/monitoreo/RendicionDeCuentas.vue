@@ -39,526 +39,540 @@
       <!--Encabezado de la Actividad-->
       <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
-      <v-row>
-        <!-- Panel lateral de información -->
-        <v-col cols="12" md="4" lg="3">
-          <!-- Tarjeta de Información General -->
-          <v-card elevation="2" rounded="lg" class="mb-4">
-            <v-toolbar color="primary" density="compact">
-              <v-toolbar-title class="text-white">Información General</v-toolbar-title>
-            </v-toolbar>
-            <v-card-text class="pa-4">
-              <div class="info-item mb-3">
-                <div class="text-subtitle-2 text-medium-emphasis">Actividad:</div>
-                <div class="text-body-1 font-weight-medium">
-                  {{ datosFormulario?.actividad?.nombreCorto || 'N/A' }}
-                </div>
-              </div>
-              <div class="info-item mb-3">
-                <div class="text-subtitle-2 text-medium-emphasis">Estado:</div>
-                <v-chip color="warning" size="small" class="mt-1">
-                  <v-icon small class="mr-1">mdi-progress-clock</v-icon>
-                  {{ datosFormulario?.actividad?.estado || 'N/A' }}
+      <!-- Formulario principal -->
+      <v-card elevation="2" rounded="lg">
+        <v-toolbar color="primary" density="compact">
+          <v-toolbar-title class="text-white">
+            <v-icon class="mr-2">mdi-form-textbox</v-icon>
+            Formulario de Rendición
+          </v-toolbar-title>
+        </v-toolbar>
+
+        <v-card-text class="pa-4">
+          <v-form ref="form" @submit.prevent="submitForm">
+            <!--SECCION: Para Vinculacion de la Rendicion de Cuentas -->
+            <div v-if="!idTarea" class="form-section mb-6">
+              <h3 class="text-h6 mb-4 primary--text">
+                <v-icon color="primary" class="mr-2">mdi-link-variant</v-icon>
+                Vinculación de Solicitud
+              </h3>
+              <VinculacionRendicionCuentas
+                ref="vinculacionRef"
+                :id-actividad="idActividad"
+                @update:vinculacion="manejarActualizacionVinculacion"
+                @ver-rendicion="manejarVerRendicion"
+              ></VinculacionRendicionCuentas>
+            </div>
+
+            <div v-if="idTarea" class="form-section mb-6">
+              <h3 class="text-h6 mb-4 primary--text">
+                <v-icon color="primary" class="mr-2">mdi-link-variant</v-icon>
+                Vinculación de Solicitud (Subactividad)
+              </h3>
+              <VinculacionRendicionCuentasTarea
+                ref="vinculacionTareaRef"
+                :id-actividad="idActividad"
+                :id-tarea="idTarea"
+                @update:vinculacion="manejarActualizacionVinculacionTarea"
+                @ver-rendicion="manejarVerRendicion"
+              ></VinculacionRendicionCuentasTarea>
+            </div>
+
+            <v-divider class="my-4"></v-divider>
+
+            <!-- Sección: Responsable del Cargo de Cuenta -->
+            <div class="form-section mb-6">
+              <h3 class="text-h6 mb-4 primary--text">
+                <v-icon color="primary" class="mr-2">mdi-account-details</v-icon>
+                Responsable del Cargo de Cuenta
+              </h3>
+              <v-row>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="formData.nombre"
+                    label="Nombre del Solicitante"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="formData.paterno"
+                    label="Apellido paterno del Solicitante"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="formData.materno"
+                    label="Apellido materno del Solicitante"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="formData.documento_identidad"
+                    label="Carnet de Identidad"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="formData.cargo"
+                    label="Cargo"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </div>
+
+            <v-divider class="my-4"></v-divider>
+
+            <!-- Sección: Cargo de Cuenta -->
+            <div class="form-section mb-6">
+              <h3 class="text-h6 mb-4 primary--text">
+                <v-icon color="primary" class="mr-2">mdi-cash-register</v-icon>
+                Cargo de Cuenta
+              </h3>
+
+              <v-row>
+                <v-col cols="12" sm="6" md="4">
+                  <v-text-field
+                    v-model="formData.cpte_diario"
+                    label="Cpte. Diario"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="blue-lighten-5"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-text-field
+                    v-model="formData.fecha_desembolso"
+                    label="Fecha de Desembolso"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="blue-lighten-5"
+                    type="date"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="formData.descripcion_actividad"
+                    label="Descripción de la Actividad que se realizo"
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    rows="3"
+                    required
+                  ></v-textarea>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="formData.fuente_financiamiento"
+                    label="Fuente de Financiamiento"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-text-field
+                    v-model="formData.lugar_actividad"
+                    label="Lugar donde se realizo la Actividad"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="blue-lighten-5"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-text-field
+                    v-model="formData.fecha_actividad"
+                    label="Fecha de la realización de Actividad"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="blue-lighten-5"
+                    type="date"
+                    required
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="12" sm="6" md="4">
+                  <v-text-field
+                    v-model="formData.monto_asignado"
+                    label="Monto Asignado (Bs.)"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="blue-lighten-5"
+                    type="number"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-text-field
+                    v-model="formData.monto_gastado"
+                    label="Monto Descargado (Bs.)"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-text-field
+                    v-model="saldoPorReembolsar"
+                    label="Saldo por Reembolsar (Bs.)"
+                    variant="outlined"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </div>
+
+            <v-divider class="my-4"></v-divider>
+
+            <!-- Sección: Detalle de Gastos -->
+            <!-- Sección: Detalle de Gastos -->
+            <div class="form-section mb-6">
+              <h3 class="text-h6 mb-4 primary--text">
+                <v-icon color="primary" class="mr-2">mdi-cash</v-icon>
+                Detalle de Gastos
+              </h3>
+
+              <v-alert type="info" variant="tonal" class="mb-4">
+                <template v-slot:prepend>
+                  <v-icon color="info">mdi-information</v-icon>
+                </template>
+                Agregue todos los gastos asociados a la rendición. Especifique fecha, partida,
+                factura/recibo, descripción y monto.
+              </v-alert>
+
+              <div class="d-flex justify-space-between align-center mb-4">
+                <v-btn
+                  color="primary"
+                  variant="outlined"
+                  prepend-icon="mdi-plus"
+                  @click="agregarGasto"
+                >
+                  Agregar Item
+                </v-btn>
+                <v-chip class="text-subtitle-1" color="primary" variant="outlined">
+                  Monto Total Descargado (Bs.): {{ totalMontoGastado }}
                 </v-chip>
               </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
 
-        <!-- Formulario principal -->
-        <v-col cols="12" md="8" lg="9">
-          <v-card elevation="2" rounded="lg">
-            <v-toolbar color="primary" density="compact">
-              <v-toolbar-title class="text-white">
-                <v-icon class="mr-2">mdi-form-textbox</v-icon>
-                Formulario F-02: Rendición de Cuentas
-              </v-toolbar-title>
-            </v-toolbar>
+              <!-- Tabla con anchos de columna mejorados -->
+              <div class="table-responsive">
+                <v-table class="elevation-1 rounded-lg mb-4 users-table" density="compact">
+                  <thead>
+                    <tr>
+                      <th
+                        class="text-subtitle-2 font-weight-bold text-center"
+                        style="width: 130px; min-width: 130px"
+                      >
+                        Fecha
+                      </th>
+                      <th
+                        class="text-subtitle-2 font-weight-bold text-center"
+                        style="width: 100px; min-width: 100px"
+                      >
+                        Partida
+                      </th>
+                      <th
+                        class="text-subtitle-2 font-weight-bold text-center"
+                        style="width: 120px; min-width: 120px"
+                      >
+                        Fuente
+                      </th>
+                      <th
+                        class="text-subtitle-2 font-weight-bold text-center"
+                        style="width: 130px; min-width: 130px"
+                      >
+                        Factura/Recibo
+                      </th>
+                      <th class="text-subtitle-2 font-weight-bold" style="min-width: 200px">
+                        Descripción
+                      </th>
+                      <th
+                        class="text-subtitle-2 font-weight-bold text-center"
+                        style="width: 140px; min-width: 140px"
+                      >
+                        Monto (Bs.)
+                      </th>
+                      <th
+                        class="text-subtitle-2 font-weight-bold text-center"
+                        style="width: 60px; min-width: 60px"
+                      >
+                        Acción
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
+                      <!-- Fecha -->
+                      <td style="width: 130px; min-width: 130px; padding: 4px">
+                        <v-text-field
+                          v-model="gasto.fecha"
+                          type="date"
+                          variant="outlined"
+                          density="compact"
+                          hide-details
+                          bg-color="blue-lighten-5"
+                          class="custom-date-field"
+                        ></v-text-field>
+                      </td>
+                      <!-- Partida -->
+                      <td style="width: 100px; min-width: 100px; padding: 4px">
+                        <v-text-field
+                          v-model="gasto.partida"
+                          variant="outlined"
+                          density="compact"
+                          hide-details
+                          bg-color="blue-lighten-5"
+                          placeholder="1.1.1"
+                        ></v-text-field>
+                      </td>
+                      <!-- Fuente -->
+                      <td style="width: 120px; min-width: 120px; padding: 4px">
+                        <v-text-field
+                          v-model="gasto.fuente"
+                          variant="outlined"
+                          density="compact"
+                          hide-details
+                          bg-color="blue-lighten-5"
+                          placeholder="Financiador"
+                        ></v-text-field>
+                      </td>
+                      <!-- Factura/Recibo -->
+                      <td style="width: 130px; min-width: 130px; padding: 4px">
+                        <v-text-field
+                          v-model="gasto.factura_recibo"
+                          variant="outlined"
+                          density="compact"
+                          hide-details
+                          bg-color="blue-lighten-5"
+                        ></v-text-field>
+                      </td>
+                      <!-- Descripción -->
+                      <td style="min-width: 200px; padding: 4px">
+                        <v-text-field
+                          v-model="gasto.descripcion_gasto"
+                          variant="outlined"
+                          density="compact"
+                          hide-details
+                          bg-color="blue-lighten-5"
+                          placeholder="Descripción del gasto"
+                        ></v-text-field>
+                      </td>
+                      <!-- Monto -->
+                      <td style="width: 140px; min-width: 140px; padding: 4px">
+                        <v-text-field
+                          v-model.number="gasto.monto"
+                          type="number"
+                          variant="outlined"
+                          density="compact"
+                          hide-details
+                          bg-color="blue-lighten-5"
+                          placeholder="0.00"
+                          min="0"
+                          prefix="Bs."
+                        ></v-text-field>
+                      </td>
+                      <!-- Acción -->
+                      <td class="text-center" style="width: 60px; min-width: 60px; padding: 4px">
+                        <v-btn
+                          icon
+                          color="error"
+                          size="small"
+                          variant="text"
+                          @click="eliminarGasto(index)"
+                        >
+                          <v-icon>mdi-delete</v-icon>
+                        </v-btn>
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </div>
+            </div>
 
-            <v-card-text class="pa-4">
-              <v-form ref="form" @submit.prevent="submitForm">
-                <!--SECCION: Para Vinculacion de la Rendicion de Cuentas a  -->
-                <!-- Solicitud de Fondos -->
-                <!-- Solicitud de Viaje -->
-                <div v-if="!idTarea" class="form-section mb-6">
-                  <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-link-variant</v-icon>
-                    Vinculación de Solicitud
-                  </h3>
-                  <VinculacionRendicionCuentas
-                    ref="vinculacionRef"
-                    :id-actividad="idActividad"
-                    @update:vinculacion="manejarActualizacionVinculacion"
-                    @ver-rendicion="manejarVerRendicion"
-                  ></VinculacionRendicionCuentas>
-                </div>
+            <v-divider class="my-4"></v-divider>
 
-                <div v-if="idTarea" class="form-section mb-6">
-                  <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-link-variant</v-icon>
-                    Vinculación de Solicitud (Subactividad)
-                  </h3>
-                  <VinculacionRendicionCuentasTarea
-                    ref="vinculacionTareaRef"
-                    :id-actividad="idActividad"
-                    :id-tarea="idTarea"
-                    @update:vinculacion="manejarActualizacionVinculacionTarea"
-                    @ver-rendicion="manejarVerRendicion"
-                  ></VinculacionRendicionCuentasTarea>
-                </div>
+            <!-- Sección: Información Adicional -->
+            <div class="form-section mb-6">
+              <h3 class="text-h6 mb-4 primary--text">
+                <v-icon color="primary" class="mr-2">mdi-information</v-icon>
+                Información Adicional
+              </h3>
 
-                <v-divider class="my-4"></v-divider>
-
-                <!-- Sección: Responsable del Cargo de Cuenta -->
-                <div class="form-section mb-6">
-                  <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-account-details</v-icon>
-                    Responsable del Cargo de Cuenta
-                  </h3>
-                  <v-row>
-                    <v-col cols="12" md="4">
-                      <v-text-field
-                        v-model="formData.nombre"
-                        label="Nombre"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="4">
-                      <v-text-field
-                        v-model="formData.paterno"
-                        label="Apellido paterno"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="4">
-                      <v-text-field
-                        v-model="formData.materno"
-                        label="Apellido materno"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="4">
-                      <v-text-field
-                        v-model="formData.documento_identidad"
-                        label="Documento de Identidad"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="4">
-                      <v-text-field
-                        v-model="formData.cargo"
-                        label="Cargo"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </div>
-
-                <v-divider class="my-4"></v-divider>
-
-                <!-- Sección: Cargo de Cuenta -->
-                <div class="form-section mb-6">
-                  <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-cash-register</v-icon>
-                    Cargo de Cuenta
-                  </h3>
-
-                  <v-row>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="formData.cpte_diario"
-                        label="Cpte. Diario"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="formData.fecha_desembolso"
-                        label="Fecha de Desembolso"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="blue-lighten-5"
-                        type="date"
-                        required
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-textarea
-                        v-model="formData.descripcion_actividad"
-                        label="Descripción de la Actividad que se realizo"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        rows="3"
-                        required
-                      ></v-textarea>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-text-field
-                        v-model="formData.fuente_financiamiento"
-                        label="Fuente de Financiamiento"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="formData.lugar_actividad"
-                        label="Lugar donde se realizo la Actividad"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="formData.fecha_actividad"
-                        label="Fecha de la realización de Actividad"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="blue-lighten-5"
-                        type="date"
-                        required
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="formData.monto_asignado"
-                        label="Monto Asignado (Bs.)"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="blue-lighten-5"
-                        type="number"
-                        required
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="formData.monto_gastado"
-                        label="Monto Descargado (Bs.)"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="saldoPorReembolsar"
-                        label="Saldo por Reembolsar (Bs.)"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </div>
-
-                <v-divider class="my-4"></v-divider>
-
-                <!-- Sección: Detalle de Gastos -->
-                <div class="form-section mb-6">
-                  <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-cash</v-icon>
-                    Detalle de Gastos
-                  </h3>
-
-                  <v-alert type="info" variant="tonal" class="mb-4">
-                    <template v-slot:prepend>
-                      <v-icon color="info">mdi-information</v-icon>
-                    </template>
-                    Agregue todos los gastos asociados a la rendición. Especifique fecha, partida,
-                    factura/recibo, descripción y monto.
-                  </v-alert>
-
-                  <div class="d-flex justify-space-between align-center mb-4">
-                    <v-btn
-                      color="primary"
-                      variant="outlined"
-                      prepend-icon="mdi-plus"
-                      @click="agregarGasto"
-                    >
-                      Agregar Item
-                    </v-btn>
-                    <v-chip class="text-subtitle-1" color="primary" variant="outlined">
-                      Monto Total Descargado (Bs.): {{ totalMontoGastado }}
-                    </v-chip>
-                  </div>
-
-                  <v-table class="elevation-1 rounded-lg mb-4 users-table">
-                    <thead>
-                      <tr>
-                        <th class="text-subtitle-2 font-weight-bold">Fecha</th>
-                        <th class="text-subtitle-2 font-weight-bold">Partida</th>
-                        <th class="text-subtitle-2 font-weight-bold">Fuente</th>
-                        <th class="text-subtitle-2 font-weight-bold">Factura/Recibo</th>
-                        <th class="text-subtitle-2 font-weight-bold">Descripción del Gasto</th>
-                        <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
-                        <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model="gasto.fecha"
-                            type="date"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            class="compact-field"
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model="gasto.partida"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            class="compact-field"
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model="gasto.fuente"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model="gasto.factura_recibo"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                          ></v-text-field>
-                        </td>
-                        <td class="wide-column">
-                          <v-text-field
-                            v-model="gasto.descripcion_gasto"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="Descripción del gasto"
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model.number="gasto.monto"
-                            type="number"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="0.00"
-                            min="0"
-                            class="compact-field"
-                          ></v-text-field>
-                        </td>
-                        <td class="text-center action-column">
-                          <v-btn
-                            icon
-                            color="error"
-                            size="small"
-                            variant="text"
-                            @click="eliminarGasto(index)"
-                          >
-                            <v-icon>mdi-delete</v-icon>
-                          </v-btn>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </v-table>
-                </div>
-
-                <v-divider class="my-4"></v-divider>
-
-                <!-- Sección: Información Adicional -->
-                <div class="form-section mb-6">
-                  <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-information</v-icon>
-                    Información Adicional
-                  </h3>
-
-                  <v-row>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="formData.lugar_solicitud"
-                        label="Lugar donde se realiza la Rendición de Cuentas"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="formData.fecha_actual"
-                        label="Fecha actual Rendición de Cuentas"
-                        type="date"
-                        variant="outlined"
-                        density="compact"
-                        bg-color="grey-lighten-4"
-                        readonly
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </div>
-
-                <v-divider class="my-4"></v-divider>
-
-                <!-- Sección: Firmas y Validaciones -->
-                <div class="form-section mb-6">
-                  <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
-                    Firmas y Validaciones
-                  </h3>
-
-                  <v-row>
-                    <v-col cols="12" md="6">
-                      <v-select
-                        v-model="formData.idcoordinador"
-                        :items="coordinadoresList"
-                        :item-title="getNombreCompleto"
-                        item-value="id"
-                        label="Responsable Coordinación"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-select>
-                    </v-col>
-                    <v-col cols="12" md="6" class="d-flex align-center">
-                      <v-checkbox
-                        v-model="formData.validacion_coordinador"
-                        label="Aprobado por Coordinación"
-                        :disabled="!isAdmin"
-                      ></v-checkbox>
-                    </v-col>
-                  </v-row>
-
-                  <v-row>
-                    <v-col cols="12" md="6">
-                      <v-select
-                        v-model="formData.idcontador"
-                        :items="contadoresList"
-                        :item-title="getNombreCompleto"
-                        item-value="id"
-                        label="Responsable Contable"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-select>
-                    </v-col>
-                    <v-col cols="12" md="6" class="d-flex align-center">
-                      <v-checkbox
-                        v-model="formData.validacion_contador"
-                        label="Aprobado por Contable"
-                        :disabled="!isAdmin"
-                      ></v-checkbox>
-                    </v-col>
-                  </v-row>
-
-                  <v-row>
-                    <v-col cols="12" md="6">
-                      <v-select
-                        v-model="formData.idadministrador"
-                        :items="administradoresList"
-                        :item-title="getNombreCompleto"
-                        item-value="id"
-                        label="Responsable Dirección Administrativa"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-select>
-                    </v-col>
-                    <v-col cols="12" md="6" class="d-flex align-center">
-                      <v-checkbox
-                        v-model="formData.validacion_administrador"
-                        label="Aprobado por Dirección Administrativa"
-                        :disabled="!isAdmin"
-                      ></v-checkbox>
-                    </v-col>
-                  </v-row>
-                </div>
-
-                <!-- Sección: Firmas y Validaciones -->
-                <div class="form-section mb-6">
-                  <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
-                    Firmas y Validaciones
-                  </h3>
-
-                  <v-row>
-                    <v-col cols="12">
-                      <SeleccionValidadoresRendicionCuentas></SeleccionValidadoresRendicionCuentas>
-                    </v-col>
-                  </v-row>
-                </div>
-
-                <!-- Botones de acción -->
-                <div class="d-flex justify-end gap-3 mt-8">
-                  <v-btn
-                    color="error"
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.lugar_solicitud"
+                    label="Lugar donde se realiza la Rendición de Cuentas"
                     variant="outlined"
-                    size="large"
-                    prepend-icon="mdi-cancel"
-                    :to="`/pei/listaactividades?showButton=2`"
-                  >
-                    Cancelar
-                  </v-btn>
-                  <v-btn
-                    color="secondary"
+                    bg-color="blue-lighten-5"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.fecha_actual"
+                    label="Fecha actual Rendición de Cuentas"
+                    type="date"
                     variant="outlined"
-                    size="large"
-                    prepend-icon="mdi-backspace-outline"
-                    @click="resetForm"
-                  >
-                    Limpiar
-                  </v-btn>
-                  <v-btn
-                    color="primary"
-                    variant="flat"
-                    size="large"
-                    prepend-icon="mdi-send"
-                    type="submit"
-                    :loading="loading"
-                  >
-                    Enviar Rendicion
-                  </v-btn>
-                </div>
-              </v-form>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </div>
+
+            <v-divider class="my-4"></v-divider>
+
+            <!-- Sección: Firmas y Validaciones -->
+            <div class="form-section mb-6">
+              <h3 class="text-h6 mb-4 primary--text">
+                <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                Firmas y Validaciones
+              </h3>
+
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="formData.idcoordinador"
+                    :items="coordinadoresList"
+                    :item-title="getNombreCompleto"
+                    item-value="id"
+                    label="Responsable Coordinación"
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    required
+                  ></v-select>
+                </v-col>
+                <v-col cols="12" md="6" class="d-flex align-center">
+                  <v-checkbox
+                    v-model="formData.validacion_coordinador"
+                    label="Aprobado por Coordinación"
+                    :disabled="!isAdmin"
+                  ></v-checkbox>
+                </v-col>
+              </v-row>
+
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="formData.idcontador"
+                    :items="contadoresList"
+                    :item-title="getNombreCompleto"
+                    item-value="id"
+                    label="Responsable Contable"
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    required
+                  ></v-select>
+                </v-col>
+                <v-col cols="12" md="6" class="d-flex align-center">
+                  <v-checkbox
+                    v-model="formData.validacion_contador"
+                    label="Aprobado por Contable"
+                    :disabled="!isAdmin"
+                  ></v-checkbox>
+                </v-col>
+              </v-row>
+
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="formData.idadministrador"
+                    :items="administradoresList"
+                    :item-title="getNombreCompleto"
+                    item-value="id"
+                    label="Responsable Dirección Administrativa"
+                    variant="outlined"
+                    bg-color="blue-lighten-5"
+                    required
+                  ></v-select>
+                </v-col>
+                <v-col cols="12" md="6" class="d-flex align-center">
+                  <v-checkbox
+                    v-model="formData.validacion_administrador"
+                    label="Aprobado por Dirección Administrativa"
+                    :disabled="!isAdmin"
+                  ></v-checkbox>
+                </v-col>
+              </v-row>
+            </div>
+
+            <!--Seccion Firmas-->
+            <div class="form-section mb-6">
+              <h3 class="text-h6 mb-4 primary--text">
+                <v-icon color="primary" class="mr-2">mdi-account-check</v-icon>
+                Selección de Validadores
+              </h3>
+              <v-row>
+                <v-col cols="12">
+                  <SeleccionValidadoresRendicionCuentas
+                    ref="validadoresRef"
+                  ></SeleccionValidadoresRendicionCuentas>
+                </v-col>
+              </v-row>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-flex justify-end gap-3 mt-8">
+              <v-btn
+                color="error"
+                variant="outlined"
+                size="large"
+                prepend-icon="mdi-cancel"
+                :to="`/pei/listaactividades?showButton=2`"
+              >
+                Cancelar
+              </v-btn>
+              <v-btn
+                color="secondary"
+                variant="outlined"
+                size="large"
+                prepend-icon="mdi-backspace-outline"
+                @click="resetForm"
+              >
+                Limpiar
+              </v-btn>
+              <v-btn
+                color="primary"
+                variant="flat"
+                size="large"
+                prepend-icon="mdi-send"
+                type="submit"
+                :loading="loading"
+              >
+                Enviar Rendicion
+              </v-btn>
+            </div>
+          </v-form>
+        </v-card-text>
+      </v-card>
     </div>
   </v-container>
 </template>
@@ -579,6 +593,24 @@ import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
 import { useSnackbar } from '@/composables/useSnackbar'
+
+/*****COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
+//Esconder la anterior validacion
+const esVisible = ref(false)
+//Referncia al componente
+const validadoresRef = ref(null)
+
+//Obtener los ids de los validadores
+const idvalidadores = computed(() => {
+  return validadoresRef.value?.datosValidadores.validadoresIds
+})
+
+//Bandera para validar la seleccion de los responsables
+const validadoresEstanSeleccionados = computed(() => {
+  return validadoresRef.value?.validacionCompleta
+})
+
+/*****FIN COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
@@ -1982,5 +2014,64 @@ onMounted(() => {
 .compact-field {
   font-size: 14px;
   max-width: 100px;
+}
+/* Estilos adicionales para la tabla de gastos */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.custom-date-field {
+  min-width: 120px;
+}
+
+.custom-date-field :deep(input[type='date']) {
+  padding-right: 4px !important;
+  font-size: 13px;
+}
+
+/* Ajuste para campos numéricos */
+:deep(input[type='number']) {
+  text-align: right;
+}
+
+/* Ajuste para campos de fecha en la tabla */
+:deep(.v-field__input input[type='date']) {
+  min-height: 30px;
+  padding: 2px 4px;
+}
+
+/* Mejorar visualización en pantallas pequeñas */
+@media (max-width: 1200px) {
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .v-table {
+    min-width: 900px;
+  }
+}
+
+/* Ajuste para campos compactos en tabla */
+:deep(.v-table td .v-text-field) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+:deep(.v-table td .v-field__input) {
+  min-height: 32px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  font-size: 13px;
+}
+
+/* Asegurar que los inputs de fecha muestren el calendario correctamente */
+:deep(.v-table td input[type='date']::-webkit-calendar-picker-indicator) {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+:deep(.v-table td input[type='date']::-webkit-calendar-picker-indicator:hover) {
+  opacity: 1;
 }
 </style>

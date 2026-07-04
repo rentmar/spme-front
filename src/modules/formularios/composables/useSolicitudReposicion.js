@@ -11,6 +11,9 @@ export function useSolicitudReposicion() {
   const listaSolReposicionActividadPei = ref(null)
   const listaSolReposicionTareaPei = ref(null)
 
+  //Solicitud
+  const solicitudReposicion = ref(null)
+
   //Obtener lista de solicitud de viaje por id de actividad
   async function obtenerListaSolReposicionPorIdActividad(idactividad) {
     loading.value = true
@@ -74,6 +77,19 @@ export function useSolicitudReposicion() {
     }
   }
 
+  //Obtener Solicitud de reposicion por id
+  async function obtenerSolicitudReposicionPorId(idSolReposicion) {
+    loading.value = true
+    try {
+      const respuesta = await solicitudReposicionServicio.solReposicionPorId(idSolReposicion)
+      solicitudReposicion.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
@@ -81,9 +97,11 @@ export function useSolicitudReposicion() {
     listaSolReposicionTarea,
     listaSolReposicionActividadPei,
     listaSolReposicionTareaPei,
+    solicitudReposicion,
     obtenerListaSolReposicionPorIdActividad,
     obtenerListaSolReposicionPorIdTarea,
     obtenerListaSolReposicionPorIdActividadPei,
     obtenerListaSolReposicionPorIdTareaPei,
+    obtenerSolicitudReposicionPorId,
   }
 }

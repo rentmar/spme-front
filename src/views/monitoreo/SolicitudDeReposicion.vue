@@ -1,5 +1,5 @@
 <template>
-  <v-container class="solicitud-fondos-container">
+  <v-container class="solicitud-viaje-container">
     <!-- Overlay de carga -->
     <v-overlay
       :model-value="cargandoGeneral"
@@ -57,33 +57,39 @@
             </v-card-text>
           </v-card>
 
-          <!-- Tarjeta de resumen rápido -->
-          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- Tarjeta de resumen rápido de la solicitud -->
+          <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
-              <v-toolbar-title class="text-white">Resumen Rápido</v-toolbar-title>
+              <v-toolbar-title class="text-white">Resumen de Solicitud</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="pa-4">
               <div class="d-flex justify-space-between align-center mb-2">
                 <span class="text-subtitle-2 text-medium-emphasis">Monto solicitado:</span>
-                <span class="text-body-1 font-weight-bold text-primary"
-                  >Bs. {{ totalMontoSolicitado.toLocaleString() }}</span
-                >
+                <span class="text-body-1 font-weight-bold text-primary">
+                  Bs. {{ totalMontoSolicitado.toLocaleString() }}
+                </span>
               </div>
               <div class="d-flex justify-space-between align-center mb-2">
                 <span class="text-subtitle-2 text-medium-emphasis">Items de gasto:</span>
-                <span class="text-body-1 font-weight-medium">{{
-                  formData.detalle_destino_fondos.length
-                }}</span>
+                <span class="text-body-1 font-weight-medium">
+                  {{ formData.detalle_destino_fondos.length }}
+                </span>
               </div>
               <v-divider class="my-2"></v-divider>
+              <div class="d-flex justify-space-between align-center mb-2">
+                <span class="text-subtitle-2 text-medium-emphasis">Fecha de Solicitud:</span>
+                <span class="text-body-1 font-weight-medium">
+                  {{ formData.fecha_solicitud || 'No especificada' }}
+                </span>
+              </div>
               <div class="d-flex justify-space-between align-center">
-                <span class="text-subtitle-2 text-medium-emphasis">Presupuesto disponible:</span>
-                <span class="text-body-1 font-weight-medium text-success"
-                  >Bs. {{ actividadData.presupuesto.toLocaleString() }}</span
-                >
+                <span class="text-subtitle-2 text-medium-emphasis">Lugar:</span>
+                <span class="text-body-1 font-weight-medium text-truncate" style="max-width: 150px">
+                  {{ formData.lugar_solicitud || 'No especificado' }}
+                </span>
               </div>
             </v-card-text>
-          </v-card> -->
+          </v-card>
         </v-col>
 
         <!-- Formulario principal -->
@@ -268,7 +274,7 @@
                   <v-table class="elevation-1 rounded-lg mb-4 users-table">
                     <thead>
                       <tr>
-                        <th class="fecha-column">Fecha</th>
+                        <th class="text-subtitle-2 font-weight-bold fecha-column">Fecha</th>
                         <th class="text-subtitle-2 font-weight-bold">Partida</th>
                         <th class="text-subtitle-2 font-weight-bold">Fuente</th>
                         <th class="text-subtitle-2 font-weight-bold">Factura/Recibo</th>
@@ -297,9 +303,9 @@
                             variant="outlined"
                             density="compact"
                             hide-details
+                            bg-color="blue-lighten-5"
                             placeholder="1.1.1"
                             class="compact-field"
-                            bg-color="blue-lighten-5"
                             required
                           ></v-text-field>
                         </td>
@@ -325,15 +331,14 @@
                             required
                           ></v-text-field>
                         </td>
-
                         <td class="wide-column">
                           <v-text-field
                             v-model="gasto.descripcion_gasto"
                             variant="outlined"
                             density="compact"
                             hide-details
-                            placeholder="Descripción del gasto"
                             bg-color="blue-lighten-5"
+                            placeholder="Descripción del gasto"
                             required
                           ></v-text-field>
                         </td>
@@ -344,9 +349,10 @@
                             variant="outlined"
                             density="compact"
                             hide-details
-                            placeholder="0.00"
-                            class="compact-field"
                             bg-color="blue-lighten-5"
+                            placeholder="0.00"
+                            min="0"
+                            class="compact-field"
                             required
                           ></v-text-field>
                         </td>
@@ -384,16 +390,6 @@
                         bg-color="blue-lighten-5"
                         required
                       ></v-text-field>
-                      <!-- <v-select
-                        v-model="formData.forma_pago"
-                        :items="formasPagoOptions"
-                        item-title="formaPago"
-                        item-value="id"
-                        label="Forma de Pago"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-select> -->
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-text-field
@@ -445,6 +441,7 @@
                       </v-col>
                     </v-row>
                   </div>
+
                   <div v-if="MostrarCamposTransferencia">
                     <v-row>
                       <v-col cols="12" md="6">
@@ -550,6 +547,20 @@
                   </v-row>
                 </div>
 
+                <!-- Sección 5: Firmas -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Firmas y Validaciones
+                  </h3>
+
+                  <v-row>
+                    <v-col cols="12">
+                      <SeleccionValidadoresSolicitudes></SeleccionValidadoresSolicitudes>
+                    </v-col>
+                  </v-row>
+                </div>
+
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
                   <v-btn
@@ -588,13 +599,6 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ formData.correo_contador }}</pre> -->
-  <!-- {{ '*******************' }}
-  <pre>{{ formData.correo_coordinador }}</pre> -->
-  <!-- {{ '*******************' }}
-  <pre>{{ datosFormulario1 }}</pre> -->
-  <!-- {{ '*******************' }}
-  <pre>{{ solicitudesFiltradas }}</pre> -->
 </template>
 
 <script setup>
@@ -606,6 +610,7 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+import SeleccionValidadoresSolicitudes from '@/modules/formularios/components/validadores/SeleccionValidadoresSolicitudes.vue'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
@@ -616,10 +621,8 @@ const route = useRoute()
 // Convertir a número y validar
 const idActividad = route.params.id ? parseInt(route.params.id) : null
 const idTarea = route.query.tarea_id ? parseInt(route.query.tarea_id) : null
-//const idSolicitud = route.query.solicitud_id || null
 console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
-//console.log('ID Solicitud:', idSolicitud)
 
 const baseurl = import.meta.env.VITE_API_BASE
 
@@ -658,7 +661,9 @@ const formData = ref({
   id_tarea: 0,
   id_usuario: 0,
   // Resto de campos del formulario
-  detalle_destino_fondos: [{ fecha: '', partida: '', fuente: '', factura_recibo: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [
+    { fecha: '', partida: '', fuente: '', factura_recibo: '', descripcion_gasto: '', monto: 0 },
+  ],
   monto_solicitado: 0,
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
@@ -869,7 +874,7 @@ watch(
         contadoresList.value =
           newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
         coordinadoresList.value =
-          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || []  //'coordinador') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || [] //'coordinador') || []
       } else {
         responsablesList.value = []
         contadoresList.value = []
@@ -1085,7 +1090,14 @@ async function cargarSolicitudFondos() {
 }
 
 function addGasto() {
-  formData.value.detalle_destino_fondos.push({ fecha: '', partida: '', fuente: '', descripcion_gasto: '', monto: 0 })
+  formData.value.detalle_destino_fondos.push({
+    fecha: '',
+    partida: '',
+    fuente: '',
+    factura_recibo: '',
+    descripcion_gasto: '',
+    monto: 0,
+  })
 }
 
 function removeGasto(index) {
@@ -1180,7 +1192,11 @@ async function submitForm() {
     const cuerpoMensaje = {
       destinatario_id: payload.coordinador,
       asunto: 'Solicitud de Fondos - Coordinado',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Fondos pediente del formulario ' +
+        numeroFormularioSF.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1189,7 +1205,11 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.responsable,
       asunto: 'Solicitud de Pago - Coordinado',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Fondos pediente del formulario ' +
+        numeroFormularioSF.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1254,7 +1274,9 @@ function resetForm() {
   Object.assign(formData.value, {
     descripcion_actividad: '',
     objetivo_actividad: '',
-    detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+    detalle_destino_fondos: [
+      { fecha: '', partida: '', fuente: '', factura_recibo: '', descripcion_gasto: '', monto: 0 },
+    ],
     forma_pago: '',
     lugar_solicitud: '',
     fecha_solicitud: getCurrentDate(),
@@ -1330,7 +1352,14 @@ function exportToExcel() {
   ]
 
   // 2. Encabezados de la tabla de gastos
-  const expensesHeaders = ['FECHA', 'PARTIDA', 'FACTURA/RECIBO', 'DESCRIPCIÓN DEL GASTO', 'MONTO (BS.)', 'OBSERVACIONES']
+  const expensesHeaders = [
+    'FECHA',
+    'PARTIDA',
+    'FACTURA/RECIBO',
+    'DESCRIPCIÓN DEL GASTO',
+    'MONTO (BS.)',
+    'OBSERVACIONES',
+  ]
 
   // 3. Datos de gastos
   const expensesData = formData.value.detalle_destino_fondos.map((gasto) => [
@@ -1386,7 +1415,14 @@ function applyExcelStyles(
   )
 
   // Configurar anchos de columnas
-  worksheet['!cols'] = [{ wch: 30 }, { wch: 40 }, { wch: 20 }, { wch: 25 }]
+  worksheet['!cols'] = [
+    { wch: 30 },
+    { wch: 40 },
+    { wch: 20 },
+    { wch: 25 },
+    { wch: 25 },
+    { wch: 25 },
+  ]
 
   // Aplicar formatos a celdas específicas
   Object.keys(worksheet).forEach((cellAddress) => {
@@ -1435,9 +1471,9 @@ function applyExcelStyles(
         }
       }
 
-      // Formato de moneda para columna de montos (columna C)
+      // Formato de moneda para columna de montos (columna E - índice 4)
       else if (
-        cellRef.c === 2 &&
+        cellRef.c === 4 &&
         cellRef.r >= 23 + mainDataRows &&
         cellRef.r <= 22 + mainDataRows + expensesRows
       ) {
@@ -1470,12 +1506,12 @@ function applyExcelStyles(
     }
   })
 
-  // Agregar bordes a la tabla de gastos
+  // Agregar bordes a la tabla de gastos (6 columnas)
   const tableStartRow = 22 + mainDataRows
   const tableEndRow = 23 + mainDataRows + expensesRows
 
   for (let r = tableStartRow; r <= tableEndRow; r++) {
-    for (let c = 0; c < 4; c++) {
+    for (let c = 0; c < 6; c++) {
       const cellAddress = XLSX.utils.encode_cell({ r, c })
       if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: '' }
       if (!worksheet[cellAddress].s) worksheet[cellAddress].s = {}
@@ -1631,7 +1667,7 @@ function actualizarListasValidadores() {
 
   // Filtrar coordinadores (puedes ajustar la lógica según el cargo)
   coordinadoresList.value = datosFormulario.value.validadores.filter(
-    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('dir-administrativo'),  //'coordinador'),
+    (validador) => validador.cargo && validador.cargo.toLowerCase().includes('dir-administrativo'), //'coordinador'),
   )
 
   //console.log('Responsables list:', responsablesList.value)
@@ -1667,17 +1703,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.fecha-column {
-  width: 180px; /* Ancho suficiente para mostrar fecha completa */
-  min-width: 180px;
-  max-width: 200px;
-}
-
-.fecha-input {
-  width: 100%;
-}
-
-.solicitud-fondos-container {
+.solicitud-viaje-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px 16px;
@@ -1732,9 +1758,19 @@ onMounted(async () => {
   z-index: 2;
 }
 
+.fecha-column {
+  width: 180px;
+  min-width: 180px;
+  max-width: 200px;
+}
+
+.fecha-input {
+  width: 100%;
+}
+
 /* Ajustes responsivos */
 @media (max-width: 960px) {
-  .solicitud-fondos-container {
+  .solicitud-viaje-container {
     padding: 16px 12px;
   }
 
