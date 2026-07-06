@@ -138,7 +138,7 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
   //Cargar la Solicitud
   const cargarSolicitud = async (idSolFondos) => {
     loading.value = true
-    resetStore()
+    //resetStore()
     try {
       await Promise.all([
         cargarSolicitudFondos(idSolFondos),
@@ -214,5 +214,6 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
     cargarSolicitudFondos,
     cargarEstadoDeSolicitudFondos,
     cargarSolicitud,
+    resetStore,
   }
 })

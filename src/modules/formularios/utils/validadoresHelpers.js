@@ -74,6 +74,19 @@ export const getColorTipoSolicitud = (tipo) => {
 }
 
 /**
+ * Obtiene el color para el subtipo de solicitud
+ * @param {string} tipo - ACTIVIDAD, SUBACTIVIDAD
+ * @returns {string} Color de Vuetify
+ */
+export const getColorSubTipoSolicitud = (tipo) => {
+  const colores = {
+    ACTIVIDAD: 'info',
+    SUBACTIVIDAD: 'warning',
+  }
+  return colores[tipo] || 'grey'
+}
+
+/**
  * Formatea una fecha ISO a formato legible
  * @param {string} dateStr - Fecha en formato ISO
  * @returns {string} Fecha formateada
@@ -117,4 +130,88 @@ export const getIconoTipoSolicitud = (tipo) => {
     default: 'mdi-file-document',
   }
   return iconos[tipo] || iconos.default
+}
+
+/**
+ * Obtiene el nombre completo del tipo de solicitud
+ * @param {string} tipo - Tipo de solicitud
+ * @returns {string} Nombre completo legible
+ */
+export const getNombreCompletoTipoSolicitud = (tipo) => {
+  const nombres = {
+    solicitud_fondos: 'Solicitud de Fondos',
+    solicitud_viaje: 'Solicitud de Viaje',
+    solicitud_pago_directo: 'Solicitud de Pago Directo',
+    solicitud_reposicion: 'Solicitud de Reposición',
+    rendicion_cuentas: 'Rendición de Cuentas',
+    anticipo: 'Anticipo',
+    reembolso: 'Reembolso',
+    default: 'solicitud',
+  }
+  return nombres[tipo] || tipo || 'Solicitud'
+}
+
+/**
+ * Obtiene el nombre completo del tipo de solicitud
+ * @param {string} tipo - Tipo de solicitud
+ * @returns {string} Nombre completo legible
+ */
+export const getNombreCortoTipoSolicitud = (tipo) => {
+  const nombres = {
+    solicitud_fondos: 'FONDOS',
+    solicitud_viaje: 'VIAJE',
+    solicitud_pago_directo: 'PAGO DIRECTO',
+    solicitud_reposicion: 'REPOSICION',
+    rendicion_cuentas: 'RENDICION',
+    anticipo: 'ANTICIPO',
+    reembolso: 'REEMBOLSO',
+    default: 'DOCUMENTO',
+  }
+  return nombres[tipo] || tipo || 'Solicitud'
+}
+
+/**
+ * Obtiene el color para el tipo de solicitud (versión extendida)
+ * @param {string} tipo - Tipo de solicitud
+ * @returns {string} Color de Vuetify
+ */
+export const getColorTipoSolicitudExtendido = (tipo) => {
+  const colores = {
+    solicitud_fondos: 'primary',
+    solicitud_viaje: 'info',
+    solicitud_pago_directo: 'success',
+    solicitud_reposicion: 'warning',
+    rendicion_cuentas: 'secondary',
+    anticipo: 'error',
+    reembolso: 'warning',
+  }
+  return colores[tipo] || 'grey'
+}
+
+/**
+ * Obtiene el color según la prioridad
+ * @param {string} prioridad - Nivel de prioridad
+ * @returns {string} Color de Vuetify
+ */
+export const getColorPrioridad = (prioridad) => {
+  if (!prioridad) return 'grey'
+  const colores = {
+    alta: 'error',
+    urgente: 'error',
+    media: 'warning',
+    normal: 'info',
+    baja: 'success',
+  }
+  return colores[prioridad?.toLowerCase()] || 'grey'
+}
+
+export const formatearMonto = (monto) => {
+  if (!monto && monto !== 0) return 'Bs 0.00'
+  const valor = typeof monto === 'string' ? parseFloat(monto) : monto
+  if (isNaN(valor)) return 'Bs 0.00'
+  return new Intl.NumberFormat('es-BO', {
+    style: 'currency',
+    currency: 'BOB',
+    minimumFractionDigits: 2,
+  }).format(valor)
 }

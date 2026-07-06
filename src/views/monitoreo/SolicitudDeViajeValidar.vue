@@ -63,6 +63,9 @@
             </v-card-text>
           </v-card>
 
+          <!--Revisor de la Solicitud-->
+          <RevisorSolicitudViajes></RevisorSolicitudViajes>
+          <RedactorSolicitudViajes></RedactorSolicitudViajes>
           <!--Componente para el estado y validacion de la Solicitud (placeholder) -->
           <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
@@ -651,6 +654,8 @@ import { ref, onMounted, computed, nextTick, watch } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import RevisorSolicitudViajes from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudViajes.vue'
+import RedactorSolicitudViajes from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/RedactorSolicitudViajes.vue'
 //Store para la Solicitud de viajes
 import { useSolicitudDeViajesStore } from '@/modules/formularios/store/useSolicitudDeViajesStore'
 import axios from 'axios'

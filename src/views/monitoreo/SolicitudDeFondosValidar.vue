@@ -56,6 +56,8 @@
               </div>
             </v-card-text>
           </v-card>
+          <!--Componente Revisores Estado y Aprovacion Rechazo-->
+          <RevisorSolicitudFondos></RevisorSolicitudFondos>
 
           <!--Componente para el estado y validdacion de la Solicitud-->
           <EstadoValidacionSolicitudFondos></EstadoValidacionSolicitudFondos>
@@ -664,6 +666,7 @@ import EstadoValidacionSolicitudFondos from '@/modules/formularios/components/va
 import ValidacionRedactorSolFondos from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/ValidacionRedactorSolFondos.vue'
 //Iniciar el estore
 import { useSolicitudFondosStore } from '@/modules/formularios/store/useSolicitudDeFondosStore'
+import RevisorSolicitudFondos from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudFondos.vue'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
