@@ -1,24 +1,27 @@
+//store para Solicitud De Reposicion
+//useSolicitudDeReposicion.js
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useSolicitudPagoDirecto } from '../composables/useSolicitudPagoDirecto'
-import { useValidadoresSolPagoDirecto } from '../composables/useValidadoresSolPagoDirecto'
+import { useRendicionCuentas } from '../composables/useRendicionCuentas'
+import { useValidadoresRendCuentas } from '../composables/useValidadoresRendicionCuentas'
 import { useUserStore } from '@/stores/user'
 
-export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-directo', () => {
+export const useRendicionCuentasStore = defineStore('rendicion-cuentas', () => {
   // === ESTADOS ===
   const loading = ref(false)
   const error = ref(null)
 
   // Estado - Informacion de la solicitud
-  const solicitudPagoDirectoActual = ref(null)
+  const rendicionCuentasActual = ref()
   //Tipo de la solicitud
-  const estadoSolicitudPagoDirectoActual = ref(null)
+  const estadoRendicionCuentasActual = ref()
 
   /****************************** COMPOSABLES *******************************************************/
-  //Solicitud de Pago Directo
-  const { solicitudPagoDirecto, obtenerSolicitudDePagoDirectoPorId } = useSolicitudPagoDirecto()
+  //Solicitud de fondos
+  const { rendicionCuentas, obtenerRendicionCuentasPorId } = useRendicionCuentas()
   //Validadores
-  const { estadoSolicitudPagoDirecto } = useValidadoresSolPagoDirecto()
+  const { estadoRendicionCuentas } = useValidadoresRendCuentas()
+
   /******************************* Stores ********************************************************/
   //Inicializar el store
   const storeUsuario = useUserStore()
@@ -62,8 +65,8 @@ export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-direct
 
   //Tipo de solicitud
   const tipoSolicitud = computed(() => {
-    if (!estadoSolicitudPagoDirectoActual.value) return ''
-    const tipo = estadoSolicitudPagoDirectoActual.value.tipo_solicitud
+    if (!estadoRendicionCuentasActual.value) return ''
+    const tipo = estadoRendicionCuentasActual.value.tipo_solicitud
     if (!tipo) return ''
     if (tipo === 'TAREA') return 'SUBACTIVIDAD'
     return tipo
@@ -71,31 +74,31 @@ export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-direct
 
   //Estado de la solicitud
   const estadoDocumento = computed(() => {
-    if (!estadoSolicitudPagoDirectoActual.value) return ''
-    return estadoSolicitudPagoDirectoActual.value.estado_consolidado || ''
+    if (!estadoRendicionCuentasActual.value) return ''
+    return estadoRendicionCuentasActual.value.estado_consolidado || ''
   })
 
   //Resumen
   const resumenSolicitud = computed(() => {
-    if (!estadoSolicitudPagoDirectoActual.value) return null
-    return estadoSolicitudPagoDirectoActual.value.resumen || null
+    if (!estadoRendicionCuentasActual.value) return null
+    return estadoRendicionCuentasActual.value.resumen || null
   })
 
   //Validadores asignados
   const validadoresAsignados = computed(() => {
-    if (!estadoSolicitudPagoDirectoActual.value) return []
-    if (!Array.isArray(estadoSolicitudPagoDirectoActual.value.detalle_validadores)) return []
-    return estadoSolicitudPagoDirectoActual.value.detalle_validadores
+    if (!estadoRendicionCuentasActual.value) return []
+    if (!Array.isArray(estadoRendicionCuentasActual.value.detalle_validadores)) return []
+    return estadoRendicionCuentasActual.value.detalle_validadores
   })
 
   //Redactor del documento - CORREGIDO
   const redactorDocumento = computed(() => {
     // Verificar que exista el estado y los validadores
-    if (!estadoSolicitudPagoDirectoActual.value) {
+    if (!estadoRendicionCuentasActual.value) {
       return null
     }
 
-    const detalle = estadoSolicitudPagoDirectoActual.value.detalle_validadores
+    const detalle = estadoRendicionCuentasActual.value.detalle_validadores
 
     // Verificar que detalle_validadores existe y es un array
     if (!detalle || !Array.isArray(detalle)) {
@@ -120,7 +123,7 @@ export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-direct
 
   //Version del documento
   const versionDocumento = computed(() => {
-    if (!estadoSolicitudPagoDirectoActual.value) return null
+    if (!estadoRendicionCuentasActual.value) return null
     if (!validadoresAsignados.value.length) return null
     // La versión está en el primer validador (todos tienen la misma versión)
     return validadoresAsignados.value[0]?.version_documento || null
@@ -128,33 +131,35 @@ export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-direct
 
   // También puedes obtener el ID de la solicitud
   const idSolicitud = computed(() => {
-    return solicitudPagoDirecto.value?.id || null
+    return rendicionCuentasActual.value?.id || null
   })
 
   /****************************** Funciones Solicitud de Fondos *******************************************************/
+
   //Cargar la Solicitud
-  const cargarSolicitud = async (idSolPagoDirecto) => {
+  const cargarSolicitud = async (idRendicion) => {
     loading.value = true
+
     try {
       await Promise.all([
-        cargarSolicitudPagoDirecto(idSolPagoDirecto),
-        cargarEstadoDeSolicitudPagoDirecto(idSolPagoDirecto),
+        cargarRendicionDeCuentas(idRendicion),
+        cargarEstadoDeRendicionDeCuentas(idRendicion),
       ])
     } catch (error) {
-      console.error('Error al cargar los datos de la solictud de pago directo', error)
+      console.error('Error al cargar los datos de la solicitud', error)
     } finally {
       loading.value = false
     }
   }
 
-  //Cargar la solicitud de pago directo
-  const cargarSolicitudPagoDirecto = async (idSolPagoDirecto) => {
+  //Cargar la solicitud de fondos
+  const cargarRendicionDeCuentas = async (idRendicion) => {
     loading.value = true
     try {
-      await obtenerSolicitudDePagoDirectoPorId(idSolPagoDirecto)
-      solicitudPagoDirectoActual.value = solicitudPagoDirecto.value
+      await obtenerRendicionCuentasPorId(idRendicion)
+      rendicionCuentasActual.value = rendicionCuentas.value
     } catch (error) {
-      console.error('Error al cargar la Solicitud de Viajes', error)
+      console.error('Error al cargar la rendicion de cuentas', error)
     } finally {
       loading.value = false
     }
@@ -162,36 +167,34 @@ export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-direct
 
   /****************************** Funciones Validadores *******************************************************/
 
-  //Cargar el estado de la sol de viajes
-  const cargarEstadoDeSolicitudPagoDirecto = async (idSolPagoDirecto) => {
+  //Cargar el estado de la solicitud de fondos
+  const cargarEstadoDeRendicionDeCuentas = async (idSolReposicion) => {
     loading.value = true
     try {
-      const respuesta = await estadoSolicitudPagoDirecto(idSolPagoDirecto)
-      estadoSolicitudPagoDirectoActual.value = respuesta
+      const respuesta = await estadoRendicionCuentas(idSolReposicion)
+      estadoRendicionCuentasActual.value = respuesta
     } catch (error) {
-      console.error('Error al cargar la sol de viajes', error)
+      console.error('Error al cargar el estado de la rend de cuentas', error)
     } finally {
       loading.value = false
     }
   }
+
   /******************************** Funciones de limpieza *********************************/
+
   //Resetear el store
   const resetStore = () => {
-    solicitudPagoDirectoActual.value = null
-    estadoSolicitudPagoDirectoActual.value = null
+    rendicionCuentasActual.value = null
+    estadoRendicionCuentasActual.value = null
     loading.value = false
     error.value = null
   }
 
   return {
-    //Estados de carga
+    //Estado carga
     loading,
     error,
-    //Estado
-    solicitudPagoDirectoActual,
-    estadoSolicitudPagoDirectoActual,
 
-    //COmputed
     //Computed
     idRevisor,
     miValidacion,
@@ -206,10 +209,14 @@ export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-direct
     versionDocumento,
     idSolicitud,
 
+    //Estado
+    rendicionCuentasActual,
+    estadoRendicionCuentasActual,
+
     //func
-    cargarSolicitud,
-    cargarSolicitudPagoDirecto,
-    cargarEstadoDeSolicitudPagoDirecto,
     resetStore,
+    cargarRendicionDeCuentas,
+    cargarEstadoDeRendicionDeCuentas,
+    cargarSolicitud,
   }
 })

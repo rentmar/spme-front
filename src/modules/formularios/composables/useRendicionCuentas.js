@@ -91,6 +91,20 @@ export function useRendicionCuentas() {
     }
   }
 
+  //Obtener rendicion de cuentas por ID
+  async function obtenerRendicionCuentasPorId(idRendicionCuentas) {
+    loading.value = true
+    try {
+      const respuesta = await rendicionCuentasServicio.solRendicionCuentasPorId(idRendicionCuentas)
+      rendicionCuentas.value = respuesta
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
@@ -104,5 +118,6 @@ export function useRendicionCuentas() {
     obtenerListaRendicionCuentasPorIdActividadPei,
     obtenerListaRendicionCuentasPorIdTareaPei,
     obtenerRendicionCuentasMasSolicitudes,
+    obtenerRendicionCuentasPorId,
   }
 }

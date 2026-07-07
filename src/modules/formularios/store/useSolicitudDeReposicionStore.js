@@ -131,7 +131,7 @@ export const useSolicitudDeReposicionStore = defineStore('solicitud-reposicion',
 
   // También puedes obtener el ID de la solicitud
   const idSolicitud = computed(() => {
-    return estadosolicitudReposicionActual.value?.id || null
+    return solicitudReposicionActual.value?.id || null
   })
 
   /****************************** Funciones Solicitud de Fondos *******************************************************/
@@ -139,7 +139,7 @@ export const useSolicitudDeReposicionStore = defineStore('solicitud-reposicion',
   //Cargar la Solicitud
   const cargarSolicitud = async (idSolReposicion) => {
     loading.value = true
-    resetStore()
+
     try {
       await Promise.all([
         cargarSolicitudReposicion(idSolReposicion),

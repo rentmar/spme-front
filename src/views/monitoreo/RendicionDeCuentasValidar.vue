@@ -28,11 +28,15 @@
         :proyecto-id="datosFormulario.actividad?.proyecto ?? '999999'"
       ></ProyectoIdHeader>
       <br />
-      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
+      <ActividadInformacion
+        v-if="datosFormulario && datosFormulario.actividad"
+        :actividad-id="idActividad"
+      />
 
       <v-row>
         <!-- Panel lateral de información -->
-        <v-col cols="12" md="4" lg="3">
+
+        <v-col cols="12" md="4" lg="3" v-if="datosFormulario && datosFormulario.actividad">
           <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="primary" density="compact">
               <v-toolbar-title class="text-white">Información General</v-toolbar-title>
@@ -54,8 +58,11 @@
             </v-card-text>
           </v-card>
 
+          <RevisorRendicionCuentas></RevisorRendicionCuentas>
+          <RedactorRendicionCuentas></RedactorRendicionCuentas>
+
           <!--Componente para el estado y validacion -->
-          <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
               <v-toolbar-title class="text-white">Estado de Validación</v-toolbar-title>
             </v-toolbar>
@@ -64,10 +71,10 @@
                 Aquí se integrará el componente de estado de validación
               </p>
             </v-card-text>
-          </v-card>
+          </v-card> -->
 
           <!-- Tarjeta de resumen rápido -->
-          <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
               <v-toolbar-title class="text-white">Resumen de Rendición</v-toolbar-title>
             </v-toolbar>
@@ -96,7 +103,7 @@
                 </span>
               </div>
             </v-card-text>
-          </v-card>
+          </v-card> -->
         </v-col>
 
         <!-- Formulario principal -->
@@ -398,6 +405,7 @@
                             <v-icon>mdi-delete</v-icon>
                           </v-btn>
                         </td>
+                        onMo
                       </tr>
                     </tbody>
                   </v-table>
@@ -439,7 +447,7 @@
                 <v-divider class="my-4"></v-divider>
 
                 <!-- Sección: Firmas -->
-                <div class="form-section mb-6">
+                <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
@@ -551,7 +559,7 @@
                       ></v-checkbox>
                     </v-col>
                   </v-row>
-                </div>
+                </div> -->
 
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
@@ -640,6 +648,12 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+import { useRendicionCuentasStore } from '@/modules/formularios/store/useRendicionCuentasStore'
+import RevisorRendicionCuentas from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorRendicionCuentas.vue'
+import RedactorRendicionCuentas from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/RedactorRendicionCuentas.vue'
+
+//Iniciar el store
+const storeRendicion = useRendicionCuentasStore()
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
@@ -1680,6 +1694,7 @@ onMounted(async () => {
       cargarSolicitudFondos(),
       cargarSolicitudesFondos(),
       getSolicitudFondosInfo(idActividad, idTarea),
+      storeRendicion.cargarSolicitud(idSolicitud),
     ])
   } catch (error) {
     console.error('Error al cargar todos los datos iniciales:', error)

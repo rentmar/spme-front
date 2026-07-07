@@ -57,8 +57,11 @@
             </v-card-text>
           </v-card>
 
+          <RevisorSolicitudReposicion></RevisorSolicitudReposicion>
+          <RedactorSolicitudReposicion></RedactorSolicitudReposicion>
+
           <!--Componente para el estado y validacion de la Solicitud (placeholder) -->
-          <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
               <v-toolbar-title class="text-white">Estado de Validación</v-toolbar-title>
             </v-toolbar>
@@ -67,10 +70,10 @@
                 Aquí se integrará el componente de estado de validación
               </p>
             </v-card-text>
-          </v-card>
+          </v-card> -->
 
           <!-- Tarjeta de resumen rápido de la solicitud -->
-          <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
               <v-toolbar-title class="text-white">Resumen de Solicitud</v-toolbar-title>
             </v-toolbar>
@@ -101,7 +104,7 @@
                 </span>
               </div>
             </v-card-text>
-          </v-card>
+          </v-card> -->
         </v-col>
 
         <!-- Formulario principal -->
@@ -498,7 +501,7 @@
                 <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 5: Firmas -->
-                <div class="form-section mb-6">
+                <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
@@ -568,7 +571,7 @@
                       ></v-checkbox>
                     </v-col>
                   </v-row>
-                </div>
+                </div> -->
 
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
@@ -657,6 +660,13 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+//store
+import { useSolicitudDeReposicionStore } from '@/modules/formularios/store/useSolicitudDeReposicionStore'
+import RevisorSolicitudReposicion from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudReposicion.vue'
+import RedactorSolicitudReposicion from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/RedactorSolicitudReposicion.vue'
+
+//Inciciar el store
+const storeSolReposicion = useSolicitudDeReposicionStore()
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
@@ -1757,6 +1767,7 @@ onMounted(async () => {
   await cargarDatos()
   await cargarSolicitudDeReposicion()
   await textoProcedencia.value
+  await storeSolReposicion.cargarSolicitud(idSolicitud)
 })
 </script>
 

@@ -61,6 +61,7 @@ import {
   getNombreCortoTipoSolicitud,
   getColorTipoSolicitudExtendido,
   getColorSubTipoSolicitud,
+  getSubTipoSolicitud,
   getTextoEstadoConsolidado,
   getIconoEstadoConsolidado,
   getColorEstado,
@@ -86,12 +87,13 @@ const props = defineProps({
 const colorTipoDocumento = computed(() => getColorTipoSolicitudExtendido(props.tipoDocumento))
 const tipoDocumento = computed(() => getNombreCortoTipoSolicitud(props.tipoDocumento))
 //Subtipo de documento
-const colorSubTipoDocumento = computed(() =>
-  getColorSubTipoSolicitud(props.estadoDocumento.tipo_solicitud),
-)
-const subTipoDocumento = computed(() => {
-  return props.estadoDocumento.tipo_solicitud
-})
+const subTipoDocumento = computed(() => getSubTipoSolicitud(props.estadoDocumento.tipo_solicitud))
+
+const colorSubTipoDocumento = computed(() => getColorSubTipoSolicitud(subTipoDocumento))
+// const subTipoDocumento = computed(() => {
+//   return props.estadoDocumento.tipo_solicitud
+// })
+
 //Estado del documento
 const colorEstado = computed(() => getColorEstado(props.estadoDocumento.estado_consolidado))
 const iconoEstado = computed(() =>

@@ -60,6 +60,15 @@ export const getTextoEstadoConsolidado = (estado) => {
   return textos[estado] || 'SIN ESTADO'
 }
 
+//Obtener el literarl para el subtipo de documento
+export const getSubTipoSolicitud = (tipo) => {
+  const subtipo = {
+    ACTIVIDAD: 'ACTIVIDAD',
+    TAREA: 'SUBACTIVIDAD',
+  }
+  return subtipo[tipo] || ''
+}
+
 /**
  * Obtiene el color para el tipo de solicitud
  * @param {string} tipo - ACTIVIDAD, SUBACTIVIDAD

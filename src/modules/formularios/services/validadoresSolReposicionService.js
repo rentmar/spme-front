@@ -10,9 +10,12 @@ export const validadoresSolReposicionServicio = {
    */
   asignarValidadoresSolReposicion: async (idSolReposicion, iDsValidadores) => {
     try {
-      const respuesta = await apiValid.post('', {
-        validador_ids: iDsValidadores,
-      })
+      const respuesta = await apiValid.post(
+        '/solicitud-reembolso/' + idSolReposicion + '/asignar-validadores/',
+        {
+          validador_ids: iDsValidadores,
+        },
+      )
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al asignar validadores', error)
@@ -25,9 +28,12 @@ export const validadoresSolReposicionServicio = {
    */
   asignarValidadoresSinMensajesSolReposicion: async (idSolReposicion, iDsValidadores) => {
     try {
-      const respuesta = await apiValid.post('', {
-        validador_ids: iDsValidadores,
-      })
+      const respuesta = await apiValid.post(
+        'solicitud-reembolso/' + idSolReposicion + '/asignar-validadores-sin-notificacion/',
+        {
+          validador_ids: iDsValidadores,
+        },
+      )
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al asignar validadores', error)
@@ -42,7 +48,7 @@ export const validadoresSolReposicionServicio = {
    */
   aprobarSolReposicion: async (idSolReposicion, idValidacion, comentarios) => {
     try {
-      const respuesta = await apiValid.post('', {
+      const respuesta = await apiValid.post('/solicitud-reembolso/' + idSolReposicion + '/votar/', {
         validacion_id: idValidacion,
         estado: 'APROBADO',
         comentarios: comentarios || 'Solicitud aprobada',
@@ -61,7 +67,7 @@ export const validadoresSolReposicionServicio = {
    */
   rechazarSolReposicion: async (idSolReposicion, idValidacion, coment) => {
     try {
-      const respuesta = await apiValid.post('', {
+      const respuesta = await apiValid.post('/solicitud-reembolso/' + idSolReposicion + '/votar/', {
         validacion_id: idValidacion,
         estado: 'RECHAZADO',
         comentarios: coment,
@@ -78,7 +84,9 @@ export const validadoresSolReposicionServicio = {
    */
   estadoValidacionSolReposicion: async (idSolReposicion) => {
     try {
-      const respuesta = await apiValid.get('')
+      const respuesta = await apiValid.get(
+        '/solicitud-reembolso/' + idSolReposicion + '/estado-validacion/',
+      )
       return respuesta.data
     } catch (error) {
       console.error(
@@ -96,9 +104,12 @@ export const validadoresSolReposicionServicio = {
    */
   resetValidacionSolReposicion: async (idSolReposicion, version) => {
     try {
-      const respuesta = await apiValid.post('', {
-        nueva_version: version,
-      })
+      const respuesta = await apiValid.post(
+        '/solicitud-reembolso/' + idSolReposicion + '/resetear-validaciones/',
+        {
+          nueva_version: version,
+        },
+      )
       return respuesta.data
     } catch (error) {
       console.error('Axios: error al resetear la validacion', error)
@@ -113,7 +124,7 @@ export const validadoresSolReposicionServicio = {
   historialValidacionSolReposicion: async (idSolReposicion) => {
     try {
       const respuesta = await apiValid.get(
-        '/solicitud-pago-directo/' + idSolReposicion + '/historial/',
+        '/solicitud-reembolso/' + idSolReposicion + '/historial/',
       )
       return respuesta.data
     } catch (error) {
