@@ -6,7 +6,7 @@
         <v-icon class="mr-2">
           <slot name="icono-encabezado">mdi-pencil-outline</slot>
         </v-icon>
-        <slot name="titulo-encabezado">Redactor</slot>
+        <slot name="titulo-encabezado">REDACTOR</slot>
       </v-toolbar-title>
     </v-toolbar>
 
@@ -27,7 +27,7 @@
                 mdi-information-outline
               </v-icon>
             </template>
-            <span>Informacion del documento en proceso de redaccion</span>
+            <span>Informacion del documento</span>
           </v-tooltip>
         </div>
 
@@ -51,7 +51,7 @@
             <slot name="icono-redactores">mdi-account-edit</slot>
           </v-icon>
           <span class="section-title">
-            <slot name="titulo-redactores">Redactores</slot>
+            <slot name="titulo-redactores">Revisores</slot>
           </span>
           <v-tooltip location="top" :open-delay="300">
             <template v-slot:activator="{ props: tooltipProps }">
@@ -59,12 +59,12 @@
                 mdi-information-outline
               </v-icon>
             </template>
-            <span>Persona(s) encargada de redactar el documento</span>
+            <span>Revisores asignados al documento</span>
           </v-tooltip>
         </div>
 
         <div class="section-content">
-          <slot name="redactores-content">
+          <slot name="revisores-content">
             <div class="empty-state">
               <v-icon size="24" color="grey-lighten-1">mdi-account-off</v-icon>
               <p class="text-caption text-grey">Redactor(es) no asignado(s)</p>
@@ -83,7 +83,7 @@
             <slot name="icono-redaccion">mdi-pencil-box-outline</slot>
           </v-icon>
           <span class="section-title">
-            <slot name="titulo-redaccion">Mi Redaccion</slot>
+            <slot name="titulo-redaccion">Redactor</slot>
           </span>
           <v-tooltip location="top" :open-delay="300">
             <template v-slot:activator="{ props: tooltipProps }">
@@ -95,11 +95,22 @@
           </v-tooltip>
         </div>
 
+        <!--Informacion del redactor -->
+        <div class="section-content">
+          <slot name="redactor-content">
+            <div class="empty-state">
+              <v-icon size="24" color="grey-lighten-1">mdi-account-off</v-icon>
+              <p class="text-caption text-grey">Redactor no asignado</p>
+            </div>
+          </slot>
+        </div>
+
+        <!-- Acciones del redactor -->
         <div class="section-content">
           <slot name="redaccion-content">
             <div class="empty-state">
               <v-icon size="24" color="grey-lighten-1">mdi-account-off</v-icon>
-              <p class="text-caption text-grey">Redactor no asignado</p>
+              <p class="text-caption text-grey">Acciones no disponibles</p>
             </div>
           </slot>
         </div>

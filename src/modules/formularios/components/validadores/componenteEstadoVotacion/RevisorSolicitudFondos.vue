@@ -2,7 +2,10 @@
   <BaseComponenteRevisoresAside>
     <!-- Informacion Documento -->
     <template #documento-content>
-      <div v-if="storeSolFondos.solicitudFondosActual" class="info-container">
+      <div
+        v-if="storeSolFondos.solicitudFondosActual && storeSolFondos.estadoSolicitudFondosActual"
+        class="info-container"
+      >
         <DocumentoInfo
           :tipo-documento="'solicitud_fondos'"
           :documento="storeSolFondos.solicitudFondosActual"
@@ -21,7 +24,7 @@
     <template #validacion-content>
       <div>
         <RevisorVoto
-          v-if="storeSolFondos.miValidacion"
+          :es-revisor="storeSolFondos.esValidador"
           :mi-validacion="storeSolFondos.miValidacion"
           :esta-validado="storeSolFondos.yaValido"
           :documento_id="storeSolFondos.idSolicitud"

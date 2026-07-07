@@ -2,47 +2,43 @@
   <BaseComponenteRedactorAside>
     <!--Informacion del documento-->
     <template #documento-content>
-      <div
-        v-if="storeDocumento.solicitudViajesActual && storeDocumento.estadoSolicitudViajesActual"
-        class="info-container"
-      >
+      <div v-if="storeSolFondos.solicitudFondosActual" class="info-container">
         <DocumentoInfo
-          :tipo-documento="'solicitud_viaje'"
-          :documento="storeDocumento.solicitudViajesActual"
-          :estado-documento="storeDocumento.estadoSolicitudViajesActual"
-        ></DocumentoInfo>
+          :tipo-documento="'solicitud_fondos'"
+          :documento="storeSolFondos.solicitudFondosActual"
+          :estado-documento="storeSolFondos.estadoSolicitudFondosActual"
+        >
+        </DocumentoInfo>
       </div>
     </template>
     <!--Revisores-->
     <template #revisores-content>
-      <div v-if="storeDocumento.validadoresAsignados">
-        <LIstaRevisores :revisores="storeDocumento.validadoresAsignados"></LIstaRevisores>
+      <div v-if="storeSolFondos.validadoresAsignados">
+        <LIstaRevisores :revisores="storeSolFondos.validadoresAsignados"></LIstaRevisores>
       </div>
     </template>
     <!--Redactor informacion-->
     <template #redactor-content>
-      <div v-if="storeDocumento.redactorDocumento">
-        <RedactorInfo :redactor="storeDocumento.redactorDocumento"></RedactorInfo>
-      </div>
+      <RedactorInfo :redactor="storeSolFondos.redactorDocumento"></RedactorInfo>
     </template>
     <!--Acciones redactor-->
     <template #redaccion-content>
       <div
-        v-if="storeDocumento.solicitudViajesActual && storeDocumento.estadoSolicitudViajesActual"
+        v-if="storeSolFondos.solicitudFondosActual && storeSolFondos.estadoSolicitudFondosActual"
       >
         <AsignarRevisoresSolicitud
-          v-if="storeDocumento.estadoDocumento === 'SIN_VALIDACIONES'"
-          :id-solicitud="storeDocumento.idSolicitud"
-          :contenido-documento="storeDocumento.solicitudViajesActual"
+          v-if="storeSolFondos.estadoDocumento === 'SIN_VALIDACIONES'"
+          :id-solicitud="storeSolFondos.idSolicitud"
+          :contenido-documento="storeSolFondos.solicitudFondosActual"
           @revisores-asignados="handleRevisoresAsignados"
         ></AsignarRevisoresSolicitud>
         <RedactorAccion
-          v-else-if="storeDocumento.esRedactor"
-          :estado-documento="storeDocumento.estadoDocumento"
-          :documento-contenido="storeDocumento.solicitudViajesActual"
-          :version-documento="storeDocumento.versionDocumento"
-          :resumen-documento="storeDocumento.resumenSolicitud"
-          :validadores-documento="storeDocumento.validadoresAsignados"
+          v-else-if="storeSolFondos.esRedactor"
+          :estado-documento="storeSolFondos.estadoDocumento"
+          :documento-contenido="storeSolFondos.solicitudFondosActual"
+          :version-documento="storeSolFondos.versionDocumento"
+          :resumen-documento="storeSolFondos.resumenSolicitud"
+          :validadores-documento="storeSolFondos.validadoresAsignados"
           @solicitar-revision="handleSolicitudRevision"
         ></RedactorAccion>
       </div>
@@ -59,17 +55,15 @@ import RedactorInfo from './partials/RedactorInfo.vue'
 import AsignarRevisoresSolicitud from '../AsignarRevisoresSolicitud.vue'
 import RedactorAccion from './partials/RedactorAccion.vue'
 //store
-import { useSolicitudDeViajesStore } from '@/modules/formularios/store/useSolicitudDeViajesStore.js'
-//COmposable
+import { useSolicitudFondosStore } from '@/modules/formularios/store/useSolicitudDeFondosStore.js'
+//composable
 import { useSnackbar } from '@/composables/useSnackbar.js'
-import { useValidadoresSolViajes } from '@/modules/formularios/composables/useValidadoresSolViajes.js'
-
-//Iniciar el store del documento
-const storeDocumento = useSolicitudDeViajesStore()
-
-//Iniciallizar composables
+import { useValidadoresSolFondos } from '@/modules/formularios/composables/useValidadoresSolFondos.js'
+//Inicar composable
 const { successMsg, errorMsg } = useSnackbar()
-const { asignarValidadores, resetearSolicitudViajes } = useValidadoresSolViajes()
+const { asignarValidadores, resetearSolicitudFondos } = useValidadoresSolFondos()
+//Iniciar el store
+const storeSolFondos = useSolicitudFondosStore()
 
 //Funcion para la asignacion de revisores
 const handleRevisoresAsignados = async (payload) => {
@@ -85,7 +79,7 @@ const handleRevisoresAsignados = async (payload) => {
     // })
     await asignarValidadores(payload.solicitudId, payload.validadoresIds)
     //Recargar Datos
-    await storeDocumento.cargarSolicitud(storeDocumento.idSolicitud)
+    await storeSolFondos.cargarSolicitud(storeSolFondos.idSolicitud)
     payload.onSuccess()
     successMsg('✅ Revisores asignados correctamente')
   } catch (error) {
@@ -100,8 +94,8 @@ const handleSolicitudRevision = async (payload) => {
   console.log('Peticion Revision: ', payload)
   try {
     //Enviar al API
-    await resetearSolicitudViajes(payload.solicitudId, payload.versionDocumento)
-    await storeDocumento.cargarSolicitud(storeDocumento.idSolicitud)
+    await resetearSolicitudFondos(payload.solicitudId, payload.versionDocumento)
+    await storeSolFondos.cargarSolicitud(storeSolFondos.idSolicitud)
     payload.onSuccess()
     successMsg('✅ Revisores asignados correctamente')
   } catch (error) {

@@ -58,10 +58,11 @@
           </v-card>
           <!--Componente Revisores Estado y Aprovacion Rechazo-->
           <RevisorSolicitudFondos></RevisorSolicitudFondos>
+          <!-- Componente Redactores, peticion de revision y estado consolidado del documento-->
+          <RedactorSolicitudFondos></RedactorSolicitudFondos>
 
           <!--Componente para el estado y validdacion de la Solicitud-->
-          <EstadoValidacionSolicitudFondos></EstadoValidacionSolicitudFondos>
-          <ValidacionRedactorSolFondos></ValidacionRedactorSolFondos>
+          <!-- <ValidacionRedactorSolFondos></ValidacionRedactorSolFondos> -->
 
           <!-- Tarjeta de resumen rápido -->
           <!-- <v-card elevation="2" rounded="lg" class="mb-4">
@@ -478,7 +479,7 @@
                 <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 5: Firmas -->
-                <div class="form-section mb-6">
+                <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
@@ -548,19 +549,7 @@
                       ></v-checkbox>
                     </v-col>
                   </v-row>
-                </div>
-
-                <div class="form-section mb-6">
-                  <h3 class="text-h6 mb-4 primary--text">
-                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
-                    Firmas y Validaciones
-                  </h3>
-                  <v-row>
-                    <v-col cols="12">
-                      <EstadoValidacionSolicitudFondos></EstadoValidacionSolicitudFondos>
-                    </v-col>
-                  </v-row>
-                </div>
+                </div> -->
 
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
@@ -667,7 +656,7 @@ import ValidacionRedactorSolFondos from '@/modules/formularios/components/valida
 //Iniciar el estore
 import { useSolicitudFondosStore } from '@/modules/formularios/store/useSolicitudDeFondosStore'
 import RevisorSolicitudFondos from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudFondos.vue'
-
+import RedactorSolicitudFondos from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/RedactorSolicitudFondos.vue'
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
 // Inciar el store

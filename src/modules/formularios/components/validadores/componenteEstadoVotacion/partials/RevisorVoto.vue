@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- El usuario logueado No está asignado como revisor -->
-    <div v-if="!miValidacion" class="estado-container estado-no-asignado">
+    <div v-if="!esRevisor" class="estado-container estado-no-asignado">
       <v-icon size="40" color="grey-lighten-1">mdi-account-off</v-icon>
       <p class="text-caption text-grey mt-2 mb-0">No está asignado como Revisor</p>
     </div>
@@ -145,6 +145,10 @@ const props = defineProps({
     required: true,
   },
   estaValidado: {
+    type: Boolean,
+    required: true,
+  },
+  esRevisor: {
     type: Boolean,
     required: true,
   },

@@ -150,7 +150,8 @@ export const useListaActividadStore = defineStore('actividades-tareas-lista', ()
     const actividadesPei = actividadesSubactividadesListaPei?.value || []
 
     const usuario = userStore.userData
-    const esAdmin = userStore.rol === 'admin'
+    // const esAdmin = userStore.rol === 'admin'
+    const esAdmin = userStore.rol === 'admin' || userStore.rol === 'dir-administrativo'
 
     // Filtrar actividades de proyectos
     const actividadesFiltradas = actividades.filter((actividad) => {
