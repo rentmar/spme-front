@@ -360,49 +360,20 @@
 
           <v-divider class="my-4"></v-divider>
 
-          <div class="form-section">
-            <div class="text-subtitle-1 font-weight-bold mb-2">Firmas</div>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.id_responsable"
-                  :items="responsablesList"
-                  :item-title="getNombreCompleto"
-                  item-value="id"
-                  label="Responsable Coordinación"
-                  bg-color="blue-lighten-5"
-                  required
-                ></v-select>
-              </v-col>
-              <v-col cols="12" md="6" class="d-flex align-center">
-                <v-checkbox
-                  v-model="formData.validacion_responsable"
-                  label="Aprobado por Coordinación"
-                  :disabled="isFrozen"
-                ></v-checkbox>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.id_coordinador"
-                  bg-color="blue-lighten-5"
-                  :items="coordinadoresList"
-                  :item-title="getNombreCompleto"
-                  item-value="id"
-                  label="Responsable Dirección Administrativa"
-                  required
-                ></v-select>
-              </v-col>
-              <v-col cols="12" md="6" class="d-flex align-center">
-                <v-checkbox
-                  v-model="formData.validacion_coordinador"
-                  label="Aprobado por Dirección Administrativa"
-                  :disabled="isFrozen"
-                ></v-checkbox>
-              </v-col>
-            </v-row>
-          </div>
+          <!--Seccion Firmas-->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Firmas y Validaciones
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <SeleccionValidadoresSolicitudes
+                        ref="validadoresRef"
+                      ></SeleccionValidadoresSolicitudes>
+                    </v-col>
+                  </v-row>
+                </div>
 
           <div class="d-flex justify-end mt-4">
             <v-btn
@@ -446,9 +417,36 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+//Componentes
+import SeleccionValidadoresSolicitudes from '@/modules/formularios/components/validadores/SeleccionValidadoresSolicitudes.vue'
+//Composables
+import { useValidadoresSolFondos } from '@/modules/formularios/composables/useValidadoresSolFondos'
+
+/*****COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
+//Esconder la anterior validacion
+const esVisible = ref(false)
+//Referncia al componente
+const validadoresRef = ref(null)
+
+const idvalidadores = computed(() => {
+  return validadoresRef.value?.datosValidadores.validadoresIds
+})
+
+const validadoresEstanSeleccionados = computed(() => {
+  return validadoresRef.value?.validacionCompleta
+})
+
+const coordinadorSel = computed(() => {
+  return validadoresRef.value?.coordinacionSelected
+})
+
+const administradorSel = computed(() => {
+  return validadoresRef.value?.administrativoSelected
+})
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
+const { asignarValidadoresSolo } = useValidadoresSolFondos()
 
 //Routes
 const router = useRouter()
@@ -500,6 +498,11 @@ const correo_coordinador = ref('')
 const correo_contador = ref('')
 
 const formData = ref({
+  nombre: '',
+  paterno: '',
+  materno: '',
+  cargo: '',
+  documento_identidad: '',
   evento: '',
   fecha_evento: '',
   lugar_evento: '',
@@ -528,16 +531,8 @@ const formData = ref({
       numero_cuenta: '',
     },
   },
-  validacion_responsable: false,
-  id_responsable: null,
-  //validacion_contador: false,
-  //id_contador: null,
-  validacion_coordinador: false,
-  id_coordinador: null,
   correo_coordinador: '',
   correo_contador: '',
-  //codigo_actividad: '',
-  //medios_archivos: [],
 })
 
 const numeroFormularioSF = ref(null)
@@ -569,17 +564,11 @@ const MostrarCamposTransferencia = computed(() => {
 })
 
 const nombreCoordinadorElegido = computed(() => {
-  const coordinador = coordinadoresList.value.find(
-    (user) => user.id === formData.value.id_coordinador,
-  )
-  return coordinador ? getNombreCompleto(coordinador) : ''
+  return coordinadorSel.value ? getNombreCompleto(coordinadorSel.value) : ''
 })
 
 const nombreResponsableElegido = computed(() => {
-  const responsable = responsablesList.value.find(
-    (user) => user.id === formData.value.id_responsable,
-  )
-  return responsable ? getNombreCompleto(responsable) : ''
+  return administradorSel.value ? getNombreCompleto(administradorSel.value) : ''
 })
 
 const totalMontoSolicitado = computed(() => {
@@ -593,56 +582,7 @@ const nombreCompletoSolicitante = computed(() => {
   return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
 })
 
-const isFrozen = computed(() => {
-  if (!usuario.value || !formData.value.id_coordinador) {
-    return true
-  }
-  return true
-})
 
-// WATCH PARA GUARDAR EL CORREO DEL COORDINADOR Y DEL CONTADOR CUANDO SE SELECCIONA
-watch(
-  () => formData.value.id_coordinador,
-  (newIdCoordinador) => {
-    if (newIdCoordinador && coordinadoresList.value.length > 0) {
-      const coordinadorSeleccionado = coordinadoresList.value.find(
-        (coordinador) => coordinador.id === newIdCoordinador,
-      )
-
-      if (coordinadorSeleccionado && coordinadorSeleccionado.correo) {
-        formData.value.correo_coordinador = coordinadorSeleccionado.correo
-        //correo_coordinador.value = coordinadorSeleccionado.correo
-      } else {
-        formData.value.correo_coordinador = ''
-        //correo_coordinador.value = ''
-      }
-    } else {
-      formData.value.correo_coordinador = ''
-      //correo_coordinador.value = ''
-    }
-  },
-  { immediate: true },
-)
-
-watch(
-  () => formData.value.id_responsable,
-  (newIdResponsable) => {
-    if (newIdResponsable && responsablesList.value.length > 0) {
-      const responsableSeleccionado = responsablesList.value.find(
-        (responsable) => responsable.id === newIdResponsable,
-      )
-
-      if (responsableSeleccionado && responsableSeleccionado.correo) {
-        formData.value.correo_contador = responsableSeleccionado.correo
-      } else {
-        formData.value.correo_contador = ''
-      }
-    } else {
-      formData.value.correo_contador = ''
-    }
-  },
-  { immediate: true },
-)
 
 function getNombreCompleto(user) {
   return `${user.nombre} ${user.paterno} ${user.materno}`.trim()
@@ -713,15 +653,26 @@ watch(
   (newVal) => {
     if (newVal && newVal.usuario) {
       datosSolicitante.value = newVal.usuario
-      //console.log('hhhhhhhhhhhh:', JSON.stringify(datosSolicitante.value, null, 2))
       if (datosSolicitante.value) {
         solicitante.value = getNombreCompleto(datosSolicitante.value)
       }
+
+      const getSafeValue = (value, defaultValue = '') => {
+        return value !== null && value !== undefined ? value : defaultValue
+      }
+
+      const usuario = newVal.usuario
+      formData.value.nombre = getSafeValue(usuario.nombre)
+      formData.value.paterno = getSafeValue(usuario.paterno)
+      formData.value.materno = getSafeValue(usuario.materno)
+      formData.value.cargo = getSafeValue(usuario.cargo)
+      formData.value.documento_identidad = getSafeValue(usuario.ci)
+      formData.value.id_usuario = getSafeValue(usuario.id, 0)
     } else {
       datosSolicitante.value = []
     }
   },
-  { deep: true }, // Si necesitas observar cambios profundos
+  { deep: true },
 )
 
 async function cargarUsuarios() {
@@ -787,23 +738,26 @@ async function submitForm() {
       throw new Error('Todos los gastos deben tener partida, descripción y un monto mayor a cero.')
     }
 
-    // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
-    const coordinadorSeleccionado = coordinadoresList.value.find(
-      (coordinador) => coordinador.id === formData.value.id_coordinador,
-    )
-    const contadorSeleccionado = responsablesList.value.find(
-      (contador) => contador.id === formData.value.id_responsable,
-    )
+    //Validar que los validadores para el formulario se hayan seleccionado
+    if (!validadoresEstanSeleccionados.value) {
+      throw new Error(
+        'Debe seleccionar ambos validadores (Coordinación y Dirección Administrativa)',
+      )
+    }
 
-    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
-    const correoContadorActual = contadorSeleccionado?.correo || ''
+    const idsVals = idvalidadores.value
+    console.log('✅ Validadores seleccionados ids:', idsVals)
+
+    // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
+    const correoCoordinadorActual = coordinadorSel.value?.correo || ''
+    const correoContadorActual = administradorSel.value?.correo || ''
 
     // Actualizar los valores en formData
     formData.value.correo_coordinador = correoCoordinadorActual
     formData.value.correo_contador = correoContadorActual
 
     const payload = {
-      ...formData.value, //esta linea incluye todas las propiedades de formData
+      ...formData.value,
       id_usuario: usuario.value.id || 0,
       id_actividad: idActividad || 0,
       id_tarea: idTarea || null,
@@ -816,18 +770,13 @@ async function submitForm() {
           monto: Number(gasto.monto),
         })),
       },
+      id_responsable: coordinadorSel.value.id,
+      id_coordinador: administradorSel.value.id,
+      validacion_responsable: false,
+      validacion_coordinador: false,
+      bloquear_icono_sv: true,
     }
     console.log('Payload completo que se enviará:', JSON.stringify(payload, null, 2))
-
-    // const response = await axios.post(baseurl + '/monitoreo_api/crearSolicitudViaje/', payload, {
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    // });
-    // numeroFormulario.value = response.numero_formulario;
-    // alert('Solicitud enviada con éxito');
-    // exportToExcel();
-    // resetForm();
 
     const response = await fetch(baseurl + 'monitoreo_api/crearSolicitudViaje/', {
       method: 'POST',
@@ -842,8 +791,10 @@ async function submitForm() {
     }
 
     const data = await response.json()
-    //idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
+
+    //Crear las validaciones
+    await asignarValidadoresSolo(data.id, idsVals)
 
     const urlForm = `${window.location.origin}/monitoreo/formulario055/${idActividad}?solicitud_id=${data.id}${idTarea ? `&tarea_id=${idTarea}` : ''}`;
     const cuerpoMensaje = {
@@ -934,10 +885,6 @@ function resetForm() {
     forma_pago: '',
     lugar_solicitud: '',
     fecha_solicitud: getCurrentDate(),
-    id_responsable: null,
-    validacion_responsable: false,
-    id_coordinador: null,
-    validacion_coordinador: false,
   })
 }
 
@@ -949,8 +896,8 @@ function exportToExcel() {
     ['FORMULARIO Nro:', numeroFormulario.value, '', ''],
     ['INFORMACIÓN DEL SOLICITANTE', '', '', ''],
     ['Nombre Completo:', solicitante.value, '', ''],
-    ['Documento de Identidad:', datosSolicitante.value.ci, '', ''],
-    ['Cargo:', datosSolicitante.value.cargo, '', ''],
+    ['Documento de Identidad:', formData.value.documento_identidad, '', ''],
+    ['Cargo:', formData.value.cargo, '', ''],
     [''],
     ['INFORMACIÓN DEL SEMINARIO', '', '', ''],
     ['Seminario:', formData.value.evento, '', ''],
@@ -994,13 +941,13 @@ function exportToExcel() {
       'Responsable:',
       nombreResponsableElegido.value,
       'Aprobado:',
-      formData.value.validacion_responsable ? '✓' : '✗',
+      administradorSel.value ? '✓' : '✗',
     ],
     [
       'Coordinador:',
       nombreCoordinadorElegido.value,
       'Aprobado:',
-      formData.value.validacion_coordinador ? '✓' : '✗',
+      coordinadorSel.value ? '✓' : '✗',
     ],
     [''],
     ['DETALLE DEL DESTINO DE FONDOS', '', '', ''],

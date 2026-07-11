@@ -476,7 +476,7 @@
                 <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 5: Firmas -->
-                <div class="form-section mb-6">
+                <!--<div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
@@ -546,9 +546,9 @@
                       ></v-checkbox>
                     </v-col>
                   </v-row>
-                </div>
+                </div> -->
 
-                <div class="form-section mb-6">
+                <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
@@ -558,7 +558,7 @@
                       <EstadoValidacionSolicitudFondos></EstadoValidacionSolicitudFondos>
                     </v-col>
                   </v-row>
-                </div>
+                </div> -->
 
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
