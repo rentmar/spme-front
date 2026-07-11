@@ -11,6 +11,25 @@
       Información Adicional
     </v-alert>
 
+    <!-- Alerta de error de validación -->
+    <v-alert
+      v-if="errorValidacion"
+      variant="tonal"
+      color="error"
+      icon="mdi-alert-circle"
+      density="compact"
+      class="mb-4"
+      border="start"
+      closable
+      @click:close="errorValidacion = ''"
+    >
+      <div class="text-subtitle-2 font-weight-bold mb-1">Error en datosFormaPago</div>
+      <div>Error de formato, corrija la información llenándola nuevamente</div>
+      <div class="mt-2 text-caption">
+        {{ JSON.stringify(props.modelValue?.datosFormaPago, null, 2) }}
+      </div>
+    </v-alert>
+
     <v-card variant="outlined" class="mb-4">
       <v-card-text class="pa-4">
         <!-- Lugar y Fecha -->
@@ -249,45 +268,39 @@
       </v-card-text>
     </v-card>
   </div>
-  {{}}
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 
 const props = defineProps({
+  modelValue: {
+    type: Object,
+    default: () => ({
+      lugar: '',
+      fecha: '',
+      formaPago: '',
+      datosFormaPago: {
+        efectivo: { nombre_efectivo: '', ci_efectivo: '' },
+        transferencia: {
+          nombre_transferencia: '',
+          ci_transferencia: '',
+          entidad_bancaria: '',
+          tipo_cuenta: '',
+          numero_cuenta: '',
+        },
+        cheque: { nombre_cheque: '', ci_cheque: '' },
+        otros: { nombre_otros: '', ci_otros: '' },
+      },
+    }),
+  },
   isEdicion: {
     type: Boolean,
     default: false,
   },
-  lugarSolicitud: {
-    type: String,
-    default: '',
-  },
-  fechaSolicitud: {
-    type: String,
-    default: '',
-  },
-  idFormaPago: {
-    type: [Number, String],
-    default: null,
-  },
-  datosFormaPago: {
-    type: Object,
-    default: () => ({
-      efectivo: { nombre_efectivo: '', ci_efectivo: '' },
-      transferencia: {
-        nombre_transferencia: '',
-        ci_transferencia: '',
-        entidad_bancaria: '',
-        tipo_cuenta: '',
-        numero_cuenta: '',
-      },
-      cheque: { nombre_cheque: '', ci_cheque: '' },
-      otros: { nombre_otros: '', ci_otros: '' },
-    }),
-  },
 })
+
+const emit = defineEmits(['update:modelValue'])
 
 const lugaresSelect = ref([])
 const formaPagoSelect = ref([])
@@ -299,14 +312,101 @@ const searchEfectivo = ref('')
 const searchTransferencia = ref('')
 const searchCheque = ref('')
 const searchLugar = ref('')
+const errorValidacion = ref('')
 
-//Datos del componente
+const datosFormaPagoDefault = {
+  efectivo: { nombre_efectivo: '', ci_efectivo: '' },
+  transferencia: {
+    nombre_transferencia: '',
+    ci_transferencia: '',
+    entidad_bancaria: '',
+    tipo_cuenta: '',
+    numero_cuenta: '',
+  },
+  cheque: { nombre_cheque: '', ci_cheque: '' },
+  otros: { nombre_otros: '', ci_otros: '' },
+}
+
+const validarDatosFormaPago = (datos) => {
+  const errores = []
+  if (!datos || typeof datos !== 'object') return 'datosFormaPago debe ser un objeto'
+
+  if (!datos.efectivo || typeof datos.efectivo !== 'object') {
+    errores.push('Falta el objeto "efectivo"')
+  } else {
+    if (typeof datos.efectivo.nombre_efectivo !== 'string')
+      errores.push('efectivo.nombre_efectivo debe ser string')
+    if (typeof datos.efectivo.ci_efectivo !== 'string')
+      errores.push('efectivo.ci_efectivo debe ser string')
+  }
+
+  if (!datos.transferencia || typeof datos.transferencia !== 'object') {
+    errores.push('Falta el objeto "transferencia"')
+  } else {
+    const campos = [
+      'nombre_transferencia',
+      'ci_transferencia',
+      'entidad_bancaria',
+      'tipo_cuenta',
+      'numero_cuenta',
+    ]
+    campos.forEach((c) => {
+      if (typeof datos.transferencia[c] !== 'string')
+        errores.push(`transferencia.${c} debe ser string`)
+    })
+  }
+
+  if (!datos.cheque || typeof datos.cheque !== 'object') {
+    errores.push('Falta el objeto "cheque"')
+  } else {
+    if (typeof datos.cheque.nombre_cheque !== 'string')
+      errores.push('cheque.nombre_cheque debe ser string')
+    if (typeof datos.cheque.ci_cheque !== 'string') errores.push('cheque.ci_cheque debe ser string')
+  }
+
+  if (!datos.otros || typeof datos.otros !== 'object') {
+    errores.push('Falta el objeto "otros"')
+  } else {
+    if (typeof datos.otros.nombre_otros !== 'string')
+      errores.push('otros.nombre_otros debe ser string')
+    if (typeof datos.otros.ci_otros !== 'string') errores.push('otros.ci_otros debe ser string')
+  }
+
+  return errores.length > 0 ? errores.join('; ') : ''
+}
+
+// Inicializar desde modelValue
 const informacionAdicionalDatos = ref({
-  lugar: props.lugarSolicitud || '',
-  fecha: props.fechaSolicitud || getCurrentDate(),
-  formaPago: props.idFormaPago || '',
-  datosFormaPago: { ...props.datosFormaPago },
+  lugar: props.modelValue?.lugar || '',
+  fecha: props.modelValue?.fecha || getCurrentDate(),
+  formaPago: props.modelValue?.formaPago || '',
+  datosFormaPago: props.modelValue?.datosFormaPago || { ...datosFormaPagoDefault },
 })
+
+// Validar al montar si es edición
+watch(
+  () => props.modelValue?.datosFormaPago,
+  (nuevosDatos) => {
+    if (props.isEdicion && nuevosDatos && Object.keys(nuevosDatos).length > 0) {
+      const error = validarDatosFormaPago(nuevosDatos)
+      if (error) {
+        errorValidacion.value = error
+      } else {
+        errorValidacion.value = ''
+      }
+    }
+  },
+  { immediate: true },
+)
+
+// Emitir cambios al padre
+watch(
+  informacionAdicionalDatos,
+  (val) => {
+    emit('update:modelValue', { ...val })
+  },
+  { deep: true },
+)
 
 const lugaresFiltrados = computed(() => {
   if (!searchLugar.value) return []
@@ -470,6 +570,25 @@ function getCurrentDate() {
   return `${year}-${month}-${day}`
 }
 
+defineExpose({
+  informacionAdicionalDatos,
+  resetForm: () => {
+    informacionAdicionalDatos.value = {
+      lugar: '',
+      fecha: getCurrentDate(),
+      formaPago: '',
+      datosFormaPago: { ...datosFormaPagoDefault },
+    }
+    ciSearchEfectivo.value = null
+    ciSearchTransferencia.value = null
+    ciSearchCheque.value = null
+    searchLugar.value = ''
+    searchEfectivo.value = ''
+    searchTransferencia.value = ''
+    searchCheque.value = ''
+  },
+})
+
 onMounted(async () => {
   lugaresSelect.value = ['La Paz', 'Santa Cruz', 'Cochabamba', 'Paris', 'Alemania']
   formaPagoSelect.value = [
@@ -478,32 +597,22 @@ onMounted(async () => {
     { id: 3, codigo: 'CHE', formaPago: 'Cheque' },
   ]
 
-  if (props.isEdicion && props.lugarSolicitud) {
-    searchLugar.value = props.lugarSolicitud
+  if (props.isEdicion && props.modelValue?.lugar) {
+    searchLugar.value = props.modelValue.lugar
   }
 
-  // Cargar datos si es edición
   if (props.isEdicion) {
-    informacionAdicionalDatos.value.lugar = props.lugarSolicitud || ''
-    informacionAdicionalDatos.value.fecha = props.fechaSolicitud || getCurrentDate()
-    informacionAdicionalDatos.value.formaPago = props.idFormaPago || ''
-    informacionAdicionalDatos.value.datosFormaPago = { ...props.datosFormaPago }
-
-    // Cargar combobox de CI según forma de pago
-    if (props.idFormaPago === 1 && props.datosFormaPago?.efectivo?.ci_efectivo) {
-      const ci = props.datosFormaPago.efectivo.ci_efectivo
-      ciSearchEfectivo.value = ci
-      searchEfectivo.value = ci
-    } else if (props.idFormaPago === 2 && props.datosFormaPago?.transferencia?.ci_transferencia) {
-      const ci = props.datosFormaPago.transferencia.ci_transferencia
-      ciSearchTransferencia.value = ci
-      searchTransferencia.value = ci
-    } else if (props.idFormaPago === 3 && props.datosFormaPago?.cheque?.ci_cheque) {
-      const ci = props.datosFormaPago.cheque.ci_cheque
-      ciSearchCheque.value = ci
-      searchCheque.value = ci
+    const ci = props.modelValue?.datosFormaPago
+    if (props.modelValue?.formaPago === 1 && ci?.efectivo?.ci_efectivo) {
+      ciSearchEfectivo.value = ci.efectivo.ci_efectivo
+      searchEfectivo.value = ci.efectivo.ci_efectivo
+    } else if (props.modelValue?.formaPago === 2 && ci?.transferencia?.ci_transferencia) {
+      ciSearchTransferencia.value = ci.transferencia.ci_transferencia
+      searchTransferencia.value = ci.transferencia.ci_transferencia
+    } else if (props.modelValue?.formaPago === 3 && ci?.cheque?.ci_cheque) {
+      ciSearchCheque.value = ci.cheque.ci_cheque
+      searchCheque.value = ci.cheque.ci_cheque
     }
   }
 })
 </script>
-<style scoped></style>

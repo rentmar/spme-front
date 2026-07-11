@@ -475,7 +475,7 @@
                   </h3>
                   <v-row>
                     <v-col cols="12">
-                      <InformacionAdicional></InformacionAdicional>
+                      <InformacionAdicional ref="infoRef"></InformacionAdicional>
                     </v-col>
                   </v-row>
                 </div>
@@ -588,6 +588,7 @@
   <!-- <pre>{{ formData.correo_coordinador }}</pre>
   {{ '*******************' }} -->
   <!-- <pre>{{ datosFormulario }}</pre> -->
+  <pre>{{ infoRef }}</pre>
 </template>
 
 <script setup>
@@ -630,6 +631,8 @@ const coordinadorSel = computed(() => {
 const administradorSel = computed(() => {
   return validadoresRef.value?.administrativoSelected
 })
+
+const infoRef = ref(null)
 
 /*****FIN COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
 //Inicar Composable
