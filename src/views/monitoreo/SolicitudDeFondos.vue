@@ -468,6 +468,18 @@
                 </div>
 
                 <v-divider class="my-4"></v-divider>
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Informacion Adicional
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <InformacionAdicional></InformacionAdicional>
+                    </v-col>
+                  </v-row>
+                </div>
+                <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 5: Firmas -->
                 <div class="form-section mb-6" v-if="esVisible">
@@ -589,6 +601,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
 //Componentes
 import SeleccionValidadoresSolicitudes from '@/modules/formularios/components/validadores/SeleccionValidadoresSolicitudes.vue'
+import InformacionAdicional from '@/modules/formularios/components/InformacionAdicional.vue'
 //Composables
 import { useValidadoresSolFondos } from '@/modules/formularios/composables/useValidadoresSolFondos'
 

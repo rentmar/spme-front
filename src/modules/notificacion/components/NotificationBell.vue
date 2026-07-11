@@ -288,7 +288,7 @@
             </div>
 
             <!-- Metadata si existe -->
-            <div
+            <!-- <div
               v-if="
                 mensajeSeleccionado.metadata && Object.keys(mensajeSeleccionado.metadata).length > 0
               "
@@ -302,6 +302,95 @@
                 <pre class="text-caption ma-0" style="font-family: 'Roboto Mono', monospace"
                   >{{ formatMetadata(mensajeSeleccionado.metadata) }}
                 </pre>
+              </div>
+            </div> -->
+
+            <!---- Acciones Para el Mensaje ---->
+            <div
+              v-if="mensajeSeleccionado?.tiene_accion"
+              class="estado-section mt-6 pt-4 border-top"
+            >
+              <div class="text-subtitle-1 font-weight-medium text-grey mb-3">ACCIONES</div>
+
+              <div class="d-flex flex-column gap-3">
+                <!-- Fila 1: Etiqueta informativa -->
+                <div class="d-flex align-center">
+                  <v-chip
+                    :color="getAccionColor(mensajeSeleccionado?.metadata?.tipo)"
+                    size="small"
+                    label
+                    variant="outlined"
+                  >
+                    <v-icon start size="small">
+                      {{ getAccionIcono(mensajeSeleccionado?.metadata?.tipo) }}
+                    </v-icon>
+                    {{ getAccionEtiqueta(mensajeSeleccionado?.metadata?.tipo) }}
+                  </v-chip>
+                </div>
+
+                <!-- Fila 2: URL + Botón Copiar + Botón Ir -->
+                <div class="d-flex align-center gap-2">
+                  <!-- Campo de URL -->
+                  <v-text-field
+                    :model-value="getUrlCompleta(mensajeSeleccionado?.accion_url)"
+                    readonly
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    class="url-field"
+                    @click="$event.target.select()"
+                  >
+                    <template #prepend-inner>
+                      <v-icon size="small" color="primary">mdi-link</v-icon>
+                    </template>
+                  </v-text-field>
+
+                  <!-- Botón Copiar -->
+                  <v-btn
+                    :color="copiado ? 'success' : 'grey-darken-2'"
+                    variant="tonal"
+                    size="small"
+                    @click="copiarUrl(mensajeSeleccionado?.accion_url)"
+                    :title="copiado ? '¡Copiado!' : 'Copiar enlace'"
+                  >
+                    <v-icon size="small">
+                      {{ copiado ? 'mdi-check' : 'mdi-content-copy' }}
+                    </v-icon>
+                    <span class="ml-1">{{ copiado ? 'Copiado' : 'Copiar' }}</span>
+                  </v-btn>
+
+                  <!-- Botón Ir a la URL -->
+                  <v-btn
+                    :to="mensajeSeleccionado?.accion_url || '#'"
+                    :color="getBotonColor(mensajeSeleccionado?.metadata?.tipo)"
+                    variant="elevated"
+                    size="small"
+                    :disabled="!mensajeSeleccionado?.accion_url"
+                    @click="dialogoMensajeVisible = false"
+                    class="text-none"
+                  >
+                    <v-icon start size="small">{{
+                      getBotonIcono(mensajeSeleccionado?.metadata?.tipo)
+                    }}</v-icon>
+                    {{ mensajeSeleccionado?.accion_texto || 'Ir a la Solicitud' }}
+                  </v-btn>
+                </div>
+
+                <!-- Fila 3: Información adicional -->
+                <div
+                  v-if="mensajeSeleccionado?.metadata?.solicitud_codigo"
+                  class="d-flex align-center text-caption text-grey"
+                >
+                  <v-icon size="x-small" class="mr-1">mdi-pound</v-icon>
+                  Código: {{ mensajeSeleccionado.metadata.solicitud_codigo }}
+
+                  <v-divider vertical class="mx-2" thickness="2"></v-divider>
+
+                  <v-icon size="x-small" class="mr-1">mdi-cash</v-icon>
+                  Monto: ${{
+                    parseFloat(mensajeSeleccionado.metadata.monto || 0).toLocaleString('es-BO')
+                  }}
+                </div>
               </div>
             </div>
 
@@ -607,6 +696,97 @@ onUnmounted(() => {
   }
   document.removeEventListener('visibilitychange', cargarDatos)
 })
+
+// Estado para el botón copiar
+const copiado = ref(false)
+
+// Métodos para la sección de ACCIONES
+const getAccionColor = (tipo) => {
+  const colores = {
+    validacion_solicitud_fondos: 'info',
+    solicitud_aprobada: 'success',
+    solicitud_rechazada: 'error',
+    revision_solicitud_fondos: 'warning',
+  }
+  return colores[tipo] || 'primary'
+}
+
+const getAccionIcono = (tipo) => {
+  const iconos = {
+    validacion_solicitud_fondos: 'mdi-check-decagram',
+    solicitud_aprobada: 'mdi-check-circle',
+    solicitud_rechazada: 'mdi-close-circle',
+    revision_solicitud_fondos: 'mdi-refresh-circle',
+  }
+  return iconos[tipo] || 'mdi-file-document'
+}
+
+const getAccionEtiqueta = (tipo) => {
+  const etiquetas = {
+    validacion_solicitud_fondos: 'Validación Pendiente',
+    solicitud_aprobada: 'Solicitud Aprobada',
+    solicitud_rechazada: 'Solicitud Rechazada',
+    revision_solicitud_fondos: 'Nueva Revisión',
+  }
+  return etiquetas[tipo] || 'Solicitud de Fondos'
+}
+
+const getBotonColor = (tipo) => {
+  const colores = {
+    validacion_solicitud_fondos: 'primary',
+    solicitud_aprobada: 'success',
+    solicitud_rechazada: 'warning',
+    revision_solicitud_fondos: 'info',
+  }
+  return colores[tipo] || 'primary'
+}
+
+const getBotonIcono = (tipo) => {
+  const iconos = {
+    validacion_solicitud_fondos: 'mdi-arrow-right-circle',
+    solicitud_aprobada: 'mdi-check-circle',
+    solicitud_rechazada: 'mdi-pencil-circle',
+    revision_solicitud_fondos: 'mdi-refresh-circle',
+  }
+  return iconos[tipo] || 'mdi-arrow-right-circle'
+}
+
+const getUrlCompleta = (url) => {
+  if (!url) return ''
+  // Si la URL ya es absoluta, retornarla
+  if (url.startsWith('http')) return url
+  // Construir URL completa con el origen actual
+  return `${window.location.origin}${url}`
+}
+
+const copiarUrl = async (url) => {
+  if (!url) return
+
+  const urlCompleta = getUrlCompleta(url)
+
+  try {
+    await navigator.clipboard.writeText(urlCompleta)
+    copiado.value = true
+
+    // Resetear el estado después de 2 segundos
+    setTimeout(() => {
+      copiado.value = false
+    }, 2000)
+  } catch (error) {
+    console.error('Error al copiar al portapapeles:', error)
+    // Fallback para navegadores que no soportan clipboard API
+    const textArea = document.createElement('textarea')
+    textArea.value = urlCompleta
+    document.body.appendChild(textArea)
+    textArea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textArea)
+    copiado.value = true
+    setTimeout(() => {
+      copiado.value = false
+    }, 2000)
+  }
+}
 </script>
 
 <style scoped>
@@ -805,6 +985,18 @@ onUnmounted(() => {
     font-size: 0.9rem;
     max-height: 300px;
   }
+  .estado-section .d-flex.align-center.gap-2 {
+    flex-wrap: wrap;
+  }
+
+  .url-field {
+    min-width: 100%;
+    order: -1;
+  }
+
+  .estado-section .v-btn {
+    font-size: 0.75rem;
+  }
 }
 
 /* Scrollbars personalizados */
@@ -828,5 +1020,65 @@ onUnmounted(() => {
 .message-content::-webkit-scrollbar-thumb:hover,
 .metadata-content::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* Estilos para la sección de acciones */
+.estado-section .v-chip {
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.url-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.url-field :deep(.v-field__input) {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.8rem;
+  color: #1976d2;
+  cursor: pointer;
+  user-select: all;
+}
+
+.url-field :deep(.v-field) {
+  border-radius: 8px;
+}
+
+.estado-section .v-btn {
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.estado-section .v-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+/* Efecto de copiado */
+@keyframes copySuccess {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.v-btn .mdi-check {
+  animation: copySuccess 0.3s ease;
 }
 </style>
