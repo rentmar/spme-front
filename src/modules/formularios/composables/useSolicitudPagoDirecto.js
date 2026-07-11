@@ -9,6 +9,8 @@ export function useSolicitudPagoDirecto() {
   const listaSolPagoDirectoTarea = ref(null)
   const listaSolPagoDirectoActividadPei = ref(null)
   const listaSolPagoDirectoTareaPei = ref(null)
+  //Solicitud de viaje
+  const solicitudPagoDirecto = ref(null)
 
   //lista de sol de pago directo por id actividad
   async function obtenerListaSolPagoDirectoPorIdActividad(idactividad) {
@@ -73,6 +75,19 @@ export function useSolicitudPagoDirecto() {
     }
   }
 
+  //Obtener una solicitud de pago directo por id
+  async function obtenerSolicitudDePagoDirectoPorId(idSolPagoDirecto) {
+    loading.value = true
+    try {
+      const respuesta = await solicitudPagoDirectoServicio.solPagoDirectoPorId(idSolPagoDirecto)
+      solicitudPagoDirecto.value = respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
@@ -80,9 +95,11 @@ export function useSolicitudPagoDirecto() {
     listaSolPagoDirectoTarea,
     listaSolPagoDirectoActividadPei,
     listaSolPagoDirectoTareaPei,
+    solicitudPagoDirecto,
     obtenerListaSolPagoDirectoPorIdActividad,
     obtenerListaSolPagoDirectoPorIdTarea,
     obtenerListaSolPagoDirectoPorIdActividadPei,
     obtenerListaSolPagoDirectoPorIdTareaPei,
+    obtenerSolicitudDePagoDirectoPorId,
   }
 }

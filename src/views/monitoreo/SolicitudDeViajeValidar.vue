@@ -63,8 +63,12 @@
             </v-card-text>
           </v-card>
 
+          <!--Revisor de la Solicitud-->
+          <RevisorSolicitudViajes></RevisorSolicitudViajes>
+          <!-- Redactor de la solicitud-->
+          <RedactorSolicitudViajes></RedactorSolicitudViajes>
           <!--Componente para el estado y validacion de la Solicitud (placeholder) -->
-          <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
               <v-toolbar-title class="text-white">Estado de Validación</v-toolbar-title>
             </v-toolbar>
@@ -73,10 +77,10 @@
                 Aquí se integrará el componente de estado de validación
               </p>
             </v-card-text>
-          </v-card>
+          </v-card> -->
 
           <!--Componente para el redactor/revisor (placeholder) -->
-          <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
               <v-toolbar-title class="text-white">Redactor / Revisor</v-toolbar-title>
             </v-toolbar>
@@ -85,10 +89,10 @@
                 Aquí se integrará el componente de redactor y revisor
               </p>
             </v-card-text>
-          </v-card>
+          </v-card> -->
 
           <!-- Tarjeta de resumen rápido de la solicitud -->
-          <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
               <v-toolbar-title class="text-white">Resumen de Solicitud</v-toolbar-title>
             </v-toolbar>
@@ -119,7 +123,7 @@
                 </span>
               </div>
             </v-card-text>
-          </v-card>
+          </v-card> -->
         </v-col>
 
         <!-- Formulario principal -->
@@ -476,7 +480,7 @@
                 <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 4: Firmas -->
-                <div class="form-section mb-6">
+                <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
@@ -564,7 +568,7 @@
                       ></v-checkbox>
                     </v-col>
                   </v-row>
-                </div>
+                </div> -->
 
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
@@ -651,6 +655,8 @@ import { ref, onMounted, computed, nextTick, watch } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import RevisorSolicitudViajes from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudViajes.vue'
+import RedactorSolicitudViajes from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/RedactorSolicitudViajes.vue'
 //Store para la Solicitud de viajes
 import { useSolicitudDeViajesStore } from '@/modules/formularios/store/useSolicitudDeViajesStore'
 import axios from 'axios'
@@ -1977,11 +1983,18 @@ async function validarViaje(tipoValidador, idValidador, ListaValidadores) {
 }
 
 onMounted(async () => {
-  await cargarUsuarios()
-  await cargarDatos()
-  await cargarSolicitudesDeViaje()
-  await cargarFormasDePago()
-  await storeSolViajes.cargarSolicitud(idSolicitud)
+  // await cargarUsuarios()
+  // await cargarDatos()
+  // await cargarSolicitudesDeViaje()
+  // await cargarFormasDePago()
+  // await storeSolViajes.cargarSolicitud(idSolicitud)
+  await Promise.all([
+    cargarUsuarios(),
+    cargarDatos(),
+    cargarSolicitudesDeViaje(),
+    cargarFormasDePago(),
+    storeSolViajes.cargarSolicitud(idSolicitud),
+  ])
 })
 </script>
 

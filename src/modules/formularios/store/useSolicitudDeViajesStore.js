@@ -12,9 +12,9 @@ export const useSolicitudDeViajesStore = defineStore('solicitud-viaje', () => {
   const loading = ref(false)
   const error = ref(null)
   // Estado - Informacion de la solicitud
-  const solicitudViajesActual = ref(null)
+  const solicitudViajesActual = ref()
   //Tipo de la solicitud
-  const estadoSolicitudViajesActual = ref(null)
+  const estadoSolicitudViajesActual = ref()
 
   /****************************** COMPOSABLES *******************************************************/
   //Solicitud de viajes

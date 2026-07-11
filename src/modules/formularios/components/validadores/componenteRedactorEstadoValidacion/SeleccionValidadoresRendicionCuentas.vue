@@ -157,6 +157,54 @@
               </div>
             </div>
           </v-col>
+          <!--Contable Seleccion-->
+          <v-col cols="12" md="6" v-if="contableSelected">
+            <div class="mb-2">
+              <div class="d-flex align-center mb-1">
+                <v-icon size="small" color="primary" class="mr-1">mdi-check-circle</v-icon>
+                <span class="text-body-2 font-weight-medium">
+                  {{ contableSelected?.nombre || '' }}
+                  {{ contableSelected?.paterno || '' }}
+                  {{ contableSelected?.materno || '' }}
+                </span>
+              </div>
+              <div class="ml-6">
+                <div class="text-caption">
+                  <v-icon size="x-small" class="mr-1">mdi-briefcase</v-icon>
+                  {{ contableSelected?.cargo || 'Sin cargo' }}
+                </div>
+                <div class="text-caption">
+                  <v-icon size="x-small" class="mr-1">mdi-email</v-icon>
+                  {{ contableSelected?.correo || 'Sin correo registrado' }}
+                </div>
+              </div>
+            </div>
+          </v-col>
+
+          <!-- Admnistrativo Selected-->
+
+          <v-col cols="12" md="6" v-if="administrativoSelected">
+            <div class="mb-2">
+              <div class="d-flex align-center mb-1">
+                <v-icon size="small" color="primary" class="mr-1">mdi-check-circle</v-icon>
+                <span class="text-body-2 font-weight-medium">
+                  {{ administrativoSelected?.nombre || '' }}
+                  {{ administrativoSelected?.paterno || '' }}
+                  {{ administrativoSelected?.materno || '' }}
+                </span>
+              </div>
+              <div class="ml-6">
+                <div class="text-caption">
+                  <v-icon size="x-small" class="mr-1">mdi-briefcase</v-icon>
+                  {{ administrativoSelected?.cargo || 'Sin cargo' }}
+                </div>
+                <div class="text-caption">
+                  <v-icon size="x-small" class="mr-1">mdi-email</v-icon>
+                  {{ administrativoSelected?.correo || 'Sin correo registrado' }}
+                </div>
+              </div>
+            </div>
+          </v-col>
         </v-row>
       </v-card-text>
     </v-card>
@@ -164,7 +212,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useValidadoresSolicitudesStore } from '@/modules/formularios/store/useValidadoresSolicitudesStore'
 //Inicialializar el store
 const storeValidadores = useValidadoresSolicitudesStore()
@@ -172,9 +220,40 @@ const storeValidadores = useValidadoresSolicitudesStore()
 //emit
 const emit = defineEmits(['update:modelValue'])
 
+//Responsables seleccionados
 const coordinacionSelected = ref(null)
 const contableSelected = ref(null)
 const administrativoSelected = ref(null)
+
+//Bandera para comprobar si los tres repsonsables se han seleccionado
+const validacionCompleta = computed(() => {
+  return !!(coordinacionSelected.value && administrativoSelected.value && contableSelected)
+})
+
+const datosValidadores = computed(() => ({
+  validadoresIds: [
+    coordinacionSelected.value?.id,
+    administrativoSelected.value?.id,
+    contableSelected.value?.id,
+  ].filter((id) => id != null),
+  validacionCompleta: validacionCompleta.value,
+}))
+
+watch(
+  datosValidadores,
+  (newVal) => {
+    emit('update:modelValue', newVal)
+  },
+  { immediate: true, deep: true },
+)
+
+defineExpose({
+  validacionCompleta,
+  datosValidadores,
+  coordinacionSelected,
+  administrativoSelected,
+  contableSelected,
+})
 </script>
 
 <style scoped></style>

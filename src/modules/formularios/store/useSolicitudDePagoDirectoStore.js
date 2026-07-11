@@ -1,26 +1,24 @@
-//Store para el manejo de una solicitud de fondos
-//store useSolicitudFondosStore
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useSolucitudFondos } from '../composables/useSolicitudFondos'
-import { useValidadoresSolFondos } from '../composables/useValidadoresSolFondos'
+import { useSolicitudPagoDirecto } from '../composables/useSolicitudPagoDirecto'
+import { useValidadoresSolPagoDirecto } from '../composables/useValidadoresSolPagoDirecto'
 import { useUserStore } from '@/stores/user'
 
-export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
+export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-directo', () => {
   // === ESTADOS ===
   const loading = ref(false)
   const error = ref(null)
+
   // Estado - Informacion de la solicitud
-  const solicitudFondosActual = ref(null)
+  const solicitudPagoDirectoActual = ref(null)
   //Tipo de la solicitud
-  const estadoSolicitudFondosActual = ref(null)
+  const estadoSolicitudPagoDirectoActual = ref(null)
 
   /****************************** COMPOSABLES *******************************************************/
-  //Solicitud de fondos
-  const { solucitudFondos, obtenerSolFondosPorId } = useSolucitudFondos()
+  //Solicitud de Pago Directo
+  const { solicitudPagoDirecto, obtenerSolicitudDePagoDirectoPorId } = useSolicitudPagoDirecto()
   //Validadores
-  const { estadoSolicitudFondos } = useValidadoresSolFondos()
-
+  const { estadoSolicitudPagoDirecto } = useValidadoresSolPagoDirecto()
   /******************************* Stores ********************************************************/
   //Inicializar el store
   const storeUsuario = useUserStore()
@@ -64,8 +62,8 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
 
   //Tipo de solicitud
   const tipoSolicitud = computed(() => {
-    if (!estadoSolicitudFondosActual.value) return ''
-    const tipo = estadoSolicitudFondosActual.value.tipo_solicitud
+    if (!estadoSolicitudPagoDirectoActual.value) return ''
+    const tipo = estadoSolicitudPagoDirectoActual.value.tipo_solicitud
     if (!tipo) return ''
     if (tipo === 'TAREA') return 'SUBACTIVIDAD'
     return tipo
@@ -73,31 +71,31 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
 
   //Estado de la solicitud
   const estadoDocumento = computed(() => {
-    if (!estadoSolicitudFondosActual.value) return ''
-    return estadoSolicitudFondosActual.value.estado_consolidado || ''
+    if (!estadoSolicitudPagoDirectoActual.value) return ''
+    return estadoSolicitudPagoDirectoActual.value.estado_consolidado || ''
   })
 
   //Resumen
   const resumenSolicitud = computed(() => {
-    if (!estadoSolicitudFondosActual.value) return null
-    return estadoSolicitudFondosActual.value.resumen || null
+    if (!estadoSolicitudPagoDirectoActual.value) return null
+    return estadoSolicitudPagoDirectoActual.value.resumen || null
   })
 
   //Validadores asignados
   const validadoresAsignados = computed(() => {
-    if (!estadoSolicitudFondosActual.value) return []
-    if (!Array.isArray(estadoSolicitudFondosActual.value.detalle_validadores)) return []
-    return estadoSolicitudFondosActual.value.detalle_validadores
+    if (!estadoSolicitudPagoDirectoActual.value) return []
+    if (!Array.isArray(estadoSolicitudPagoDirectoActual.value.detalle_validadores)) return []
+    return estadoSolicitudPagoDirectoActual.value.detalle_validadores
   })
 
   //Redactor del documento - CORREGIDO
   const redactorDocumento = computed(() => {
     // Verificar que exista el estado y los validadores
-    if (!estadoSolicitudFondosActual.value) {
+    if (!estadoSolicitudPagoDirectoActual.value) {
       return null
     }
 
-    const detalle = estadoSolicitudFondosActual.value.detalle_validadores
+    const detalle = estadoSolicitudPagoDirectoActual.value.detalle_validadores
 
     // Verificar que detalle_validadores existe y es un array
     if (!detalle || !Array.isArray(detalle)) {
@@ -122,7 +120,7 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
 
   //Version del documento
   const versionDocumento = computed(() => {
-    if (!estadoSolicitudFondosActual.value) return null
+    if (!estadoSolicitudPagoDirectoActual.value) return null
     if (!validadoresAsignados.value.length) return null
     // La versión está en el primer validador (todos tienen la misma versión)
     return validadoresAsignados.value[0]?.version_documento || null
@@ -130,72 +128,70 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
 
   // También puedes obtener el ID de la solicitud
   const idSolicitud = computed(() => {
-    return solicitudFondosActual.value?.id || null
+    return solicitudPagoDirecto.value?.id || null
   })
 
   /****************************** Funciones Solicitud de Fondos *******************************************************/
-
   //Cargar la Solicitud
-  const cargarSolicitud = async (idSolFondos) => {
+  const cargarSolicitud = async (idSolPagoDirecto) => {
     loading.value = true
-    //resetStore()
     try {
       await Promise.all([
-        cargarSolicitudFondos(idSolFondos),
-        cargarEstadoDeSolicitudFondos(idSolFondos),
+        cargarSolicitudPagoDirecto(idSolPagoDirecto),
+        cargarEstadoDeSolicitudPagoDirecto(idSolPagoDirecto),
       ])
     } catch (error) {
-      console.error('Error al cargar los datos de la solicitud', error)
+      console.error('Error al cargar los datos de la solictud de pago directo', error)
     } finally {
       loading.value = false
     }
   }
 
-  //Cargar la solicitud de fondos
-  const cargarSolicitudFondos = async (idSolFondos) => {
+  //Cargar la solicitud de pago directo
+  const cargarSolicitudPagoDirecto = async (idSolPagoDirecto) => {
     loading.value = true
     try {
-      await obtenerSolFondosPorId(idSolFondos)
-      solicitudFondosActual.value = solucitudFondos.value
+      await obtenerSolicitudDePagoDirectoPorId(idSolPagoDirecto)
+      solicitudPagoDirectoActual.value = solicitudPagoDirecto.value
     } catch (error) {
-      console.error('Error al cargar la Sol de Fondos', error)
+      console.error('Error al cargar la Solicitud de Viajes', error)
     } finally {
       loading.value = false
     }
   }
+
   /****************************** Funciones Validadores *******************************************************/
 
-  //Cargar el estado de la solicitud de fondos
-  const cargarEstadoDeSolicitudFondos = async (idSolFondos) => {
+  //Cargar el estado de la sol de viajes
+  const cargarEstadoDeSolicitudPagoDirecto = async (idSolPagoDirecto) => {
     loading.value = true
     try {
-      const respuesta = await estadoSolicitudFondos(idSolFondos)
-      estadoSolicitudFondosActual.value = respuesta
+      const respuesta = await estadoSolicitudPagoDirecto(idSolPagoDirecto)
+      estadoSolicitudPagoDirectoActual.value = respuesta
     } catch (error) {
-      console.error('Error al cargar el estado de la sol de fondos', error)
+      console.error('Error al cargar la sol de viajes', error)
     } finally {
       loading.value = false
     }
   }
-
   /******************************** Funciones de limpieza *********************************/
-
   //Resetear el store
   const resetStore = () => {
-    solicitudFondosActual.value = null
-    estadoSolicitudFondosActual.value = null
+    solicitudPagoDirectoActual.value = null
+    estadoSolicitudPagoDirectoActual.value = null
     loading.value = false
     error.value = null
   }
 
   return {
-    // Estados
+    //Estados de carga
     loading,
     error,
     //Estado
-    solicitudFondosActual,
-    estadoSolicitudFondosActual,
+    solicitudPagoDirectoActual,
+    estadoSolicitudPagoDirectoActual,
 
+    //COmputed
     //Computed
     idRevisor,
     miValidacion,
@@ -210,10 +206,10 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
     versionDocumento,
     idSolicitud,
 
-    //Func
-    cargarSolicitudFondos,
-    cargarEstadoDeSolicitudFondos,
+    //func
     cargarSolicitud,
+    cargarSolicitudPagoDirecto,
+    cargarEstadoDeSolicitudPagoDirecto,
     resetStore,
   }
 })

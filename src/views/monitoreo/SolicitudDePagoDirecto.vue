@@ -1,5 +1,5 @@
 <template>
-  <v-container class="solicitud-fondos-container">
+  <v-container class="solicitud-viaje-container">
     <!-- Overlay de carga -->
     <v-overlay
       :model-value="cargandoGeneral"
@@ -25,18 +25,18 @@
         :icon="'mdi-cash-check'"
       ></PaginaTituloIcono>
       <!--Encabezado del Proyecto-->
-       <ProyectoIdHeader
+      <ProyectoIdHeader
         v-if="datosFormulario"
-        :proyecto-id="datosFormulario.actividad?.proyecto"
+        :proyecto-id="datosFormulario.actividad?.proyecto ?? '99999'"
       ></ProyectoIdHeader>
       <br />
       <!--Encabezado de la Actividad-->
-        <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
+      <ActividadInformacion v-if="datosFormulario.actividad" :actividad-id="idActividad" />
 
       <v-row>
         <!-- Panel lateral de información -->
         <v-col cols="12" md="4" lg="3">
-           <v-card elevation="2" rounded="lg" class="mb-4">
+          <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="primary" density="compact">
               <v-toolbar-title class="text-white">Información General</v-toolbar-title>
             </v-toolbar>
@@ -44,46 +44,52 @@
               <div class="info-item mb-3">
                 <div class="text-subtitle-2 text-medium-emphasis">Actividad:</div>
                 <div class="text-body-1 font-weight-medium">
-                   {{ datosFormulario.actividad.nombreCorto }}
+                  {{ datosFormulario.actividad.nombreCorto }}
                 </div>
               </div>
               <div class="info-item mb-3">
                 <div class="text-subtitle-2 text-medium-emphasis">Estado:</div>
                 <v-chip color="warning" size="small" class="mt-1">
                   <v-icon small class="mr-1">mdi-progress-clock</v-icon>
-                   {{ datosFormulario.actividad.estado }}
+                  {{ datosFormulario.actividad.estado }}
                 </v-chip>
               </div>
             </v-card-text>
           </v-card>
 
-          <!-- Tarjeta de resumen rápido -->
-          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- Tarjeta de resumen rápido de la solicitud -->
+          <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="secondary" density="compact">
-              <v-toolbar-title class="text-white">Resumen Rápido</v-toolbar-title>
+              <v-toolbar-title class="text-white">Resumen de Solicitud</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="pa-4">
               <div class="d-flex justify-space-between align-center mb-2">
                 <span class="text-subtitle-2 text-medium-emphasis">Monto solicitado:</span>
-                <span class="text-body-1 font-weight-bold text-primary"
-                  >Bs. {{ totalMontoSolicitado.toLocaleString() }}</span
-                >
+                <span class="text-body-1 font-weight-bold text-primary">
+                  Bs. {{ totalMontoSolicitado.toLocaleString() }}
+                </span>
               </div>
               <div class="d-flex justify-space-between align-center mb-2">
                 <span class="text-subtitle-2 text-medium-emphasis">Items de gasto:</span>
-                <span class="text-body-1 font-weight-medium">{{
-                  formData.detalle_destino_fondos.length
-                }}</span>
+                <span class="text-body-1 font-weight-medium">
+                  {{ formData.detalle_destino_fondos.length }}
+                </span>
               </div>
               <v-divider class="my-2"></v-divider>
+              <div class="d-flex justify-space-between align-center mb-2">
+                <span class="text-subtitle-2 text-medium-emphasis">Fecha de Solicitud:</span>
+                <span class="text-body-1 font-weight-medium">
+                  {{ formData.fecha_solicitud || 'No especificada' }}
+                </span>
+              </div>
               <div class="d-flex justify-space-between align-center">
-                <span class="text-subtitle-2 text-medium-emphasis">Presupuesto disponible:</span>
-                <span class="text-body-1 font-weight-medium text-success"
-                  >Bs. {{ actividadData.presupuesto.toLocaleString() }}</span
-                >
+                <span class="text-subtitle-2 text-medium-emphasis">Lugar:</span>
+                <span class="text-body-1 font-weight-medium text-truncate" style="max-width: 150px">
+                  {{ formData.lugar_solicitud || 'No especificado' }}
+                </span>
               </div>
             </v-card-text>
-          </v-card> -->
+          </v-card>
         </v-col>
 
         <!-- Formulario principal -->
@@ -363,16 +369,6 @@
                         bg-color="blue-lighten-5"
                         required
                       ></v-text-field>
-                      <!-- <v-select
-                        v-model="formData.forma_pago"
-                        :items="formasPagoOptions"
-                        item-title="formaPago"
-                        item-value="id"
-                        label="Forma de Pago"
-                        variant="outlined"
-                        bg-color="blue-lighten-5"
-                        required
-                      ></v-select> -->
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-text-field
@@ -424,28 +420,7 @@
                       </v-col>
                     </v-row>
                   </div>
-                  <!-- <div v-if="MostrarCamposCheque">
-                    <v-row>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.cheque.nombre_cheque"
-                          label="Nombre a quien se realiza el cheque"
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          :required="MostrarCamposCheque"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="formData.datos_forma_pago.cheque.ci_cheque"
-                          label="Documento de Identidad C.I."
-                          variant="outlined"
-                          bg-color="blue-lighten-5"
-                          :required="MostrarCamposCheque"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                  </div> -->
+
                   <div v-if="MostrarCamposTransferencia">
                     <v-row>
                       <v-col cols="12" md="6">
@@ -551,6 +526,20 @@
                   </v-row>
                 </div>
 
+                <!--Seccion Firmas y validaciones-->
+                <!-- Sección 5: Firmas -->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Firmas y Validaciones
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <SeleccionValidadoresSolicitudes></SeleccionValidadoresSolicitudes>
+                    </v-col>
+                  </v-row>
+                </div>
+
                 <!-- Botones de acción -->
                 <div class="d-flex justify-end gap-3 mt-8">
                   <v-btn
@@ -589,13 +578,6 @@
       </v-row>
     </div>
   </v-container>
-  <!-- <pre>{{ formData.correo_contador }}</pre> -->
-  <!-- {{ '*******************' }}
-  <pre>{{ formData.correo_coordinador }}</pre> -->
-  <!-- {{ '*******************' }}
-  <pre>{{ payload.id_tarea }}</pre> -->
-  <!-- {{ '*******************' }}
-  <pre>{{ formData.id_tarea }}</pre> -->
 </template>
 
 <script setup>
@@ -603,6 +585,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import SeleccionValidadoresSolicitudes from '@/modules/formularios/components/validadores/SeleccionValidadoresSolicitudes.vue'
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
@@ -663,15 +646,15 @@ const formData = ref({
   // Campos de forma de pago
   forma_pago: null,
   datos_forma_pago: {
-     otros: { nombre_otros: '', ci_otros: '' },
-      transferencia: {
-         nombre_transferencia: '',
-         ci_transferencia: '',
-         entidad_bancaria: '',
-         tipo_cuenta: '',
-         numero_cuenta: '',
-        },
-      },
+    otros: { nombre_otros: '', ci_otros: '' },
+    transferencia: {
+      nombre_transferencia: '',
+      ci_transferencia: '',
+      entidad_bancaria: '',
+      tipo_cuenta: '',
+      numero_cuenta: '',
+    },
+  },
   validacion_contador: false,
   idcontador: null,
   validacion_coordinador: false,
@@ -834,11 +817,11 @@ watch(
       if (newVal.validadores && Array.isArray(newVal.validadores)) {
         //console.log('Cargando validadores:', newVal.validadores)
         responsablesList.value =
-        newVal.validadores.filter((user) => user && user.cargo === 'responsable') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'responsable') || []
         contadoresList.value =
-        newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'coordinador') || []
         coordinadoresList.value =
-        newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || []  //'coordinador') || []
+          newVal.validadores.filter((user) => user && user.cargo === 'dir-administrativo') || [] //'coordinador') || []
       } else {
         responsablesList.value = []
         contadoresList.value = []
@@ -854,7 +837,9 @@ watch(
   () => formData.value.idcoordinador,
   (newIdCoordinador) => {
     if (newIdCoordinador && coordinadoresList.value.length > 0) {
-      const coordinadorSeleccionado = coordinadoresList.value.find((coordinador) => coordinador.id === newIdCoordinador )
+      const coordinadorSeleccionado = coordinadoresList.value.find(
+        (coordinador) => coordinador.id === newIdCoordinador,
+      )
 
       if (coordinadorSeleccionado && coordinadorSeleccionado.correo) {
         formData.value.correo_coordinador = coordinadorSeleccionado.correo
@@ -871,7 +856,9 @@ watch(
   () => formData.value.idcontador,
   (newIdContador) => {
     if (newIdContador && contadoresList.value.length > 0) {
-      const contadorSeleccionado = contadoresList.value.find((contador) => contador.id === newIdContador )
+      const contadorSeleccionado = contadoresList.value.find(
+        (contador) => contador.id === newIdContador,
+      )
 
       if (contadorSeleccionado && contadorSeleccionado.correo) {
         formData.value.correo_contador = contadorSeleccionado.correo
@@ -994,7 +981,12 @@ function strictSanitizeData(data) {
 
 function addGasto() {
   //esta funcion adiciona una fila de detalle de gasto al vista
-  formData.value.detalle_destino_fondos.push({ partida: '', fuente: '', descripcion_gasto: '', monto: 0 })
+  formData.value.detalle_destino_fondos.push({
+    partida: '',
+    fuente: '',
+    descripcion_gasto: '',
+    monto: 0,
+  })
 }
 
 function removeGasto(index) {
@@ -1030,10 +1022,10 @@ async function submitForm() {
 
     // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
     const coordinadorSeleccionado = coordinadoresList.value.find(
-     (coordinador) => coordinador.id === formData.value.idcoordinador
+      (coordinador) => coordinador.id === formData.value.idcoordinador,
     )
     const contadorSeleccionado = contadoresList.value.find(
-     (contador) => contador.id === formData.value.idcontador
+      (contador) => contador.id === formData.value.idcontador,
     )
 
     const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
@@ -1044,33 +1036,34 @@ async function submitForm() {
     formData.value.correo_contador = correoContadorActual
 
     const payload = {
-    // detalle_destino_fondos should be an object, not a stringified JSON
-    detalle_destino_fondos: {
-      items: formData.value.detalle_destino_fondos.map((gasto) => ({
-        partida_sf: gasto.partida, // Changed from 'partida' to 'partida_sf'
-        fuente: gasto.fuente,
-        concepto: gasto.descripcion_gasto,
-        monto: Number(gasto.monto),
-      })),
-    },
-    forma_pago: formData.value.forma_pago,
-    lugar_solicitud: formData.value.lugar_solicitud,
-    fecha_solicitud: formData.value.fecha_solicitud,
-    fecha_realizacion_actividad: formData.value.fecha_ejecucion,
-    monto_solicitado: totalMontoSolicitado.value,
-    validacion_responsable: formData.value.validacion_responsable,
-    contador_id: formData.value.idcontador,
-    validacion_coordinador: formData.value.validacion_coordinador,
-    id_coordinador: formData.value.idcoordinador,
-    id_usuario: formData.value.id_usuario,
-    id_actividad: formData.value.id_actividad,
-    descripcion_actividad: formData.value.descripcion_actividad,
-    objetivo_actividad: formData.value.objetivo_actividad,
-    // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
-    ...(formData.value.id_tarea && formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
-    datos_forma_pago: formData.value.datos_forma_pago,
-    bloquear_icono_sf: true,
-  }
+      // detalle_destino_fondos should be an object, not a stringified JSON
+      detalle_destino_fondos: {
+        items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida_sf: gasto.partida, // Changed from 'partida' to 'partida_sf'
+          fuente: gasto.fuente,
+          concepto: gasto.descripcion_gasto,
+          monto: Number(gasto.monto),
+        })),
+      },
+      forma_pago: formData.value.forma_pago,
+      lugar_solicitud: formData.value.lugar_solicitud,
+      fecha_solicitud: formData.value.fecha_solicitud,
+      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
+      monto_solicitado: totalMontoSolicitado.value,
+      validacion_responsable: formData.value.validacion_responsable,
+      contador_id: formData.value.idcontador,
+      validacion_coordinador: formData.value.validacion_coordinador,
+      id_coordinador: formData.value.idcoordinador,
+      id_usuario: formData.value.id_usuario,
+      id_actividad: formData.value.id_actividad,
+      descripcion_actividad: formData.value.descripcion_actividad,
+      objetivo_actividad: formData.value.objetivo_actividad,
+      // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
+      ...(formData.value.id_tarea &&
+        formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
+      datos_forma_pago: formData.value.datos_forma_pago,
+      bloquear_icono_sf: true,
+    }
 
     console.log('Payload enviado:', JSON.stringify(payload, null, 2))
     const response = await fetch(baseurl + 'monitoreo_api/crearSolicitudPagoDirecto/', {
@@ -1089,12 +1082,16 @@ async function submitForm() {
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
 
-    const urlForm = `${window.location.origin}/monitoreo/formulario088/${formData.value.id_actividad}?solicitud_id=${data.id}${payload.id_tarea ? `&tarea_id=${payload.id_tarea}` : ''}`;
+    const urlForm = `${window.location.origin}/monitoreo/formulario088/${formData.value.id_actividad}?solicitud_id=${data.id}${payload.id_tarea ? `&tarea_id=${payload.id_tarea}` : ''}`
 
     const cuerpoMensaje = {
       destinatario_id: payload.id_coordinador,
       asunto: 'Solicitud de Pago - Coordinado',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Fondos pediente del formulario ' +
+        numeroFormularioSF.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1103,7 +1100,11 @@ async function submitForm() {
     const cuerpoMensaje2 = {
       destinatario_id: payload.contador_id,
       asunto: 'Solicitud de Pago - Coordinado',
-      contenido: 'Solicitud de Fondos pediente del formulario ' + numeroFormularioSF.value + '. URL: ' + urlForm,
+      contenido:
+        'Solicitud de Fondos pediente del formulario ' +
+        numeroFormularioSF.value +
+        '. URL: ' +
+        urlForm,
       tipo: 'sistema',
       prioridad: 3,
     }
@@ -1113,11 +1114,11 @@ async function submitForm() {
 
     await enviarMensajeAutomatico(cuerpoMensaje2)
 
-////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     // Enviar notificación por correo al coordinador
     try {
       const emailPayload = {
-        emails: [correoCoordinadorActual, correoContadorActual].filter(email => email),
+        emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
         datos_solicitud: {
           codigo: numeroFormularioSF.value || 'SOL-PROV',
           titulo: 'Formulario Sol. Pago Directo',
@@ -1131,13 +1132,11 @@ async function submitForm() {
 
       console.log('emailPayload enviado:', JSON.stringify(emailPayload, null, 2))
 
-      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/',
-        {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
+      const emailResponse = await fetch(baseurl + '/api-msg/correos/solicitud-pendiente/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(emailPayload),
-      },
-    )
+      })
 
       if (emailResponse.ok) {
         console.log('Correo de notificación enviado exitosamente')
@@ -1148,9 +1147,9 @@ async function submitForm() {
       console.error('Error al enviar correo de notificación:', emailError)
       // No detenemos el flujo si falla el envío del correo
     }
-///////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
 
-    console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
+    console.log('Respuesta del servidor:', JSON.stringify(data, null, 2))
 
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=1')
@@ -1434,7 +1433,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.solicitud-fondos-container {
+.solicitud-viaje-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px 16px;
@@ -1491,7 +1490,7 @@ onMounted(async () => {
 
 /* Ajustes responsivos */
 @media (max-width: 960px) {
-  .solicitud-fondos-container {
+  .solicitud-viaje-container {
     padding: 16px 12px;
   }
 

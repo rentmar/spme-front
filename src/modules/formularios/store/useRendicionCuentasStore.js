@@ -1,25 +1,26 @@
-//Store para el manejo de una solicitud de fondos
-//store useSolicitudFondosStore
+//store para Solicitud De Reposicion
+//useSolicitudDeReposicion.js
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useSolucitudFondos } from '../composables/useSolicitudFondos'
-import { useValidadoresSolFondos } from '../composables/useValidadoresSolFondos'
+import { useRendicionCuentas } from '../composables/useRendicionCuentas'
+import { useValidadoresRendCuentas } from '../composables/useValidadoresRendicionCuentas'
 import { useUserStore } from '@/stores/user'
 
-export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
+export const useRendicionCuentasStore = defineStore('rendicion-cuentas', () => {
   // === ESTADOS ===
   const loading = ref(false)
   const error = ref(null)
+
   // Estado - Informacion de la solicitud
-  const solicitudFondosActual = ref(null)
+  const rendicionCuentasActual = ref()
   //Tipo de la solicitud
-  const estadoSolicitudFondosActual = ref(null)
+  const estadoRendicionCuentasActual = ref()
 
   /****************************** COMPOSABLES *******************************************************/
   //Solicitud de fondos
-  const { solucitudFondos, obtenerSolFondosPorId } = useSolucitudFondos()
+  const { rendicionCuentas, obtenerRendicionCuentasPorId } = useRendicionCuentas()
   //Validadores
-  const { estadoSolicitudFondos } = useValidadoresSolFondos()
+  const { estadoRendicionCuentas } = useValidadoresRendCuentas()
 
   /******************************* Stores ********************************************************/
   //Inicializar el store
@@ -64,8 +65,8 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
 
   //Tipo de solicitud
   const tipoSolicitud = computed(() => {
-    if (!estadoSolicitudFondosActual.value) return ''
-    const tipo = estadoSolicitudFondosActual.value.tipo_solicitud
+    if (!estadoRendicionCuentasActual.value) return ''
+    const tipo = estadoRendicionCuentasActual.value.tipo_solicitud
     if (!tipo) return ''
     if (tipo === 'TAREA') return 'SUBACTIVIDAD'
     return tipo
@@ -73,31 +74,31 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
 
   //Estado de la solicitud
   const estadoDocumento = computed(() => {
-    if (!estadoSolicitudFondosActual.value) return ''
-    return estadoSolicitudFondosActual.value.estado_consolidado || ''
+    if (!estadoRendicionCuentasActual.value) return ''
+    return estadoRendicionCuentasActual.value.estado_consolidado || ''
   })
 
   //Resumen
   const resumenSolicitud = computed(() => {
-    if (!estadoSolicitudFondosActual.value) return null
-    return estadoSolicitudFondosActual.value.resumen || null
+    if (!estadoRendicionCuentasActual.value) return null
+    return estadoRendicionCuentasActual.value.resumen || null
   })
 
   //Validadores asignados
   const validadoresAsignados = computed(() => {
-    if (!estadoSolicitudFondosActual.value) return []
-    if (!Array.isArray(estadoSolicitudFondosActual.value.detalle_validadores)) return []
-    return estadoSolicitudFondosActual.value.detalle_validadores
+    if (!estadoRendicionCuentasActual.value) return []
+    if (!Array.isArray(estadoRendicionCuentasActual.value.detalle_validadores)) return []
+    return estadoRendicionCuentasActual.value.detalle_validadores
   })
 
   //Redactor del documento - CORREGIDO
   const redactorDocumento = computed(() => {
     // Verificar que exista el estado y los validadores
-    if (!estadoSolicitudFondosActual.value) {
+    if (!estadoRendicionCuentasActual.value) {
       return null
     }
 
-    const detalle = estadoSolicitudFondosActual.value.detalle_validadores
+    const detalle = estadoRendicionCuentasActual.value.detalle_validadores
 
     // Verificar que detalle_validadores existe y es un array
     if (!detalle || !Array.isArray(detalle)) {
@@ -122,7 +123,7 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
 
   //Version del documento
   const versionDocumento = computed(() => {
-    if (!estadoSolicitudFondosActual.value) return null
+    if (!estadoRendicionCuentasActual.value) return null
     if (!validadoresAsignados.value.length) return null
     // La versión está en el primer validador (todos tienen la misma versión)
     return validadoresAsignados.value[0]?.version_documento || null
@@ -130,19 +131,19 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
 
   // También puedes obtener el ID de la solicitud
   const idSolicitud = computed(() => {
-    return solicitudFondosActual.value?.id || null
+    return rendicionCuentasActual.value?.id || null
   })
 
   /****************************** Funciones Solicitud de Fondos *******************************************************/
 
   //Cargar la Solicitud
-  const cargarSolicitud = async (idSolFondos) => {
+  const cargarSolicitud = async (idRendicion) => {
     loading.value = true
-    //resetStore()
+
     try {
       await Promise.all([
-        cargarSolicitudFondos(idSolFondos),
-        cargarEstadoDeSolicitudFondos(idSolFondos),
+        cargarRendicionDeCuentas(idRendicion),
+        cargarEstadoDeRendicionDeCuentas(idRendicion),
       ])
     } catch (error) {
       console.error('Error al cargar los datos de la solicitud', error)
@@ -152,27 +153,28 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
   }
 
   //Cargar la solicitud de fondos
-  const cargarSolicitudFondos = async (idSolFondos) => {
+  const cargarRendicionDeCuentas = async (idRendicion) => {
     loading.value = true
     try {
-      await obtenerSolFondosPorId(idSolFondos)
-      solicitudFondosActual.value = solucitudFondos.value
+      await obtenerRendicionCuentasPorId(idRendicion)
+      rendicionCuentasActual.value = rendicionCuentas.value
     } catch (error) {
-      console.error('Error al cargar la Sol de Fondos', error)
+      console.error('Error al cargar la rendicion de cuentas', error)
     } finally {
       loading.value = false
     }
   }
+
   /****************************** Funciones Validadores *******************************************************/
 
   //Cargar el estado de la solicitud de fondos
-  const cargarEstadoDeSolicitudFondos = async (idSolFondos) => {
+  const cargarEstadoDeRendicionDeCuentas = async (idSolReposicion) => {
     loading.value = true
     try {
-      const respuesta = await estadoSolicitudFondos(idSolFondos)
-      estadoSolicitudFondosActual.value = respuesta
+      const respuesta = await estadoRendicionCuentas(idSolReposicion)
+      estadoRendicionCuentasActual.value = respuesta
     } catch (error) {
-      console.error('Error al cargar el estado de la sol de fondos', error)
+      console.error('Error al cargar el estado de la rend de cuentas', error)
     } finally {
       loading.value = false
     }
@@ -182,19 +184,16 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
 
   //Resetear el store
   const resetStore = () => {
-    solicitudFondosActual.value = null
-    estadoSolicitudFondosActual.value = null
+    rendicionCuentasActual.value = null
+    estadoRendicionCuentasActual.value = null
     loading.value = false
     error.value = null
   }
 
   return {
-    // Estados
+    //Estado carga
     loading,
     error,
-    //Estado
-    solicitudFondosActual,
-    estadoSolicitudFondosActual,
 
     //Computed
     idRevisor,
@@ -210,10 +209,14 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
     versionDocumento,
     idSolicitud,
 
-    //Func
-    cargarSolicitudFondos,
-    cargarEstadoDeSolicitudFondos,
-    cargarSolicitud,
+    //Estado
+    rendicionCuentasActual,
+    estadoRendicionCuentasActual,
+
+    //func
     resetStore,
+    cargarRendicionDeCuentas,
+    cargarEstadoDeRendicionDeCuentas,
+    cargarSolicitud,
   }
 })
