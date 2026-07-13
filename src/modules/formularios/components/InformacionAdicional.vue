@@ -112,6 +112,7 @@
                 :menu-props="{ 'open-on-click': false }"
                 @update:search="searchEfectivo = $event || ''"
                 @update:model-value="handleCiSelectEfectivo"
+                @keypress="soloNumeros"
               >
                 <template v-slot:item="{ props, item }">
                   <v-list-item
@@ -159,6 +160,7 @@
                 :menu-props="{ 'open-on-click': false }"
                 @update:search="searchTransferencia = $event || ''"
                 @update:model-value="handleCiSelectTransferencia"
+                @keypress="soloNumeros"
               >
                 <template v-slot:item="{ props, item }">
                   <v-list-item
@@ -242,6 +244,7 @@
                 :menu-props="{ 'open-on-click': false }"
                 @update:search="searchCheque = $event || ''"
                 @update:model-value="handleCiSelectCheque"
+                @keypress="soloNumeros"
               >
                 <template v-slot:item="{ props, item }">
                   <v-list-item
@@ -314,6 +317,9 @@ const searchCheque = ref('')
 const searchLugar = ref('')
 const errorValidacion = ref('')
 
+// Bandera de validación
+const validacionCompleta = ref(false)
+
 const datosFormaPagoDefault = {
   efectivo: { nombre_efectivo: '', ci_efectivo: '' },
   transferencia: {
@@ -375,6 +381,13 @@ const validarDatosFormaPago = (datos) => {
   return errores.length > 0 ? errores.join('; ') : ''
 }
 
+const soloNumeros = (e) => {
+  const char = String.fromCharCode(e.charCode || e.keyCode)
+  if (!/^\d$/.test(char)) {
+    e.preventDefault()
+  }
+}
+
 // Inicializar desde modelValue
 const informacionAdicionalDatos = ref({
   lugar: props.modelValue?.lugar || '',
@@ -382,6 +395,41 @@ const informacionAdicionalDatos = ref({
   formaPago: props.modelValue?.formaPago || '',
   datosFormaPago: props.modelValue?.datosFormaPago || { ...datosFormaPagoDefault },
 })
+
+// Validar que todos los campos estén completos
+const validarCamposCompletos = () => {
+  if (!informacionAdicionalDatos.value.lugar) return false
+  if (!informacionAdicionalDatos.value.formaPago) return false
+
+  const fp = informacionAdicionalDatos.value.formaPago
+  const datos = informacionAdicionalDatos.value.datosFormaPago
+
+  if (fp === 1) {
+    if (!datos.efectivo.ci_efectivo || !datos.efectivo.nombre_efectivo) return false
+  } else if (fp === 2) {
+    if (
+      !datos.transferencia.ci_transferencia ||
+      !datos.transferencia.nombre_transferencia ||
+      !datos.transferencia.entidad_bancaria ||
+      !datos.transferencia.tipo_cuenta ||
+      !datos.transferencia.numero_cuenta
+    )
+      return false
+  } else if (fp === 3) {
+    if (!datos.cheque.ci_cheque || !datos.cheque.nombre_cheque) return false
+  }
+
+  return true
+}
+
+// Actualizar bandera cuando cambian los datos
+watch(
+  informacionAdicionalDatos,
+  () => {
+    validacionCompleta.value = validarCamposCompletos()
+  },
+  { deep: true },
+)
 
 // Validar al montar si es edición
 watch(
@@ -572,6 +620,7 @@ function getCurrentDate() {
 
 defineExpose({
   informacionAdicionalDatos,
+  validacionCompleta,
   resetForm: () => {
     informacionAdicionalDatos.value = {
       lugar: '',
@@ -586,6 +635,7 @@ defineExpose({
     searchEfectivo.value = ''
     searchTransferencia.value = ''
     searchCheque.value = ''
+    validacionCompleta.value = false
   },
 })
 

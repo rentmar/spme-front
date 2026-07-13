@@ -5,6 +5,7 @@ import { ref, computed } from 'vue'
 import { useSolucitudFondos } from '../composables/useSolicitudFondos'
 import { useValidadoresSolFondos } from '../composables/useValidadoresSolFondos'
 import { useUserStore } from '@/stores/user'
+import { formulariosHelpersService } from '../services/formulariosHelpersService'
 
 export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
   // === ESTADOS ===
@@ -14,6 +15,8 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
   const solicitudFondosActual = ref(null)
   //Tipo de la solicitud
   const estadoSolicitudFondosActual = ref(null)
+  //Lista de beneficiarios
+  const listaBeneficiarios = ref()
 
   /****************************** COMPOSABLES *******************************************************/
   //Solicitud de fondos
@@ -143,6 +146,7 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
       await Promise.all([
         cargarSolicitudFondos(idSolFondos),
         cargarEstadoDeSolicitudFondos(idSolFondos),
+        cargaListaBeneficiarios(),
       ])
     } catch (error) {
       console.error('Error al cargar los datos de la solicitud', error)
@@ -159,6 +163,19 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
       solicitudFondosActual.value = solucitudFondos.value
     } catch (error) {
       console.error('Error al cargar la Sol de Fondos', error)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  //Carga lista de beneficiarios
+  const cargaListaBeneficiarios = async () => {
+    loading.value = true
+    try {
+      const ben = await formulariosHelpersService.cargarBeneficiarios()
+      listaBeneficiarios.value = ben
+    } catch (error) {
+      console.error('Error al cargar la lista de beneficiarios', error)
     } finally {
       loading.value = false
     }
@@ -195,6 +212,7 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
     //Estado
     solicitudFondosActual,
     estadoSolicitudFondosActual,
+    listaBeneficiarios,
 
     //Computed
     idRevisor,
@@ -214,6 +232,7 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
     cargarSolicitudFondos,
     cargarEstadoDeSolicitudFondos,
     cargarSolicitud,
+    cargaListaBeneficiarios,
     resetStore,
   }
 })

@@ -349,7 +349,7 @@
                 <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 4: Información Adicional -->
-                <div class="form-section mb-6">
+                <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-information</v-icon>
                     Información Adicional
@@ -465,7 +465,7 @@
                       </v-col>
                     </v-row>
                   </div>
-                </div>
+                </div> -->
 
                 <v-divider class="my-4"></v-divider>
                 <div class="form-section mb-6">
@@ -482,7 +482,7 @@
                 <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 5: Firmas -->
-                <div class="form-section mb-6" v-if="esVisible">
+                <!-- <div class="form-section mb-6" v-if="esVisible">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
@@ -530,10 +530,10 @@
                       ></v-checkbox>
                     </v-col>
                   </v-row>
-                </div>
+                </div> -->
 
                 <!--Seccion Firmas-->
-                <div class="form-section mb-6">
+                <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                     Firmas y Validaciones
@@ -545,10 +545,10 @@
                       ></SeleccionValidadoresSolicitudes>
                     </v-col>
                   </v-row>
-                </div>
+                </div> -->
 
                 <!-- Botones de acción -->
-                <div class="d-flex justify-end gap-3 mt-8">
+                <!-- <div class="d-flex justify-end gap-3 mt-8">
                   <v-btn
                     color="error"
                     variant="outlined"
@@ -577,7 +577,7 @@
                   >
                     Enviar Solicitud
                   </v-btn>
-                </div>
+                </div> -->
               </v-form>
             </v-card-text>
           </v-card>
@@ -588,7 +588,39 @@
   <!-- <pre>{{ formData.correo_coordinador }}</pre>
   {{ '*******************' }} -->
   <!-- <pre>{{ datosFormulario }}</pre> -->
-  <pre>{{ infoRef }}</pre>
+  <!-- <pre>{{ infoRef }}</pre>
+  <pre>
+Bandera comprobacion Informacion Adicional completa: {{ estaCompletaInformacionAdicional }}</pre
+  >
+  <pre>Lugar: {{ lugar }}</pre>
+  <pre>Id forma de pago: {{ idFormaPago }}</pre>
+  <pre>Datos de la forma de pago: {{ datosDeLaFormaPago }}</pre> -->
+
+  <!---------------------------------COMPONENTES DE NAVEGACION Y ENVIO --------------------------------->
+  <!--Barra de herramientas, guardar, enviar, etc-->
+  <BarraHerramientasFormulario
+    @save-draft="guardarFormulario"
+    @submit-review="enviarFormulario"
+    @cancel="cancelarSalir"
+  ></BarraHerramientasFormulario>
+  <!--Dialogo para guardar el formulario-->
+  <DialogoGuardarFormulario
+    ref="dialogoGuardarRef"
+    :titulo="'Solicitud de Fondos'"
+    :datos="datosResumen"
+    @confirm="confirmarGuardarDatosForm"
+    @close="cerrarDialogoGuardarForm"
+  ></DialogoGuardarFormulario>
+  <!--Dialogo para guardar el formulario y enviar a revision -->
+  <DialogoGuardarFormularioValidador
+    ref="dialogoRevisionRef"
+    titulo="Solicitud de Fondos"
+    :datos="datosResumen"
+    @confirm="confirmarEnvioRevision"
+    @close="cerrarDialogoRevision"
+  ></DialogoGuardarFormularioValidador>
+  <!--Dialogo de confirmacion para salir -->
+  <ConfirmDialog></ConfirmDialog>
 </template>
 
 <script setup>
@@ -600,44 +632,51 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+//Dialogo de confirmacion
+import { useConfirmDialog } from '@/composables/useConfirmDialog'
+import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
 //Componentes
-import SeleccionValidadoresSolicitudes from '@/modules/formularios/components/validadores/SeleccionValidadoresSolicitudes.vue'
 import InformacionAdicional from '@/modules/formularios/components/InformacionAdicional.vue'
 //Composables
 import { useValidadoresSolFondos } from '@/modules/formularios/composables/useValidadoresSolFondos'
+import BarraHerramientasFormulario from '@/modules/formularios/barraHerramientas/BarraHerramientasFormulario.vue'
+//Cuadro de dialogo para guardar Formulario
+import DialogoGuardarFormulario from '@/modules/formularios/barraHerramientas/DialogoGuardarFormulario.vue'
+import DialogoGuardarFormularioValidador from '@/modules/formularios/barraHerramientas/DialogoGuardarFormularioValidador.vue'
+import { useSnackbar } from '@/composables/useSnackbar'
 
-/*****COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
-//Esconder la anterior validacion
-const esVisible = ref(false)
-//Referncia al componente
-const validadoresRef = ref(null)
+/******* Computed para ligar la informacion al componente InformacionAdicional ***********************************************************************/
 
-//Obtener los ids de los validadores
-const idvalidadores = computed(() => {
-  return validadoresRef.value?.datosValidadores.validadoresIds
-})
-
-//Bandera para validar la seleccion de los responsables
-const validadoresEstanSeleccionados = computed(() => {
-  return validadoresRef.value?.validacionCompleta
-})
-
-//Obtener el coordinador seleccionado
-const coordinadorSel = computed(() => {
-  return validadoresRef.value?.coordinacionSelected
-})
-
-//Obtener el administrativo seleccionado
-const administradorSel = computed(() => {
-  return validadoresRef.value?.administrativoSelected
-})
-
+//Referencia al componente Informacion adicional
 const infoRef = ref(null)
+
+//Bandera para comprobar que la Informacion Adicional esta completa
+const estaCompletaInformacionAdicional = computed(() => {
+  return infoRef.value?.validacionCompleta
+})
+
+//Lugar
+const lugar = computed(() => {
+  return infoRef.value?.informacionAdicionalDatos.lugar
+})
+
+//Forma de pago
+const idFormaPago = computed(() => {
+  return infoRef.value?.informacionAdicionalDatos.formaPago
+})
+
+const datosDeLaFormaPago = computed(() => {
+  return infoRef.value?.informacionAdicionalDatos.datosFormaPago
+})
+
+/******************************Dialogo de confirmacion SALIR?*****************************************************************/
+//Iniciar composable
+const { openConfirmDialog } = useConfirmDialog()
+/******************************Fin Dialogo de confirmacion SALIR?*****************************************************************/
 
 /*****FIN COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
 //Inicar Composable
-const { enviarMensajeAutomatico } = useNotificaciones()
-const { asignarValidadoresSolo } = useValidadoresSolFondos()
+const { successMsg, errorMsg, warningMsg } = useSnackbar()
 //Routes
 const router = useRouter()
 const route = useRoute()
@@ -1081,41 +1120,55 @@ async function submitForm() {
       throw new Error('Error: No se puede crear el formulario sin una tarea válida.')
     }
 
-    //Validar que los validadores para el formulario se hayan seleccionado
-    if (!validadoresEstanSeleccionados.value) {
-      throw new Error(
-        'Debe seleccionar ambos validadores (Coordinación y Dirección Administrativa)',
-      )
-    }
-
-    // Obtener los IDs para el payload
-    const idsVals = idvalidadores.value
-    console.log('✅ Validadores seleccionados ids:', idsVals)
+    // //Validar que los validadores para el formulario se hayan seleccionado
+    // if (!validadoresEstanSeleccionados.value) {
+    //   throw new Error(
+    //     'Debe seleccionar ambos validadores (Coordinación y Dirección Administrativa)',
+    //   )
+    // }
 
     //Validar si el formulario está completo
-    if (!formData.value.lugar_solicitud || !formData.value.forma_pago) {
-      throw new Error('Por favor, completa todos los campos obligatorios del formulario.')
-    }
+    // if (!formData.value.lugar_solicitud || !formData.value.forma_pago) {
+    //   throw new Error('Por favor, completa todos los campos obligatorios del formulario.')
+    // }
     if (totalMontoSolicitado.value <= 0) {
       throw new Error('El monto total solicitado debe ser mayor a cero.')
     }
 
+    // Validar campos obligatorios
+    if (!formData.value.descripcion_actividad) {
+      throw new Error('Complete la descripción de la actividad.')
+    }
+    if (!formData.value.objetivo_actividad) {
+      throw new Error('Complete el objetivo de la actividad.')
+    }
+    if (!formData.value.fecha_ejecucion) {
+      throw new Error('Seleccione la fecha de ejecución.')
+    }
+
+    //Comprobar que la informacion adicional este completa
+    if (!estaCompletaInformacionAdicional.value) {
+      throw new Error('La informacion adicional no esta completa')
+    }
+
     // OBTENER LOS CORREOS ACTUALES ANTES DE ENVIAR
-    const coordinadorSeleccionado = coordinadoresList.value.find(
-      (coordinador) => coordinador.id === formData.value.idcoordinador,
-    )
-    const contadorSeleccionado = contadoresList.value.find(
-      (contador) => contador.id === formData.value.idcontador,
-    )
+    // const coordinadorSeleccionado = coordinadoresList.value.find(
+    //   (coordinador) => coordinador.id === formData.value.idcoordinador,
+    // )
+    // const contadorSeleccionado = contadoresList.value.find(
+    //   (contador) => contador.id === formData.value.idcontador,
+    // )
 
     //const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
-    //const correoContadorActual = contadorSeleccionado?.correo || ''
-    const correoCoordinadorActual = coordinadorSel.value?.correo
-    const correoContadorActual = administradorSel.value?.correo
+    // //const correoContadorActual = contadorSeleccionado?.correo || ''
+    // const correoCoordinadorActual = coordinadorSel.value?.correo
+    // const correoContadorActual = administradorSel.value?.correo
 
-    // Actualizar los valores en formData
-    formData.value.correo_coordinador = correoCoordinadorActual
-    formData.value.correo_contador = correoContadorActual
+    // // Actualizar los valores en formData
+    // formData.value.correo_coordinador = correoCoordinadorActual
+    // formData.value.correo_contador = correoContadorActual
+
+    dialogoGuardarRef.value.abrir()
 
     const payload = {
       // detalle_destino_fondos should be an object, not a stringified JSON
@@ -1127,15 +1180,17 @@ async function submitForm() {
           monto: Number(gasto.monto),
         })),
       },
-      forma_pago: formData.value.forma_pago,
-      lugar_solicitud: formData.value.lugar_solicitud,
+      // forma_pago: formData.value.forma_pago,
+      forma_pago: idFormaPago.value, //Captura el computed del componente <InformacionAdicional>
+      // lugar_solicitud: formData.value.lugar_solicitud,
+      lugar_solicitud: lugar.value, //Captura el computed del componente <InformacionAdicional>
       fecha_solicitud: formData.value.fecha_solicitud,
       fecha_realizacion_actividad: formData.value.fecha_ejecucion,
       monto_solicitado: totalMontoSolicitado.value,
       validacion_responsable: formData.value.validacion_contador,
-      contador_id: administradorSel.value.id,
+      contador_id: formData.value.id_usuario,
       validacion_coordinador: formData.value.validacion_coordinador,
-      id_coordinador: coordinadorSel.value.id,
+      id_coordinador: formData.value.id_usuario,
       id_usuario: formData.value.id_usuario,
       id_actividad: formData.value.id_actividad,
       descripcion_actividad: formData.value.descripcion_actividad,
@@ -1143,102 +1198,64 @@ async function submitForm() {
       // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
       ...(formData.value.id_tarea &&
         formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
-      datos_forma_pago: formData.value.datos_forma_pago,
+      datos_forma_pago: datosDeLaFormaPago.value,
       bloquear_icono_sf: true,
       //codigo_actividad: formData.value.codigo_actividad,
     }
 
     console.log('Payload enviado al servidor:', JSON.stringify(payload, null, 2))
-    const response = await fetch(baseurl + 'api/monitoreo/crear-solicitud-fondos/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
+    // const response = await fetch(baseurl + 'api/monitoreo/crear-solicitud-fondos/', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify(payload),
+    // })
 
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`)
-    }
+    // if (!response.ok) {
+    //   throw new Error(`Error HTTP: ${response.status}`)
+    // }
 
-    const data = await response.json()
-    idSolicitudFondos.value = data.id
-    numeroFormularioSF.value = data.numero_formulario
+    // const data = await response.json()
+    // idSolicitudFondos.value = data.id
+    // numeroFormularioSF.value = data.numero_formulario
 
     //Crear las validaciones
-    await asignarValidadoresSolo(data.id, idsVals)
+    // await asignarValidadoresSolo(data.id, idsVals)
 
     //const urlForm = `${baseurl}/api/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
-    const urlForm = `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
-    const cuerpoMensaje = {
-      destinatario_id: payload.id_coordinador,
-      asunto: 'Solicitud de Fondos - Coordinado',
-      contenido:
-        'Solicitud de Fondos pediente del formulario ' +
-        numeroFormularioSF.value +
-        '. URL: ' +
-        urlForm,
-      tipo: 'sistema',
-      prioridad: 3,
-    }
-    await enviarMensajeAutomatico(cuerpoMensaje)
+    // const urlForm = `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+    // const cuerpoMensaje = {
+    //   destinatario_id: payload.id_coordinador,
+    //   asunto: 'Solicitud de Fondos - Coordinado',
+    //   contenido:
+    //     'Solicitud de Fondos pediente del formulario ' +
+    //     numeroFormularioSF.value +
+    //     '. URL: ' +
+    //     urlForm,
+    //   tipo: 'sistema',
+    //   prioridad: 3,
+    // }
+    // await enviarMensajeAutomatico(cuerpoMensaje)
 
-    const cuerpoMensaje2 = {
-      destinatario_id: payload.contador_id,
-      asunto: 'Solicitud de Fondos - Contador',
-      contenido:
-        'Solicitud de Fondos pediente del formulario ' +
-        numeroFormularioSF.value +
-        '. URL: ' +
-        urlForm,
-      tipo: 'sistema',
-      prioridad: 3,
-    }
+    // const cuerpoMensaje2 = {
+    //   destinatario_id: payload.contador_id,
+    //   asunto: 'Solicitud de Fondos - Contador',
+    //   contenido:
+    //     'Solicitud de Fondos pediente del formulario ' +
+    //     numeroFormularioSF.value +
+    //     '. URL: ' +
+    //     urlForm,
+    //   tipo: 'sistema',
+    //   prioridad: 3,
+    // }
 
     exportToExcel()
-    resetForm()
+    //resetForm()
 
-    await enviarMensajeAutomatico(cuerpoMensaje2)
-
-    ///////// Enviar notificación por correo al coordinador y al contador//////////
-    try {
-      const emailPayload = {
-        emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
-        datos_solicitud: {
-          codigo: numeroFormularioSF.value || 'SOL-PROV',
-          titulo: 'Formulario Sol. Fondos',
-          solicitante: nombreCompletoSolicitante.value,
-          tipo: 'Solicitud de Actividad',
-          prioridad: 'alta',
-          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
-        },
-      }
-      console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
-      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailPayload),
-      })
-
-      if (emailResponse.ok) {
-        console.log('Correo de notificación enviado exitosamente')
-      } else {
-        console.warn('No se pudo enviar el correo de notificación')
-      }
-    } catch (emailError) {
-      console.error('Error al enviar correo de notificación:', emailError)
-    }
-    ///////////////////////////////////////////////////////////////////////////////
-
-    console.log('Respuesta del servidor:', JSON.stringify(data, null, 2))
-    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_coordinador, null, 2))
-    // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_contador, null, 2))
     setTimeout(() => {
       router.push('/pei/listaactividades?showButton=1')
     }, 1000)
-
-    return data
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message)
     alert(`Error: ${error.response?.data?.mensaje || error.message}`)
@@ -1538,6 +1555,160 @@ onMounted(async () => {
   await textoProcedencia.value
   resetForm()
 })
+
+/******************************* EVENTOS DE LA BARRA ****************************************/
+//Funcion para validacion
+// Función de validación reutilizable
+const validarFormulario = () => {
+  if (!formData.value.descripcion_actividad) {
+    return 'Complete la descripción de la actividad.'
+  }
+  if (!formData.value.objetivo_actividad) {
+    return 'Complete el objetivo de la actividad.'
+  }
+  if (!formData.value.fecha_ejecucion) {
+    return 'Seleccione la fecha de ejecución.'
+  }
+  if (totalMontoSolicitado.value <= 0) {
+    return 'El monto total debe ser mayor a cero.'
+  }
+  if (!estaCompletaInformacionAdicional.value) {
+    return 'Complete la información adicional.'
+  }
+  return null // null = sin errores
+}
+
+//Guardar los formularios sin validadores
+const guardarFormulario = async () => {
+  const error = validarFormulario()
+  if (error) {
+    warningMsg('Por Favor: ' + error)
+    return
+  }
+  dialogoGuardarRef.value?.abrir() //Abre el cuadro de Dialogo <DialogoGuardarFormulario>
+}
+//Enviar los formularios con validadores
+const enviarFormulario = async () => {
+  // Validar antes de abrir el diálogo
+  const error = validarFormulario()
+  if (error) {
+    warningMsg('Por Favor: ' + error)
+    return
+  }
+  dialogoRevisionRef.value?.abrir()
+}
+
+//Salir del nuevo formulario
+const cancelarSalir = async () => {
+  const confirmado = await openConfirmDialog({
+    title: 'Confirmar salida',
+    message:
+      'Los cambios no guardados se perderán permanentemente. ¿Estás seguro de que deseas cancelar y salir del formulario?',
+    confirmLabel: 'Salir',
+    cancelLabel: 'Permanecer',
+    type: 'delete', // Esto pone el ícono y color rojo
+  })
+
+  if (confirmado) {
+    router.push('/pei/listaactividades?showButton=1')
+  }
+}
+/*******************************Funciones para el cuadro de dialogo: Guardar Formulario ********************************************************/
+const dialogoGuardarRef = ref(null) //Referencia al dialogo guardar formulario
+
+//Datos para el dialogo de confirmacion
+const datosResumen = computed(() => ({
+  solicitante: nombreCompletoSolicitante.value,
+  fechaSolicitud: formData.value.fecha_solicitud,
+  lugar: lugar.value || '—',
+  formaPago: formaPagoElegido.value || '—',
+  archivos: formData.value.medios_archivos?.length || 0,
+  montoTotal: totalMontoSolicitado.value,
+  detalleFormaPago: datosDeLaFormaPago.value || {},
+  detalleGastos: formData.value.detalle_destino_fondos.map((g) => ({
+    partida: g.partida,
+    fuente: g.fuente,
+    descripcion: g.descripcion_gasto,
+    monto: g.monto,
+  })),
+}))
+
+//Funcion para Enviar la informacion al rest api
+const confirmarGuardarDatosForm = async () => {
+  try {
+    //Activar carga
+    dialogoGuardarRef.value?.setGuardando(true)
+    const payload = {
+      // detalle_destino_fondos should be an object, not a stringified JSON
+      detalle_destino_fondos: {
+        items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida_sf: gasto.partida, // Changed from 'partida' to 'partida_sf'
+          fuente: gasto.fuente,
+          concepto: gasto.descripcion_gasto,
+          monto: Number(gasto.monto),
+        })),
+      },
+      // forma_pago: formData.value.forma_pago,
+      forma_pago: idFormaPago.value, //Captura el computed del componente <InformacionAdicional>
+      // lugar_solicitud: formData.value.lugar_solicitud,
+      lugar_solicitud: lugar.value, //Captura el computed del componente <InformacionAdicional>
+      fecha_solicitud: formData.value.fecha_solicitud,
+      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
+      monto_solicitado: totalMontoSolicitado.value,
+      validacion_responsable: formData.value.validacion_contador,
+      contador_id: formData.value.id_usuario,
+      validacion_coordinador: formData.value.validacion_coordinador,
+      id_coordinador: formData.value.id_usuario,
+      id_usuario: formData.value.id_usuario,
+      id_actividad: formData.value.id_actividad,
+      descripcion_actividad: formData.value.descripcion_actividad,
+      objetivo_actividad: formData.value.objetivo_actividad,
+      // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
+      ...(formData.value.id_tarea &&
+        formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
+      datos_forma_pago: datosDeLaFormaPago.value,
+      bloquear_icono_sf: true,
+      //codigo_actividad: formData.value.codigo_actividad,
+    }
+    console.log('PAYLOAD:', payload)
+    const response = await fetch(baseurl + 'api/monitoreo/crear-solicitud-fondos/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
+    // Éxito: cerrar diálogo, mostrar mensaje, redirigir
+    exportToExcel()
+    resetForm()
+
+    dialogoGuardarRef.value?.cerrar()
+    successMsg('Formulario guardado exitosamente.')
+    router.push('/pei/listaactividades?showButton=1')
+  } catch (error) {
+    console.error('Error al guardar:', error)
+    errorMsg('Error al guardar: ${error.message}')
+    dialogoGuardarRef.value?.setGuardando(false)
+  }
+}
+//Cierra el dialogo para guardar
+const cerrarDialogoGuardarForm = async () => {
+  //Cerrar el diagolo
+  dialogoGuardarRef.value.cerrar()
+}
+
+/************************** GUardar Sol de fondos con Validadores *****************************************************/
+const dialogoRevisionRef = ref(null)
+//FUncion para enviar al rest api, guardar form mas validadores - endpoint pendiente
+const confirmarEnvioRevision = async (datosValidadores) => {
+  alert('Enviar al rest api')
+  console.log('VALIDADORES: ', datosValidadores)
+}
+const cerrarDialogoRevision = async () => {
+  dialogoRevisionRef.value?.cerrar()
+}
 </script>
 
 <style scoped>
