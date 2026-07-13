@@ -244,6 +244,17 @@
             <!-- Sección 3: Información Adicional -->
             <div class="form-section mb-6">
               <h3 class="text-h6 mb-4 primary--text">
+                <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                Informacion Adicional
+              </h3>
+              <v-row>
+                <v-col cols="12">
+                  <InformacionAdicional ref="infoRef"></InformacionAdicional>
+                </v-col>
+              </v-row>
+            </div>
+            <!-- <div class="form-section mb-6">
+              <h3 class="text-h6 mb-4 primary--text">
                 <v-icon color="primary" class="mr-2">mdi-information</v-icon>
                 Información Adicional
               </h3>
@@ -359,12 +370,12 @@
                   </v-col>
                 </v-row>
               </div>
-            </div>
+            </div> -->
 
-            <v-divider class="my-4"></v-divider>
+            <!-- <v-divider class="my-4"></v-divider> -->
 
             <!-- Sección 4: Firmas -->
-            <div class="form-section mb-6">
+            <!-- <div class="form-section mb-6">
               <h3 class="text-h6 mb-4 primary--text">
                 <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                 Firmas y Validaciones
@@ -412,10 +423,10 @@
                   ></v-checkbox>
                 </v-col>
               </v-row>
-            </div>
+            </div> -->
 
             <!-- Firmad y validaciones -->
-            <div class="form-section mb-6">
+            <!-- <div class="form-section mb-6">
               <h3 class="text-h6 mb-4 primary--text">
                 <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                 Firmas y Validaciones
@@ -426,10 +437,10 @@
                   <SeleccionValidadoresSolicitudes></SeleccionValidadoresSolicitudes>
                 </v-col>
               </v-row>
-            </div>
+            </div> -->
 
             <!-- Botones de acción -->
-            <div class="d-flex justify-end gap-3 mt-8">
+            <!-- <div class="d-flex justify-end gap-3 mt-8">
               <v-btn
                 color="error"
                 variant="outlined"
@@ -449,12 +460,37 @@
               >
                 Enviar Solicitud
               </v-btn>
-            </div>
+            </div> -->
           </v-form>
         </v-card-text>
       </v-card>
     </div>
   </v-container>
+  <!---------------------------------COMPONENTES DE NAVEGACION Y ENVIO --------------------------------->
+  <!--Barra de herramientas, guardar, enviar, etc-->
+  <BarraHerramientasFormulario
+    @save-draft="guardarFormulario"
+    @submit-review="enviarFormulario"
+    @cancel="cancelarSalir"
+  ></BarraHerramientasFormulario>
+  <!--Dialogo para guardar el formulario-->
+  <DialogoGuardarFormulario
+    ref="dialogoGuardarRef"
+    :titulo="'Solicitud de Fondos'"
+    :datos="datosResumen"
+    @confirm="confirmarGuardarDatosForm"
+    @close="cerrarDialogoGuardarForm"
+  ></DialogoGuardarFormulario>
+  <!--Dialogo para guardar el formulario y enviar a revision -->
+  <DialogoGuardarFormularioValidador
+    ref="dialogoRevisionRef"
+    titulo="Solicitud de Viajes"
+    :datos="datosResumen"
+    @confirm="confirmarEnvioRevision"
+    @close="cerrarDialogoRevision"
+  ></DialogoGuardarFormularioValidador>
+  <!--Dialogo de confirmacion para salir -->
+  <ConfirmDialog></ConfirmDialog>
 </template>
 
 <script setup>
@@ -469,9 +505,42 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+//Componetes Navegacion
+import InformacionAdicional from '@/modules/formularios/components/InformacionAdicional.vue'
+import BarraHerramientasFormulario from '@/modules/formularios/barraHerramientas/BarraHerramientasFormulario.vue'
+import DialogoGuardarFormulario from '@/modules/formularios/barraHerramientas/DialogoGuardarFormulario.vue'
+import DialogoGuardarFormularioValidador from '@/modules/formularios/barraHerramientas/DialogoGuardarFormularioValidador.vue'
+import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
+import { useConfirmDialog } from '@/composables/useConfirmDialog'
+import { useSnackbar } from '@/composables/useSnackbar'
+/******* Computed para ligar la informacion al componente InformacionAdicional ***********************************************************************/
+
+//Referencia al componente Informacion adicional
+const infoRef = ref(null)
+
+//Bandera para comprobar que la Informacion Adicional esta completa
+const estaCompletaInformacionAdicional = computed(() => {
+  return infoRef.value?.validacionCompleta
+})
+
+//Lugar
+const lugar = computed(() => {
+  return infoRef.value?.informacionAdicionalDatos.lugar
+})
+
+//Forma de pago
+const idFormaPago = computed(() => {
+  return infoRef.value?.informacionAdicionalDatos.formaPago
+})
+
+const datosDeLaFormaPago = computed(() => {
+  return infoRef.value?.informacionAdicionalDatos.datosFormaPago
+})
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
+const { successMsg, errorMsg, warningMsg } = useSnackbar()
+const { openConfirmDialog } = useConfirmDialog()
 
 //Routes
 const router = useRouter()
@@ -601,7 +670,8 @@ const totalMontoSolicitado = computed(() => {
 })
 
 const nombreCompletoSolicitante = computed(() => {
-  return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
+  return userStore.userData.value?.nombre
+  // return `${formData.value.nombre} ${formData.value.paterno} ${formData.value.materno}`.trim()
 })
 
 const isFrozen = computed(() => {
@@ -1141,6 +1211,162 @@ function applyExcelStyles(
 onMounted(async () => {
   await Promise.all([cargarUsuarios(), cargarDatos(), cargarFormasDePago()])
 })
+
+/******************************* EVENTOS DE LA BARRA ****************************************/
+//Funcion para validacion
+// Función de validación reutilizable
+/**
+ * Valida el formulario antes de enviar
+ * @returns {string|null} Mensaje de error o null si es válido
+ */
+const validarFormulario = () => {
+  const requiredFields = [
+    'evento',
+    'fecha_evento',
+    'lugar_evento',
+    'instituciones_participantes',
+    'institucion_queinvita',
+    'quien_cubregastos',
+    'fondos_unitas',
+    'justificacion_asistencia',
+    'tareas_previas',
+    // 'detalle_destino_fondos',
+    // 'forma_pago',
+    // 'lugar_solicitud',
+    // 'fecha_solicitud',
+  ]
+
+  // Validar campos requeridos
+  for (const field of requiredFields) {
+    if (!formData.value[field]) {
+      return `El campo '${field}' es requerido.`
+    }
+  }
+
+  // Validar detalle de gastos
+  if (formData.value.detalle_destino_fondos.length === 0) {
+    return 'Debe agregar al menos un gasto.'
+  }
+
+  if (
+    formData.value.detalle_destino_fondos.some(
+      (gasto) => !gasto.partida || !gasto.fuente || !gasto.descripcion_gasto || gasto.monto <= 0,
+    )
+  ) {
+    return 'Todos los gastos deben tener partida, fuente, descripción y un monto mayor a cero.'
+  }
+
+  if (!estaCompletaInformacionAdicional.value) {
+    return 'Complete la información adicional.'
+  }
+
+  return null
+}
+
+//Guardar los formularios sin validadores
+const guardarFormulario = async () => {
+  const error = validarFormulario()
+  if (error) {
+    warningMsg('Por Favor: ' + error)
+    return
+  }
+  dialogoGuardarRef.value?.abrir() //Abre el cuadro de Dialogo <DialogoGuardarFormulario>
+}
+//Enviar los formularios con validadores
+const enviarFormulario = async () => {
+  // Validar antes de abrir el diálogo
+  const error = validarFormulario()
+  if (error) {
+    warningMsg('Por Favor: ' + error)
+    return
+  }
+  dialogoRevisionRef.value?.abrir()
+}
+
+//Salir del nuevo formulario
+const cancelarSalir = async () => {
+  const confirmado = await openConfirmDialog({
+    title: 'Confirmar salida',
+    message:
+      'Los cambios no guardados se perderán permanentemente. ¿Estás seguro de que deseas cancelar y salir del formulario?',
+    confirmLabel: 'Salir',
+    cancelLabel: 'Permanecer',
+    type: 'delete', // Esto pone el ícono y color rojo
+  })
+
+  if (confirmado) {
+    router.push('/pei/listaactividades?showButton=1')
+  }
+}
+/*******************************Funciones para el cuadro de dialogo: Guardar Formulario ********************************************************/
+const dialogoGuardarRef = ref(null) //Referencia al dialogo guardar formulario
+
+//Datos para el dialogo de confirmacion
+const datosResumen = computed(() => ({
+  solicitante: solicitante,
+  fechaSolicitud: formData.value.fecha_solicitud,
+  lugar: lugar.value || '—',
+  formaPago: formaPagoElegido.value || '—',
+  archivos: formData.value.medios_archivos?.length || 0,
+  montoTotal: totalMontoSolicitado.value,
+  detalleFormaPago: datosDeLaFormaPago.value || {},
+  detalleGastos: formData.value.detalle_destino_fondos.map((g) => ({
+    partida: g.partida,
+    fuente: g.fuente,
+    descripcion: g.descripcion_gasto,
+    monto: g.monto,
+  })),
+}))
+
+//Funcion para Enviar la informacion al rest api
+const confirmarGuardarDatosForm = async () => {
+  try {
+    //Activar carga
+    dialogoGuardarRef.value?.setGuardando(true)
+
+    //*******************Rutina para el envio sol de viaje
+    const payload = {}
+    console.log('PAYLOAD:', payload) //Imprime el payload en la consola
+    //Envio al restai
+    const response = await fetch(baseurl + 'api/monitoreo/crear-solicitud-fondos/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    //*******************Fin Rutina envio sol de viaje */
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
+    exportToExcel()
+    resetForm()
+    //Fin rutina para el envio
+    // Éxito: cerrar diálogo, mostrar mensaje, redirigir
+    dialogoGuardarRef.value?.cerrar() //Cierra el dialog
+    successMsg('Formulario guardado exitosamente.')
+    router.push('/pei/listaactividades?showButton=1')
+  } catch (error) {
+    console.error('Error al guardar:', error)
+    errorMsg('Error al guardar: ${error.message}')
+    dialogoGuardarRef.value?.setGuardando(false)
+  }
+}
+//Cierra el dialogo para guardar
+const cerrarDialogoGuardarForm = async () => {
+  //Cerrar el diagolo
+  dialogoGuardarRef.value.cerrar()
+}
+
+/************************** GUardar Sol de fondos con Validadores *****************************************************/
+const dialogoRevisionRef = ref(null)
+//FUncion para enviar al rest api, guardar form mas validadores - endpoint pendiente
+const confirmarEnvioRevision = async (datosValidadores) => {
+  alert('Enviar al rest api')
+  console.log('VALIDADORES: ', datosValidadores)
+}
+const cerrarDialogoRevision = async () => {
+  dialogoRevisionRef.value?.cerrar()
+}
 </script>
 
 <style scoped>
