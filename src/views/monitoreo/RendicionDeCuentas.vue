@@ -451,7 +451,7 @@
             <v-divider class="my-4"></v-divider>
 
             <!-- Sección: Firmas y Validaciones -->
-            <div class="form-section mb-6">
+            <!-- <div class="form-section mb-6">
               <h3 class="text-h6 mb-4 primary--text">
                 <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
                 Firmas y Validaciones
@@ -522,10 +522,10 @@
                   ></v-checkbox>
                 </v-col>
               </v-row>
-            </div>
+            </div> -->
 
             <!--Seccion Firmas-->
-            <div class="form-section mb-6">
+            <!-- <div class="form-section mb-6">
               <h3 class="text-h6 mb-4 primary--text">
                 <v-icon color="primary" class="mr-2">mdi-account-check</v-icon>
                 Selección de Validadores
@@ -537,7 +537,7 @@
                   ></SeleccionValidadoresRendicionCuentas>
                 </v-col>
               </v-row>
-            </div>
+            </div> -->
 
             <!-- Botones de acción -->
             <div class="d-flex justify-end gap-3 mt-8">
@@ -575,6 +575,32 @@
       </v-card>
     </div>
   </v-container>
+
+  <!---------------------------------COMPONENTES DE NAVEGACION Y ENVIO --------------------------------->
+  <!--Barra de herramientas, guardar, enviar, etc-->
+  <BarraHerramientasFormulario
+    @save-draft="guardarFormulario"
+    @submit-review="enviarFormulario"
+    @cancel="cancelarSalir"
+  ></BarraHerramientasFormulario>
+  <!--GUardar formulario-->
+  <DialogoGuardarRendicion
+    ref="dialogoGuardarRef"
+    :datos="datosResumen"
+    titulo="Rendición de Cuentas"
+    @confirm="confirmarGuardarDatosForm"
+    @close="cerrarDialogoGuardarForm"
+  ></DialogoGuardarRendicion>
+  <!-- Guardar formulario con revisores-->
+  <DialogoGuardarRendicionValidador
+    ref="dialogoRevisionRef"
+    titulo="Rendición de Cuentas"
+    :datos="datosResumen"
+    @confirm="confirmarEnvioRevision"
+    @close="cerrarDialogoRevision"
+  ></DialogoGuardarRendicionValidador>
+  <!--Dialogo de confirmacion para salir -->
+  <ConfirmDialog></ConfirmDialog>
 </template>
 
 <script setup>
@@ -585,7 +611,6 @@ import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdH
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import VinculacionRendicionCuentas from '@/modules/formularios/components/vinculacion/VinculacionRendicionCuentas.vue'
 import VinculacionRendicionCuentasTarea from '@/modules/formularios/components/vinculacion/VinculacionRendicionCuentasTarea.vue'
-import SeleccionValidadoresRendicionCuentas from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/SeleccionValidadoresRendicionCuentas.vue'
 
 import { useUsuario } from '@/modules/usuarios/composables/useUsuario'
 import { useUserStore } from '@/stores/user'
@@ -593,30 +618,18 @@ import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
 import { useSnackbar } from '@/composables/useSnackbar'
-
-/*****COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
-//Esconder la anterior validacion
-const esVisible = ref(false)
-//Referncia al componente
-const validadoresRef = ref(null)
-
-//Obtener los ids de los validadores
-const idvalidadores = computed(() => {
-  return validadoresRef.value?.datosValidadores.validadoresIds
-})
-
-//Bandera para validar la seleccion de los responsables
-const validadoresEstanSeleccionados = computed(() => {
-  return validadoresRef.value?.validacionCompleta
-})
-
-/*****FIN COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
+import BarraHerramientasFormulario from '@/modules/formularios/barraHerramientas/BarraHerramientasFormulario.vue'
+import DialogoGuardarRendicion from '@/modules/formularios/barraHerramientas/DialogoGuardarRendicion.vue'
+import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
+import { useConfirmDialog } from '@/composables/useConfirmDialog'
+import DialogoGuardarRendicionValidador from '@/modules/formularios/barraHerramientas/DialogoGuardarRendicionValidador.vue'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
+const { openConfirmDialog } = useConfirmDialog()
 
 //Inicar composable de mensaje cortos
-const { successMsg } = useSnackbar()
+const { successMsg, errorMsg, warningMsg } = useSnackbar()
 
 const router = useRouter()
 const route = useRoute()
@@ -1892,6 +1905,153 @@ onMounted(() => {
   cargarSolicitudesFondos()
   getSolicitudFondosInfo(idActividad, idTarea)
 })
+
+/******************************* EVENTOS DE LA BARRA ****************************************/
+//Funcion para validacion
+// Función de validación reutilizable
+const validarFormulario = () => {
+  const requiredFields = [
+    'cpte_diario',
+    'fecha_desembolso',
+    'descripcion_actividad',
+    'lugar_actividad',
+    'fecha_actividad',
+    'monto_asignado',
+    //'idcoordinador',
+    //'idcontador',
+    //'idadministrador',
+  ]
+
+  for (const field of requiredFields) {
+    if (!formData.value[field]) {
+      return `El campo '${field}' es requerido.`
+    }
+  }
+
+  // if (!formData.value.descripcion_actividad) {
+  //   return 'Complete la descripción de la actividad.'
+  // }
+  // if (!formData.value.objetivo_actividad) {
+  //   return 'Complete el objetivo de la actividad.'
+  // }
+  // if (!formData.value.fecha_ejecucion) {
+  //   return 'Seleccione la fecha de ejecución.'
+  // }
+  // if (totalMontoSolicitado.value <= 0) {
+  //   return 'El monto total debe ser mayor a cero.'
+  // }
+  // if (!estaCompletaInformacionAdicional.value) {
+  //   return 'Complete la información adicional.'
+  // }
+  // return null // null = sin errores
+  return null
+}
+
+//Guardar los formularios sin validadores
+const guardarFormulario = async () => {
+  const error = validarFormulario()
+  if (error) {
+    warningMsg('Por Favor: ' + error)
+    return
+  }
+  dialogoGuardarRef.value.abrir()
+}
+
+const enviarFormulario = () => {
+  const error = validarFormulario()
+  if (error) {
+    warningMsg(`Error de validación: ${error}`)
+    return
+  }
+  dialogoRevisionRef.value?.abrir()
+}
+
+//Salir del nuevo formulario
+const cancelarSalir = async () => {
+  const confirmado = await openConfirmDialog({
+    title: 'Confirmar salida',
+    message:
+      'Los cambios no guardados se perderán permanentemente. ¿Estás seguro de que deseas cancelar y salir del formulario?',
+    confirmLabel: 'Salir',
+    cancelLabel: 'Permanecer',
+    type: 'delete', // Esto pone el ícono y color rojo
+  })
+
+  if (confirmado) {
+    router.push('/pei/listaactividades?showButton=1')
+  }
+}
+
+/*******************************Funciones para el cuadro de dialogo: Guardar Formulario ********************************************************/
+const dialogoGuardarRef = ref(null) //Referencia al dialogo guardar formulario
+
+//Datos para el dialogo de confirmacion
+const datosResumen = computed(() => ({
+  descripcionActividad: formData.value.descripcion_actividad,
+  lugarActividad: formData.value.lugar_actividad,
+  fechaActividad: formData.value.fecha_actividad,
+  lugarRendicion: formData.value.lugar_solicitud,
+  fechaRendicion: formData.value.fecha_actual,
+  cpteDiario: formData.value.cpte_diario,
+  fechaDesembolso: formData.value.fecha_desembolso,
+  montoAsignado: formData.value.monto_asignado,
+  montoDescargado: totalMontoGastado.value,
+  saldo: saldoPorReembolsar.value,
+  detalleDestinoFondos:
+    formData.value.detalle_destino_fondos.map((gasto) => ({
+      fecha: gasto.fecha || '',
+      partida: gasto.partida || '',
+      fuente: gasto.fuente || '',
+      factura_recibo: gasto.factura_recibo || '',
+      descripcion: gasto.descripcion_gasto || '',
+      monto: Number(gasto.monto) || 0,
+    })) || [],
+}))
+
+//Funcion para Enviar la informacion al rest api
+const confirmarGuardarDatosForm = async () => {
+  try {
+    dialogoGuardarRef.value?.setGuardando(true)
+    //Rutina de envio para la rest api
+    const payload = {}
+    console.log('PAYLOAD:', payload)
+    const response = await fetch(baseurl + 'api/monitoreo/crear-solicitud-fondos/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
+    // Éxito: cerrar diálogo, mostrar mensaje, redirigir
+    exportToExcel()
+    resetForm()
+
+    dialogoGuardarRef.value?.cerrar()
+    successMsg('Formulario guardado exitosamente.')
+    router.push('/pei/listaactividades?showButton=1')
+  } catch (error) {
+    console.error('Error al guardar:', error)
+    errorMsg('Error al guardar: ${error.message}')
+    dialogoGuardarRef.value?.setGuardando(false)
+  }
+}
+//Cierra el dialogo para guardar
+const cerrarDialogoGuardarForm = async () => {
+  dialogoGuardarRef.value?.cerrar()
+}
+
+/************************** GUardar Sol de fondos con Validadores *****************************************************/
+const dialogoRevisionRef = ref(null)
+
+const confirmarEnvioRevision = async () => {
+  successMsg('Enviar informacion a la rest api')
+}
+
+const cerrarDialogoRevision = async () => {
+  dialogoRevisionRef.value?.cerrar()
+}
 </script>
 <style scoped>
 .solicitud-fondos-container {

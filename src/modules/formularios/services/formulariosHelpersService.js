@@ -12,4 +12,13 @@ export const formulariosHelpersService = {
       console.error('Axios: Error al cargar la lista de beneficiarios', error)
     }
   },
+  //Cargar lugares
+  cargarLugares: async () => {
+    try {
+      const respuesta = await api.get('/lugares-solicitud/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar los lugares', error)
+    }
+  },
 }

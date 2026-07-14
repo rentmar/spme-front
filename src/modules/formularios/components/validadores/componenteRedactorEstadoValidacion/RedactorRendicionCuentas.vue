@@ -7,7 +7,7 @@
         class="info-container"
       >
         <DocumentoInfo
-          :tipo-documento="'solicitud_viaje'"
+          :tipo-documento="'rendicion_cuentas'"
           :documento="storeDocumento.rendicionCuentasActual"
           :estado-documento="storeDocumento.estadoRendicionCuentasActual"
         ></DocumentoInfo>
@@ -30,12 +30,13 @@
       <div
         v-if="storeDocumento.rendicionCuentasActual && storeDocumento.estadoRendicionCuentasActual"
       >
-        <AsignarRevisoresSolicitud
+        <AsignarRevisoresRendicion
           v-if="storeDocumento.estadoDocumento === 'SIN_VALIDACIONES'"
           :id-solicitud="storeDocumento.idSolicitud"
           :contenido-documento="storeDocumento.rendicionCuentasActual"
           @revisores-asignados="handleRevisoresAsignados"
-        ></AsignarRevisoresSolicitud>
+        ></AsignarRevisoresRendicion>
+
         <RedactorAccion
           v-else-if="storeDocumento.esRedactor"
           :estado-documento="storeDocumento.estadoDocumento"
@@ -56,7 +57,7 @@ import BaseComponenteRedactorAside from './BaseComponenteRedactorAside.vue'
 import DocumentoInfo from '../../partials/DocumentoInfo.vue'
 import LIstaRevisores from '../componenteEstadoVotacion/partials/LIstaRevisores.vue'
 import RedactorInfo from './partials/RedactorInfo.vue'
-import AsignarRevisoresSolicitud from '../AsignarRevisoresSolicitud.vue'
+import AsignarRevisoresRendicion from './AsignarRevisoresRendicion.vue'
 import RedactorAccion from './partials/RedactorAccion.vue'
 //store
 import { useRendicionCuentasStore } from '@/modules/formularios/store/useRendicionCuentasStore.js'
