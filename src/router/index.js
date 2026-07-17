@@ -352,7 +352,8 @@ const router = createRouter({
     },
     {
       path: '/monitoreo/lista-solicitudes-pendientes/',
-      component: () => import('@/views/monitoreo/ListaSolicitudesPendientesView.vue'),
+      // component: () => import('@/views/monitoreo/ListaSolicitudesPendientesView.vue'),
+      component: () => import('@/views/monitoreo/AdministrarSolicitudesUsuarioView.vue'),
       meta: { requiresAuth: true },
     },
     ////////////////////////////////pei//////////////////////////////
