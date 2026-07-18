@@ -1321,33 +1321,64 @@ const datosResumen = computed(() => ({
 //Funcion para Enviar la informacion al rest api
 const confirmarGuardarDatosForm = async () => {
   try {
-    //Activar carga
     dialogoGuardarRef.value?.setGuardando(true)
 
-    //*******************Rutina para el envio sol de viaje
-    const payload = {}
-    console.log('PAYLOAD:', payload) //Imprime el payload en la consola
-    //Envio al restai
-    const response = await fetch(baseurl + 'api/monitoreo/crear-solicitud-fondos/', {
+    const payload = {
+      evento: formData.value.evento,
+      fecha_evento: formData.value.fecha_evento,
+      lugar_evento: formData.value.lugar_evento,
+      instituciones_participantes: formData.value.instituciones_participantes,
+      institucion_queinvita: formData.value.institucion_queinvita,
+      quien_cubregastos: formData.value.quien_cubregastos,
+      fondos_unitas: formData.value.fondos_unitas,
+      justificacion_asistencia: formData.value.justificacion_asistencia,
+      tareas_previas: formData.value.tareas_previas,
+      id_actividad: idActividad || 0,
+      id_tarea: idTarea || null,
+      id_usuario: usuario.value.id || 0,
+      monto_solicitado: totalMontoSolicitado.value,
+      detalle_destino_fondos: {
+        items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida: gasto.partida,
+          concepto: gasto.descripcion_gasto,
+          monto: Number(gasto.monto),
+        })),
+      },
+      forma_pago: idFormaPago.value,
+      lugar_solicitud: lugar.value,
+      fecha_solicitud: formData.value.fecha_solicitud,
+      datos_forma_pago: datosDeLaFormaPago.value,
+      validacion_responsable: false,
+      id_responsable: usuario.value.id,
+      validacion_coordinador: false,
+      id_coordinador: usuario.value.id,
+    }
+
+    console.log('PAYLOAD:', payload)
+
+    const response = await fetch(baseurl + 'monitoreo_api/crearSolicitudViaje/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
 
-    //*******************Fin Rutina envio sol de viaje */
     if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`)
+      const errorData = await response.json()
+      throw new Error(errorData.mensaje || errorData.error || JSON.stringify(errorData))
     }
+
+    const data = await response.json()
+    numeroFormularioSF.value = data.numero_formulario
+
     exportToExcel()
     resetForm()
-    //Fin rutina para el envio
-    // Éxito: cerrar diálogo, mostrar mensaje, redirigir
-    dialogoGuardarRef.value?.cerrar() //Cierra el dialog
+
+    dialogoGuardarRef.value?.cerrar()
     successMsg('Formulario guardado exitosamente.')
     router.push('/pei/listaactividades?showButton=1')
   } catch (error) {
     console.error('Error al guardar:', error)
-    errorMsg('Error al guardar: ${error.message}')
+    errorMsg(`Error al guardar: ${error.message}`)
     dialogoGuardarRef.value?.setGuardando(false)
   }
 }

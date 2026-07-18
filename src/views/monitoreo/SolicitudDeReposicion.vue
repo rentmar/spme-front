@@ -1854,21 +1854,48 @@ const datosResumen = computed(() => ({
 //Funcion para Enviar la informacion al rest api
 const confirmarGuardarDatosForm = async () => {
   try {
-    //Activar carga
     dialogoGuardarRef.value?.setGuardando(true)
-    //Rutina guarda formulario
-    const payload = {}
+
+    const payload = {
+      detalle_destino_fondos: {
+        items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida: gasto.partida,
+          concepto: gasto.descripcion_gasto,
+          monto: Number(gasto.monto),
+        })),
+      },
+      forma_pago: idFormaPago.value,
+      lugar_solicitud: lugar.value,
+      fecha_solicitud: formData.value.fecha_solicitud,
+      monto_solicitado: totalMontoSolicitado.value,
+      descripcion_reposicion: formData.value.descripcion_actividad,
+      objetivo_reposicion: formData.value.objetivo_actividad,
+      fecha_donde_se_realizo_actividad: formData.value.fecha_ejecucion,
+      validacion_responsable: false,
+      id_responsable: usuario.value.id,
+      validacion_coordinador: false,
+      id_coordinador: usuario.value.id,
+      id_usuario: formData.value.id_usuario,
+      id_actividad: formData.value.id_actividad,
+      id_tarea: formData.value.id_tarea || null,
+    }
+
     console.log('PAYLOAD:', payload)
-    const response = await fetch(baseurl + 'api/monitoreo/crear-solicitud-fondos/', {
+
+    const response = await fetch(baseurl + 'monitoreo_api/crearSolicitudReembolso/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
 
     if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`)
+      const errorData = await response.json()
+      throw new Error(errorData.mensaje || errorData.error || JSON.stringify(errorData))
     }
-    // Éxito: cerrar diálogo, mostrar mensaje, redirigir
+
+    const data = await response.json()
+    numeroFormularioSF.value = data.numero_formulario
+
     exportToExcel()
     resetForm()
 
@@ -1877,7 +1904,7 @@ const confirmarGuardarDatosForm = async () => {
     router.push('/pei/listaactividades?showButton=1')
   } catch (error) {
     console.error('Error al guardar:', error)
-    errorMsg('Error al guardar: ${error.message}')
+    errorMsg(`Error al guardar: ${error.message}`)
     dialogoGuardarRef.value?.setGuardando(false)
   }
 }
