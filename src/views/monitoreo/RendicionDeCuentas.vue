@@ -2012,10 +2012,44 @@ const datosResumen = computed(() => ({
 const confirmarGuardarDatosForm = async () => {
   try {
     dialogoGuardarRef.value?.setGuardando(true)
-    //Rutina de envio para la rest api
-    const payload = {}
+    const payload = {
+      numeroFormulario: formDatSF.value.numeroFormulariosf || '',
+      montoAsignado: formData.value.monto_asignado,
+      montoDescargado: Number(totalMontoGastado.value),
+      cpteDiario: formData.value.cpte_diario,
+      fechaDesembolso: formData.value.fecha_desembolso,
+      saldo: Number(saldoPorReembolsar.value),
+      detalleDestinoFondos: formData.value.detalle_destino_fondos.map((gasto) => ({
+        fecha: gasto.fecha || '',
+        partida: gasto.partida || '',
+        fuente: gasto.fuente || '',
+        factura_recibo: gasto.factura_recibo || '',
+        descripcion: gasto.descripcion_gasto || '',
+        monto: Number(gasto.monto) || 0,
+      })),
+      validacionResponsable: Boolean(formData.value.validacion_responsable),
+      validacionCoordinador: Boolean(formData.value.validacion_coordinador),
+      validacionContador: Boolean(formData.value.validacion_contador),
+      validacionAdministrador: Boolean(formData.value.validacion_administrador),
+      idadministrador: Number(formData.value.idadministrador),
+      idcontador: Number(formData.value.idcontador),
+      idcoordinador: Number(formData.value.idcoordinador),
+      idresponsable: Number(formData.value.idresponsable),
+      idusuarioLogeado: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
+      idActividad: idActividad ? parseInt(idActividad) : null,
+      idTarea: idTarea ? parseInt(idTarea) : null,
+      descripcionActividad: formData.value.descripcion_actividad,
+      lugarActividad: formData.value.lugar_actividad,
+      lugarRendicion: formData.value.lugar_solicitud,
+      fechaActividad: formData.value.fecha_actividad,
+      bloquearIconoRC: true,
+      idSolicitudReembolso: null,
+      idSolicitudViaje: solicitudViajeSeleccionada.value,
+      idSolicitudPagoDirecto: null,
+      idSolicitudFondos: solicitudFondosSeleccionada.value,
+    }
     console.log('PAYLOAD:', payload)
-    const response = await fetch(baseurl + 'api/monitoreo/crear-solicitud-fondos/', {
+    const response = await fetch(baseurl + 'api/monitoreo/crear-rendicion-cuentas/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -2024,7 +2058,6 @@ const confirmarGuardarDatosForm = async () => {
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`)
     }
-    // Éxito: cerrar diálogo, mostrar mensaje, redirigir
     exportToExcel()
     resetForm()
 
