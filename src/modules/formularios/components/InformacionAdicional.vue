@@ -275,6 +275,7 @@
 
 <script setup>
 import { onMounted, ref, computed, watch } from 'vue'
+import { formulariosHelpersService } from '../services/formulariosHelpersService'
 
 const props = defineProps({
   modelValue: {
@@ -464,47 +465,49 @@ const lugaresFiltrados = computed(() => {
   return filtrados.length === 0 && searchLugar.value ? [searchLugar.value] : filtrados
 })
 
-const beneficiarios = [
-  {
-    ci: '12345678',
-    nombre: 'Juan Pérez Gutiérrez',
-    banco: 'Banco Mercantil',
-    tipo_cuenta: 'Ahorro',
-    numero_cuenta: '100001202100',
-  },
-  {
-    ci: '23456789',
-    nombre: 'María García López',
-    banco: 'FIE',
-    tipo_cuenta: 'Corriente',
-    numero_cuenta: '200002303200',
-  },
-  {
-    ci: '34567890',
-    nombre: 'Carlos Rodríguez Mamani',
-    banco: 'BNB',
-    tipo_cuenta: 'Ahorro',
-    numero_cuenta: '300003404300',
-  },
-  {
-    ci: '45678901',
-    nombre: 'Ana Martínez Quispe',
-    banco: 'BCP',
-    tipo_cuenta: 'Corriente',
-    numero_cuenta: '400004505400',
-  },
-  {
-    ci: '56789012',
-    nombre: 'Pedro Sánchez Choque',
-    banco: 'Banco Unión',
-    tipo_cuenta: 'Ahorro',
-    numero_cuenta: '500005606500',
-  },
-]
+const beneficiarios = ref([])
+
+// const beneficiarios = [
+//   {
+//     ci: '12345678',
+//     nombre: 'Juan Pérez Gutiérrez',
+//     banco: 'Banco Mercantil',
+//     tipo_cuenta: 'Ahorro',
+//     numero_cuenta: '100001202100',
+//   },
+//   {
+//     ci: '23456789',
+//     nombre: 'María García López',
+//     banco: 'FIE',
+//     tipo_cuenta: 'Corriente',
+//     numero_cuenta: '200002303200',
+//   },
+//   {
+//     ci: '34567890',
+//     nombre: 'Carlos Rodríguez Mamani',
+//     banco: 'BNB',
+//     tipo_cuenta: 'Ahorro',
+//     numero_cuenta: '300003404300',
+//   },
+//   {
+//     ci: '45678901',
+//     nombre: 'Ana Martínez Quispe',
+//     banco: 'BCP',
+//     tipo_cuenta: 'Corriente',
+//     numero_cuenta: '400004505400',
+//   },
+//   {
+//     ci: '56789012',
+//     nombre: 'Pedro Sánchez Choque',
+//     banco: 'Banco Unión',
+//     tipo_cuenta: 'Ahorro',
+//     numero_cuenta: '500005606500',
+//   },
+// ]
 
 const filteredBeneficiariosEfectivo = computed(() => {
   if (!searchEfectivo.value) return []
-  return beneficiarios.filter(
+  return beneficiarios.value.filter(
     (b) =>
       b.ci.includes(searchEfectivo.value) ||
       b.nombre.toLowerCase().includes(searchEfectivo.value.toLowerCase()),
@@ -513,7 +516,7 @@ const filteredBeneficiariosEfectivo = computed(() => {
 
 const filteredBeneficiariosTransferencia = computed(() => {
   if (!searchTransferencia.value) return []
-  return beneficiarios.filter(
+  return beneficiarios.value.filter(
     (b) =>
       b.ci.includes(searchTransferencia.value) ||
       b.nombre.toLowerCase().includes(searchTransferencia.value.toLowerCase()),
@@ -522,7 +525,7 @@ const filteredBeneficiariosTransferencia = computed(() => {
 
 const filteredBeneficiariosCheque = computed(() => {
   if (!searchCheque.value) return []
-  return beneficiarios.filter(
+  return beneficiarios.value.filter(
     (b) =>
       b.ci.includes(searchCheque.value) ||
       b.nombre.toLowerCase().includes(searchCheque.value.toLowerCase()),
@@ -638,14 +641,33 @@ defineExpose({
     validacionCompleta.value = false
   },
 })
+//Cargar Informacion
+const loadingDatos = ref(false)
+const cargarInformacion = async () => {
+  loadingDatos.value = true
+  try {
+    const [benef, lugar] = await Promise.all([
+      formulariosHelpersService.cargarBeneficiarios(),
+      formulariosHelpersService.cargarLugares(),
+    ])
+
+    beneficiarios.value = benef.todos
+    lugaresSelect.value = lugar.lugares_unicos
+  } catch (error) {
+    console.error('Error al cargar informacion', error)
+  } finally {
+    loadingDatos.value = false
+  }
+}
 
 onMounted(async () => {
-  lugaresSelect.value = ['La Paz', 'Santa Cruz', 'Cochabamba', 'Paris', 'Alemania']
+  // lugaresSelect.value = ['La Paz', 'Santa Cruz', 'Cochabamba', 'Paris', 'Alemania']
   formaPagoSelect.value = [
     { id: 1, codigo: 'EFEC', formaPago: 'Efectivo' },
     { id: 2, codigo: 'TB', formaPago: 'Transferencia Bancaria' },
     { id: 3, codigo: 'CHE', formaPago: 'Cheque' },
   ]
+  await cargarInformacion()
 
   if (props.isEdicion && props.modelValue?.lugar) {
     searchLugar.value = props.modelValue.lugar

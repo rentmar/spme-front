@@ -4,14 +4,22 @@
  * @returns {string} Color de Vuetify
  */
 export const getColorEstado = (estado) => {
+  if (!estado) return 'grey'
+  const estadoNormalizado = estado.toLowerCase()
+  // const colores = {
+  //   APROBADO: 'success',
+  //   RECHAZADO: 'error',
+  //   PENDIENTE: 'warning',
+  //   EN_VALIDACION: 'warning', //No usado
+  //   EN_CORRECCION: 'info', //No usao
+  // }
   const colores = {
-    APROBADO: 'success',
-    RECHAZADO: 'error',
-    PENDIENTE: 'warning',
-    EN_VALIDACION: 'warning', //No usado
-    EN_CORRECCION: 'info', //No usao
+    aprobado: 'success',
+    rechazado: 'error',
+    pendiente: 'warning',
+    sinrevisores: 'grey',
   }
-  return colores[estado] || 'grey'
+  return colores[estadoNormalizado] || 'grey'
 }
 
 /**
