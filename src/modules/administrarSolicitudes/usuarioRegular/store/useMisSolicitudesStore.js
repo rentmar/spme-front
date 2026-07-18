@@ -40,6 +40,15 @@ export const useMisSolicitudesStore = defineStore('mis-solicitudes', () => {
     rendicionesCuentas: [],
   })
 
+  //Solicitudes revisadas/por revisar
+  const formulariosRevisadosPorRevisar = ref({
+    solicitudesFondos: [],
+    solicitudesViaje: [],
+    solicitudesPagoDirecto: [],
+    solicitudesReembolso: [],
+    rendicionesCuentas: [],
+  })
+
   // ============================================
   // GETTERS - SOLICITUDES POR TIPO
   // ============================================
@@ -80,6 +89,53 @@ export const useMisSolicitudesStore = defineStore('mis-solicitudes', () => {
     ]
   })
 
+  //Solicitudes de fondos
+  const solicitudesFondos = computed(() => {
+    return solicitudes.value?.solicitudesFondos
+  })
+
+  //Solcitudes de viajes
+  const solicitudesViaje = computed(() => {
+    return solicitudes.value?.solicitudesViaje
+  })
+
+  //Sol de pago directo
+  const solicitudPagoDirecto = computed(() => {
+    return solicitudes.value?.solicitudesPagoDirecto
+  })
+
+  //Sol de reposicion
+  const solicitudReposicion = computed(() => {
+    return solicitudes.value?.solicitudesReembolso
+  })
+
+  //Rendicion de cuentas
+  const rendicionCuentas = computed(() => {
+    return solicitudes.value?.rendicionesCuentas
+  })
+
+  //Solicitudes por revisar
+  const totalSolicitudesPendientes = computed(() => {
+    return [
+      ...pendientesRevision.value.solicitudesFondos,
+      ...pendientesRevision.value.solicitudesViaje,
+      ...pendientesRevision.value.solicitudesPagoDirecto,
+      ...pendientesRevision.value.solicitudesReembolso,
+      ...pendientesRevision.value.rendicionesCuentas,
+    ]
+  })
+
+  //Solicitudes revision
+  const totalSolRevisionesPorRevisar = computed(() => {
+    return [
+      ...formulariosRevisadosPorRevisar.value.solicitudesFondos,
+      ...formulariosRevisadosPorRevisar.value.solicitudesViaje,
+      ...formulariosRevisadosPorRevisar.value.solicitudesPagoDirecto,
+      ...formulariosRevisadosPorRevisar.value.solicitudesReembolso,
+      ...formulariosRevisadosPorRevisar.value.rendicionesCuentas,
+    ]
+  })
+
   // ============================================
   // GETTERS - ESTADÍSTICAS (basadas en estadoConsolidado)
   // ============================================
@@ -107,6 +163,10 @@ export const useMisSolicitudesStore = defineStore('mis-solicitudes', () => {
   )
   //Pendientes de revision
   const totalPendientesRevision = computed(() => pendientesRevision.value.totalPendientes)
+  //Revisados y por revisar
+  const totalPorRevisarRevisadas = computed(() => {
+    return formulariosRevisadosPorRevisar.value.totalRevisiones
+  })
 
   // ============================================
   // GETTERS - CONTEOS POR TIPO (badges)
@@ -221,6 +281,16 @@ export const useMisSolicitudesStore = defineStore('mis-solicitudes', () => {
       solicitudesReembolso: [],
       rendicionesCuentas: [],
     }
+
+    //Asignar los formularios revisados y por revisar
+    formulariosRevisadosPorRevisar.value = datos.solicitudesRevisor ?? {
+      totalRevisiones: [],
+      solicitudesFondos: [],
+      solicitudesViaje: [],
+      solicitudesPagoDirecto: [],
+      solicitudesReembolso: [],
+      rendicionesCuentas: [],
+    }
   }
 
   /**
@@ -261,12 +331,20 @@ export const useMisSolicitudesStore = defineStore('mis-solicitudes', () => {
     solicitudes,
     resumenes,
     pendientesRevision,
+    formulariosRevisadosPorRevisar,
     solicitudesPrueba,
 
     //Getters unificados
     todasLasSolicitudes,
+    totalSolicitudesPendientes,
+    totalSolRevisionesPorRevisar,
 
     //Getters por tipo
+    solicitudesFondos,
+    solicitudesViaje,
+    solicitudPagoDirecto,
+    solicitudReposicion,
+    rendicionCuentas,
 
     //Getters estadisticas
     totalSolicitudes,
@@ -275,6 +353,7 @@ export const useMisSolicitudesStore = defineStore('mis-solicitudes', () => {
     solicitudesRechazadas,
     solicitudesSinRevisores,
     totalPendientesRevision,
+    totalPorRevisarRevisadas,
 
     //Getter conteos por tipo
     countFondos,

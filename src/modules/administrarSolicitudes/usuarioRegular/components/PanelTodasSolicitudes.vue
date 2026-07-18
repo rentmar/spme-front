@@ -216,7 +216,7 @@ const headersBase = [
 const headersProyectoActividad = [
   { title: 'Proyecto', key: 'proyecto', sortable: true, width: '130' },
   { title: 'Actividad', key: 'actividad', sortable: true, width: '140' },
-  { title: 'Tarea', key: 'tarea', sortable: true, width: '130' },
+  { title: 'Subactividad', key: 'tarea', sortable: true, width: '130' },
 ]
 
 const headersPersonas = [
