@@ -1,3 +1,4 @@
+<!-- InformacionAdicionalEdicion.vue -->
 <template>
   <div>
     <v-alert
@@ -11,7 +12,6 @@
       Información Adicional
     </v-alert>
 
-    <!-- Alerta de error de validación -->
     <v-alert
       v-if="errorValidacion"
       variant="tonal"
@@ -26,7 +26,7 @@
       <div class="text-subtitle-2 font-weight-bold mb-1">Error en datosFormaPago</div>
       <div>Error de formato, corrija la información llenándola nuevamente</div>
       <div class="mt-2 text-caption">
-        {{ JSON.stringify(props.modelValue?.datosFormaPago, null, 2) }}
+        {{ JSON.stringify(localDatosFormaPago, null, 2) }}
       </div>
     </v-alert>
 
@@ -36,7 +36,7 @@
         <v-row>
           <v-col cols="12" md="8">
             <v-combobox
-              v-model="informacionAdicionalDatos.lugar"
+              v-model="localLugar"
               variant="outlined"
               bg-color="blue-lighten-5"
               density="compact"
@@ -47,13 +47,11 @@
               no-filter
               :menu-props="{ 'open-on-click': false }"
               @update:search="searchLugar = $event || ''"
-            >
-            </v-combobox>
+            />
           </v-col>
-
           <v-col cols="12" md="4">
             <v-text-field
-              v-model="informacionAdicionalDatos.fecha"
+              v-model="localFecha"
               label="Fecha de la Solicitud"
               type="date"
               variant="outlined"
@@ -62,11 +60,11 @@
               readonly
               hide-details
               prepend-inner-icon="mdi-calendar"
-            ></v-text-field>
+            />
           </v-col>
         </v-row>
 
-        <v-divider class="my-3"></v-divider>
+        <v-divider class="my-3" />
 
         <!-- Forma de Pago -->
         <div class="mt-4">
@@ -75,7 +73,7 @@
             <span class="text-subtitle-1 font-weight-medium">Forma de Pago</span>
           </div>
           <v-select
-            v-model="informacionAdicionalDatos.formaPago"
+            v-model="localFormaPago"
             :items="formaPagoSelect"
             item-title="formaPago"
             item-value="id"
@@ -86,10 +84,10 @@
             prepend-icon="mdi-cash-question"
             clearable
             @update:model-value="handleFormaPagoChange"
-          ></v-select>
+          />
         </div>
 
-        <!--Efectivo-->
+        <!-- Efectivo -->
         <div v-if="mostrarFormaEfectivo" class="mt-4">
           <div class="d-flex align-center mb-2">
             <v-icon color="success" class="mr-2">mdi-cash</v-icon>
@@ -119,25 +117,25 @@
                     v-bind="props"
                     :title="`${item.raw.ci} - ${item.raw.nombre}`"
                     :subtitle="item.raw.nombre"
-                  ></v-list-item>
+                  />
                 </template>
               </v-combobox>
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                v-model="informacionAdicionalDatos.datosFormaPago.efectivo.nombre_efectivo"
+                v-model="localDatosFormaPago.efectivo.nombre_efectivo"
                 label="Nombre a quien se realiza el pago"
                 variant="outlined"
                 bg-color="blue-lighten-5"
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-account"
-              ></v-text-field>
+              />
             </v-col>
           </v-row>
         </div>
 
-        <!--Transferencia Bancaria-->
+        <!-- Transferencia Bancaria -->
         <div v-if="mostrarFormaTransferencia" class="mt-4">
           <div class="d-flex align-center mb-2">
             <v-icon color="primary" class="mr-2">mdi-bank-transfer</v-icon>
@@ -167,37 +165,35 @@
                     v-bind="props"
                     :title="`${item.raw.ci} - ${item.raw.nombre}`"
                     :subtitle="`${item.raw.banco} - ${item.raw.tipo_cuenta} - ${item.raw.numero_cuenta}`"
-                  ></v-list-item>
+                  />
                 </template>
               </v-combobox>
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                v-model="
-                  informacionAdicionalDatos.datosFormaPago.transferencia.nombre_transferencia
-                "
+                v-model="localDatosFormaPago.transferencia.nombre_transferencia"
                 label="Nombre completo del beneficiario"
                 variant="outlined"
                 bg-color="blue-lighten-5"
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-account"
-              ></v-text-field>
+              />
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                v-model="informacionAdicionalDatos.datosFormaPago.transferencia.entidad_bancaria"
+                v-model="localDatosFormaPago.transferencia.entidad_bancaria"
                 label="Nombre de Entidad Bancaria"
                 variant="outlined"
                 bg-color="blue-lighten-5"
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-bank"
-              ></v-text-field>
+              />
             </v-col>
             <v-col cols="12" md="6">
               <v-select
-                v-model="informacionAdicionalDatos.datosFormaPago.transferencia.tipo_cuenta"
+                v-model="localDatosFormaPago.transferencia.tipo_cuenta"
                 :items="['Ahorro', 'Corriente']"
                 label="Tipo de Cuenta"
                 variant="outlined"
@@ -205,23 +201,23 @@
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-credit-card"
-              ></v-select>
+              />
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                v-model="informacionAdicionalDatos.datosFormaPago.transferencia.numero_cuenta"
+                v-model="localDatosFormaPago.transferencia.numero_cuenta"
                 label="Número de Cuenta Bancaria"
                 variant="outlined"
                 bg-color="blue-lighten-5"
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-numeric"
-              ></v-text-field>
+              />
             </v-col>
           </v-row>
         </div>
 
-        <!--Cheque-->
+        <!-- Cheque -->
         <div v-if="mostrarFormaCheque" class="mt-4">
           <div class="d-flex align-center mb-2">
             <v-icon color="warning" class="mr-2">mdi-checkbook</v-icon>
@@ -251,20 +247,20 @@
                     v-bind="props"
                     :title="`${item.raw.ci} - ${item.raw.nombre}`"
                     :subtitle="item.raw.nombre"
-                  ></v-list-item>
+                  />
                 </template>
               </v-combobox>
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                v-model="informacionAdicionalDatos.datosFormaPago.cheque.nombre_cheque"
+                v-model="localDatosFormaPago.cheque.nombre_cheque"
                 label="Nombre a quien se realiza el pago"
                 variant="outlined"
                 bg-color="blue-lighten-5"
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-account"
-              ></v-text-field>
+              />
             </v-col>
           </v-row>
         </div>
@@ -275,39 +271,43 @@
 
 <script setup>
 import { onMounted, ref, computed, watch } from 'vue'
-import { formulariosHelpersService } from '../services/formulariosHelpersService'
+import { formulariosHelpersService } from '../../services/formulariosHelpersService'
 
+// ─── Props ──────────────────────────────────────────────
 const props = defineProps({
-  modelValue: {
+  lugar: { type: String, default: '' },
+  fecha: { type: String, default: '' },
+  formaPago: { type: [String, Number], default: '' },
+  datosFormaPago: {
     type: Object,
     default: () => ({
-      lugar: '',
-      fecha: '',
-      formaPago: '',
-      datosFormaPago: {
-        efectivo: { nombre_efectivo: '', ci_efectivo: '' },
-        transferencia: {
-          nombre_transferencia: '',
-          ci_transferencia: '',
-          entidad_bancaria: '',
-          tipo_cuenta: '',
-          numero_cuenta: '',
-        },
-        cheque: { nombre_cheque: '', ci_cheque: '' },
-        otros: { nombre_otros: '', ci_otros: '' },
+      efectivo: { nombre_efectivo: '', ci_efectivo: '' },
+      transferencia: {
+        nombre_transferencia: '',
+        ci_transferencia: '',
+        entidad_bancaria: '',
+        tipo_cuenta: '',
+        numero_cuenta: '',
       },
+      cheque: { nombre_cheque: '', ci_cheque: '' },
+      otros: { nombre_otros: '', ci_otros: '' },
     }),
-  },
-  isEdicion: {
-    type: Boolean,
-    default: false,
   },
 })
 
-const emit = defineEmits(['update:modelValue'])
+// ─── Emits ──────────────────────────────────────────────
+const emit = defineEmits([
+  'update:lugar',
+  'update:fecha',
+  'update:formaPago',
+  'update:datosFormaPago',
+])
 
+// ─── Estado ─────────────────────────────────────────────
 const lugaresSelect = ref([])
 const formaPagoSelect = ref([])
+const beneficiarios = ref([])
+
 const ciSearchEfectivo = ref(null)
 const ciSearchTransferencia = ref(null)
 const ciSearchCheque = ref(null)
@@ -317,8 +317,6 @@ const searchTransferencia = ref('')
 const searchCheque = ref('')
 const searchLugar = ref('')
 const errorValidacion = ref('')
-
-// Bandera de validación
 const validacionCompleta = ref(false)
 
 const datosFormaPagoDefault = {
@@ -334,6 +332,92 @@ const datosFormaPagoDefault = {
   otros: { nombre_otros: '', ci_otros: '' },
 }
 
+// ─── Estados locales sincronizados ──────────────────────
+const localLugar = ref(props.lugar)
+const localFecha = ref(props.fecha || getCurrentDate())
+const localFormaPago = ref(props.formaPago)
+const localDatosFormaPago = ref({ ...datosFormaPagoDefault, ...props.datosFormaPago })
+
+// ─── Sincronización props → local ───────────────────────
+watch(
+  () => props.lugar,
+  (v) => {
+    localLugar.value = v
+  },
+)
+watch(
+  () => props.fecha,
+  (v) => {
+    localFecha.value = v || getCurrentDate()
+  },
+)
+watch(
+  () => props.formaPago,
+  (v) => {
+    localFormaPago.value = v
+  },
+)
+watch(
+  () => props.datosFormaPago,
+  (v) => {
+    localDatosFormaPago.value = { ...datosFormaPagoDefault, ...v }
+  },
+  { deep: true },
+)
+
+// ─── Emitir cambios al padre ────────────────────────────
+watch(localLugar, (v) => emit('update:lugar', v))
+watch(localFecha, (v) => emit('update:fecha', v))
+watch(localFormaPago, (v) => emit('update:formaPago', v))
+watch(localDatosFormaPago, (v) => emit('update:datosFormaPago', v), { deep: true })
+
+// ─── Computed ───────────────────────────────────────────
+const lugaresFiltrados = computed(() => {
+  if (!searchLugar.value) return []
+  const filtrados = lugaresSelect.value.filter((l) =>
+    l.toLowerCase().includes(searchLugar.value.toLowerCase()),
+  )
+  return filtrados.length === 0 && searchLugar.value ? [searchLugar.value] : filtrados
+})
+
+const filteredBeneficiariosEfectivo = computed(() => {
+  if (!searchEfectivo.value) return []
+  return beneficiarios.value.filter(
+    (b) =>
+      b.ci.includes(searchEfectivo.value) ||
+      b.nombre.toLowerCase().includes(searchEfectivo.value.toLowerCase()),
+  )
+})
+
+const filteredBeneficiariosTransferencia = computed(() => {
+  if (!searchTransferencia.value) return []
+  return beneficiarios.value.filter(
+    (b) =>
+      b.ci.includes(searchTransferencia.value) ||
+      b.nombre.toLowerCase().includes(searchTransferencia.value.toLowerCase()),
+  )
+})
+
+const filteredBeneficiariosCheque = computed(() => {
+  if (!searchCheque.value) return []
+  return beneficiarios.value.filter(
+    (b) =>
+      b.ci.includes(searchCheque.value) ||
+      b.nombre.toLowerCase().includes(searchCheque.value.toLowerCase()),
+  )
+})
+
+const mostrarFormaEfectivo = computed(
+  () => localFormaPago.value === 1 || localFormaPago.value === '1',
+)
+const mostrarFormaTransferencia = computed(
+  () => localFormaPago.value === 2 || localFormaPago.value === '2',
+)
+const mostrarFormaCheque = computed(
+  () => localFormaPago.value === 3 || localFormaPago.value === '3',
+)
+
+// ─── Validación de estructura de datosFormaPago ─────────
 const validarDatosFormaPago = (datos) => {
   const errores = []
   if (!datos || typeof datos !== 'object') return 'datosFormaPago debe ser un objeto'
@@ -382,32 +466,29 @@ const validarDatosFormaPago = (datos) => {
   return errores.length > 0 ? errores.join('; ') : ''
 }
 
-const soloNumeros = (e) => {
-  const char = String.fromCharCode(e.charCode || e.keyCode)
-  if (!/^\d$/.test(char)) {
-    e.preventDefault()
-  }
-}
+// Validar al recibir datosFormaPago
+watch(
+  () => props.datosFormaPago,
+  (nuevosDatos) => {
+    if (nuevosDatos && Object.keys(nuevosDatos).length > 0) {
+      const error = validarDatosFormaPago(nuevosDatos)
+      errorValidacion.value = error || ''
+    }
+  },
+  { immediate: true, deep: true },
+)
 
-// Inicializar desde modelValue
-const informacionAdicionalDatos = ref({
-  lugar: props.modelValue?.lugar || '',
-  fecha: props.modelValue?.fecha || getCurrentDate(),
-  formaPago: props.modelValue?.formaPago || '',
-  datosFormaPago: props.modelValue?.datosFormaPago || { ...datosFormaPagoDefault },
-})
-
-// Validar que todos los campos estén completos
+// ─── Validación de campos completos ─────────────────────
 const validarCamposCompletos = () => {
-  if (!informacionAdicionalDatos.value.lugar) return false
-  if (!informacionAdicionalDatos.value.formaPago) return false
+  if (!localLugar.value) return false
+  if (!localFormaPago.value) return false
 
-  const fp = informacionAdicionalDatos.value.formaPago
-  const datos = informacionAdicionalDatos.value.datosFormaPago
+  const fp = localFormaPago.value
+  const datos = localDatosFormaPago.value
 
-  if (fp === 1) {
+  if (fp === 1 || fp === '1') {
     if (!datos.efectivo.ci_efectivo || !datos.efectivo.nombre_efectivo) return false
-  } else if (fp === 2) {
+  } else if (fp === 2 || fp === '2') {
     if (
       !datos.transferencia.ci_transferencia ||
       !datos.transferencia.nombre_transferencia ||
@@ -416,165 +497,92 @@ const validarCamposCompletos = () => {
       !datos.transferencia.numero_cuenta
     )
       return false
-  } else if (fp === 3) {
+  } else if (fp === 3 || fp === '3') {
     if (!datos.cheque.ci_cheque || !datos.cheque.nombre_cheque) return false
   }
-
   return true
 }
 
-// Actualizar bandera cuando cambian los datos
 watch(
-  informacionAdicionalDatos,
+  [localLugar, localFormaPago, localDatosFormaPago],
   () => {
     validacionCompleta.value = validarCamposCompletos()
   },
   { deep: true },
 )
 
-// Validar al montar si es edición
-watch(
-  () => props.modelValue?.datosFormaPago,
-  (nuevosDatos) => {
-    if (props.isEdicion && nuevosDatos && Object.keys(nuevosDatos).length > 0) {
-      const error = validarDatosFormaPago(nuevosDatos)
-      if (error) {
-        errorValidacion.value = error
-      } else {
-        errorValidacion.value = ''
-      }
-    }
-  },
-  { immediate: true },
-)
-
-// Emitir cambios al padre
-watch(
-  informacionAdicionalDatos,
-  (val) => {
-    emit('update:modelValue', { ...val })
-  },
-  { deep: true },
-)
-
-const lugaresFiltrados = computed(() => {
-  if (!searchLugar.value) return []
-  const filtrados = lugaresSelect.value.filter((l) =>
-    l.toLowerCase().includes(searchLugar.value.toLowerCase()),
-  )
-  return filtrados.length === 0 && searchLugar.value ? [searchLugar.value] : filtrados
-})
-
-const beneficiarios = ref([])
-
-const filteredBeneficiariosEfectivo = computed(() => {
-  if (!searchEfectivo.value) return []
-  return beneficiarios.value.filter(
-    (b) =>
-      b.ci.includes(searchEfectivo.value) ||
-      b.nombre.toLowerCase().includes(searchEfectivo.value.toLowerCase()),
-  )
-})
-
-const filteredBeneficiariosTransferencia = computed(() => {
-  if (!searchTransferencia.value) return []
-  return beneficiarios.value.filter(
-    (b) =>
-      b.ci.includes(searchTransferencia.value) ||
-      b.nombre.toLowerCase().includes(searchTransferencia.value.toLowerCase()),
-  )
-})
-
-const filteredBeneficiariosCheque = computed(() => {
-  if (!searchCheque.value) return []
-  return beneficiarios.value.filter(
-    (b) =>
-      b.ci.includes(searchCheque.value) ||
-      b.nombre.toLowerCase().includes(searchCheque.value.toLowerCase()),
-  )
-})
-
-const mostrarFormaEfectivo = computed(() => informacionAdicionalDatos.value.formaPago === 1)
-const mostrarFormaTransferencia = computed(() => informacionAdicionalDatos.value.formaPago === 2)
-const mostrarFormaCheque = computed(() => informacionAdicionalDatos.value.formaPago === 3)
-
+// ─── Handlers ───────────────────────────────────────────
 const handleFormaPagoChange = () => {
-  informacionAdicionalDatos.value.datosFormaPago.efectivo = { nombre_efectivo: '', ci_efectivo: '' }
-  informacionAdicionalDatos.value.datosFormaPago.transferencia = {
+  localDatosFormaPago.value.efectivo = { nombre_efectivo: '', ci_efectivo: '' }
+  localDatosFormaPago.value.transferencia = {
     nombre_transferencia: '',
     ci_transferencia: '',
     entidad_bancaria: '',
     tipo_cuenta: '',
     numero_cuenta: '',
   }
-  informacionAdicionalDatos.value.datosFormaPago.cheque = { nombre_cheque: '', ci_cheque: '' }
+  localDatosFormaPago.value.cheque = { nombre_cheque: '', ci_cheque: '' }
   ciSearchEfectivo.value = null
   ciSearchTransferencia.value = null
   ciSearchCheque.value = null
-  searchEfectivo.value = ''
-  searchTransferencia.value = ''
-  searchCheque.value = ''
 }
 
 const handleCiSelectEfectivo = (value) => {
   if (!value) {
-    informacionAdicionalDatos.value.datosFormaPago.efectivo.ci_efectivo = ''
-    informacionAdicionalDatos.value.datosFormaPago.efectivo.nombre_efectivo = ''
-    searchEfectivo.value = ''
+    localDatosFormaPago.value.efectivo = { nombre_efectivo: '', ci_efectivo: '' }
     return
   }
   if (typeof value === 'object' && value.ci) {
-    informacionAdicionalDatos.value.datosFormaPago.efectivo.ci_efectivo = value.ci
-    informacionAdicionalDatos.value.datosFormaPago.efectivo.nombre_efectivo = value.nombre
-    searchEfectivo.value = value.ci
+    localDatosFormaPago.value.efectivo.ci_efectivo = value.ci
+    localDatosFormaPago.value.efectivo.nombre_efectivo = value.nombre
   } else if (typeof value === 'string') {
-    informacionAdicionalDatos.value.datosFormaPago.efectivo.ci_efectivo = value
-    searchEfectivo.value = value
+    localDatosFormaPago.value.efectivo.ci_efectivo = value
   }
 }
 
 const handleCiSelectTransferencia = (value) => {
   if (!value) {
-    informacionAdicionalDatos.value.datosFormaPago.transferencia = {
+    localDatosFormaPago.value.transferencia = {
       nombre_transferencia: '',
       ci_transferencia: '',
       entidad_bancaria: '',
       tipo_cuenta: '',
       numero_cuenta: '',
     }
-    searchTransferencia.value = ''
     return
   }
   if (typeof value === 'object' && value.ci) {
-    informacionAdicionalDatos.value.datosFormaPago.transferencia.ci_transferencia = value.ci
-    informacionAdicionalDatos.value.datosFormaPago.transferencia.nombre_transferencia = value.nombre
-    informacionAdicionalDatos.value.datosFormaPago.transferencia.entidad_bancaria = value.banco
-    informacionAdicionalDatos.value.datosFormaPago.transferencia.tipo_cuenta = value.tipo_cuenta
-    informacionAdicionalDatos.value.datosFormaPago.transferencia.numero_cuenta = value.numero_cuenta
-    searchTransferencia.value = value.ci
+    localDatosFormaPago.value.transferencia = {
+      ci_transferencia: value.ci,
+      nombre_transferencia: value.nombre,
+      entidad_bancaria: value.banco,
+      tipo_cuenta: value.tipo_cuenta,
+      numero_cuenta: value.numero_cuenta,
+    }
   } else if (typeof value === 'string') {
-    informacionAdicionalDatos.value.datosFormaPago.transferencia.ci_transferencia = value
-    searchTransferencia.value = value
+    localDatosFormaPago.value.transferencia.ci_transferencia = value
   }
 }
 
 const handleCiSelectCheque = (value) => {
   if (!value) {
-    informacionAdicionalDatos.value.datosFormaPago.cheque.ci_cheque = ''
-    informacionAdicionalDatos.value.datosFormaPago.cheque.nombre_cheque = ''
-    searchCheque.value = ''
+    localDatosFormaPago.value.cheque = { nombre_cheque: '', ci_cheque: '' }
     return
   }
   if (typeof value === 'object' && value.ci) {
-    informacionAdicionalDatos.value.datosFormaPago.cheque.ci_cheque = value.ci
-    informacionAdicionalDatos.value.datosFormaPago.cheque.nombre_cheque = value.nombre
-    searchCheque.value = value.ci
+    localDatosFormaPago.value.cheque.ci_cheque = value.ci
+    localDatosFormaPago.value.cheque.nombre_cheque = value.nombre
   } else if (typeof value === 'string') {
-    informacionAdicionalDatos.value.datosFormaPago.cheque.ci_cheque = value
-    searchCheque.value = value
+    localDatosFormaPago.value.cheque.ci_cheque = value
   }
 }
 
+const soloNumeros = (e) => {
+  const char = String.fromCharCode(e.charCode || e.keyCode)
+  if (!/^\d$/.test(char)) e.preventDefault()
+}
+
+// ─── Utilidades ─────────────────────────────────────────
 function getCurrentDate() {
   const today = new Date()
   const year = today.getFullYear()
@@ -583,70 +591,47 @@ function getCurrentDate() {
   return `${year}-${month}-${day}`
 }
 
+// ─── Exponer al padre ───────────────────────────────────
 defineExpose({
-  informacionAdicionalDatos,
+  localLugar,
+  localFecha,
+  localFormaPago,
+  localDatosFormaPago,
   validacionCompleta,
   resetForm: () => {
-    informacionAdicionalDatos.value = {
-      lugar: '',
-      fecha: getCurrentDate(),
-      formaPago: '',
-      datosFormaPago: { ...datosFormaPagoDefault },
-    }
+    localLugar.value = ''
+    localFecha.value = getCurrentDate()
+    localFormaPago.value = ''
+    localDatosFormaPago.value = { ...datosFormaPagoDefault }
     ciSearchEfectivo.value = null
     ciSearchTransferencia.value = null
     ciSearchCheque.value = null
     searchLugar.value = ''
-    searchEfectivo.value = ''
-    searchTransferencia.value = ''
-    searchCheque.value = ''
     validacionCompleta.value = false
+    errorValidacion.value = ''
   },
 })
-//Cargar Informacion
-const loadingDatos = ref(false)
+
+// ─── Carga inicial ──────────────────────────────────────
 const cargarInformacion = async () => {
-  loadingDatos.value = true
   try {
     const [benef, lugar] = await Promise.all([
       formulariosHelpersService.cargarBeneficiarios(),
       formulariosHelpersService.cargarLugares(),
     ])
-
     beneficiarios.value = benef.todos
     lugaresSelect.value = lugar.lugares_unicos
   } catch (error) {
     console.error('Error al cargar informacion', error)
-  } finally {
-    loadingDatos.value = false
   }
 }
 
 onMounted(async () => {
-  // lugaresSelect.value = ['La Paz', 'Santa Cruz', 'Cochabamba', 'Paris', 'Alemania']
   formaPagoSelect.value = [
     { id: 1, codigo: 'EFEC', formaPago: 'Efectivo' },
     { id: 2, codigo: 'TB', formaPago: 'Transferencia Bancaria' },
     { id: 3, codigo: 'CHE', formaPago: 'Cheque' },
   ]
   await cargarInformacion()
-
-  if (props.isEdicion && props.modelValue?.lugar) {
-    searchLugar.value = props.modelValue.lugar
-  }
-
-  if (props.isEdicion) {
-    const ci = props.modelValue?.datosFormaPago
-    if (props.modelValue?.formaPago === 1 && ci?.efectivo?.ci_efectivo) {
-      ciSearchEfectivo.value = ci.efectivo.ci_efectivo
-      searchEfectivo.value = ci.efectivo.ci_efectivo
-    } else if (props.modelValue?.formaPago === 2 && ci?.transferencia?.ci_transferencia) {
-      ciSearchTransferencia.value = ci.transferencia.ci_transferencia
-      searchTransferencia.value = ci.transferencia.ci_transferencia
-    } else if (props.modelValue?.formaPago === 3 && ci?.cheque?.ci_cheque) {
-      ciSearchCheque.value = ci.cheque.ci_cheque
-      searchCheque.value = ci.cheque.ci_cheque
-    }
-  }
 })
 </script>

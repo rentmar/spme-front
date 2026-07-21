@@ -476,7 +476,7 @@
   <!--Dialogo para guardar el formulario-->
   <DialogoGuardarFormulario
     ref="dialogoGuardarRef"
-    :titulo="'Solicitud de Fondos'"
+    :titulo="'Solicitud de Viaje'"
     :datos="datosResumen"
     @confirm="confirmarGuardarDatosForm"
     @close="cerrarDialogoGuardarForm"
@@ -484,7 +484,7 @@
   <!--Dialogo para guardar el formulario y enviar a revision -->
   <DialogoGuardarFormularioValidador
     ref="dialogoRevisionRef"
-    titulo="Solicitud de Viajes"
+    titulo="Solicitud de Viaje"
     :datos="datosResumen"
     @confirm="confirmarEnvioRevision"
     @close="cerrarDialogoRevision"

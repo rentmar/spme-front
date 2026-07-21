@@ -14,7 +14,7 @@
           size="64"
           width="6"
         ></v-progress-circular>
-        <p class="mt-4 text-h6">Cargando formulario de solicitud...</p>
+        <p class="mt-4 text-h6">Cargando formulario de reposicion...</p>
       </div>
     </v-overlay>
 
@@ -638,6 +638,7 @@
   ></DialogoGuardarFormularioValidador>
   <!--Dialogo de confirmacion para salir -->
   <ConfirmDialog></ConfirmDialog>
+  {{ formData.fecha_ejecucion }}
 </template>
 
 <script setup>
@@ -1871,9 +1872,9 @@ const confirmarGuardarDatosForm = async () => {
       lugar_solicitud: lugar.value,
       fecha_solicitud: formData.value.fecha_solicitud,
       monto_solicitado: totalMontoSolicitado.value,
-      descripcion_reposicion: formData.value.descripcion_actividad,
-      objetivo_reposicion: formData.value.objetivo_actividad,
-      fecha_donde_se_realizo_actividad: formData.value.fecha_ejecucion,
+      descripcion_actividad: formData.value.descripcion_actividad,
+      objetivo_actividad: formData.value.objetivo_actividad,
+      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
       validacion_responsable: false,
       id_responsable: usuario.value.id,
       validacion_coordinador: false,
@@ -1939,9 +1940,9 @@ const confirmarEnvioRevision = async (datosValidadores) => {
       lugar_solicitud: lugar.value,
       fecha_solicitud: formData.value.fecha_solicitud,
       monto_solicitado: totalMontoSolicitado.value,
-      descripcion_reposicion: formData.value.descripcion_actividad,
-      objetivo_reposicion: formData.value.objetivo_actividad,
-      fecha_donde_se_realizo_actividad: formData.value.fecha_ejecucion,
+      descripcion_actividad: formData.value.descripcion_actividad,
+      objetivo_actividad: formData.value.objetivo_actividad,
+      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
       validacion_responsable: false,
       id_responsable: usuario.value.id,
       validacion_coordinador: false,
@@ -1949,6 +1950,7 @@ const confirmarEnvioRevision = async (datosValidadores) => {
       id_usuario: formData.value.id_usuario,
       id_actividad: formData.value.id_actividad,
       id_tarea: formData.value.id_tarea || null,
+      datos_forma_pago: datosDeLaFormaPago.value,
     }
 
     console.log('PAYLOAD:', payload)

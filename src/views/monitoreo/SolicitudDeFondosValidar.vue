@@ -478,6 +478,24 @@
 
                 <v-divider class="my-4"></v-divider>
 
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Informacion Adicional
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <InformacionAdicionalEdicion
+                        ref="infoRef"
+                        :lugar="formData.lugar_solicitud"
+                        :fecha="formData.fecha_solicitud"
+                        :forma-pago="formData.forma_pago"
+                        :datos-forma-pago="formData.datos_forma_pago"
+                      ></InformacionAdicionalEdicion>
+                    </v-col>
+                  </v-row>
+                </div>
+
                 <!-- Sección 5: Firmas -->
                 <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
@@ -653,6 +671,7 @@ import { useNotificaciones } from '@/modules/notificacion/composables/useNotific
 //Componente Validacion
 import EstadoValidacionSolicitudFondos from '@/modules/formularios/components/validadores/componenteEstadoVotacion/EstadoValidacionSolicitudFondos.vue'
 import ValidacionRedactorSolFondos from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/ValidacionRedactorSolFondos.vue'
+import InformacionAdicionalEdicion from '@/modules/formularios/components/vinculacion/InformacionAdicionalEdicion.vue'
 //Iniciar el estore
 import { useSolicitudFondosStore } from '@/modules/formularios/store/useSolicitudDeFondosStore'
 import RevisorSolicitudFondos from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudFondos.vue'
