@@ -513,6 +513,8 @@ import DialogoGuardarFormularioValidador from '@/modules/formularios/barraHerram
 import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { useValidadoresSolViajes } from '@/modules/formularios/composables/useValidadoresSolViajes'
+
 /******* Computed para ligar la informacion al componente InformacionAdicional ***********************************************************************/
 
 //Referencia al componente Informacion adicional
@@ -541,6 +543,7 @@ const datosDeLaFormaPago = computed(() => {
 const { enviarMensajeAutomatico } = useNotificaciones()
 const { successMsg, errorMsg, warningMsg } = useSnackbar()
 const { openConfirmDialog } = useConfirmDialog()
+const { asignarValidadores } = useValidadoresSolViajes()
 
 //Routes
 const router = useRouter()
@@ -1392,8 +1395,74 @@ const cerrarDialogoGuardarForm = async () => {
 const dialogoRevisionRef = ref(null)
 //FUncion para enviar al rest api, guardar form mas validadores - endpoint pendiente
 const confirmarEnvioRevision = async (datosValidadores) => {
-  alert('Enviar al rest api')
-  console.log('VALIDADORES: ', datosValidadores)
+  // alert('Enviar al rest api')
+  // console.log('VALIDADORES: ', datosValidadores)
+  try {
+    dialogoGuardarRef.value?.setGuardando(true)
+
+    const payload = {
+      evento: formData.value.evento,
+      fecha_evento: formData.value.fecha_evento,
+      lugar_evento: formData.value.lugar_evento,
+      instituciones_participantes: formData.value.instituciones_participantes,
+      institucion_queinvita: formData.value.institucion_queinvita,
+      quien_cubregastos: formData.value.quien_cubregastos,
+      fondos_unitas: formData.value.fondos_unitas,
+      justificacion_asistencia: formData.value.justificacion_asistencia,
+      tareas_previas: formData.value.tareas_previas,
+      id_actividad: idActividad || 0,
+      id_tarea: idTarea || null,
+      id_usuario: usuario.value.id || 0,
+      monto_solicitado: totalMontoSolicitado.value,
+      detalle_destino_fondos: {
+        items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida: gasto.partida,
+          concepto: gasto.descripcion_gasto,
+          monto: Number(gasto.monto),
+        })),
+      },
+      forma_pago: idFormaPago.value,
+      lugar_solicitud: lugar.value,
+      fecha_solicitud: formData.value.fecha_solicitud,
+      datos_forma_pago: datosDeLaFormaPago.value,
+      validacion_responsable: false,
+      id_responsable: usuario.value.id,
+      validacion_coordinador: false,
+      id_coordinador: usuario.value.id,
+    }
+
+    console.log('PAYLOAD:', payload)
+
+    const response = await fetch(baseurl + 'monitoreo_api/crearSolicitudViaje/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.mensaje || errorData.error || JSON.stringify(errorData))
+    }
+
+    //Enviar notificaciones email
+    const data = await response.json()
+    numeroFormularioSF.value = data.numero_formulario
+    const solicitud_id = data.id
+    const revisores = datosValidadores.validadoresIds
+    //Asignar validadores
+    await asignarValidadores(solicitud_id, revisores)
+
+    exportToExcel()
+    resetForm()
+
+    dialogoGuardarRef.value?.cerrar()
+    successMsg('Formulario guardado exitosamente.')
+    router.push('/pei/listaactividades?showButton=1')
+  } catch (error) {
+    console.error('Error al guardar:', error)
+    errorMsg(`Error al guardar: ${error.message}`)
+    dialogoGuardarRef.value?.setGuardando(false)
+  }
 }
 const cerrarDialogoRevision = async () => {
   dialogoRevisionRef.value?.cerrar()

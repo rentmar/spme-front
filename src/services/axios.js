@@ -132,6 +132,16 @@ const apiRepPei = axios.create({
   },
 })
 
+//Instancia para el sistema de correo electronico
+const apiEmail = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_EMAIL,
+  withCredentials: false,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
 // Interceptor para agregar token SOLO a apiValid
 apiValid.interceptors.request.use(
   (config) => {
@@ -148,6 +158,20 @@ apiValid.interceptors.request.use(
 
 //INterceptores para agregar token a api
 api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('access_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
+
+//Interceptor para agregar token a apiMail
+apiEmail.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token')
     if (token) {
@@ -178,6 +202,7 @@ apiFf.interceptors.response.use((response) => response, errorInterceptor)
 apiPrint.interceptors.response.use((response) => response, errorInterceptor)
 apiValid.interceptors.response.use((response) => response, errorInterceptor)
 apiRepPei.interceptors.response.use((response) => response, errorInterceptor)
+apiEmail.interceptors.response.use((response) => response, errorInterceptor)
 // Interceptor para manejar errores globales
 // api.interceptors.response.use(
 //   (response) => response,
@@ -200,4 +225,5 @@ export {
   apiPrint,
   apiValid,
   apiRepPei,
+  apiEmail,
 }

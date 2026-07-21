@@ -361,7 +361,7 @@
 
                   <!-- Botón Ir a la URL -->
                   <v-btn
-                    :to="mensajeSeleccionado?.accion_url || '#'"
+                    :href="mensajeSeleccionado?.accion_url || '#'"
                     :color="getBotonColor(mensajeSeleccionado?.metadata?.tipo)"
                     variant="elevated"
                     size="small"

@@ -640,6 +640,7 @@ import InformacionAdicional from '@/modules/formularios/components/InformacionAd
 //Composables
 import { useValidadoresSolFondos } from '@/modules/formularios/composables/useValidadoresSolFondos'
 import BarraHerramientasFormulario from '@/modules/formularios/barraHerramientas/BarraHerramientasFormulario.vue'
+import { useNotificacionEmail } from '@/modules/notificacionEmail/composables/useNotificacionEmail'
 //Cuadro de dialogo para guardar Formulario
 import DialogoGuardarFormulario from '@/modules/formularios/barraHerramientas/DialogoGuardarFormulario.vue'
 import DialogoGuardarFormularioValidador from '@/modules/formularios/barraHerramientas/DialogoGuardarFormularioValidador.vue'
@@ -677,6 +678,8 @@ const { openConfirmDialog } = useConfirmDialog()
 /*****FIN COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
 //Inicar Composable
 const { successMsg, errorMsg, warningMsg } = useSnackbar()
+const { notificarRevision } = useNotificacionEmail()
+const { asignarValidadores } = useValidadoresSolFondos()
 //Routes
 const router = useRouter()
 const route = useRoute()
@@ -1703,8 +1706,73 @@ const cerrarDialogoGuardarForm = async () => {
 const dialogoRevisionRef = ref(null)
 //FUncion para enviar al rest api, guardar form mas validadores - endpoint pendiente
 const confirmarEnvioRevision = async (datosValidadores) => {
-  alert('Enviar al rest api')
-  console.log('VALIDADORES: ', datosValidadores)
+  // alert('Enviar al rest api')
+  // console.log('VALIDADORES: ', datosValidadores)
+  try {
+    //Activar carga
+    dialogoGuardarRef.value?.setGuardando(true)
+    const payload = {
+      // detalle_destino_fondos should be an object, not a stringified JSON
+      detalle_destino_fondos: {
+        items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida_sf: gasto.partida, // Changed from 'partida' to 'partida_sf'
+          fuente: gasto.fuente,
+          concepto: gasto.descripcion_gasto,
+          monto: Number(gasto.monto),
+        })),
+      },
+      // forma_pago: formData.value.forma_pago,
+      forma_pago: idFormaPago.value, //Captura el computed del componente <InformacionAdicional>
+      // lugar_solicitud: formData.value.lugar_solicitud,
+      lugar_solicitud: lugar.value, //Captura el computed del componente <InformacionAdicional>
+      fecha_solicitud: formData.value.fecha_solicitud,
+      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
+      monto_solicitado: totalMontoSolicitado.value,
+      validacion_responsable: formData.value.validacion_contador,
+      contador_id: formData.value.id_usuario,
+      validacion_coordinador: formData.value.validacion_coordinador,
+      id_coordinador: formData.value.id_usuario,
+      id_usuario: formData.value.id_usuario,
+      id_actividad: formData.value.id_actividad,
+      descripcion_actividad: formData.value.descripcion_actividad,
+      objetivo_actividad: formData.value.objetivo_actividad,
+      // Solo incluir id_tarea si tiene un valor válido (cuando es una solicitud para tarea)
+      ...(formData.value.id_tarea &&
+        formData.value.id_tarea > 0 && { id_tarea: formData.value.id_tarea }),
+      datos_forma_pago: datosDeLaFormaPago.value,
+      bloquear_icono_sf: true,
+      //codigo_actividad: formData.value.codigo_actividad,
+    }
+    console.log('PAYLOAD:', payload)
+    const response = await fetch(baseurl + 'api/monitoreo/crear-solicitud-fondos/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
+    //Enviar notificaciones email
+    const datos = await response.json()
+    // console.log('Datos creados:', datos.id)
+    const solicitud_id = datos.id
+    const revisores = datosValidadores.validadoresIds
+    //Asignar validadores
+    await asignarValidadores(solicitud_id, revisores)
+
+    // Éxito: cerrar diálogo, mostrar mensaje, redirigir
+    exportToExcel()
+    resetForm()
+
+    dialogoGuardarRef.value?.cerrar()
+    successMsg('Formulario guardado exitosamente.')
+    router.push('/pei/listaactividades?showButton=1')
+  } catch (error) {
+    console.error('Error al guardar:', error)
+    errorMsg('Error al guardar: ${error.message}')
+    dialogoGuardarRef.value?.setGuardando(false)
+  }
 }
 const cerrarDialogoRevision = async () => {
   dialogoRevisionRef.value?.cerrar()
