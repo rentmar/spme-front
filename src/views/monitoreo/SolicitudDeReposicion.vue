@@ -631,7 +631,7 @@
   <!--Dialogo para guardar el formulario y enviar a revision -->
   <DialogoGuardarFormularioValidador
     ref="dialogoRevisionRef"
-    titulo="Solicitud de Fondos"
+    titulo="Solicitud de Reposicion"
     :datos="datosResumen"
     @confirm="confirmarEnvioRevision"
     @close="cerrarDialogoRevision"
@@ -658,6 +658,8 @@ import DialogoGuardarFormularioValidador from '@/modules/formularios/barraHerram
 import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { validadoresSolReposicionServicio } from '@/modules/formularios/services/validadoresSolReposicionService'
+import { useValidadoresSolReposicion } from '@/modules/formularios/composables/useValidadoresSolReposicion'
 
 /******* Computed para ligar la informacion al componente InformacionAdicional ***********************************************************************/
 
@@ -687,6 +689,7 @@ const datosDeLaFormaPago = computed(() => {
 const { enviarMensajeAutomatico } = useNotificaciones()
 const { openConfirmDialog } = useConfirmDialog()
 const { successMsg, errorMsg, warningMsg } = useSnackbar()
+const { asignarValidadores } = useValidadoresSolReposicion()
 
 //Routes
 const router = useRouter()
@@ -1878,6 +1881,7 @@ const confirmarGuardarDatosForm = async () => {
       id_usuario: formData.value.id_usuario,
       id_actividad: formData.value.id_actividad,
       id_tarea: formData.value.id_tarea || null,
+      datos_forma_pago: datosDeLaFormaPago.value,
     }
 
     console.log('PAYLOAD:', payload)
@@ -1918,8 +1922,66 @@ const cerrarDialogoGuardarForm = async () => {
 const dialogoRevisionRef = ref(null)
 //FUncion para enviar al rest api, guardar form mas validadores - endpoint pendiente
 const confirmarEnvioRevision = async (datosValidadores) => {
-  alert('Enviar al rest api')
-  console.log('VALIDADORES: ', datosValidadores)
+  // alert('Enviar al rest api')
+  // console.log('VALIDADORES: ', datosValidadores)
+  try {
+    dialogoGuardarRef.value?.setGuardando(true)
+
+    const payload = {
+      detalle_destino_fondos: {
+        items: formData.value.detalle_destino_fondos.map((gasto) => ({
+          partida: gasto.partida,
+          concepto: gasto.descripcion_gasto,
+          monto: Number(gasto.monto),
+        })),
+      },
+      forma_pago: idFormaPago.value,
+      lugar_solicitud: lugar.value,
+      fecha_solicitud: formData.value.fecha_solicitud,
+      monto_solicitado: totalMontoSolicitado.value,
+      descripcion_reposicion: formData.value.descripcion_actividad,
+      objetivo_reposicion: formData.value.objetivo_actividad,
+      fecha_donde_se_realizo_actividad: formData.value.fecha_ejecucion,
+      validacion_responsable: false,
+      id_responsable: usuario.value.id,
+      validacion_coordinador: false,
+      id_coordinador: usuario.value.id,
+      id_usuario: formData.value.id_usuario,
+      id_actividad: formData.value.id_actividad,
+      id_tarea: formData.value.id_tarea || null,
+    }
+
+    console.log('PAYLOAD:', payload)
+
+    const response = await fetch(baseurl + 'monitoreo_api/crearSolicitudReembolso/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.mensaje || errorData.error || JSON.stringify(errorData))
+    }
+
+    //Enviar notificacion email
+    const data = await response.json()
+    const solicitud_id = data.id
+    const revisores = datosValidadores.validadoresIds
+
+    await asignarValidadores(solicitud_id, revisores)
+
+    exportToExcel()
+    resetForm()
+
+    dialogoGuardarRef.value?.cerrar()
+    successMsg('Formulario guardado exitosamente.')
+    router.push('/pei/listaactividades?showButton=1')
+  } catch (error) {
+    console.error('Error al guardar:', error)
+    errorMsg(`Error al guardar: ${error.message}`)
+    dialogoGuardarRef.value?.setGuardando(false)
+  }
 }
 const cerrarDialogoRevision = async () => {
   dialogoRevisionRef.value?.cerrar()
