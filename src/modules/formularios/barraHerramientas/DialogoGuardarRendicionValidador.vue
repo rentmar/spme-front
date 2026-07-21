@@ -117,7 +117,10 @@
             <v-icon size="16" color="primary" class="mr-1">mdi-account-multiple</v-icon>
             Asigne los validadores para revisión:
           </p>
-          <AsignacionRevisoresRendicionForm ref="asignacionRef" v-model="datosValidadores" />
+          <AsignacionRevisoresRendicionForm
+            ref="asignacionRef"
+            @update:model-value="datosValidadores = $event"
+          />
         </div>
       </v-card-text>
 
@@ -170,12 +173,12 @@ const props = defineProps({
 const dialogoVisible = ref(false)
 const guardando = ref(false)
 const asignacionRef = ref(null)
-const datosValidadores = ref(null)
+const datosValidadores = ref({ validacionCompleta: false, validadoresIds: [] })
 
 const abrir = () => {
   dialogoVisible.value = true
   guardando.value = false
-  datosValidadores.value = null
+  datosValidadores.value = { validacionCompleta: false, validadoresIds: [] }
 }
 
 const cancelar = () => {
@@ -186,9 +189,9 @@ const cancelar = () => {
 }
 
 const confirmar = () => {
+  if (!datosValidadores.value?.validacionCompleta) return // doble seguridad
   emit('confirm', datosValidadores.value)
 }
-
 const setGuardando = (valor) => {
   guardando.value = valor
 }

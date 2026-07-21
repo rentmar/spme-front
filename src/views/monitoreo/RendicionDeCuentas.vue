@@ -623,10 +623,12 @@ import DialogoGuardarRendicion from '@/modules/formularios/barraHerramientas/Dia
 import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import DialogoGuardarRendicionValidador from '@/modules/formularios/barraHerramientas/DialogoGuardarRendicionValidador.vue'
+import { useValidadoresRendCuentas } from '@/modules/formularios/composables/useValidadoresRendicionCuentas'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
 const { openConfirmDialog } = useConfirmDialog()
+const { asignarValidadores } = useValidadoresRendCuentas()
 
 //Inicar composable de mensaje cortos
 const { successMsg, errorMsg, warningMsg } = useSnackbar()
@@ -2032,9 +2034,9 @@ const confirmarGuardarDatosForm = async () => {
       validacionContador: Boolean(formData.value.validacion_contador),
       validacionAdministrador: Boolean(formData.value.validacion_administrador),
       idadministrador: Number(formData.value.idadministrador),
-      idcontador: Number(formData.value.idcontador),
-      idcoordinador: Number(formData.value.idcoordinador),
-      idresponsable: Number(formData.value.idresponsable),
+      idcontador: Number(formData.value.id_usuario),
+      idcoordinador: Number(formData.value.id_usuario),
+      idresponsable: Number(formData.value.id_usuario),
       idusuarioLogeado: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
       idActividad: idActividad ? parseInt(idActividad) : null,
       idTarea: idTarea ? parseInt(idTarea) : null,
@@ -2078,8 +2080,75 @@ const cerrarDialogoGuardarForm = async () => {
 /************************** GUardar Sol de fondos con Validadores *****************************************************/
 const dialogoRevisionRef = ref(null)
 
-const confirmarEnvioRevision = async () => {
-  successMsg('Enviar informacion a la rest api')
+const confirmarEnvioRevision = async (datosValidadores) => {
+  console.log('VALIDADORES: ', datosValidadores)
+  try {
+    dialogoGuardarRef.value?.setGuardando(true)
+    const payload = {
+      numeroFormulario: formDatSF.value.numeroFormulariosf || '',
+      montoAsignado: formData.value.monto_asignado,
+      montoDescargado: Number(totalMontoGastado.value),
+      cpteDiario: formData.value.cpte_diario,
+      fechaDesembolso: formData.value.fecha_desembolso,
+      saldo: Number(saldoPorReembolsar.value),
+      detalleDestinoFondos: formData.value.detalle_destino_fondos.map((gasto) => ({
+        fecha: gasto.fecha || '',
+        partida: gasto.partida || '',
+        fuente: gasto.fuente || '',
+        factura_recibo: gasto.factura_recibo || '',
+        descripcion: gasto.descripcion_gasto || '',
+        monto: Number(gasto.monto) || 0,
+      })),
+      validacionResponsable: Boolean(formData.value.validacion_responsable),
+      validacionCoordinador: Boolean(formData.value.validacion_coordinador),
+      validacionContador: Boolean(formData.value.validacion_contador),
+      validacionAdministrador: Boolean(formData.value.validacion_administrador),
+      idadministrador: Number(formData.value.idadministrador),
+      idcontador: Number(formData.value.id_usuario),
+      idcoordinador: Number(formData.value.id_usuario),
+      idresponsable: Number(formData.value.id_usuario),
+      idusuarioLogeado: formData.value.id_usuario || (usuario.value ? usuario.value.id : null),
+      idActividad: idActividad ? parseInt(idActividad) : null,
+      idTarea: idTarea ? parseInt(idTarea) : null,
+      descripcionActividad: formData.value.descripcion_actividad,
+      lugarActividad: formData.value.lugar_actividad,
+      lugarRendicion: formData.value.lugar_solicitud,
+      fechaActividad: formData.value.fecha_actividad,
+      bloquearIconoRC: true,
+      idSolicitudReembolso: null,
+      idSolicitudViaje: solicitudViajeSeleccionada.value,
+      idSolicitudPagoDirecto: null,
+      idSolicitudFondos: solicitudFondosSeleccionada.value,
+    }
+    console.log('PAYLOAD:', payload)
+    const response = await fetch(baseurl + 'api/monitoreo/crear-rendicion-cuentas/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
+
+    //Enviar notificaciones email
+    const data = await response.json()
+    const solicitud_id = data.id
+    const revisores = datosValidadores.validadoresIds
+    //Asignar validadores
+    await asignarValidadores(solicitud_id, revisores)
+
+    exportToExcel()
+    resetForm()
+
+    dialogoGuardarRef.value?.cerrar()
+    successMsg('Formulario guardado exitosamente.')
+    router.push('/pei/listaactividades?showButton=1')
+  } catch (error) {
+    console.error('Error al guardar:', error)
+    errorMsg('Error al guardar: ${error.message}')
+    dialogoGuardarRef.value?.setGuardando(false)
+  }
 }
 
 const cerrarDialogoRevision = async () => {
