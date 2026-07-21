@@ -638,7 +638,8 @@
   ></DialogoGuardarFormularioValidador>
   <!--Dialogo de confirmacion para salir -->
   <ConfirmDialog></ConfirmDialog>
-  {{ formData.fecha_ejecucion }}
+
+  {{ formData }}
 </template>
 
 <script setup>
@@ -1861,33 +1862,33 @@ const confirmarGuardarDatosForm = async () => {
     dialogoGuardarRef.value?.setGuardando(true)
 
     const payload = {
-      detalle_destino_fondos: {
+      detalleDestinoFondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida: gasto.partida,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
       },
-      forma_pago: idFormaPago.value,
-      lugar_solicitud: lugar.value,
-      fecha_solicitud: formData.value.fecha_solicitud,
-      monto_solicitado: totalMontoSolicitado.value,
+      formaPago: idFormaPago.value,
+      lugarSolicitud: lugar.value,
+      fechaSolicitud: formData.value.fecha_solicitud,
+      montoSolicitado: totalMontoSolicitado.value,
       descripcion_actividad: formData.value.descripcion_actividad,
       objetivo_actividad: formData.value.objetivo_actividad,
-      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
-      validacion_responsable: false,
-      id_responsable: usuario.value.id,
-      validacion_coordinador: false,
-      id_coordinador: usuario.value.id,
-      id_usuario: formData.value.id_usuario,
-      id_actividad: formData.value.id_actividad,
-      id_tarea: formData.value.id_tarea || null,
+      fechaRealizacionActividad: formData.value.fecha_ejecucion,
+      validacionResponsable: false,
+      responsable: usuario.value.id,
+      validacionCoordinador: false,
+      coordinador: usuario.value.id,
+      usuario: formData.value.id_usuario,
+      actividad: formData.value.id_actividad,
+      tarea: formData.value.id_tarea || null,
       datos_forma_pago: datosDeLaFormaPago.value,
     }
 
     console.log('PAYLOAD:', payload)
 
-    const response = await fetch(baseurl + 'monitoreo_api/crearSolicitudReembolso/', {
+    const response = await fetch(baseurl + 'api/solicitud-reembolso-v2/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -1929,33 +1930,33 @@ const confirmarEnvioRevision = async (datosValidadores) => {
     dialogoGuardarRef.value?.setGuardando(true)
 
     const payload = {
-      detalle_destino_fondos: {
+      detalleDestinoFondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida: gasto.partida,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
       },
-      forma_pago: idFormaPago.value,
-      lugar_solicitud: lugar.value,
-      fecha_solicitud: formData.value.fecha_solicitud,
-      monto_solicitado: totalMontoSolicitado.value,
+      formaPago: idFormaPago.value,
+      lugarSolicitud: lugar.value,
+      fechaSolicitud: formData.value.fecha_solicitud,
+      montoSolicitado: totalMontoSolicitado.value,
       descripcion_actividad: formData.value.descripcion_actividad,
       objetivo_actividad: formData.value.objetivo_actividad,
-      fecha_realizacion_actividad: formData.value.fecha_ejecucion,
-      validacion_responsable: false,
-      id_responsable: usuario.value.id,
-      validacion_coordinador: false,
-      id_coordinador: usuario.value.id,
-      id_usuario: formData.value.id_usuario,
-      id_actividad: formData.value.id_actividad,
-      id_tarea: formData.value.id_tarea || null,
+      fechaRealizacionActividad: formData.value.fecha_ejecucion,
+      validacionResponsable: false,
+      responsable: usuario.value.id,
+      validacionCoordinador: false,
+      coordinador: usuario.value.id,
+      usuario: formData.value.id_usuario,
+      actividad: formData.value.id_actividad,
+      tarea: formData.value.id_tarea || null,
       datos_forma_pago: datosDeLaFormaPago.value,
     }
 
     console.log('PAYLOAD:', payload)
 
-    const response = await fetch(baseurl + 'monitoreo_api/crearSolicitudReembolso/', {
+    const response = await fetch(baseurl + 'api/solicitud-reembolso-v2/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
