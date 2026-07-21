@@ -65,6 +65,18 @@ export const solicitudDeFondosServico = {
       throw error
     }
   },
+  //Solicitud de fondos aprobadas por id actividad
+  solFondosPorIdActividadAprobado: async (idactividad) => {
+    try {
+      const respuesta = await api.get(
+        '/solicitudes-fondos/actividad/' + idactividad + '/?estado=aprobado',
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar las sol de fondos de la actividad', error)
+      throw error
+    }
+  },
   /************************ Solicitud de Fondos Tarea *******************************************/
   solFondosPorIdtarea: async (idactividad, idtarea) => {
     try {

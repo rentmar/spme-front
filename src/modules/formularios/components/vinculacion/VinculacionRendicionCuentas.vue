@@ -679,8 +679,14 @@ const loading = ref(false)
 const error = ref(null)
 
 // Computed para obtener datos del store
-const solicitudesFondos = computed(() => solicitudesStore.solicitudesFondosActividad || [])
-const solicitudesViaje = computed(() => solicitudesStore.solicitudesViajeActividad || [])
+const solicitudesFondos = computed(() => {
+  const solicitudes = solicitudesStore.solicitudesFondosActividad || []
+  return solicitudes.filter((s) => s.estado_validacion === 'Aprobado')
+})
+const solicitudesViaje = computed(() => {
+  const solicitudes = solicitudesStore.solicitudesViajeActividad || []
+  return solicitudes.filter((s) => s.estado_validacion === 'Aprobado')
+})
 const rendicionesExistentes = computed(
   () => solicitudesStore.rendicionesCuentasExistentesActividad || [],
 )
