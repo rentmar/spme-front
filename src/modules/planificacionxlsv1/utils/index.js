@@ -9,3 +9,6 @@ export * from './procesamientoDatosExcelUtils'
 
 // Cálculos financieros
 export * from './calculosFinancierosExcelUtils'
+
+//Sistema de registro acciones
+export * from './seguimientoHelper'
