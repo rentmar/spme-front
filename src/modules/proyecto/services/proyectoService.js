@@ -160,6 +160,38 @@ export const proyectoServicios = {
       throw error
     }
   },
+  /* Actividades activas de un proyecto
+  arg idproyecto
+  resp:
+    proyecto
+      -actividad
+        -tarea
+  */
+  obtenerActividadesActivasPorProyectoId: async (idproyecto) => {
+    try {
+      const respuesta = await api.get('/proyectos/' + idproyecto + '/actividades-activas/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al obtener las actividades y tareas del proyecto: ' + idproyecto)
+      throw error
+    }
+  },
+  /* Actividades inactivas de un proyecto
+  arg idproyecto
+  resp:
+    proyecto
+      -actividad
+        -tarea
+  */
+  obtenerActividadesInactivasPorProyectoId: async (idproyecto) => {
+    try {
+      const respuesta = await api.get('/proyectos/' + idproyecto + '/actividades-inactivas/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al obtener las actividades y tareas del proyecto: ' + idproyecto)
+      throw error
+    }
+  },
 }
 
 export const proyectoObjetivos = {
