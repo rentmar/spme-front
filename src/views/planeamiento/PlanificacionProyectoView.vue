@@ -30,7 +30,8 @@
 
     <!-- GRILLA -->
     <div class="excel-wrapper">
-      <PlanificacionProyectoActividadesV3 />
+      <!-- <PlanificacionProyectoActividadesV3 /> -->
+      <PlanificacionProyectoActividadesV4></PlanificacionProyectoActividadesV4>
     </div>
 
     <!-- PIE DEL PROYECTO -->
@@ -47,7 +48,8 @@
 </template>
 
 <script setup>
-import PlanificacionProyectoActividadesV3 from '@/modules/planificacionxls/components/PlanificacionProyectoActividadesV3.vue'
+// import PlanificacionProyectoActividadesV3 from '@/modules/planificacionxls/components/PlanificacionProyectoActividadesV3.vue'
+import PlanificacionProyectoActividadesV4 from '@/modules/planificacionxlsv1/components/PlanificacionProyectoActividadesV4.vue'
 
 const proyecto = {
   codigo: 'PROYPRESS',
