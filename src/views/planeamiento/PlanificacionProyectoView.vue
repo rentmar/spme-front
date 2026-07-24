@@ -89,8 +89,8 @@ const fmt = (n) => (+(n || 0)).toLocaleString('es-BO', { minimumFractionDigits: 
 .proyecto-header {
   flex-shrink: 0;
   padding: 12px 18px;
-  background: linear-gradient(135deg, #5c2d91 0%, #3e1f63 100%);
-  border-bottom: 2px solid #2a1445;
+  background: #37474f;
+  border-bottom: 2px solid #263238;
 }
 
 .proyecto-info {

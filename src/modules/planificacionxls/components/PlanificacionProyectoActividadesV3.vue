@@ -4,15 +4,60 @@
     <!-- TOOLBAR -->
     <header class="excel-header">
       <div class="header-left">
-        <button class="btn">Archivo</button>
-        <button class="btn">Editar</button>
-        <button class="btn">Ver</button>
+        <v-tooltip text="Menú Archivo" location="bottom">
+          <template #activator="{ props }">
+            <button v-bind="props" class="btn">Archivo</button>
+          </template>
+        </v-tooltip>
+        <v-tooltip text="Opciones de edición" location="bottom">
+          <template #activator="{ props }">
+            <button v-bind="props" class="btn">Editar</button>
+          </template>
+        </v-tooltip>
+        <v-tooltip text="Opciones de vista" location="bottom">
+          <template #activator="{ props }">
+            <button v-bind="props" class="btn">Ver</button>
+          </template>
+        </v-tooltip>
         <span class="sep"></span>
-        <button class="btn primary" @click="addRow">+ Nueva Actividad</button>
+        <v-tooltip text="Agregar nueva actividad a la planificación" location="bottom">
+          <template #activator="{ props }">
+            <button v-bind="props" class="btn primary" @click="addRow">+ Nueva Actividad</button>
+          </template>
+        </v-tooltip>
       </div>
       <div class="header-right">
-        <button class="btn">💾 Guardar</button>
-        <button class="btn">📤 Exportar</button>
+        <v-tooltip text="Mostrar tareas de la actividad seleccionada" location="bottom">
+          <template #activator="{ props }">
+            <v-btn v-bind="props" variant="text" size="small" @click="openAside('tareas')">
+              📋 Tareas
+            </v-btn>
+          </template>
+        </v-tooltip>
+        <v-tooltip text="Mostrar estructura del proyecto" location="bottom">
+          <template #activator="{ props }">
+            <v-btn v-bind="props" variant="text" size="small" @click="openAside('estructura')">
+              🌳 Estructura
+            </v-btn>
+          </template>
+        </v-tooltip>
+        <v-tooltip text="Mostrar detalle de presupuesto" location="bottom">
+          <template #activator="{ props }">
+            <v-btn v-bind="props" variant="text" size="small" @click="openAside('presupuesto')">
+              💰 Presupuesto
+            </v-btn>
+          </template>
+        </v-tooltip>
+        <v-tooltip text="Guardar cambios en el servidor" location="bottom">
+          <template #activator="{ props }">
+            <button v-bind="props" class="btn">💾 Guardar</button>
+          </template>
+        </v-tooltip>
+        <v-tooltip text="Exportar a archivo Excel" location="bottom">
+          <template #activator="{ props }">
+            <button v-bind="props" class="btn">📤 Exportar</button>
+          </template>
+        </v-tooltip>
       </div>
     </header>
 
@@ -22,23 +67,230 @@
       <span class="cell-value">{{ selectedValue || 'Seleccione una celda' }}</span>
     </div>
 
-    <!-- GRILLA -->
-    <main class="grid-area" ref="gridRef">
-      <HotTable
-        ref="hotTable"
-        :data="data"
-        :columns="columns"
-        :colHeaders="true"
-        :rowHeaders="true"
-        :height="gridHeight"
-        :width="'100%'"
-        :licenseKey="'non-commercial-and-evaluation'"
-        :rowHeights="30"
-        :filters="true"
-        :afterChange="onChange"
-        :afterSelection="onSelect"
-      />
-    </main>
+    <div class="excel-body">
+      <!-- GRILLA -->
+      <main class="grid-area" ref="gridRef">
+        <HotTable
+          ref="hotTable"
+          :data="data"
+          :columns="columns"
+          :colHeaders="true"
+          :rowHeaders="true"
+          :height="gridHeight"
+          :width="'100%'"
+          :licenseKey="'non-commercial-and-evaluation'"
+          :rowHeights="30"
+          :filters="true"
+          :afterChange="onChange"
+          :afterSelection="onSelect"
+        />
+      </main>
+
+      <!-- ASIDE -->
+      <v-slide-x-reverse-transition>
+        <aside v-if="showAside" class="side-aside">
+          <v-toolbar color="secondary" density="compact" :height="36">
+            <v-icon size="16" class="mr-2">
+              {{
+                asideMode === 'tareas'
+                  ? 'mdi-clipboard-text-outline'
+                  : asideMode === 'estructura'
+                    ? 'mdi-file-tree'
+                    : 'mdi-cash-multiple'
+              }}
+            </v-icon>
+            <v-toolbar-title class="text-caption">
+              {{
+                asideMode === 'tareas'
+                  ? 'Tareas de ' + (selectedRowData?.codigo || '...')
+                  : asideMode === 'estructura'
+                    ? 'Estructura del Proyecto'
+                    : 'Presupuesto'
+              }}
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon size="x-small" variant="text" @click="showAside = false">
+              <v-icon size="16">mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar>
+
+          <!-- TAREAS -->
+          <div class="aside-content" v-if="asideMode === 'tareas' && selectedRowData">
+            <v-card flat class="mb-3 pa-2" color="secondary" variant="tonal">
+              <div class="text-body-2 font-weight-bold">{{ selectedRowData.nombre }}</div>
+              <div class="d-flex gap-2 mt-1">
+                <v-chip size="x-small" color="primary" label>{{ selectedRowData.estado }}</v-chip>
+                <v-chip size="x-small" label>Bs. {{ fmt(selectedRowData.presupuesto) }}</v-chip>
+              </div>
+            </v-card>
+            <v-list density="compact" lines="two">
+              <v-list-item
+                v-for="(tarea, i) in tareasDummy"
+                :key="i"
+                rounded="lg"
+                class="mb-1"
+                border
+              >
+                <template v-slot:prepend>
+                  <v-avatar size="28" color="secondary" variant="tonal">
+                    <v-icon size="16">mdi-file-document-outline</v-icon>
+                  </v-avatar>
+                </template>
+                <v-list-item-title class="text-body-2">{{ tarea.nombre }}</v-list-item-title>
+                <v-list-item-subtitle>Bs. {{ fmt(tarea.presupuesto) }}</v-list-item-subtitle>
+                <template v-slot:append>
+                  <v-chip
+                    size="x-small"
+                    :color="
+                      tarea.estado === 'Completado'
+                        ? 'success'
+                        : tarea.estado === 'En progreso'
+                          ? 'info'
+                          : 'warning'
+                    "
+                    label
+                    variant="tonal"
+                    >{{ tarea.estado }}</v-chip
+                  >
+                </template>
+              </v-list-item>
+            </v-list>
+          </div>
+
+          <!-- ESTRUCTURA -->
+          <div class="aside-content" v-if="asideMode === 'estructura'">
+            <v-list density="compact">
+              <v-list-group value="actividades">
+                <template v-slot:activator="{ props }">
+                  <v-list-item
+                    v-bind="props"
+                    title="Actividades del Proyecto"
+                    prepend-icon="mdi-clipboard-text-outline"
+                    :subtitle="data.length + ' actividades'"
+                  ></v-list-item>
+                </template>
+                <v-list-item
+                  v-for="act in data"
+                  :key="act.id"
+                  :title="act.codigo"
+                  :subtitle="act.nombre"
+                  @click="selectFromAside(act)"
+                  class="mb-1"
+                  rounded="lg"
+                >
+                  <template v-slot:prepend>
+                    <v-chip
+                      size="x-small"
+                      :color="
+                        act.estado === 'EJEC'
+                          ? 'info'
+                          : act.estado === 'PLAN'
+                            ? 'warning'
+                            : act.estado === 'FIN'
+                              ? 'success'
+                              : 'default'
+                      "
+                      label
+                      >{{ act.estado }}</v-chip
+                    >
+                  </template>
+                  <template v-slot:append>
+                    <span class="text-caption">Bs. {{ fmt(act.presupuesto) }}</span>
+                  </template>
+                </v-list-item>
+              </v-list-group>
+            </v-list>
+          </div>
+
+          <!-- PRESUPUESTO -->
+          <div class="aside-content" v-if="asideMode === 'presupuesto'">
+            <!-- Resumen General -->
+            <v-card flat class="mb-4 pa-3 summary-card">
+              <div class="text-overline text-medium-emphasis mb-2">Resumen del Proyecto</div>
+              <div class="d-flex justify-space-between mb-1">
+                <span class="text-caption">Planificado:</span>
+                <strong class="text-caption">Bs. {{ fmt(totalPlan) }}</strong>
+              </div>
+              <div class="d-flex justify-space-between mb-1">
+                <span class="text-caption">Ejecutado:</span>
+                <strong class="text-caption c-green">Bs. {{ fmt(totalEjec) }}</strong>
+              </div>
+              <v-divider class="my-2"></v-divider>
+              <div class="d-flex justify-space-between mb-2">
+                <span class="text-caption font-weight-bold">Saldo:</span>
+                <strong class="text-caption" :class="saldo < 0 ? 'c-red' : 'c-green'"
+                  >Bs. {{ fmt(saldo) }}</strong
+                >
+              </div>
+              <v-progress-linear
+                :model-value="pct"
+                :color="pct > 80 ? 'red' : pct > 50 ? 'orange' : 'green'"
+                height="10"
+                rounded
+                class="mb-1"
+              ></v-progress-linear>
+              <div class="text-caption text-right">{{ pct }}% ejecutado</div>
+            </v-card>
+
+            <!-- Por Actividad -->
+            <div class="text-caption font-weight-bold mb-2">POR ACTIVIDAD</div>
+            <v-list density="compact">
+              <v-list-item v-for="act in data" :key="act.id" rounded="lg" class="mb-1" border>
+                <v-list-item-title class="text-caption font-weight-bold">{{
+                  act.codigo
+                }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">{{ act.nombre }}</v-list-item-subtitle>
+                <template v-slot:append>
+                  <div class="text-right">
+                    <div class="text-caption font-weight-bold">Bs. {{ fmt(act.presupuesto) }}</div>
+                    <div class="d-flex align-center gap-1 mt-1">
+                      <v-progress-linear
+                        :model-value="act.presupuesto ? (act.ejecutado / act.presupuesto) * 100 : 0"
+                        :color="
+                          act.ejecutado > act.presupuesto * 0.8
+                            ? 'red'
+                            : act.ejecutado > act.presupuesto * 0.5
+                              ? 'orange'
+                              : 'green'
+                        "
+                        height="4"
+                        rounded
+                        style="width: 40px"
+                      ></v-progress-linear>
+                      <span class="text-caption"
+                        >{{
+                          act.presupuesto ? Math.round((act.ejecutado / act.presupuesto) * 100) : 0
+                        }}%</span
+                      >
+                    </div>
+                  </div>
+                </template>
+              </v-list-item>
+            </v-list>
+
+            <!-- Por Fuente -->
+            <div class="text-caption font-weight-bold mt-4 mb-2">POR FUENTE DE FINANCIAMIENTO</div>
+            <v-list density="compact">
+              <v-list-item v-for="(fuente, i) in fuentesDummy" :key="i" rounded="lg" class="mb-1">
+                <template v-slot:prepend>
+                  <v-icon size="16" :color="fuente.color">mdi-circle</v-icon>
+                </template>
+                <v-list-item-title class="text-caption">{{ fuente.nombre }}</v-list-item-title>
+                <template v-slot:append>
+                  <span class="text-caption font-weight-bold">Bs. {{ fmt(fuente.monto) }}</span>
+                </template>
+              </v-list-item>
+            </v-list>
+          </div>
+
+          <!-- VACÍO -->
+          <div v-if="asideMode === 'tareas' && !selectedRowData" class="aside-empty">
+            <v-icon size="40" color="disabled" class="mb-2">mdi-cursor-default-click</v-icon>
+            <span>Seleccione una actividad</span>
+          </div>
+        </aside>
+      </v-slide-x-reverse-transition>
+    </div>
 
     <!-- PIE -->
     <footer class="status-bar">
@@ -56,9 +308,7 @@
         >Saldo: <b :class="saldo < 0 ? 'c-red' : 'c-green'">Bs. {{ fmt(saldo) }}</b></span
       >
       <span class="sep">|</span>
-      <div class="mini-progress">
-        <div class="mini-fill" :style="{ width: pct + '%' }"></div>
-      </div>
+      <div class="mini-progress"><div class="mini-fill" :style="{ width: pct + '%' }"></div></div>
       <span
         ><b>{{ pct }}%</b></span
       >
@@ -297,9 +547,25 @@ const init = [
 const data = ref(init.map((r) => ({ ...r })))
 const selectedCell = ref('A1')
 const selectedValue = ref('')
+const selectedRowData = ref(null)
 const hotTable = ref(null)
 const gridRef = ref(null)
 const gridHeight = ref(400)
+const showAside = ref(false)
+const asideMode = ref('tareas')
+
+const tareasDummy = [
+  { nombre: 'Preparar material audiovisual', presupuesto: 3000, estado: 'Completado' },
+  { nombre: 'Grabar sesiones de capacitación', presupuesto: 5000, estado: 'En progreso' },
+  { nombre: 'Editar video final', presupuesto: 7000, estado: 'Pendiente' },
+]
+
+const fuentesDummy = [
+  { nombre: 'TGN', monto: 150000, color: '#1a73e8' },
+  { nombre: 'IDH', monto: 95000, color: '#0d904f' },
+  { nombre: 'Propios', monto: 63000, color: '#e65100' },
+  { nombre: 'MISEREOR', monto: 42000, color: '#5c2d91' },
+]
 
 const columns = ref([
   { data: 'id', title: '#', type: 'numeric', width: 40 },
@@ -348,20 +614,15 @@ const fmt = (n) => (+n).toLocaleString('es-BO', { minimumFractionDigits: 2 })
 
 const calcularAltura = () => {
   nextTick(() => {
-    if (gridRef.value) {
-      gridHeight.value = gridRef.value.clientHeight
-    }
+    if (gridRef.value) gridHeight.value = gridRef.value.clientHeight
   })
 }
-
 let resizeObserver = null
-
 onMounted(() => {
   calcularAltura()
   resizeObserver = new ResizeObserver(calcularAltura)
   if (gridRef.value) resizeObserver.observe(gridRef.value)
 })
-
 onUnmounted(() => {
   if (resizeObserver) resizeObserver.disconnect()
 })
@@ -383,6 +644,12 @@ const onSelect = (startRow, startCol) => {
   if (h) {
     selectedCell.value = h.getColHeader(startCol) + (startRow + 1)
     selectedValue.value = h.getDataAtCell(startRow, startCol)
+    const row = h.getDataAtRow(startRow)
+    const obj = {}
+    columns.value.forEach((c, i) => {
+      if (c.data) obj[c.data] = row[i]
+    })
+    selectedRowData.value = obj
   }
 }
 
@@ -407,6 +674,15 @@ const addRow = () => {
     observaciones: '',
   })
 }
+
+const openAside = (mode) => {
+  asideMode.value = mode
+  showAside.value = true
+}
+const selectFromAside = (act) => {
+  selectedRowData.value = act
+  asideMode.value = 'tareas'
+}
 </script>
 
 <style scoped>
@@ -415,7 +691,6 @@ const addRow = () => {
   padding: 0;
   box-sizing: border-box;
 }
-
 .excel-app {
   display: flex;
   flex-direction: column;
@@ -426,7 +701,6 @@ const addRow = () => {
   color: #202124;
   background: #f1f3f4;
 }
-
 .excel-header {
   flex-shrink: 0;
   display: flex;
@@ -437,7 +711,6 @@ const addRow = () => {
   background: #f1f3f4;
   border-bottom: 1px solid #c4c7c9;
 }
-
 .formula-bar {
   flex-shrink: 0;
   display: flex;
@@ -446,14 +719,18 @@ const addRow = () => {
   background: #fff;
   border-bottom: 1px solid #c4c7c9;
 }
-
+.excel-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
 .grid-area {
   flex: 1;
   overflow: hidden;
   background: #fff;
   min-height: 0;
 }
-
 .status-bar {
   flex-shrink: 0;
   display: flex;
@@ -466,7 +743,29 @@ const addRow = () => {
   color: #5f6368;
   gap: 8px;
 }
-
+.side-aside {
+  width: 360px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-left: 1px solid #c4c7c9;
+  overflow-y: auto;
+}
+.aside-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+.aside-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #9aa0a6;
+  font-size: 13px;
+}
 .header-left,
 .header-right {
   display: flex;
@@ -495,7 +794,6 @@ const addRow = () => {
   background: #c4c7c9;
   margin: 0 6px;
 }
-
 .cell-ref {
   width: 65px;
   text-align: center;
@@ -509,7 +807,6 @@ const addRow = () => {
   padding: 0 10px;
   font-size: 12px;
 }
-
 .mini-progress {
   width: 50px;
   height: 6px;
@@ -523,6 +820,10 @@ const addRow = () => {
   background: #1a73e8;
   border-radius: 3px;
   transition: width 0.3s;
+}
+.summary-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  border: 1px solid #dee2e6;
 }
 .c-green {
   color: #0d904f;
