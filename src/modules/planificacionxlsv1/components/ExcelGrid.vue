@@ -4,7 +4,7 @@
     <v-tabs v-model="localTab" density="compact" color="primary" class="grid-tabs">
       <v-tab value="actividades" size="small">📋 Actividades</v-tab>
       <v-tab value="tareas" size="small">
-        📄 Tareas
+        📄 Subactividad
         <v-chip v-if="actividadSeleccionada" size="x-small" class="ml-1" color="primary" label>{{
           actividadSeleccionada.codigo
         }}</v-chip>
@@ -33,10 +33,19 @@
           v-if="!actividadSeleccionada"
           class="d-flex align-center justify-center h-100 text-caption text-medium-emphasis"
         >
-          Clic derecho en una actividad → "Ver Tareas"
+          <v-icon size="40" color="disabled" class="mb-2">mdi-cursor-default-click</v-icon>
+          <span>Clic derecho en una actividad → "Ver Tareas"</span>
+        </div>
+        <div
+          v-else-if="tareasFiltradas.length === 0"
+          class="d-flex flex-column align-center justify-center h-100 text-caption text-medium-emphasis"
+        >
+          <v-icon size="40" color="disabled" class="mb-2">mdi-file-document-remove-outline</v-icon>
+          <span>{{ actividadSeleccionada.codigo }} no tiene subactividades</span>
         </div>
         <HotTable
           v-else
+          ref="tareasTable"
           :data="tareasFiltradas"
           :columns="tareasColumns"
           :colHeaders="true"
@@ -69,6 +78,9 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:gridTab', 'change', 'select'])
 
+//referncias
+const tareasTable = ref(null)
+
 const localTab = ref(props.gridTab || 'actividades')
 watch(
   () => props.gridTab,
@@ -80,6 +92,14 @@ watch(localTab, (v) => emit('update:gridTab', v))
 
 const onChange = (changes, source) => emit('change', changes, source)
 const onSelect = (startRow, startCol) => emit('select', startRow, startCol)
+
+const recargarTareas = (data) => {
+  if (tareasTable.value?.hotInstance) {
+    tareasTable.value.hotInstance.loadData(data)
+  }
+}
+
+defineExpose({ recargarTareas, tareasTable })
 </script>
 
 <style scoped>

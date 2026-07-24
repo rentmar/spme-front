@@ -32,7 +32,12 @@ export function useExcelMenus({
       action: 'addRow',
       shortcut: 'Ctrl+N',
     },
-    { type: 'item', title: 'Agregar Tarea', icon: 'mdi-plus-circle', action: 'agregarTarea' },
+    {
+      type: 'item',
+      title: 'Agregar Subactividad',
+      icon: 'mdi-plus-circle',
+      action: 'agregarTarea',
+    },
     { type: 'item', title: 'Duplicar Fila', icon: 'mdi-content-duplicate', action: 'duplicarFila' },
     { type: 'divider' },
     {
@@ -142,7 +147,7 @@ export function useExcelMenus({
   const contextMenuConfig = computed(() => [
     {
       key: 'verTareas',
-      name: '📋 Ver Tareas',
+      name: '📋 Ver Subactividades',
       callback: () => verTareasDeActividad?.(),
       disabled: () => !selectedRowData?.value,
     },

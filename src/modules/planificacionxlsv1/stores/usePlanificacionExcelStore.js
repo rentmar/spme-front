@@ -90,14 +90,17 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     //estado de carga
     loading,
     error,
+    //datos
     proyectoActual,
+    initialized,
+    actividades,
+    tareas,
     //computed
     count,
     proyecto,
     metadatos,
     //
-    actividades,
-    tareas,
+
     //func
     inicializar,
     reset,

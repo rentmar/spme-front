@@ -68,7 +68,7 @@
 
     <!-- GRILLA -->
     <div class="excel-wrapper">
-      <PlanificacionProyectoActividadesV4 />
+      <PlanificacionProyectoActividadesV4 v-if="store.initialized" />
     </div>
 
     <!-- PIE DEL PROYECTO -->

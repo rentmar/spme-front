@@ -10,9 +10,10 @@
     <ExcelFormulaBar :selected-cell="selectedCell" :selected-value="selectedValue" />
     <div class="excel-body">
       <ExcelGrid
+        v-if="tablaDataActividades.length > 0"
         ref="gridRef"
         v-model:grid-tab="gridTab"
-        :data="data"
+        :data="tablaDataActividades"
         :columns="columns"
         :grid-height="gridHeight"
         :actividad-seleccionada="actividadSeleccionada"
@@ -27,7 +28,7 @@
         v-if="showAside"
         :mode="asideMode"
         :selected-row-data="selectedRowData"
-        :data="data"
+        :data="tablaDataActividades"
         :tareas-dummy="tareasDummy"
         :total-plan="totalPlan"
         :total-ejec="totalEjec"
@@ -42,7 +43,7 @@
       />
     </div>
     <ExcelStatusBar
-      :data-length="data.length"
+      :data-length="tablaDataActividades.length"
       :total-plan="totalPlan"
       :total-ejec="totalEjec"
       :saldo="saldo"
@@ -62,8 +63,13 @@ import ExcelAside from './ExcelAside.vue'
 import ExcelStatusBar from './ExcelStatusBar.vue'
 import { useExcelData } from '../composables/useExcelData.js'
 import { useExcelMenus } from '../composables/useExcelMenus.js'
+//store
+import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore.js'
 
 registerAllModules()
+
+//iniciar el store
+const store = usePlanificacionExcelStore()
 
 // REFS
 const selectedRowData = ref(null)
@@ -79,10 +85,12 @@ const selectedValue = ref('')
 
 // COMPOSABLES
 const {
-  data,
+  tablaDataActividades,
+  tablaDataTareas,
+  //data,
   columns,
   tareasDummy,
-  tareasGridData,
+  //tareasGridData,
   tareasColumns,
   fuentesDummy,
   totalPlan,
@@ -95,15 +103,32 @@ const {
   onChange,
 } = useExcelData()
 
+///Rutina para mostrar tareas
+
+// const verTareasDeActividad = () => {
+//   if (selectedRowData.value) {
+//     actividadSeleccionada.value = selectedRowData.value
+
+//     gridTab.value = 'tareas'
+//   }
+// }
+
 const verTareasDeActividad = () => {
   if (selectedRowData.value) {
     actividadSeleccionada.value = selectedRowData.value
     gridTab.value = 'tareas'
+
+    setTimeout(() => {
+      const hot = gridRef.value?.tareasTable?.hotInstance
+      if (hot) {
+        hot.loadData(tareasFiltradas.value)
+      }
+    }, 200)
   }
 }
 
 const { contextMenuConfig, ejecutarAccion } = useExcelMenus({
-  data,
+  data: tablaDataActividades,
   selectedRowData,
   showAside,
   asideMode,
@@ -113,10 +138,8 @@ const { contextMenuConfig, ejecutarAccion } = useExcelMenus({
 
 // COMPUTED
 const tareasFiltradas = computed(() => {
-  if (!actividadSeleccionada.value) return []
-  return tareasGridData.value.filter((t) =>
-    t.actividad.startsWith(actividadSeleccionada.value.codigo),
-  )
+  if (!actividadSeleccionada.value || !tablaDataTareas.value.length) return []
+  return tablaDataTareas.value.filter((t) => t.actividad === actividadSeleccionada.value.id)
 })
 
 const arbolExplorador = computed(() => {
@@ -184,12 +207,12 @@ const arbolExplorador = computed(() => {
 
 // FUNCIONES
 const onSelect = (startRow, startCol) => {
-  if (startRow >= 0 && startRow < data.value.length) {
-    selectedRowData.value = data.value[startRow]
+  if (startRow >= 0 && startRow < tablaDataActividades.value.length) {
+    selectedRowData.value = tablaDataActividades.value[startRow]
     const col = columns.value[startCol]
     if (col) {
       selectedCell.value = col.data + (startRow + 1)
-      selectedValue.value = data.value[startRow][col.data] || ''
+      selectedValue.value = tablaDataActividades.value[startRow][col.data] || ''
     }
   }
 }
@@ -227,6 +250,11 @@ const dropdownMenuConfig = {
 }
 
 onMounted(() => {
+  tablaDataActividades.value = store.actividades
+  tablaDataTareas.value = store.tareas
+
+  console.log('tablaDataActividades:', tablaDataActividades.value)
+  console.log('tablaDataTareas:', tablaDataTareas.value)
   nextTick(() => {
     const el = gridRef.value?.$el || gridRef.value
     if (el) {
