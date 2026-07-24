@@ -114,6 +114,19 @@
                       </template>
                     </v-tooltip>
                   </div>
+                  <div class="d-flex">
+                    <v-tooltip text="Proceso de planificación vista alternativa " location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          icon="mdi-calendar-text"
+                          variant="text"
+                          color="warning"
+                          :to="`/proyecto/${item.id}/planificar/vista/`"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+                  </div>
                 </template>
               </v-list-item>
 

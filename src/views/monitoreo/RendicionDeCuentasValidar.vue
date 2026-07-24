@@ -405,7 +405,6 @@
                             <v-icon>mdi-delete</v-icon>
                           </v-btn>
                         </td>
-                        onMo
                       </tr>
                     </tbody>
                   </v-table>

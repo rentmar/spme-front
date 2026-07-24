@@ -143,6 +143,13 @@ const router = createRouter({
       component: () => import('@/views/proyecto/ProyectoPlanificarView.vue'),
       meta: { requiresAuth: true },
     },
+    //Vista alternativa para la planificacion del proyecto
+    {
+      path: '/proyecto/:id/planificar/vista',
+      name: 'planificarProyectoVista',
+      component: () => import('@/views/planeamiento/PlanificacionProyectoView.vue'),
+      meta: { requiresAuth: true },
+    },
     {
       path: '/planificacion/proyecto/:id/actividad',
       name: 'addActividadesProyecto',
