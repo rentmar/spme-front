@@ -1,4 +1,4 @@
-<!-- PlanificacionProyectoActividadesV4.vue -->
+<!-- PlanificacionProyectoActividadesV4.vue (sin carga, solo render) -->
 <template>
   <div class="excel-app">
     <ExcelToolbar
@@ -65,7 +65,7 @@ import { useExcelMenus } from '../composables/useExcelMenus.js'
 
 registerAllModules()
 
-// 1. REFS
+// REFS
 const selectedRowData = ref(null)
 const actividadSeleccionada = ref(null)
 const showAside = ref(false)
@@ -77,7 +77,7 @@ const gridHeight = ref(400)
 const selectedCell = ref('A1')
 const selectedValue = ref('')
 
-// 2. COMPOSABLES
+// COMPOSABLES
 const {
   data,
   columns,
@@ -111,7 +111,7 @@ const { contextMenuConfig, ejecutarAccion } = useExcelMenus({
   verTareasDeActividad,
 })
 
-// 3. COMPUTED
+// COMPUTED
 const tareasFiltradas = computed(() => {
   if (!actividadSeleccionada.value) return []
   return tareasGridData.value.filter((t) =>
@@ -182,7 +182,7 @@ const arbolExplorador = computed(() => {
   ]
 })
 
-// 4. FUNCIONES
+// FUNCIONES
 const onSelect = (startRow, startCol) => {
   if (startRow >= 0 && startRow < data.value.length) {
     selectedRowData.value = data.value[startRow]
@@ -226,7 +226,6 @@ const dropdownMenuConfig = {
   },
 }
 
-// Altura de grilla
 onMounted(() => {
   nextTick(() => {
     const el = gridRef.value?.$el || gridRef.value

@@ -1,5 +1,21 @@
 <template>
   <div class="proyecto-excel-wrapper">
+    <!-- OVERLAY DE CARGA -->
+    <v-overlay :model-value="!cargaLista" class="align-center justify-center" persistent>
+      <template v-if="errorCarga">
+        <v-alert type="error" class="mb-4">{{ errorCarga }}</v-alert>
+        <v-btn color="primary" @click="cargarProyecto">Reintentar</v-btn>
+      </template>
+      <template v-else>
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="64"
+          width="6"
+        ></v-progress-circular>
+        <p class="mt-4 text-h6">Cargando proyecto...</p>
+      </template>
+    </v-overlay>
     <!-- CABECERA -->
     <div class="proyecto-header">
       <div class="proyecto-info">
@@ -23,7 +39,7 @@
         </div>
         <div class="meta-item">
           <span class="meta-label">Propietario:</span>
-          <span class="meta-value">{{ proyecto.propietario }}</span>
+          <span class="meta-value">{{ proyecto.creado_por }}</span>
         </div>
       </div>
     </div>
@@ -50,16 +66,45 @@
 <script setup>
 // import PlanificacionProyectoActividadesV3 from '@/modules/planificacionxls/components/PlanificacionProyectoActividadesV3.vue'
 import PlanificacionProyectoActividadesV4 from '@/modules/planificacionxlsv1/components/PlanificacionProyectoActividadesV4.vue'
+import { useRoute } from 'vue-router'
+import { usePlanificacionExcelStore } from '@/modules/planificacionxlsv1/stores/usePlanificacionExcelStore'
+import { onMounted, ref } from 'vue'
+import { useSnackbar } from '@/composables/useSnackbar'
 
-const proyecto = {
-  codigo: 'PROYPRESS',
-  titulo: 'Proyecto Press Update - Planificación y Ejecución de Actividades',
-  presupuesto: 50000,
-  estado: 'En Planificacion',
-  fecha_inicio: '2026-06-23',
-  fecha_finalizacion: '2026-12-31',
-  propietario: 'Marcelo Rolqueza Bernal',
+const route = useRoute()
+const proyectoID = route.params.id
+
+//Inicializar el store
+const store = usePlanificacionExcelStore()
+
+//Iniciar composable
+const { successMsg, errorMsg } = useSnackbar()
+
+//estados de carga
+const cargaLista = ref(false)
+const errorCarga = ref(null)
+
+//Datos del proyecto
+const proyecto = store.proyecto
+
+//Funcion de carga
+const cargarDatos = async () => {
+  cargaLista.value = false
+  errorCarga.value = null
+  try {
+    await store.inicializar(proyectoID)
+    cargaLista.value = true
+    successMsg('Proyecto cargado correctamente')
+  } catch (error) {
+    console.error('Error al cargar la informacion', error)
+    errorCarga.value = error.message
+    errorMsg('No se pudo cargar el proyecto')
+  }
 }
+//hook
+onMounted(() => {
+  cargarDatos()
+})
 
 const fmt = (n) => (+(n || 0)).toLocaleString('es-BO', { minimumFractionDigits: 2 })
 </script>
