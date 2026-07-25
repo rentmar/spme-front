@@ -114,7 +114,7 @@
 
 <script setup>
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
-import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
+import { useRoute, onBeforeRouteLeave } from 'vue-router'
 //componentes
 import PlanificacionProyectoActividadesV4 from '@/modules/planificacionxlsv1/components/PlanificacionProyectoActividadesV4.vue'
 import ConfirmDialogTareas from '@/modules/planificacionxlsv1/components/Dialogs/ConfirmDialogTareas.vue'
@@ -179,7 +179,7 @@ const route = useRoute()
 const proyectoID = route.params.id
 
 //Router
-const router = useRouter()
+// const router = useRouter()
 const showDialogSalir = ref(false)
 
 const userStore = useUserStore()
@@ -253,6 +253,15 @@ onBeforeRouteLeave((to, from, next) => {
   }
 })
 
+// Función para salir sin guardar
+const forceLeave = () => {
+  showDialogSalir.value = false
+  if (pendingNext.value) {
+    pendingNext.value()
+    pendingNext.value = null
+  }
+}
+
 const confirmarSalir = async () => {
   try {
     //await store.guardarCambios()
@@ -283,6 +292,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', prevenirCierre)
+  store.reset()
 })
 </script>
 

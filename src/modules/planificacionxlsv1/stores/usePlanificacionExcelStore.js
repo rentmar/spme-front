@@ -16,6 +16,10 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
   const metadata = ref(null)
   const proyectoId = ref(null) //id del proyecto
 
+  //Dialogo
+  const showDialogCambioActividad = ref(false)
+  const resolverDialogo = ref(null)
+
   // ── Getters ──
   const count = computed(() => actividades.value.length)
   const proyecto = computed(() => proyectoActual)
@@ -24,20 +28,22 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
   //-- Historial de cambios
   const historialCambiosActividades = ref([])
   const historialCambiosTareas = ref([])
-  const tieneCambiosSinGuardar = ref(false)
+  const tieneCambiosActividades = ref(false)
   const tieneCambiosTareas = ref(false)
+  const tieneCambiosSinGuardar = computed(
+    () => tieneCambiosActividades.value || tieneCambiosTareas.value,
+  )
 
   //--- Acciones del historial ---
   //Agrega un cambio de Actividad
   const agregarCambioActividad = (registro) => {
     historialCambiosActividades.value.push(registro)
-    tieneCambiosSinGuardar.value = true
+    tieneCambiosActividades.value = true
   }
 
   //Agrega un cambio de tarea
   const agregarCambioTarea = (registro) => {
     historialCambiosTareas.value.push(registro)
-    tieneCambiosSinGuardar.value = true
     tieneCambiosTareas.value = true
   }
 
@@ -46,15 +52,8 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
   const confirmarCambioActividad = () => {
     return new Promise((resolve) => {
       if (tieneCambiosTareas.value) {
-        const confirmado = confirm(
-          '¿Está seguro de cargar las nuevas tareas? Perderá las modificaciones no guardadas.',
-        )
-        if (confirmado) {
-          tieneCambiosTareas.value = false
-          resolve(true)
-        } else {
-          resolve(false)
-        }
+        showDialogCambioActividad.value = true
+        resolverDialogo.value = resolve
       } else {
         resolve(true)
       }
@@ -84,7 +83,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
       //Limpiar las variables
       historialCambiosActividades.value = []
       historialCambiosTareas.value = []
-      tieneCambiosSinGuardar.value = false
+      tieneCambiosActividades.value = false
       tieneCambiosTareas.value = false
       //Respuesta
       return await response.json()
@@ -93,11 +92,29 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     }
   }
 
+  const aceptarCambioActividad = () => {
+    tieneCambiosTareas.value = false
+    historialCambiosTareas.value = [] // ← Limpiar historial de tareas
+    showDialogCambioActividad.value = false
+    if (resolverDialogo.value) {
+      resolverDialogo.value(true)
+      resolverDialogo.value = null
+    }
+  }
+
+  const cancelarCambioActividad = () => {
+    showDialogCambioActividad.value = false
+    if (resolverDialogo.value) {
+      resolverDialogo.value(false)
+      resolverDialogo.value = null
+    }
+  }
+
   //Descartar los cambios
   const descartarCambios = () => {
     historialCambiosActividades.value = []
     historialCambiosTareas.value = []
-    tieneCambiosSinGuardar.value = false
+    tieneCambiosActividades.value = false
     tieneCambiosTareas.value = false
   }
 
@@ -109,6 +126,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     loading.value = true
     error.value = null
     proyectoId.value = idproyecto //Colocar el valor de id de proyecto en los estados
+    descartarCambios()
 
     try {
       // Cargar proyecto con toda su estructura
@@ -202,6 +220,9 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     confirmarCambioActividad,
     guardarCambios,
     descartarCambios,
+    showDialogCambioActividad,
+    aceptarCambioActividad,
+    cancelarCambioActividad,
 
     //func
     inicializar,
