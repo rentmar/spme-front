@@ -34,7 +34,7 @@
           class="d-flex align-center justify-center h-100 text-caption text-medium-emphasis"
         >
           <v-icon size="40" color="disabled" class="mb-2">mdi-cursor-default-click</v-icon>
-          <span>Clic derecho en una actividad → "Ver Tareas"</span>
+          <span>Click derecho en una actividad → "Ver Subactividades"</span>
         </div>
         <div
           v-else-if="tareasFiltradas.length === 0"
@@ -55,6 +55,7 @@
           :licenseKey="'non-commercial-and-evaluation'"
           :rowHeights="30"
           :filters="true"
+          :afterChange="onChangeTareas"
         />
       </v-tabs-window-item>
     </v-tabs-window>
@@ -62,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch } from 'vue'
 import HotTable from '@handsontable/vue3'
 
 const props = defineProps({
@@ -75,13 +76,15 @@ const props = defineProps({
   tareasColumns: Array,
   contextMenuConfig: [Array, Object],
   dropdownMenuConfig: Object,
+  onChangeTareas: Function,
 })
 const emit = defineEmits(['update:gridTab', 'change', 'select'])
 
-//referncias
+//Referencia a la grilla de tareas
 const tareasTable = ref(null)
-
 const localTab = ref(props.gridTab || 'actividades')
+
+//Watchers de las props
 watch(
   () => props.gridTab,
   (v) => {
@@ -90,6 +93,7 @@ watch(
 )
 watch(localTab, (v) => emit('update:gridTab', v))
 
+//Eventos de cambio y seleccion
 const onChange = (changes, source) => emit('change', changes, source)
 const onSelect = (startRow, startCol) => emit('select', startRow, startCol)
 

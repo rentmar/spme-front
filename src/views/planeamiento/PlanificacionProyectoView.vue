@@ -75,7 +75,7 @@
     <div class="proyecto-footer">
       <span>🕐 Fecha de hoy: {{ fechaActual }}</span>
       <span class="footer-sep">|</span>
-      <span>👤 {{ proyectoData.propietario_nombre || 'admin' }}</span>
+      <span>👤 {{ usuarioActual }}</span>
       <span class="footer-sep">|</span>
       <span>📊 PEI 2022-2027</span>
       <span class="footer-sep">|</span>
@@ -84,73 +84,106 @@
       <span>SPME</span>
     </div>
   </div>
+  <!--Dialogo de confirmacion para la carga de tareas -->
+  <ConfirmDialogTareas
+    v-model="store.showDialogCambioActividad"
+    @confirmar="store.aceptarCambioActividad"
+    @cancelar="store.cancelarCambioActividad"
+  />
+  <!-- Diálogo de confirmación para salir/navegar -->
+  <v-dialog v-model="showDialogSalir" max-width="500" persistent>
+    <v-card>
+      <v-card-title class="d-flex align-center">
+        <v-icon color="warning" class="mr-2">mdi-alert-circle-outline</v-icon>
+        Cambios sin guardar
+      </v-card-title>
+      <v-card-text>
+        Tienes cambios sin guardar en la planificación.
+        <br /><br />
+        <strong>Si sales ahora, perderás todas las modificaciones realizadas.</strong>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn variant="text" @click="cancelarSalir">Cancelar</v-btn>
+        <v-btn color="primary" variant="text" @click="confirmarSalir"> 💾 Guardar y salir </v-btn>
+        <v-btn color="error" variant="text" @click="forceLeave"> Salir sin guardar </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 //componentes
 import PlanificacionProyectoActividadesV4 from '@/modules/planificacionxlsv1/components/PlanificacionProyectoActividadesV4.vue'
+import ConfirmDialogTareas from '@/modules/planificacionxlsv1/components/Dialogs/ConfirmDialogTareas.vue'
 //stores
 import { usePlanificacionExcelStore } from '@/modules/planificacionxlsv1/stores/usePlanificacionExcelStore'
+import { useUserStore } from '@/stores/user'
 //helpers
 import { obtenerClaseEstadoProyecto, obtenerFechaActual } from '@/modules/planificacionxlsv1/utils'
-// ──── DATOS MOCK (ANULAR STORE TEMPORALMENTE) ────
-const proyectoData = ref({
-  id: 47,
-  codigo: 'TEST-ESTRUC0001',
-  titulo: 'Test de Estructura para el repositorio',
-  descripcion: 'Proyecto para sincronizacion del proyecto con el repositorio',
-  estado: 'EP',
-  fecha_inicio: '2026-08-01',
-  fecha_finalizacion: '2026-12-31',
-  fecha_creacion: '2026-07-22T10:15:09.953244-04:00',
-  presupuesto: '5000000.00',
-  esta_habilitado: true,
-  propietario_nombre: 'admin',
-  instancias_gestoras: [
-    {
-      id: 6,
-      codigo: 'URBANO',
-      clasificador: 'E',
-      instancia: 'Programa Urbano',
-    },
-    {
-      id: 1,
-      codigo: 'UG',
-      clasificador: null,
-      instancia: 'Unidad de Gestion',
-    },
-  ],
-  financiadores: [
-    {
-      id: 2,
-      sigla: 'MISEREOR',
-      financiera: 'GOBAL',
-    },
-    {
-      id: 4,
-      sigla: 'UNITAS',
-      financiera: 'UNITAS',
-    },
-    {
-      id: 6,
-      sigla: 'OMSA',
-      financiera: 'OMSA',
-    },
-  ],
-})
 
-const proyectoMetadata = ref({
-  proyecto_id: 47,
-  codigo_proyecto: 'TEST-ESTRUC0001',
-  total_actividades: 3,
-  estado_proyecto: 'EP',
-})
+// ──── DATOS MOCK ────
+// const proyectoData = ref()
+// const proyectoData = ref({
+//   id: 47,
+//   codigo: 'TEST-ESTRUC0001',
+//   titulo: 'Test de Estructura para el repositorio',
+//   descripcion: 'Proyecto para sincronizacion del proyecto con el repositorio',
+//   estado: 'EP',
+//   fecha_inicio: '2026-08-01',
+//   fecha_finalizacion: '2026-12-31',
+//   fecha_creacion: '2026-07-22T10:15:09.953244-04:00',
+//   presupuesto: '5000000.00',
+//   esta_habilitado: true,
+//   propietario_nombre: 'admin',
+//   instancias_gestoras: [
+//     { id: 6, codigo: 'URBANO', clasificador: 'E', instancia: 'Programa Urbano' },
+//     { id: 1, codigo: 'UG', clasificador: null, instancia: 'Unidad de Gestion' },
+//   ],
+//   financiadores: [
+//     { id: 2, sigla: 'MISEREOR', financiera: 'GOBAL' },
+//     { id: 4, sigla: 'UNITAS', financiera: 'UNITAS' },
+//     { id: 6, sigla: 'OMSA', financiera: 'OMSA' },
+//   ],
+// })
+
+const proyectoData = computed(
+  () =>
+    store.proyectoActual || {
+      codigo: '',
+      titulo: 'Cargando...',
+      presupuesto: 0,
+      estado: '',
+      fecha_inicio: '',
+      fecha_finalizacion: '',
+      propietario_nombre: '',
+      financiadores: [],
+      instancias_gestoras: [],
+    },
+)
+
+const proyectoMetadata = computed(
+  () =>
+    store.metadata || {
+      proyecto_id: '',
+      codigo_proyecto: '',
+      total_actividades: 0,
+      estado_proyecto: '',
+    },
+)
 
 //Capturar el id de la url
 const route = useRoute()
 const proyectoID = route.params.id
+
+//Router
+const router = useRouter()
+const showDialogSalir = ref(false)
+
+const userStore = useUserStore()
+const usuarioActual = computed(() => userStore.usuario || 'admin')
 
 // ──── ESTADOS DE CARGA ────
 const cargaLista = ref(false)
@@ -199,10 +232,57 @@ const fmt = (n) => {
   const num = parseFloat(n || 0)
   return num.toLocaleString('es-BO', { minimumFractionDigits: 2 })
 }
+// Proteger cierre/refresco del navegador
+const prevenirCierre = (event) => {
+  if (store.tieneCambiosSinGuardar) {
+    event.preventDefault()
+    event.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de salir?'
+  }
+}
+
+const pendingNext = ref(null)
+
+// Guard de navegación de Vue Router (para enlaces internos)
+onBeforeRouteLeave((to, from, next) => {
+  if (store.tieneCambiosSinGuardar) {
+    showDialogSalir.value = true
+    // Guardar la función next para usarla después
+    pendingNext.value = next
+  } else {
+    next()
+  }
+})
+
+const confirmarSalir = async () => {
+  try {
+    //await store.guardarCambios()
+    alert('Guardar')
+  } catch (e) {
+    console.error('Error al guardar:', e)
+  }
+  showDialogSalir.value = false
+  if (pendingNext.value) {
+    pendingNext.value()
+    pendingNext.value = null
+  }
+}
+
+const cancelarSalir = () => {
+  showDialogSalir.value = false
+  if (pendingNext.value) {
+    pendingNext.value(false) // Cancela la navegación
+    pendingNext.value = null
+  }
+}
 
 // ──── HOOKS ────
 onMounted(() => {
   cargarDatos()
+  window.addEventListener('beforeunload', prevenirCierre)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', prevenirCierre)
 })
 </script>
 

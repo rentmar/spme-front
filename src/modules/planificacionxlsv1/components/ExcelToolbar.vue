@@ -1,4 +1,4 @@
-<!-- ========== ExcelToolbar.vue ========== -->
+<!-- ExcelToolbar.vue -->
 <template>
   <header class="excel-header">
     <div class="header-left">
@@ -31,72 +31,86 @@
       </v-tooltip>
     </div>
     <div class="header-right">
-      <v-tooltip text="Explorador de actividad" location="bottom"
-        ><template #activator="{ props }"
-          ><v-btn
+      <v-tooltip text="Explorador de actividad" location="bottom">
+        <template #activator="{ props }">
+          <v-btn
             v-bind="props"
             variant="text"
             size="small"
             @click="$emit('open-aside', 'explorador')"
             >🌳 Explorador</v-btn
-          ></template
-        ></v-tooltip
-      >
-      <v-tooltip text="Mostrar tareas" location="bottom"
-        ><template #activator="{ props }"
-          ><v-btn v-bind="props" variant="text" size="small" @click="$emit('open-aside', 'tareas')"
+          >
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Mostrar tareas" location="bottom">
+        <template #activator="{ props }">
+          <v-btn v-bind="props" variant="text" size="small" @click="$emit('open-aside', 'tareas')"
             >📋 Tareas</v-btn
-          ></template
-        ></v-tooltip
-      >
-      <v-tooltip text="Mostrar estructura" location="bottom"
-        ><template #activator="{ props }"
-          ><v-btn
+          >
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Mostrar estructura" location="bottom">
+        <template #activator="{ props }">
+          <v-btn
             v-bind="props"
             variant="text"
             size="small"
             @click="$emit('open-aside', 'estructura')"
             >🌳 Estructura</v-btn
-          ></template
-        ></v-tooltip
-      >
-      <v-tooltip text="Mostrar presupuesto" location="bottom"
-        ><template #activator="{ props }"
-          ><v-btn
+          >
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Mostrar presupuesto" location="bottom">
+        <template #activator="{ props }">
+          <v-btn
             v-bind="props"
             variant="text"
             size="small"
             @click="$emit('open-aside', 'presupuesto')"
             >💰 Presupuesto</v-btn
-          ></template
-        ></v-tooltip
-      >
-      <v-tooltip text="Resumen económico" location="bottom"
-        ><template #activator="{ props }"
-          ><v-btn v-bind="props" variant="text" size="small" @click="$emit('open-aside', 'resumen')"
+          >
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Resumen económico" location="bottom">
+        <template #activator="{ props }">
+          <v-btn v-bind="props" variant="text" size="small" @click="$emit('open-aside', 'resumen')"
             >📊 Resumen</v-btn
-          ></template
-        ></v-tooltip
-      >
-      <v-tooltip text="Guardar" location="bottom"
-        ><template #activator="{ props }"
-          ><button v-bind="props" class="btn">💾 Guardar</button></template
-        ></v-tooltip
-      >
-      <v-tooltip text="Exportar" location="bottom"
-        ><template #activator="{ props }"
-          ><button v-bind="props" class="btn">📤 Exportar</button></template
-        ></v-tooltip
-      >
+          >
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Guardar cambios" location="bottom">
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            variant="text"
+            size="small"
+            :color="store.tieneCambiosSinGuardar ? 'primary' : ''"
+            @click="$emit('guardar')"
+          >
+            💾 Guardar
+            <v-badge v-if="store.tieneCambiosSinGuardar" color="red" dot inline></v-badge>
+          </v-btn>
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Exportar" location="bottom">
+        <template #activator="{ props }">
+          <button v-bind="props" class="btn">📤 Exportar</button>
+        </template>
+      </v-tooltip>
     </div>
   </header>
 </template>
 
 <script setup>
 import { useExcelMenus } from '../composables/useExcelMenus'
+import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore'
+
 const { menuArchivo, menuEditar, menuVer } = useExcelMenus()
 const menus = { Archivo: menuArchivo, Editar: menuEditar, Ver: menuVer }
-defineEmits(['add-row', 'open-aside', 'ejecutar-accion'])
+
+const store = usePlanificacionExcelStore()
+
+defineEmits(['add-row', 'open-aside', 'ejecutar-accion', 'guardar'])
 </script>
 
 <style scoped>

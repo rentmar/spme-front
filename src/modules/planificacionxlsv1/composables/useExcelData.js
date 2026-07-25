@@ -1,16 +1,27 @@
 // composables/useExcelData.js
+//Maneja la informacion de las grillas
 import { ref, computed } from 'vue'
+// import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore'
+import { useSeguimientoCambios } from './useSeguimientoCambios'
 
 export function useExcelData() {
+  //inicia el store
+  //const store = usePlanificacionExcelStore()
+  //Inicia el composable
+  const seguimiento = useSeguimientoCambios()
+
+  //Estados de las grillas
   const tablaDataActividades = ref([])
   const tablaDataTareas = ref([])
 
+  //Datos de prueba - tareas
   const tareasDummy = ref([
     { nombre: 'Preparar material audiovisual', presupuesto: 3000, estado: 'Completado' },
     { nombre: 'Grabar sesiones de capacitación', presupuesto: 5000, estado: 'En progreso' },
     { nombre: 'Editar video final', presupuesto: 7000, estado: 'Pendiente' },
   ])
 
+  //Definicion de las columnas para la grilla de tareas
   const tareasColumns = ref([
     { data: 'id', title: '#', type: 'numeric', width: 40 },
     { data: 'codigo', title: 'Código', width: 90 },
@@ -28,6 +39,7 @@ export function useExcelData() {
     { data: 'estado', title: 'Estado', width: 100 },
   ])
 
+  //Datos de prueba para las fuentes de financiamiento
   const fuentesDummy = [
     { nombre: 'TGN', monto: 150000, color: '#1a73e8' },
     { nombre: 'IDH', monto: 95000, color: '#0d904f' },
@@ -35,6 +47,7 @@ export function useExcelData() {
     { nombre: 'MISEREOR', monto: 42000, color: '#5c2d91' },
   ]
 
+  //Definicion de las columnas de la grilla actividades
   const columns = ref([
     { data: 'id', title: '#', type: 'numeric', width: 40 },
     { data: 'codigo', title: 'Código', width: 90 },
@@ -67,17 +80,28 @@ export function useExcelData() {
     { data: 'estado', title: 'Estado', width: 70 },
   ])
 
+  //Calculo del total planificado
   const totalPlan = computed(() =>
     tablaDataActividades.value.reduce((s, r) => s + (+r.presupuesto || 0), 0),
   )
+
+  //Calculo del total ejecutado
   const totalEjec = computed(() =>
     tablaDataActividades.value.reduce((s, r) => s + (+r.totalEjecutado || 0), 0),
   )
+
+  //Calculo del saldo
   const saldo = computed(() => totalPlan.value - totalEjec.value)
+
+  //POrcentaje de ejecucion
   const pct = computed(() =>
     totalPlan.value ? +((totalEjec.value / totalPlan.value) * 100).toFixed(1) : 0,
   )
+
+  //Formateo de la moneda
   const fmt = (n) => (+(n || 0)).toLocaleString('es-BO', { minimumFractionDigits: 2 })
+
+  //Defincion del color de los estados
   const estadoColor = (e) =>
     ({
       EJEC: 'info',
@@ -92,10 +116,11 @@ export function useExcelData() {
       RECHAZADO: 'error',
     })[e] || 'default'
 
+  //Agregar nueva fila - se registra
   const addRow = () => {
     const arr = tablaDataActividades.value
     const newId = arr.length > 0 ? Math.max(...arr.map((r) => r.id)) + 1 : 1
-    arr.push({
+    const nuevaFila = {
       id: newId,
       codigo: '',
       nombreCorto: '',
@@ -107,20 +132,80 @@ export function useExcelData() {
       totalEjecutado: 0,
       saldo: 0,
       estado: 'PLAN',
+    }
+    arr.push(nuevaFila)
+
+    //Registro del cambio
+    seguimiento.registrarCambio({
+      tipo: 'actividad',
+      accion: 'agregar',
+      fila_id: newId,
+      columna: 'todo',
+      valor_anterior: null,
+      valor_nuevo: JSON.stringify(nuevaFila),
+      actividad_codigo: '',
+      actividad_id: newId,
     })
   }
 
+  //Funcion registro de cambio - Grilla Actividades
   const onChange = (changes, source) => {
     if (source === 'loadData') return
-    changes.forEach(([row, prop, , val]) => {
-      if (row < tablaDataActividades.value.length) {
-        tablaDataActividades.value[row][prop] =
-          prop === 'presupuesto' || prop === 'totalEjecutado' ? +val || 0 : val
-        if (prop === 'presupuesto' || prop === 'totalEjecutado') {
-          tablaDataActividades.value[row].saldo =
-            (+tablaDataActividades.value[row].presupuesto || 0) -
-            (+tablaDataActividades.value[row].totalEjecutado || 0)
-        }
+    if (!changes) return
+
+    changes.forEach(([row, prop, oldVal, newVal]) => {
+      if (row >= tablaDataActividades.value.length) return
+      if (String(oldVal) === String(newVal)) return
+
+      const val = prop === 'presupuesto' || prop === 'totalEjecutado' ? +newVal || 0 : newVal
+
+      tablaDataActividades.value[row][prop] = val
+
+      if (prop === 'presupuesto' || prop === 'totalEjecutado') {
+        tablaDataActividades.value[row].saldo =
+          (+tablaDataActividades.value[row].presupuesto || 0) -
+          (+tablaDataActividades.value[row].totalEjecutado || 0)
+      }
+
+      if (seguimiento.esColumnaRastreable('actividad', prop)) {
+        seguimiento.registrarCambio({
+          tipo: 'actividad',
+          accion: 'editar',
+          fila_id: tablaDataActividades.value[row].id,
+          columna: prop,
+          valor_anterior: oldVal,
+          valor_nuevo: val,
+          actividad_codigo: tablaDataActividades.value[row].codigo,
+          actividad_id: tablaDataActividades.value[row].id,
+        })
+      }
+    })
+  }
+
+  //Funcion registro de cambio - Grilla Tareas
+  const onChangeTareas = (changes, source) => {
+    if (source === 'loadData') return
+    if (!changes) return
+
+    changes.forEach(([row, prop, oldVal, newVal]) => {
+      if (row >= tablaDataTareas.value.length) return
+      if (String(oldVal) === String(newVal)) return
+
+      const val = prop === 'presupuesto' ? +newVal || 0 : newVal
+      tablaDataTareas.value[row][prop] = val
+
+      if (seguimiento.esColumnaRastreable('tarea', prop)) {
+        seguimiento.registrarCambio({
+          tipo: 'tarea',
+          accion: 'editar',
+          fila_id: tablaDataTareas.value[row].id,
+          columna: prop,
+          valor_anterior: oldVal,
+          valor_nuevo: val,
+          actividad_codigo: tablaDataTareas.value[row].actividad_codigo || '',
+          actividad_id: tablaDataTareas.value[row].actividad || null,
+          tarea_codigo: tablaDataTareas.value[row].codigo || '',
+        })
       }
     })
   }
@@ -140,6 +225,8 @@ export function useExcelData() {
     estadoColor,
     addRow,
     onChange,
+    onChangeTareas,
+    seguimiento,
   }
 }
 // // ========== composables/useExcelData.js ==========

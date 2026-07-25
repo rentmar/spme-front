@@ -1,4 +1,4 @@
-<!-- PlanificacionProyectoActividadesV4.vue (sin carga, solo render) -->
+<!-- PlanificacionProyectoActividadesV4.vue -->
 <template>
   <div class="excel-app">
     <ExcelToolbar
@@ -6,6 +6,7 @@
       @add-row="addRow"
       @open-aside="openAside"
       @ejecutar-accion="ejecutarAccion"
+      @guardar="guardar"
     />
     <ExcelFormulaBar :selected-cell="selectedCell" :selected-value="selectedValue" />
     <div class="excel-body">
@@ -23,6 +24,7 @@
         :dropdown-menu-config="dropdownMenuConfig"
         @change="onChange"
         @select="onSelect"
+        :on-change-tareas="onChangeTareas"
       />
       <ExcelAside
         v-if="showAside"
@@ -101,6 +103,8 @@ const {
   estadoColor,
   addRow,
   onChange,
+  onChangeTareas,
+  seguimiento,
 } = useExcelData()
 
 ///Rutina para mostrar tareas
@@ -113,16 +117,31 @@ const {
 //   }
 // }
 
-const verTareasDeActividad = () => {
+// const verTareasDeActividad = () => {
+//   if (selectedRowData.value) {
+//     actividadSeleccionada.value = selectedRowData.value
+//     gridTab.value = 'tareas'
+
+//     setTimeout(() => {
+//       const hot = gridRef.value?.tareasTable?.hotInstance
+//       if (hot) {
+//         hot.loadData(tareasFiltradas.value)
+//       }
+//     }, 200)
+//   }
+// }
+
+// verTareasDeActividad con confirmación
+const verTareasDeActividad = async () => {
   if (selectedRowData.value) {
+    const puedeCambiar = await seguimiento.confirmarCambioActividad()
+    if (!puedeCambiar) return
+
     actividadSeleccionada.value = selectedRowData.value
     gridTab.value = 'tareas'
 
     setTimeout(() => {
-      const hot = gridRef.value?.tareasTable?.hotInstance
-      if (hot) {
-        hot.loadData(tareasFiltradas.value)
-      }
+      gridRef.value?.recargarTareas(tareasFiltradas.value)
     }, 200)
   }
 }
@@ -135,6 +154,15 @@ const { contextMenuConfig, ejecutarAccion } = useExcelMenus({
   addRow,
   verTareasDeActividad,
 })
+
+// Función guardar
+const guardar = async () => {
+  try {
+    await seguimiento.guardarCambios()
+  } catch (e) {
+    console.error('Error al guardar:', e)
+  }
+}
 
 // COMPUTED
 const tareasFiltradas = computed(() => {
