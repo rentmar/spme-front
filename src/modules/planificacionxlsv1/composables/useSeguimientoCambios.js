@@ -8,13 +8,18 @@ export function useSeguimientoCambios() {
 
   // ── Columnas rastreables (extensibles) ──
   const columnasRastreablesActividades = ref([
+    'codigo',
+    'nombreCorto',
+    'tipo_actividad',
+    'responsable',
+    'fecha_inicio',
+    'fecha_cierre',
+    'supuestos',
+    'riesgos',
     'presupuesto',
     'totalEjecutado',
     'estado',
-    'fecha_inicio',
-    'fecha_cierre',
-    'responsable',
-    'tipo',
+    'procedencia_fondos',
   ])
 
   const columnasRastreablesTareas = ref([

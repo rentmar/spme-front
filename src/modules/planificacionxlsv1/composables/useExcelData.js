@@ -3,7 +3,9 @@
 import { ref, computed } from 'vue'
 // import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore'
 import { useSeguimientoCambios } from './useSeguimientoCambios'
-
+//renders
+import { tablaRenders } from '../utils'
+import { puedeEditar } from '../utils'
 export function useExcelData() {
   //inicia el store
   //const store = usePlanificacionExcelStore()
@@ -49,13 +51,20 @@ export function useExcelData() {
 
   //Definicion de las columnas de la grilla actividades
   const columns = ref([
-    { data: 'id', title: '#', type: 'numeric', width: 40 },
-    { data: 'codigo', title: 'Código', width: 90 },
+    { data: 'id', title: 'ID', type: 'numeric', readOnly: true, width: 40 },
+    {
+      data: 'codigo',
+      title: 'Código',
+      width: 90,
+      renderer: tablaRenders.celdaSuccess,
+    },
     { data: 'nombreCorto', title: 'Nombre', width: 180 },
-    { data: 'tipo', title: 'Tipo', width: 120 },
-    { data: 'responsable', title: 'Resp.', width: 80 },
+    { data: 'tipo_actividad', title: 'Tipo', width: 120 },
+    { data: 'responsable', title: 'Responsable', width: 110 },
     { data: 'fecha_inicio', title: 'Inicio', type: 'date', width: 100, dateFormat: 'YYYY-MM-DD' },
     { data: 'fecha_cierre', title: 'Cierre', type: 'date', width: 100, dateFormat: 'YYYY-MM-DD' },
+    { data: 'supuestos', title: 'Supuestos', width: 100 },
+    { data: 'riesgos', title: 'Riesgos', width: 100 },
     {
       data: 'presupuesto',
       title: 'Presupuesto',
@@ -63,9 +72,29 @@ export function useExcelData() {
       width: 110,
       numericFormat: { pattern: '0,0.00' },
     },
+    { data: 'procedencia_fondos', title: 'Proc. Fondos', width: 250 },
+    {
+      data: 'presupuestoGlobal',
+      title: 'Presupuesto Global',
+      type: 'numeric',
+      width: 150,
+      numericFormat: {
+        pattern: '0,0.00',
+      },
+    },
+    {
+      data: 'totalReportado',
+      title: 'Total Reportado',
+      type: 'numeric',
+      readOnly: true,
+      width: 150,
+      numericFormat: {
+        pattern: '0,0.00',
+      },
+    },
     {
       data: 'totalEjecutado',
-      title: 'Ejecutado',
+      title: 'Total Ejecutado',
       type: 'numeric',
       width: 110,
       numericFormat: { pattern: '0,0.00' },
@@ -77,7 +106,46 @@ export function useExcelData() {
       width: 110,
       numericFormat: { pattern: '0,0.00' },
     },
-    { data: 'estado', title: 'Estado', width: 70 },
+    {
+      data: 'estado',
+      type: 'text',
+      title: 'ESTADO',
+      width: 150,
+      readOnly: true,
+    },
+    {
+      data: 'gradoEjecucion',
+      type: 'dropdown',
+      title: 'Grado Ejecucion',
+      readOnly: true,
+      width: 150,
+      source: [
+        'PLANIFICADA',
+        'RETRASO',
+        'REPROGRAMACION',
+        'EN EJECUCION',
+        'EN REPORTE',
+        'FINALIZADO',
+      ],
+    },
+    {
+      data: 'objetivo_pei',
+      title: 'Objetivo PEI',
+      type: 'numeric',
+      readOnly: true,
+    },
+    {
+      data: 'indicador_pei',
+      title: 'Indicador PEI',
+      type: 'numeric',
+      readOnly: true,
+    },
+    {
+      data: 'factoresCriticos',
+      title: 'Factores criticos',
+      readOnly: true,
+      width: 150,
+    },
   ])
 
   //Calculo del total planificado

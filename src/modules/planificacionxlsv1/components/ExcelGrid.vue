@@ -13,6 +13,9 @@
     <v-tabs-window v-model="localTab" class="grid-window">
       <v-tabs-window-item value="actividades">
         <HotTable
+          ref="hotTableRef"
+          :beforeChange="beforeChange"
+          :language="'es-MX'"
           :data="data"
           :columns="columns"
           :colHeaders="true"
@@ -65,6 +68,8 @@
 <script setup>
 import { ref, watch } from 'vue'
 import HotTable from '@handsontable/vue3'
+import { puedeEditar } from '../utils'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 const props = defineProps({
   gridTab: String,
@@ -84,6 +89,9 @@ const emit = defineEmits(['update:gridTab', 'change', 'select'])
 const tareasTable = ref(null)
 const localTab = ref(props.gridTab || 'actividades')
 
+//composable
+const { infoMsg } = useSnackbar()
+
 //Watchers de las props
 watch(
   () => props.gridTab,
@@ -101,6 +109,27 @@ const recargarTareas = (data) => {
   if (tareasTable.value?.hotInstance) {
     tareasTable.value.hotInstance.loadData(data)
   }
+}
+
+const hotTableRef = ref(null)
+
+//Para el control de acceo a la edicion celdas segun perifil de usuario
+const beforeChange = (changes, source) => {
+  if (source === 'loadData') return true
+
+  // Verificar cada cambio
+  for (let i = 0; i < changes.length; i++) {
+    // eslint-disable-next-line
+    const [row, prop, oldVal, newVal] = changes[i]
+    const estado = hotTableRef.value?.hotInstance?.getDataAtRowProp(row, 'estado')
+
+    if (!puedeEditar('actividad', prop, estado)) {
+      infoMsg(`No tienes permiso para editar "${prop}"`)
+      return false // Bloquear el cambio
+    }
+  }
+
+  return true // Permitir
 }
 
 defineExpose({ recargarTareas, tareasTable })

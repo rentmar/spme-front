@@ -58,17 +58,21 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { registerAllModules } from 'handsontable/registry'
 import 'handsontable/dist/handsontable.full.css'
+import { registerLanguageDictionary, esMX } from 'handsontable/i18n'
+//Componetes
 import ExcelToolbar from './ExcelToolbar.vue'
 import ExcelFormulaBar from './ExcelFormulaBar.vue'
 import ExcelGrid from './ExcelGrid.vue'
 import ExcelAside from './ExcelAside.vue'
 import ExcelStatusBar from './ExcelStatusBar.vue'
+//composables
 import { useExcelData } from '../composables/useExcelData.js'
 import { useExcelMenus } from '../composables/useExcelMenus.js'
 //store
 import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore.js'
 
 registerAllModules()
+registerLanguageDictionary(esMX)
 
 //iniciar el store
 const store = usePlanificacionExcelStore()

@@ -12,3 +12,9 @@ export * from './calculosFinancierosExcelUtils'
 
 //Sistema de registro acciones
 export * from './seguimientoHelper'
+
+// Renders de tabla
+export * from './tableRenders'
+
+// Control de acceso por roles
+export * from './accessControl'

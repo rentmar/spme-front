@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-defineProps({ selectedCell: String, selectedValue: [String, Number] })
+defineProps({ selectedCell: String, selectedValue: [String, Number, Array, Object] })
 </script>
 
 <style scoped>
