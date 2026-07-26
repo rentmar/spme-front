@@ -1,4 +1,7 @@
 // utils/changeHandlersExcelUtils.js
+import { useSnackbar } from '@/composables/useSnackbar'
+
+const snackbar = useSnackbar()
 
 /**
  * SISTEMA DE HANDLERS DE CAMBIO POR TIPO DE GRILLA
@@ -89,6 +92,43 @@ function validarFechasActividad(row, oldVal, newVal, tableData) {
   return true
 }
 
+function validarPresupuestoActividad(row, oldVal, newVal, tableData, store) {
+  const presupuestoProyecto = +store.presupuestoProyecto || 0
+  if (presupuestoProyecto === 0) return
+
+  const totalActividades = tableData.value
+    .filter((_, i) => i !== row)
+    .filter((r) => r.id !== null && r.id !== undefined) // excluir placeholder
+    .reduce((s, r) => s + (+r.presupuesto || 0), 0)
+
+  if (totalActividades + (+newVal || 0) > presupuestoProyecto) {
+    snackbar.errorMsg(
+      `Presupuesto excedido: Bs ${totalActividades + +newVal} de Bs ${presupuestoProyecto}`,
+    )
+    tableData.value[row].presupuesto = oldVal
+    return false
+  }
+}
+
+//Valida el presupuesto de la actividad, no debe ser mayor que el presupuesto del proyecto
+function validarPresupuestoTarea(row, oldVal, newVal, tableData, store) {
+  const tarea = tableData.value[row]
+  const actividad = store.actividades?.find((a) => a.id === tarea.actividad)
+  const presupuestoActividad = +actividad?.presupuesto || 0
+  if (presupuestoActividad === 0) return
+
+  const totalTareas = tableData.value
+    .filter((_, i) => i !== row)
+    .filter((t) => t.actividad === tarea.actividad)
+    .reduce((s, t) => s + (+t.presupuesto || 0), 0)
+
+  if (totalTareas + (+newVal || 0) > presupuestoActividad) {
+    snackbar.error(`Presupuesto de tareas excede el de la actividad: Bs ${presupuestoActividad}`)
+    tableData.value[row].presupuesto = oldVal
+    return false
+  }
+}
+
 /**
  * Actualiza el ID del tipo de actividad cuando cambia el texto del tipo.
  * Busca en el store el tipo correspondiente por nombre y asigna su ID.
@@ -108,14 +148,75 @@ function actualizarTipoActividadId(row, oldVal, newVal, tableData, store) {
 //   }
 // }
 
+/**
+ * Actualiza el estado de la actividad según fechas.
+ * Reglas:
+ *   - CRD + ambas fechas → PLAN
+ *   - PLAN + modificar fechas → permitido con warning de justificativo
+ *   - PLAN + fecha_inicio > hoy → RETR (auto)
+ *   - PLAN + fecha_cierre < hoy → RETR (auto)
+ *   - RETR + modificar fechas → REPROG
+ */
+function actualizarEstadoPorFechas(row, oldVal, newVal, tableData) {
+  const actividad = tableData.value[row]
+  const { fecha_inicio, fecha_cierre, estado } = actividad
+  const hoy = new Date().toISOString().split('T')[0]
+
+  if (!fecha_inicio && !fecha_cierre) return
+
+  // CRD → PLAN (con confirmación)
+  if (estado === 'CRD' && fecha_inicio && fecha_cierre) {
+    const confirmado = confirm(
+      `¿Fijar actividad en PLANIFICACIÓN?\n\n` +
+        `Al planificar, ciertos campos quedarán bloqueados:\n` +
+        `- Solo podrá editar: presupuesto, totalEjecutado, fechas, riesgos y supuestos.\n\n` +
+        `¿Desea continuar?`,
+    )
+    if (!confirmado) return
+
+    actividad.estado = 'PLAN'
+    actividad.gradoEjecucion = 'PLANIFICADA'
+    snackbar.success('Actividad planificada correctamente')
+    return
+  }
+
+  // PLAN → permitir cambio con advertencia
+  if (estado === 'PLAN') {
+    snackbar.warning('Cambio de fechas registrado. Debe añadir un justificativo.', 5000)
+    return
+  }
+
+  // RETR → REPROG
+  if (estado === 'RETR' && fecha_inicio && fecha_cierre) {
+    actividad.estado = 'REPROG'
+    actividad.gradoEjecucion = 'REPROGRAMACION'
+    snackbar.info('Actividad reprogramada', 3000)
+    return
+  }
+
+  // Auto: fecha_inicio futura → RETR
+  if (fecha_inicio && fecha_inicio > hoy && estado === 'PLAN') {
+    actividad.estado = 'RETR'
+    actividad.gradoEjecucion = 'RETRASO'
+    snackbar.error('Actividad en RETRASO: fecha de inicio superior a la fecha actual', 5000)
+    return
+  }
+
+  // Auto: fecha_cierre vencida → RETR
+  if (fecha_cierre && fecha_cierre < hoy && estado === 'PLAN') {
+    actividad.estado = 'RETR'
+    actividad.gradoEjecucion = 'RETRASO'
+    snackbar.error('Actividad en RETRASO: fecha de cierre vencida', 5000)
+  }
+}
 // Mapa de handlers para ACTIVIDADES
 const actividadHandlers = {
-  presupuesto: [recalcularSaldoActividad, actualizarPresupuestoGlobal],
+  presupuesto: [validarPresupuestoActividad, recalcularSaldoActividad, actualizarPresupuestoGlobal],
   totalEjecutado: [recalcularSaldoActividad],
   totalReportado: [recalcularSaldoActividad],
   estado: [actualizarGradoEjecucionDesdeEstado],
-  fecha_cierre: [validarFechasActividad],
-  fecha_inicio: [validarFechasActividad],
+  fecha_cierre: [actualizarEstadoPorFechas, validarFechasActividad],
+  fecha_inicio: [actualizarEstadoPorFechas, validarFechasActividad],
   tipo_actividad: [actualizarTipoActividadId],
 }
 

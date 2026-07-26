@@ -135,6 +135,7 @@ const reglasActividad = {
   },
   tecnico: {
     permitidas: [
+      'codigo',
       'presupuesto',
       'supuestos',
       'riesgos',
@@ -145,7 +146,7 @@ const reglasActividad = {
       'fecha_inicio',
       'fecha_cierre',
     ],
-    bloqueadas: ['codigo', 'responsable', 'procedencia_fondos', 'estado'],
+    bloqueadas: ['responsable', 'procedencia_fondos', 'estado'],
   },
 }
 

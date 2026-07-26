@@ -359,12 +359,17 @@ onMounted(async () => {
     await userStore.cargarListaUsuarios()
   }
   //tablaDataActividades.value = store.actividades
-  tablaDataActividades.value = store.actividades.map((a) => ({
-    ...a,
-    tipo_actividad: tipoActividadNombrePorId(a.tipo_actividad_id),
-    esNueva: false,
-  }))
+  tablaDataActividades.value = store.actividades.map((a) => {
+    const presupuesto = +a.presupuesto || 0
+    const totalEjecutado = +a.totalEjecutado || 0
 
+    return {
+      ...a,
+      tipo_actividad: tipoActividadNombrePorId(a.tipo_actividad_id),
+      saldo: presupuesto - totalEjecutado, // ← Calcular al cargar
+      esNueva: false,
+    }
+  })
   tablaDataTareas.value = store.tareas
 
   agregarFilasVacias()
