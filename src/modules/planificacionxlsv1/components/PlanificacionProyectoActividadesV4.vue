@@ -10,7 +10,11 @@
       @ejecutar-accion="ejecutarAccion"
       @guardar="guardar"
     />
-    <ExcelFormulaBar :selected-cell="selectedCell" :selected-value="selectedValue" />
+    <ExcelFormulaBar
+      :selected-cell="selectedCell"
+      :selected-value="selectedValue"
+      :column-title="columnTitle"
+    />
     <div class="excel-body">
       <ExcelGrid
         v-if="tablaDataActividades.length > 0"
@@ -113,6 +117,9 @@ const datosPresupuesto = ref({
   presupuesto: 0,
   procedencia_fondos: [],
 })
+
+//Estados para el formula menu
+const columnTitle = ref('')
 
 // COMPOSABLES
 const {
@@ -344,6 +351,7 @@ const onSelect = (startRow, startCol) => {
     if (col) {
       selectedCell.value = col.data + (startRow + 1)
       selectedValue.value = row[col.data] || ''
+      columnTitle.value = col.title || col.data
     }
   }
 }

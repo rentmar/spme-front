@@ -76,12 +76,15 @@
             <v-row>
               <v-col cols="8">
                 <v-autocomplete
-                  v-model="nuevaFuenteSeleccionada"
+                  v-model="fuentesSeleccionadas"
                   :items="fuentesFinancierasFiltradas"
-                  label="Seleccionar fuente financiera"
+                  label="Seleccionar fuentes financieras"
                   item-title="financiera"
                   item-value="id"
                   return-object
+                  multiple
+                  chips
+                  closable-chips
                   clearable
                   prepend-inner-icon="mdi-magnify"
                   variant="outlined"
@@ -93,11 +96,11 @@
                 <v-btn
                   color="primary"
                   block
-                  :disabled="!nuevaFuenteSeleccionada"
-                  @click="agregarFuenteExistente"
+                  :disabled="!fuentesSeleccionadas || fuentesSeleccionadas.length === 0"
+                  @click="agregarFuentesExistentes"
                   prepend-icon="mdi-check"
                 >
-                  Agregar
+                  Agregar ({{ fuentesSeleccionadas?.length || 0 }})
                 </v-btn>
               </v-col>
             </v-row>
@@ -306,7 +309,7 @@ const emit = defineEmits(['update:modelValue', 'guardarDesglose'])
 const dialog = ref(false)
 const dialogoCero = ref(false)
 const currentBreakdown = ref([])
-const nuevaFuenteSeleccionada = ref(null)
+const fuentesSeleccionadas = ref([])
 const nuevaFuenteManual = ref({ nombre: '', monto: 0 })
 
 const {
@@ -359,21 +362,22 @@ const estadoColor = (e) =>
     FIN: 'success',
   })[e] || 'default'
 
-const agregarFuenteExistente = () => {
-  if (!nuevaFuenteSeleccionada.value) return
-  const nombre = nuevaFuenteSeleccionada.value.financiera
-  if (fuenteYaExiste(nombre)) {
-    alert(`La fuente "${nombre}" ya existe en el desglose.`)
-    nuevaFuenteSeleccionada.value = null
-    return
-  }
-  currentBreakdown.value.push({
-    id: nuevaFuenteSeleccionada.value.id,
-    nombre,
-    monto: 0,
-    esExistente: true,
+const agregarFuentesExistentes = () => {
+  if (!fuentesSeleccionadas.value?.length) return
+
+  fuentesSeleccionadas.value.forEach((fuente) => {
+    const nombre = fuente.financiera
+    if (!fuenteYaExiste(nombre)) {
+      currentBreakdown.value.push({
+        id: fuente.id,
+        nombre,
+        monto: 0,
+        esExistente: true,
+      })
+    }
   })
-  nuevaFuenteSeleccionada.value = null
+
+  fuentesSeleccionadas.value = []
 }
 
 const agregarFuenteManual = () => {
@@ -418,7 +422,7 @@ const resetForm = () => {
     monto: Number(item.monto) || 0,
     esExistente: item.esExistente !== false,
   }))
-  nuevaFuenteSeleccionada.value = null
+  fuentesSeleccionadas.value = []
   nuevaFuenteManual.value = { nombre: '', monto: 0 }
 }
 

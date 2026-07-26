@@ -156,7 +156,7 @@ export function useExcelData() {
     },
     {
       data: 'procedencia_fondos',
-      title: 'Proc. Fondos',
+      title: 'Procedencia Fondos',
       width: 250,
       readOnly: true,
       renderer: tablaRenders.desglosePresupuesto,
