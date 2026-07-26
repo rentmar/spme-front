@@ -273,6 +273,7 @@ function ajustarFechaLimitePorCreacion(row, oldVal, newVal, tableData) {
 
 // Mapa de handlers para TAREAS
 const tareaHandlers = {
+  presupuesto: [validarPresupuestoTarea],
   estado: [notificarCambioEstadoTarea],
   fecha_limite: [validarFechaLimite],
   fecha_creacion: [ajustarFechaLimitePorCreacion],

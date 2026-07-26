@@ -152,8 +152,15 @@ export function useExcelData() {
       type: 'numeric',
       width: 110,
       numericFormat: { pattern: '0,0.00' },
+      renderer: tablaRenders.presupuesto,
     },
-    { data: 'procedencia_fondos', title: 'Proc. Fondos', width: 250 },
+    {
+      data: 'procedencia_fondos',
+      title: 'Proc. Fondos',
+      width: 250,
+      readOnly: true,
+      renderer: tablaRenders.desglosePresupuesto,
+    },
     {
       data: 'presupuestoGlobal',
       title: 'Presupuesto Global',
@@ -281,6 +288,7 @@ export function useExcelData() {
       totalEjecutado: 0,
       saldo: 0,
       estado: 'CRD',
+      procedencia_fondos: [],
       esNueva: true,
     }
     //arr.push(nuevaFila)

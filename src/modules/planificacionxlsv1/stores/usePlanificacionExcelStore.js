@@ -28,6 +28,14 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
   const metadatos = computed(() => metadata)
   const tiposActividad = computed(() => tiposDeActividad.value)
   const presupuestoProyecto = computed(() => proyectoActual?.value.presupuesto)
+  const procedenciaFondos = computed(() => proyectoActual?.value.financiadores)
+  const procedenciaFondosIds = computed(() => {
+    const datos = proyectoActual?.value.financiadores
+    return datos.map((item) => {
+      const data = item._custom?.value || item
+      return data.id
+    })
+  })
 
   //-- Historial de cambios
   const historialCambiosActividades = ref([])
@@ -228,6 +236,8 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     metadatos,
     tiposActividad,
     presupuestoProyecto,
+    procedenciaFondos,
+    procedenciaFondosIds,
     //Historial
     historialCambiosActividades,
     historialCambiosTareas,

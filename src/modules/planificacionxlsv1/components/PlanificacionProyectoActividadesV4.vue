@@ -55,6 +55,15 @@
       :pct="pct"
     />
   </div>
+  <!--Desglose del presupuesto-->
+  <DialogoDesglosePresupuestoActividad
+    v-model="dialogoDesglose"
+    :presupuesto-total="datosPresupuesto.presupuesto"
+    :desglose-inicial="datosPresupuesto.procedencia_fondos"
+    :info-actividad="datosPresupuesto.info"
+    :procedencia-fondos="store.procedenciaFondosIds"
+    @guardarDesglose="guardarDesglosePresupuesto"
+  ></DialogoDesglosePresupuestoActividad>
   <!--Para debug-->
   <DebugDialog :tablaDataActividades="tablaDataActividades" :tablaDataTareas="tablaDataTareas" />
 </template>
@@ -70,6 +79,7 @@ import ExcelFormulaBar from './ExcelFormulaBar.vue'
 import ExcelGrid from './ExcelGrid.vue'
 import ExcelAside from './ExcelAside.vue'
 import ExcelStatusBar from './ExcelStatusBar.vue'
+import DialogoDesglosePresupuestoActividad from './Dialogs/DialogoDesglosePresupuestoActividad.vue'
 //composables
 import { useExcelData } from '../composables/useExcelData.js'
 import { useExcelMenus } from '../composables/useExcelMenus.js'
@@ -96,6 +106,13 @@ const gridRef = ref(null)
 const gridHeight = ref(400)
 const selectedCell = ref('A1')
 const selectedValue = ref('')
+
+//estado del desglose de presupuesto:
+const dialogoDesglose = ref(false)
+const datosPresupuesto = ref({
+  presupuesto: 0,
+  procedencia_fondos: [],
+})
 
 // COMPOSABLES
 const {
@@ -174,6 +191,26 @@ const verTareasDeActividad = async () => {
     setTimeout(() => {
       gridRef.value?.recargarTareas(tareasFiltradas.value)
     }, 200)
+  }
+}
+
+const guardarDesglosePresupuesto = (nuevoDesglose) => {
+  if (!datosPresupuesto.value?.id) return
+
+  const index = tablaDataActividades.value.findIndex((a) => a.id === datosPresupuesto.value.id)
+  if (index === -1) return
+
+  // Actualizar la fila en la grilla
+  tablaDataActividades.value[index].procedencia_fondos = nuevoDesglose
+
+  // Forzar actualización visual de Handsontable
+  if (gridRef.value?.hotTableRef?.hotInstance) {
+    gridRef.value.hotTableRef.hotInstance.setDataAtRowProp(
+      index,
+      'procedencia_fondos',
+      nuevoDesglose,
+    )
+    gridRef.value.hotTableRef.hotInstance.render()
   }
 }
 
@@ -376,6 +413,30 @@ onMounted(async () => {
 
   console.log('tablaDataActividades:', tablaDataActividades.value)
   console.log('tablaDataTareas:', tablaDataTareas.value)
+
+  window.addEventListener('abrir-desglose', (e) => {
+    const { row, data } = e.detail
+    const fila = tablaDataActividades.value[row]
+
+    if (!fila) return
+
+    datosPresupuesto.value = {
+      id: fila.id,
+      presupuesto: fila.presupuesto || 0,
+      procedencia_fondos: data || [],
+      info: {
+        codigo: fila.codigo,
+        nombreCorto: fila.nombreCorto,
+        estado: fila.estado,
+        gradoEjecucion: fila.gradoEjecucion,
+        responsable: fila.responsable,
+      },
+    }
+
+    console.log('DATOS PRESS: ', datosPresupuesto)
+
+    dialogoDesglose.value = true
+  })
   nextTick(() => {
     const el = gridRef.value?.$el || gridRef.value
     if (el) {

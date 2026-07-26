@@ -2,8 +2,8 @@
 <template>
   <footer class="status-bar">
     <span>{{ dataLength }} act.</span><span class="sep">|</span>
-    <span
-      >Planif: <b>Bs. {{ fmt(totalPlan) }}</b></span
+    <span class="highlight-plan">
+      Planificado: <b>Bs. {{ fmt(totalPlan) }}</b> </span
     ><span class="sep">|</span>
     <span
       >Ejec: <b class="c-green">Bs. {{ fmt(totalEjec) }}</b></span
@@ -41,6 +41,16 @@ const fmt = (n) => (+(n || 0)).toLocaleString('es-BO', { minimumFractionDigits: 
   font-size: 11px;
   color: #5f6368;
   gap: 8px;
+}
+.highlight-plan {
+  background: #1a73e8;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.highlight-plan b {
+  color: #fff;
 }
 .mini-progress {
   width: 50px;
