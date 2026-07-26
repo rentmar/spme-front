@@ -95,6 +95,7 @@ export function crearRenderColorCelda(color = 'default') {
  * Uso:
  *   renderer: tablaRenders.colorPorValor
  */
+// eslint-disable-next-line
 export function renderColorPorValor(instance, td, row, col, prop, value, cellProperties) {
   Handsontable.renderers.TextRenderer.apply(this, arguments)
 
@@ -126,6 +127,7 @@ export function renderColorPorValor(instance, td, row, col, prop, value, cellPro
 /**
  * Renderer para saldo (rojo si negativo, verde si positivo)
  */
+// eslint-disable-next-line
 export function renderSaldo(instance, td, row, col, prop, value, cellProperties) {
   Handsontable.renderers.NumericRenderer.apply(this, arguments)
 
@@ -142,6 +144,7 @@ export function renderSaldo(instance, td, row, col, prop, value, cellProperties)
 /**
  * Renderer para presupuesto con formato Bs.
  */
+// eslint-disable-next-line
 export function renderPresupuesto(instance, td, row, col, prop, value, cellProperties) {
   Handsontable.renderers.NumericRenderer.apply(this, arguments)
 

@@ -29,6 +29,14 @@
           </button>
         </template>
       </v-tooltip>
+      <!-- Botón Nueva Tarea (tab tareas) - AGREGAR AQUÍ -->
+      <v-tooltip v-if="gridTab === 'tareas'" text="Agregar nueva tarea" location="bottom">
+        <template #activator="{ props }">
+          <button v-bind="props" class="btn primary" @click="$emit('add-tarea')">
+            + Nueva Subactividad
+          </button>
+        </template>
+      </v-tooltip>
     </div>
     <div class="header-right">
       <v-tooltip text="Explorador de actividad" location="bottom">
@@ -105,12 +113,16 @@
 import { useExcelMenus } from '../composables/useExcelMenus'
 import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore'
 
+defineProps({
+  gridTab: String, // prop para la grid de tareas
+})
+
 const { menuArchivo, menuEditar, menuVer } = useExcelMenus()
 const menus = { Archivo: menuArchivo, Editar: menuEditar, Ver: menuVer }
 
 const store = usePlanificacionExcelStore()
 
-defineEmits(['add-row', 'open-aside', 'ejecutar-accion', 'guardar'])
+defineEmits(['add-row', 'add-tarea', 'open-aside', 'ejecutar-accion', 'guardar'])
 </script>
 
 <style scoped>

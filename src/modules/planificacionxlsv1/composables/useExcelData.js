@@ -1,20 +1,40 @@
 // composables/useExcelData.js
 //Maneja la informacion de las grillas
 import { ref, computed } from 'vue'
-// import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore'
+import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore'
 import { useSeguimientoCambios } from './useSeguimientoCambios'
 //renders
-import { tablaRenders } from '../utils'
-import { puedeEditar } from '../utils'
+import { tablaRenders, ejecutarHandlers } from '../utils'
+
 export function useExcelData() {
   //inicia el store
-  //const store = usePlanificacionExcelStore()
+  const store = usePlanificacionExcelStore()
   //Inicia el composable
   const seguimiento = useSeguimientoCambios()
 
   //Estados de las grillas
   const tablaDataActividades = ref([])
   const tablaDataTareas = ref([])
+
+  /************************** Tipos de Actividad ***********************************************/
+  // Mapeo id → nombre
+  const tipoActividadNombrePorId = (id) => {
+    const tipo = store.tiposActividad?.find((t) => t.id === id)
+    return tipo ? `${tipo.sigla}-${tipo.tipo_actividad}` : ''
+  }
+
+  // Mapeo nombre → id
+  const tipoActividadIdPorNombre = (nombre) => {
+    const tipo = store.tiposActividad?.find((t) => `${t.sigla}-${t.tipo_actividad}` === nombre)
+    return tipo?.id || null
+  }
+
+  // Lista de nombres para el dropdown
+  const tiposActividadNombres = computed(
+    () => store.tiposActividad?.map((t) => t.sigla + '-' + t.tipo_actividad) || [],
+  )
+
+  /**************************  Fin Tipos de Actividad ***********************************************/
 
   //Datos de prueba - tareas
   const tareasDummy = ref([
@@ -73,10 +93,38 @@ export function useExcelData() {
       renderer: tablaRenders.celdaSuccess,
     },
     { data: 'nombreCorto', title: 'Nombre', width: 180 },
-    { data: 'tipo_actividad', title: 'Tipo', width: 120 },
+    { data: 'tipo_actividad_id', title: 'id TA*', width: 50 },
+    {
+      data: 'tipo_actividad',
+      title: 'Tipo',
+      width: 240,
+      type: 'dropdown',
+      source: tiposActividadNombres,
+    },
     { data: 'responsable', title: 'Responsable', width: 110 },
-    { data: 'fecha_inicio', title: 'Inicio', type: 'date', width: 100, dateFormat: 'YYYY-MM-DD' },
-    { data: 'fecha_cierre', title: 'Cierre', type: 'date', width: 100, dateFormat: 'YYYY-MM-DD' },
+    {
+      data: 'fecha_inicio',
+      title: 'Inicio',
+      type: 'date',
+      width: 100,
+      dateFormat: 'YYYY-MM-DD',
+      datePickerConfig: {
+        container: 'body',
+        preventOverflow: false,
+        showOn: 'focus',
+        appendTo: 'body',
+      },
+    },
+    {
+      data: 'fecha_cierre',
+      title: 'Cierre',
+      type: 'date',
+      width: 100,
+      dateFormat: 'YYYY-MM-DD',
+      datePickerConfig: {
+        container: 'body',
+      },
+    },
     { data: 'supuestos', title: 'Supuestos', width: 100 },
     { data: 'riesgos', title: 'Riesgos', width: 100 },
     {
@@ -213,9 +261,13 @@ export function useExcelData() {
       presupuesto: 0,
       totalEjecutado: 0,
       saldo: 0,
-      estado: 'PLAN',
+      estado: 'CRD',
+      esNueva: true,
     }
-    arr.push(nuevaFila)
+    //arr.push(nuevaFila)
+    // Insertar al inicio, antes de las filas placeholder
+    const index = arr.length - 5 // Las últimas 3 son placeholder
+    arr.splice(index, 0, nuevaFila)
 
     //Registro del cambio
     seguimiento.registrarCambio({
@@ -230,7 +282,47 @@ export function useExcelData() {
     })
   }
 
-  //Funcion registro de cambio - Grilla Actividades
+  // Agregar nueva tarea ← NUEVO
+  const addTarea = (actividadId = null, recargarFn) => {
+    const arr = tablaDataTareas.value
+    const newId = arr.length > 0 ? Math.max(...arr.map((r) => r.id)) + 1 : 1
+    const nuevaTarea = {
+      id: newId,
+      codigo: '',
+      titulo: '',
+      descripcion: '',
+      fecha_creacion: '',
+      fecha_limite: '',
+      presupuesto: 0,
+      presupuestoDesglose: '',
+      estado: 'PEN',
+      actividad: actividadId,
+      esNueva: true,
+      esTarea: true,
+    }
+    arr.push(nuevaTarea)
+
+    // Registro del cambio
+    seguimiento.registrarCambio({
+      tipo: 'tarea',
+      accion: 'agregar',
+      fila_id: newId,
+      columna: 'todo',
+      valor_anterior: null,
+      valor_nuevo: JSON.stringify(nuevaTarea),
+      tarea_codigo: '',
+      tarea_id: newId,
+    })
+
+    // Recargar grilla si hay función
+    if (recargarFn) {
+      setTimeout(() => recargarFn(), 100)
+    }
+  }
+
+  //Funcion onChange
+  //Ejecuta los handlers
+  //Registra los cambios en la grilla
   const onChange = (changes, source) => {
     if (source === 'loadData') return
     if (!changes) return
@@ -239,16 +331,15 @@ export function useExcelData() {
       if (row >= tablaDataActividades.value.length) return
       if (String(oldVal) === String(newVal)) return
 
+      // Aplicar valor
       const val = prop === 'presupuesto' || prop === 'totalEjecutado' ? +newVal || 0 : newVal
-
       tablaDataActividades.value[row][prop] = val
 
-      if (prop === 'presupuesto' || prop === 'totalEjecutado') {
-        tablaDataActividades.value[row].saldo =
-          (+tablaDataActividades.value[row].presupuesto || 0) -
-          (+tablaDataActividades.value[row].totalEjecutado || 0)
-      }
+      // Ejecutar handlers
+      const ok = ejecutarHandlers('actividad', prop, row, oldVal, val, tablaDataActividades, store)
+      if (!ok) return
 
+      // Registrar seguimiento
       if (seguimiento.esColumnaRastreable('actividad', prop)) {
         seguimiento.registrarCambio({
           tipo: 'actividad',
@@ -264,7 +355,9 @@ export function useExcelData() {
     })
   }
 
-  //Funcion registro de cambio - Grilla Tareas
+  //FUncion onChange()
+  //Ejecuta los handlers
+  //Registra los cambios en la grilla de tareas
   const onChangeTareas = (changes, source) => {
     if (source === 'loadData') return
     if (!changes) return
@@ -273,9 +366,15 @@ export function useExcelData() {
       if (row >= tablaDataTareas.value.length) return
       if (String(oldVal) === String(newVal)) return
 
+      // Aplicar valor
       const val = prop === 'presupuesto' ? +newVal || 0 : newVal
       tablaDataTareas.value[row][prop] = val
 
+      // Ejecutar handlers
+      const ok = ejecutarHandlers('tarea', prop, row, oldVal, val, tablaDataTareas)
+      if (!ok) return
+
+      // Registrar seguimiento
       if (seguimiento.esColumnaRastreable('tarea', prop)) {
         seguimiento.registrarCambio({
           tipo: 'tarea',
@@ -290,6 +389,153 @@ export function useExcelData() {
         })
       }
     })
+  }
+  // Agregar filas vacías al final para evitar problema del datepicker
+  const agregarFilasVacias = (cantidad = 5) => {
+    if (!store.initialized) return
+    // Actividades
+    for (let i = 0; i < cantidad; i++) {
+      tablaDataActividades.value.push({
+        id: null,
+        codigo: '',
+        nombreCorto: '',
+        tipo_actividad: '',
+        responsable: '',
+        fecha_inicio: '',
+        fecha_cierre: '',
+        supuestos: '',
+        riesgos: '',
+        presupuesto: '',
+        procedencia_fondos: '',
+        presupuestoGlobal: '',
+        totalReportado: '',
+        totalEjecutado: '',
+        saldo: '',
+        estado: '',
+        gradoEjecucion: '',
+        objetivo_pei: null,
+        indicador_pei: null,
+        factoresCriticos: '',
+        esNueva: false,
+      })
+    }
+
+    // Tareas
+    for (let i = 0; i < cantidad; i++) {
+      tablaDataTareas.value.push({
+        id: null,
+        codigo: '',
+        titulo: '',
+        descripcion: '',
+        fecha_creacion: '',
+        fecha_limite: '',
+        presupuesto: '',
+        presupuestoDesglose: '',
+        estado: '',
+        actividad: null,
+        esNueva: false,
+      })
+    }
+  }
+
+  //Funcion registro de cambio - Grilla Actividades
+  //previo a los handlers
+  // const onChange = (changes, source) => {
+  //   if (source === 'loadData') return
+  //   if (!changes) return
+
+  //   changes.forEach(([row, prop, oldVal, newVal]) => {
+  //     if (row >= tablaDataActividades.value.length) return
+  //     if (String(oldVal) === String(newVal)) return
+
+  //     const val = prop === 'presupuesto' || prop === 'totalEjecutado' ? +newVal || 0 : newVal
+
+  //     tablaDataActividades.value[row][prop] = val
+
+  //     if (prop === 'presupuesto' || prop === 'totalEjecutado') {
+  //       tablaDataActividades.value[row].saldo =
+  //         (+tablaDataActividades.value[row].presupuesto || 0) -
+  //         (+tablaDataActividades.value[row].totalEjecutado || 0)
+  //     }
+
+  //     if (seguimiento.esColumnaRastreable('actividad', prop)) {
+  //       seguimiento.registrarCambio({
+  //         tipo: 'actividad',
+  //         accion: 'editar',
+  //         fila_id: tablaDataActividades.value[row].id,
+  //         columna: prop,
+  //         valor_anterior: oldVal,
+  //         valor_nuevo: val,
+  //         actividad_codigo: tablaDataActividades.value[row].codigo,
+  //         actividad_id: tablaDataActividades.value[row].id,
+  //       })
+  //     }
+  //   })
+  // }
+
+  //Funcion registro de cambio - Grilla Tareas
+  //Previo a los handlers
+  // const onChangeTareas = (changes, source) => {
+  //   if (source === 'loadData') return
+  //   if (!changes) return
+
+  //   changes.forEach(([row, prop, oldVal, newVal]) => {
+  //     if (row >= tablaDataTareas.value.length) return
+  //     if (String(oldVal) === String(newVal)) return
+
+  //     const val = prop === 'presupuesto' ? +newVal || 0 : newVal
+  //     tablaDataTareas.value[row][prop] = val
+
+  //     if (seguimiento.esColumnaRastreable('tarea', prop)) {
+  //       seguimiento.registrarCambio({
+  //         tipo: 'tarea',
+  //         accion: 'editar',
+  //         fila_id: tablaDataTareas.value[row].id,
+  //         columna: prop,
+  //         valor_anterior: oldVal,
+  //         valor_nuevo: val,
+  //         actividad_codigo: tablaDataTareas.value[row].actividad_codigo || '',
+  //         actividad_id: tablaDataTareas.value[row].actividad || null,
+  //         tarea_codigo: tablaDataTareas.value[row].codigo || '',
+  //       })
+  //     }
+  //   })
+  // }
+
+  // useExcelData.js
+
+  // Eliminar actividad (solo si es nueva)
+  const deleteRow = (rowIndex) => {
+    const arr = tablaDataActividades.value
+    if (rowIndex < 0 || rowIndex >= arr.length) return false
+    const fila = arr[rowIndex]
+    if (fila.id === null || fila.id === undefined || !fila.esNueva) return false
+    arr.splice(rowIndex, 1)
+    return true
+  }
+
+  // Deshabilitar actividad
+  const disableRow = (rowIndex) => {
+    const arr = tablaDataActividades.value
+    if (rowIndex < 0 || rowIndex >= arr.length) return
+    arr[rowIndex].estaInactiva = true
+  }
+
+  // Eliminar tarea (solo si es nueva)
+  const deleteTarea = (rowIndex) => {
+    const arr = tablaDataTareas.value
+    if (rowIndex < 0 || rowIndex >= arr.length) return false
+    const fila = arr[rowIndex]
+    if (fila.id === null || fila.id === undefined || !fila.esNueva) return false
+    arr.splice(rowIndex, 1)
+    return true
+  }
+
+  // Deshabilitar tarea
+  const disableTarea = (rowIndex) => {
+    const arr = tablaDataTareas.value
+    if (rowIndex < 0 || rowIndex >= arr.length) return
+    arr[rowIndex].estaInactiva = true
   }
 
   return {
@@ -306,9 +552,18 @@ export function useExcelData() {
     fmt,
     estadoColor,
     addRow,
+    addTarea,
     onChange,
     onChangeTareas,
+    agregarFilasVacias,
     seguimiento,
+    deleteRow,
+    deleteTarea,
+    disableRow,
+    disableTarea,
+    tipoActividadNombrePorId,
+    tipoActividadIdPorNombre,
+    tiposActividadNombres,
   }
 }
 // // ========== composables/useExcelData.js ==========

@@ -1,5 +1,5 @@
 // composables/useExcelMenus.js
-import { computed } from 'vue'
+import { computed, inject, ref } from 'vue'
 
 export function useExcelMenus({
   data,
@@ -7,8 +7,15 @@ export function useExcelMenus({
   showAside,
   asideMode,
   addRow,
+  addTarea,
   verTareasDeActividad,
+  deleteTarea,
+  disableTarea,
 } = {}) {
+  // Inyectar tablaDataTareas
+  const tablaDataTareas = inject('tablaDataTareas', ref([]))
+  console.log('tablaDataTareas inyectado:', tablaDataTareas.value)
+
   const menuArchivo = [
     {
       type: 'item',
@@ -98,15 +105,9 @@ export function useExcelMenus({
 
   const ejecutarAccion = (action, arg) => {
     const acciones = {
-      guardar: () => alert('Guardar'),
-      importar: () => alert('Importar'),
-      exportarExcel: () => alert('Exportar Excel'),
-      exportarPDF: () => alert('Exportar PDF'),
-      cerrar: () => alert('Cerrar'),
+      guardar: () => {},
       addRow: () => addRow?.(),
-      agregarTarea: () => alert('Agregar Tarea'),
-      ajustarPresupuesto: () => alert('Ajustar Presupuesto'),
-      buscar: () => alert('Buscar'),
+      agregarTarea: () => addTarea?.(),
       toggleAside: (mode) => {
         if (showAside?.value && asideMode?.value === mode) {
           showAside.value = false
@@ -116,7 +117,7 @@ export function useExcelMenus({
         }
       },
       eliminarActividad: () => {
-        if (!selectedRowData?.value) return alert('Seleccione una actividad')
+        if (!selectedRowData?.value) return
         const idx = data?.value.findIndex((r) => r.id === selectedRowData.value.id)
         if (idx > -1) {
           data.value.splice(idx, 1)
@@ -124,21 +125,16 @@ export function useExcelMenus({
         }
       },
       toggleActividad: () => {
-        if (!selectedRowData?.value) return alert('Seleccione una actividad')
+        if (!selectedRowData?.value) return
         const idx = data?.value.findIndex((r) => r.id === selectedRowData.value.id)
         if (idx > -1) {
           data.value[idx].estado = data.value[idx].estado === 'DES' ? 'PLAN' : 'DES'
         }
       },
       duplicarFila: () => {
-        if (!selectedRowData?.value) return alert('Seleccione una actividad')
+        if (!selectedRowData?.value) return
         const newId = Math.max(...data.value.map((r) => r.id)) + 1
-        data.value.push({
-          ...selectedRowData.value,
-          id: newId,
-          codigo: '',
-          nombre: selectedRowData.value.nombre + ' (copia)',
-        })
+        data.value.push({ ...selectedRowData.value, id: newId, codigo: '', esNueva: true })
       },
     }
     if (acciones[action]) acciones[action](arg)
@@ -151,27 +147,11 @@ export function useExcelMenus({
       callback: () => verTareasDeActividad?.(),
       disabled: () => !selectedRowData?.value,
     },
-    {
-      key: 'verExplorador',
-      name: '🌳 Abrir Explorador',
-      callback: () => {
-        if (asideMode) asideMode.value = 'explorador'
-        if (showAside) showAside.value = true
-      },
-      disabled: () => !selectedRowData?.value,
-    },
     '---------',
     {
-      key: 'duplicar',
-      name: '📋 Duplicar',
-      callback: () => ejecutarAccion('duplicarFila'),
-      disabled: () => !selectedRowData?.value,
-    },
-    {
-      key: 'toggle',
-      name: '👁️ Hab/Deshab',
-      callback: () => ejecutarAccion('toggleActividad'),
-      disabled: () => !selectedRowData?.value,
+      key: 'agregar',
+      name: '➕ Agregar Actividad',
+      callback: () => addRow?.(),
     },
     {
       key: 'eliminar',
@@ -179,16 +159,47 @@ export function useExcelMenus({
       callback: () => ejecutarAccion('eliminarActividad'),
       disabled: () => !selectedRowData?.value,
     },
-    '---------',
-    { key: 'exportar', name: '📤 Exportar a Excel' },
   ])
 
-  // 🔥 FALTABA EL RETURN
+  // MENÚ CONTEXTUAL TAREAS
+  const contextMenuConfigTareas = {
+    items: {
+      add_tarea: {
+        name: '➕ Agregar Subactividad',
+        callback: () => addTarea?.(),
+      },
+      remove_tarea: {
+        name: '🗑️ Eliminar',
+        callback: () => {
+          const row = selectedRowData?.value
+          if (!row) return
+
+          console.log('Buscando row:', row)
+
+          // Buscar por id o por coincidencia de múltiples campos
+          const index = tablaDataTareas.value.findIndex((r) => {
+            if (row.id && r.id === row.id) return true
+            if (row.codigo && r.codigo === row.codigo) return true
+            if (row.titulo && r.titulo === row.titulo && r.actividad === row.actividad) return true
+            return false
+          })
+
+          console.log('index:', index)
+          if (index === -1) return
+          deleteTarea(index)
+        },
+        disabled: () => !selectedRowData?.value,
+      },
+      '---------': { name: '---------' },
+      copy: {},
+    },
+  }
   return {
     menuArchivo,
     menuEditar,
     menuVer,
     contextMenuConfig,
+    contextMenuConfigTareas,
     ejecutarAccion,
   }
 }

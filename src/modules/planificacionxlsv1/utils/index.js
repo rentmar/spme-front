@@ -18,3 +18,6 @@ export * from './tableRenders'
 
 // Control de acceso por roles
 export * from './accessControl'
+
+// Handlers de cambio
+export * from './changeHandlersExcelUtils'

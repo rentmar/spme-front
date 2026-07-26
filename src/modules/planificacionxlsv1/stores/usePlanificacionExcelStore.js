@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { proyectoServicios } from '@/modules/proyecto/services/proyectoService'
 import { procesarRespuestaProyecto } from '../utils'
 import { formatearPayload } from '../utils'
+import { tipoActividadServicio } from '@/modules/proyecto/services/tipoActividadService'
 
 export const usePlanificacionExcelStore = defineStore('excel-store', () => {
   //Estados de carga
@@ -15,6 +16,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
   const tareas = ref([])
   const metadata = ref(null)
   const proyectoId = ref(null) //id del proyecto
+  const tiposDeActividad = ref(null)
 
   //Dialogo
   const showDialogCambioActividad = ref(false)
@@ -24,6 +26,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
   const count = computed(() => actividades.value.length)
   const proyecto = computed(() => proyectoActual)
   const metadatos = computed(() => metadata)
+  const tiposActividad = computed(() => tiposDeActividad.value)
 
   //-- Historial de cambios
   const historialCambiosActividades = ref([])
@@ -152,7 +155,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     try {
       // 1. Obtener datos del servicio
       const respuesta = await proyectoServicios.obtenerActividadesActivasPorProyectoId(idproyecto)
-
+      const ta = await cargarTiposDeActividad()
       // 2. ═══ PROCESAR LA RESPUESTA ═══
       const datos = procesarRespuestaProyecto(respuesta)
 
@@ -161,6 +164,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
       actividades.value = datos.actividades
       tareas.value = datos.tareas
       metadata.value = datos.metadata
+      tiposDeActividad.value = ta
 
       console.log('✅ Proyecto cargado:', {
         codigo: datos.proyecto?.codigo,
@@ -178,7 +182,18 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     }
   }
 
-  //Cargar todas las actividades de un proyecto
+  //Funcion para cargar los tipos de actividad
+  const cargarTiposDeActividad = async () => {
+    loading.value = true
+    try {
+      const respuesta = await tipoActividadServicio.all()
+      return respuesta
+    } catch (error) {
+      console.error('Error al cargar los tipos de actividad', error)
+    } finally {
+      loading.value = false
+    }
+  }
 
   //Funcion para extraer el proyecto
 
@@ -205,10 +220,12 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     proyectoActual,
     proyectoId,
     metadata, //variable de los estados no computed
+    tiposDeActividad,
     //getters
     count,
     proyecto,
     metadatos,
+    tiposActividad,
     //Historial
     historialCambiosActividades,
     historialCambiosTareas,

@@ -2,8 +2,10 @@
 <template>
   <div class="excel-app">
     <ExcelToolbar
+      :grid-tab="gridTab"
       :selected-row-data="selectedRowData"
       @add-row="addRow"
+      @add-tarea="addTareaHandler"
       @open-aside="openAside"
       @ejecutar-accion="ejecutarAccion"
       @guardar="guardar"
@@ -25,6 +27,7 @@
         @change="onChange"
         @select="onSelect"
         :on-change-tareas="onChangeTareas"
+        :context-menu-config-tareas="contextMenuConfigTareas"
       />
       <ExcelAside
         v-if="showAside"
@@ -52,10 +55,12 @@
       :pct="pct"
     />
   </div>
+  <!--Para debug-->
+  <DebugDialog :tablaDataActividades="tablaDataActividades" :tablaDataTareas="tablaDataTareas" />
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, provide } from 'vue'
 import { registerAllModules } from 'handsontable/registry'
 import 'handsontable/dist/handsontable.full.css'
 import { registerLanguageDictionary, esMX } from 'handsontable/i18n'
@@ -70,6 +75,8 @@ import { useExcelData } from '../composables/useExcelData.js'
 import { useExcelMenus } from '../composables/useExcelMenus.js'
 //store
 import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore.js'
+//debug
+import DebugDialog from './Dialogs/DebugDialog.vue'
 
 registerAllModules()
 registerLanguageDictionary(esMX)
@@ -103,13 +110,25 @@ const {
   totalEjec,
   saldo,
   pct,
-  fmt,
-  estadoColor,
+  //fmt,
+  //estadoColor,
   addRow,
+  addTarea,
   onChange,
   onChangeTareas,
   seguimiento,
+  agregarFilasVacias,
+  deleteRow,
+  deleteTarea,
+  disableRow,
+  disableTarea,
+  tipoActividadNombrePorId,
 } = useExcelData()
+
+//Solo para debug:
+// Después de useExcelData()
+provide('tablaDataActividades', tablaDataActividades)
+provide('tablaDataTareas', tablaDataTareas)
 
 ///Rutina para mostrar tareas
 
@@ -135,6 +154,13 @@ const {
 //   }
 // }
 
+//Agregar Tarea
+const addTareaHandler = () => {
+  addTarea(actividadSeleccionada.value?.id, () => {
+    gridRef.value?.recargarTareas(tareasFiltradas.value)
+  })
+}
+
 // verTareasDeActividad con confirmación
 const verTareasDeActividad = async () => {
   if (selectedRowData.value) {
@@ -150,13 +176,18 @@ const verTareasDeActividad = async () => {
   }
 }
 
-const { contextMenuConfig, ejecutarAccion } = useExcelMenus({
+const { contextMenuConfig, contextMenuConfigTareas, ejecutarAccion } = useExcelMenus({
   data: tablaDataActividades,
   selectedRowData,
   showAside,
   asideMode,
   addRow,
+  addTarea: () => addTarea(actividadSeleccionada.value?.id),
   verTareasDeActividad,
+  deleteRow,
+  deleteTarea,
+  disableRow,
+  disableTarea,
 })
 
 // Función guardar
@@ -171,7 +202,27 @@ const guardar = async () => {
 // COMPUTED
 const tareasFiltradas = computed(() => {
   if (!actividadSeleccionada.value || !tablaDataTareas.value.length) return []
-  return tablaDataTareas.value.filter((t) => t.actividad === actividadSeleccionada.value.id)
+
+  const filtradas = tablaDataTareas.value.filter(
+    (t) => t.actividad === actividadSeleccionada.value.id,
+  )
+
+  // Agregar 3 filas vacías al final
+  const vacias = Array.from({ length: 5 }, () => ({
+    id: null,
+    codigo: '',
+    titulo: '',
+    descripcion: '',
+    fecha_creacion: '',
+    fecha_limite: '',
+    presupuesto: '',
+    presupuestoDesglose: '',
+    estado: '',
+    actividad: '',
+    esNueva: false,
+  }))
+
+  return [...filtradas, ...vacias]
 })
 
 const arbolExplorador = computed(() => {
@@ -240,14 +291,34 @@ const arbolExplorador = computed(() => {
 // FUNCIONES
 const onSelect = (startRow, startCol) => {
   if (startRow >= 0 && startRow < tablaDataActividades.value.length) {
-    selectedRowData.value = tablaDataActividades.value[startRow]
+    const row = tablaDataActividades.value[startRow]
+    selectedRowData.value = row
+
+    // Si el tab de tareas está abierto, actualizar automáticamente
+    if (gridTab.value === 'tareas') {
+      actividadSeleccionada.value = row
+      nextTick(() => {
+        gridRef.value?.recargarTareas(tareasFiltradas.value)
+      })
+    }
+
     const col = columns.value[startCol]
     if (col) {
       selectedCell.value = col.data + (startRow + 1)
-      selectedValue.value = tablaDataActividades.value[startRow][col.data] || ''
+      selectedValue.value = row[col.data] || ''
     }
   }
 }
+// const onSelect = (startRow, startCol) => {
+//   if (startRow >= 0 && startRow < tablaDataActividades.value.length) {
+//     selectedRowData.value = tablaDataActividades.value[startRow]
+//     const col = columns.value[startCol]
+//     if (col) {
+//       selectedCell.value = col.data + (startRow + 1)
+//       selectedValue.value = tablaDataActividades.value[startRow][col.data] || ''
+//     }
+//   }
+// }
 
 const openAside = (mode) => {
   asideMode.value = mode
@@ -282,8 +353,16 @@ const dropdownMenuConfig = {
 }
 
 onMounted(() => {
-  tablaDataActividades.value = store.actividades
+  //tablaDataActividades.value = store.actividades
+  tablaDataActividades.value = store.actividades.map((a) => ({
+    ...a,
+    tipo_actividad: tipoActividadNombrePorId(a.tipo_actividad_id),
+    esNueva: false,
+  }))
+
   tablaDataTareas.value = store.tareas
+
+  agregarFilasVacias()
 
   console.log('tablaDataActividades:', tablaDataActividades.value)
   console.log('tablaDataTareas:', tablaDataTareas.value)
