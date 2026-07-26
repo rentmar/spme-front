@@ -2,6 +2,8 @@
 //Maneja la informacion de las grillas
 import { ref, computed } from 'vue'
 import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore'
+import { useUserStore } from '@/stores/user'
+//composables
 import { useSeguimientoCambios } from './useSeguimientoCambios'
 //renders
 import { tablaRenders, ejecutarHandlers } from '../utils'
@@ -9,6 +11,8 @@ import { tablaRenders, ejecutarHandlers } from '../utils'
 export function useExcelData() {
   //inicia el store
   const store = usePlanificacionExcelStore()
+  const userStore = useUserStore()
+
   //Inicia el composable
   const seguimiento = useSeguimientoCambios()
 
@@ -35,6 +39,15 @@ export function useExcelData() {
   )
 
   /**************************  Fin Tipos de Actividad ***********************************************/
+
+  //Datos para el dropdown de responsable:
+  const responsablesNombres = computed(
+    () =>
+      userStore.listaUsuarios?.map((u) => {
+        const data = u._custom?.value || u
+        return data.username
+      }) || [],
+  )
 
   //Datos de prueba - tareas
   const tareasDummy = ref([
@@ -101,7 +114,13 @@ export function useExcelData() {
       type: 'dropdown',
       source: tiposActividadNombres,
     },
-    { data: 'responsable', title: 'Responsable', width: 110 },
+    {
+      data: 'responsable',
+      title: 'Responsable',
+      width: 110,
+      type: 'dropdown',
+      source: responsablesNombres,
+    },
     {
       data: 'fecha_inicio',
       title: 'Inicio',

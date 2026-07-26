@@ -75,6 +75,7 @@ import { useExcelData } from '../composables/useExcelData.js'
 import { useExcelMenus } from '../composables/useExcelMenus.js'
 //store
 import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore.js'
+import { useUserStore } from '@/stores/user.js'
 //debug
 import DebugDialog from './Dialogs/DebugDialog.vue'
 
@@ -83,7 +84,7 @@ registerLanguageDictionary(esMX)
 
 //iniciar el store
 const store = usePlanificacionExcelStore()
-
+const userStore = useUserStore()
 // REFS
 const selectedRowData = ref(null)
 const actividadSeleccionada = ref(null)
@@ -352,7 +353,11 @@ const dropdownMenuConfig = {
   },
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Cargar lista de usuarios si no está cargada
+  if (!userStore.listaUsuarios || userStore.listaUsuarios.length === 0) {
+    await userStore.cargarListaUsuarios()
+  }
   //tablaDataActividades.value = store.actividades
   tablaDataActividades.value = store.actividades.map((a) => ({
     ...a,
