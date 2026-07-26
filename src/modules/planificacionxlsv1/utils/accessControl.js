@@ -4,14 +4,18 @@ import { useUserStore } from '@/stores/user'
 /**
  * SISTEMA DE CONTROL DE ACCESO POR ROLES Y ESTADOS
  *
- * Uso:
- *   import { puedeEditar } from '../utils'
- *   puedeEditar('actividad', 'presupuesto', 'EJEC')  // → false/true
+ * Uso principal:
+ *   import { puedeEditar } from '../utils/accessControl'
+ *   puedeEditar('actividad', 'presupuesto', 'EJEC')  // → true (ahora permitido)
  *
  * Extensibilidad:
- *   Agregar nuevo rol al objeto reglasActividad/reglasTarea
- *   Agregar nuevo estado a reglasEstadoActividad/reglasEstadoTarea
- */
+ *   - Agregar nuevo rol: añadir entrada en reglasActividad/reglasTarea
+ *   - Agregar nuevo estado: añadir entrada en reglasEstadoActividad/reglasEstadoTarea
+ *
+ *  Las capas de acceso se calculan con AND
+ *
+ *
+ * /
 
 /*
  * ═══════════════════════════════════════════════════════════════════════
@@ -40,29 +44,32 @@ import { useUserStore } from '@/stores/user'
  * TABLA DE PERMISOS - GRILLA DE TAREAS
  * ═══════════════════════════════════════════════════════════════════════
  *
- * | Columna         | admin | dir-admin | coordinador | contable | tecnico |
- * |-----------------|:-----:|:---------:|:-----------:|:--------:|:-------:|
- * | codigo          |   ❌  |    ✅     |     ❌      |    ❌    |   ❌    |
- * | titulo          |   ❌  |    ✅     |     ✅      |    ❌    |   ✅    |
- * | descripcion     |   ❌  |    ✅     |     ✅      |    ❌    |   ✅    |
- * | presupuesto     |   ❌  |    ✅     |     ❌      |    ✅    |   ❌    |
- * | estado          |   ❌  |    ✅     |     ✅      |    ❌    |   ✅    |
- * | fecha_ejecucion |   ❌  |    ✅     |     ❌      |    ❌    |   ✅    |
- * | fecha_limite    |   ❌  |    ✅     |     ✅      |    ❌    |   ✅    |
+ * | Columna             | admin | dir-admin | coordinador | contable | tecnico |
+ * |---------------------|:-----:|:---------:|:-----------:|:--------:|:-------:|
+ * | codigo              |   ❌  |    ✅     |     ❌      |    ❌    |   ❌    |
+ * | titulo              |   ❌  |    ✅     |     ✅      |    ❌    |   ✅    |
+ * | descripcion         |   ❌  |    ✅     |     ✅      |    ❌    |   ✅    |
+ * | presupuesto         |   ❌  |    ✅     |     ❌      |    ✅    |   ❌    |
+ * | estado              |   ❌  |    ✅     |     ✅      |    ❌    |   ✅    |
+ * | fecha_creacion      |   ❌  |    ✅     |     ❌      |    ❌    |   ❌    |
+ * | fecha_limite        |   ❌  |    ✅     |     ✅      |    ❌    |   ✅    |
+ * | presupuestoDesglose |   ❌  |    ✅     |     ❌      |    ✅    |   ❌    |
  *
  * ═══════════════════════════════════════════════════════════════════════
- * RESTRICCIONES POR ESTADO - ACTIVIDADES
+ * RESTRICCIONES POR ESTADO - ACTIVIDADES (ACTUALIZADO)
  * ═══════════════════════════════════════════════════════════════════════
  *
  * | Estado   | Columnas permitidas                                |
  * |----------|-----------------------------------------------------|
  * | FIN      | Ninguna                                             |
- * | EJEC     | totalEjecutado, riesgos, supuestos                  |
- * | REP      | totalEjecutado, riesgos, supuestos                  |
- * | RETR     | totalEjecutado, fecha_cierre, riesgos, supuestos    |
- * | REPROG   | totalEjecutado, fecha_cierre, riesgos, supuestos    |
- * | PLAN     | totalEjecutado, fecha_cierre, fecha_inicio,         |
+ * | EJEC     | presupuesto, totalEjecutado, riesgos, supuestos     |
+ * | REP      | presupuesto, totalEjecutado, riesgos, supuestos     |
+ * | RETR     | presupuesto, totalEjecutado, fecha_cierre,          |
  * |          | riesgos, supuestos                                  |
+ * | REPROG   | presupuesto, totalEjecutado, fecha_cierre,          |
+ * |          | riesgos, supuestos                                  |
+ * | PLAN     | presupuesto, totalEjecutado, fecha_cierre,          |
+ * |          | fecha_inicio, riesgos, supuestos                    |
  * | CRD      | Todas                                               |
  *
  * ═══════════════════════════════════════════════════════════════════════
@@ -128,6 +135,7 @@ const reglasActividad = {
   },
   tecnico: {
     permitidas: [
+      'presupuesto',
       'supuestos',
       'riesgos',
       'totalEjecutado',
@@ -136,7 +144,6 @@ const reglasActividad = {
       'saldo',
     ],
     bloqueadas: [
-      'presupuesto',
       'codigo',
       'fecha_inicio',
       'fecha_cierre',
@@ -159,39 +166,46 @@ const reglasTarea = {
   },
   coordinador: {
     permitidas: ['titulo', 'descripcion', 'estado', 'fecha_limite'],
-    bloqueadas: ['presupuesto', 'codigo', 'fecha_ejecucion'],
+    bloqueadas: ['presupuesto', 'codigo', 'fecha_creacion', 'presupuestoDesglose'],
   },
   contable: {
-    permitidas: ['presupuesto'],
-    bloqueadas: ['codigo', 'titulo', 'descripcion', 'estado', 'fecha_ejecucion', 'fecha_limite'],
+    permitidas: ['presupuesto', 'presupuestoDesglose'],
+    bloqueadas: ['codigo', 'titulo', 'descripcion', 'estado', 'fecha_creacion', 'fecha_limite'],
   },
   tecnico: {
-    permitidas: ['fecha_ejecucion', 'fecha_limite', 'titulo', 'descripcion', 'estado'],
-    bloqueadas: ['presupuesto', 'codigo'],
+    permitidas: ['fecha_creacion', 'fecha_limite', 'titulo', 'descripcion', 'estado'],
+    bloqueadas: ['presupuesto', 'codigo', 'presupuestoDesglose'],
   },
 }
 
 // ═══════════════════════════════════════════════════════════
-// REGLAS POR ESTADO - ACTIVIDADES
+// REGLAS POR ESTADO - ACTIVIDADES (ACTUALIZADO)
 // ═══════════════════════════════════════════════════════════
 const reglasEstadoActividad = {
   FIN: {
     todasBloqueadas: true,
   },
   REP: {
-    permitidas: ['totalEjecutado', 'riesgos', 'supuestos'],
+    permitidas: ['presupuesto', 'totalEjecutado', 'riesgos', 'supuestos'],
   },
   EJEC: {
-    permitidas: ['totalEjecutado', 'riesgos', 'supuestos'],
+    permitidas: ['presupuesto', 'totalEjecutado', 'riesgos', 'supuestos'],
   },
   RETR: {
-    permitidas: ['totalEjecutado', 'fecha_cierre', 'riesgos', 'supuestos'],
+    permitidas: ['presupuesto', 'totalEjecutado', 'fecha_cierre', 'riesgos', 'supuestos'],
   },
   REPROG: {
-    permitidas: ['totalEjecutado', 'fecha_cierre', 'riesgos', 'supuestos'],
+    permitidas: ['presupuesto', 'totalEjecutado', 'fecha_cierre', 'riesgos', 'supuestos'],
   },
   PLAN: {
-    permitidas: ['totalEjecutado', 'fecha_cierre', 'fecha_inicio', 'riesgos', 'supuestos'],
+    permitidas: [
+      'presupuesto',
+      'totalEjecutado',
+      'fecha_cierre',
+      'fecha_inicio',
+      'riesgos',
+      'supuestos',
+    ],
   },
   CRD: {
     todas: true,
@@ -208,6 +222,9 @@ const reglasEstadoTarea = {
   EPROG: {
     permitidas: ['estado', 'fecha_limite'],
   },
+  PEN: {
+    todas: true,
+  },
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -215,10 +232,15 @@ const reglasEstadoTarea = {
 // ═══════════════════════════════════════════════════════════
 
 /**
- * Verifica si el usuario puede editar una columna según su rol
+ * Verifica si el usuario puede editar una columna según su ROL.
+ *
  * @param {string} tipoGrilla - 'actividad' | 'tarea'
- * @param {string} columna - Nombre de la columna (data)
- * @returns {boolean}
+ * @param {string} columna - Nombre del campo (data) en la grilla
+ * @returns {boolean} - true si el ROL permite editar esa columna
+ *
+ * @example
+ *   puedeEditarColumna('actividad', 'presupuesto')  // admin → true, tecnico → false
+ *   puedeEditarColumna('tarea', 'titulo')           // coordinador → true, contable → false
  */
 export function puedeEditarColumna(tipoGrilla, columna) {
   const userStore = useUserStore()
@@ -236,11 +258,18 @@ export function puedeEditarColumna(tipoGrilla, columna) {
 }
 
 /**
- * Verifica si se puede editar según el estado del registro
+ * Verifica si se puede editar según el ESTADO del registro.
+ *
  * @param {string} tipoGrilla - 'actividad' | 'tarea'
- * @param {string} columna - Nombre de la columna
- * @param {string} estado - Estado actual
- * @returns {boolean}
+ * @param {string} columna - Nombre del campo
+ * @param {string} estado - Código del estado actual del registro
+ * @returns {boolean} - true si el ESTADO permite editar esa columna
+ *
+ * @example
+ *   puedeEditarSegunEstado('actividad', 'presupuesto', 'FIN')    // false
+ *   puedeEditarSegunEstado('actividad', 'presupuesto', 'EJEC')   // true (actualizado)
+ *   puedeEditarSegunEstado('tarea', 'titulo', 'COMPL')           // false
+ *   puedeEditarSegunEstado('tarea', 'estado', 'EPROG')           // true
  */
 export function puedeEditarSegunEstado(tipoGrilla, columna, estado) {
   const reglas = tipoGrilla === 'actividad' ? reglasEstadoActividad : reglasEstadoTarea
@@ -255,11 +284,20 @@ export function puedeEditarSegunEstado(tipoGrilla, columna, estado) {
 }
 
 /**
- * Verifica ambos permisos: ROL + ESTADO en una sola llamada
+ * FUNCIÓN PRINCIPAL: Verifica ambos permisos (ROL + ESTADO) en una sola llamada.
+ * Debe usarse en los handlers de cambio de la grilla.
+ *
  * @param {string} tipoGrilla - 'actividad' | 'tarea'
- * @param {string} columna - Nombre de la columna
- * @param {string} estado - Estado del registro
- * @returns {boolean}
+ * @param {string} columna - Nombre del campo
+ * @param {string} estado - Código del estado del registro
+ * @returns {boolean} - true si AMBAS condiciones (ROL y ESTADO) permiten editar
+ *
+ * @example
+ *   puedeEditar('actividad', 'presupuesto', 'EJEC')
+ *   // admin + EJEC → true (rol permite, estado ahora permite presupuesto)
+ *   // tecnico + EJEC → false (rol no permite presupuesto)
+ *   // contable + EJEC → true (rol permite presupuesto, estado ahora lo permite)
+ *   // admin + FIN → false (estado bloquea todo)
  */
 export function puedeEditar(tipoGrilla, columna, estado) {
   if (!puedeEditarColumna(tipoGrilla, columna)) return false
@@ -268,9 +306,11 @@ export function puedeEditar(tipoGrilla, columna, estado) {
 }
 
 /**
- * Obtiene las columnas permitidas para el rol actual
+ * Obtiene las columnas permitidas para el rol actual.
+ * Útil para configurar readOnly en la definición de columnas de la grilla.
+ *
  * @param {string} tipoGrilla - 'actividad' | 'tarea'
- * @returns {string[]} - Array vacío = todas permitidas
+ * @returns {string[]} - Array vacío = TODAS las columnas son permitidas
  */
 export function columnasPermitidas(tipoGrilla) {
   const userStore = useUserStore()
@@ -284,7 +324,7 @@ export function columnasPermitidas(tipoGrilla) {
 }
 
 /**
- * Obtiene los estados de actividad
+ * Obtiene los estados de actividad definidos en el sistema.
  * @returns {Array<{codigo: string, nombre: string}>}
  */
 export function getEstadosActividad() {
@@ -292,9 +332,9 @@ export function getEstadosActividad() {
 }
 
 /**
- * Obtiene el nombre legible de un estado de actividad
- * @param {string} codigo - Código del estado
- * @returns {string}
+ * Obtiene el nombre legible de un estado de actividad a partir de su código.
+ * @param {string} codigo - Código del estado (ej: 'EJEC')
+ * @returns {string} - Nombre legible (ej: 'En Ejecucion')
  */
 export function getNombreEstadoActividad(codigo) {
   const estado = ESTADOS_ACTIVIDAD.find((e) => e.codigo === codigo)

@@ -27,10 +27,22 @@ export function useExcelData() {
   const tareasColumns = ref([
     { data: 'id', title: '#', type: 'numeric', width: 40 },
     { data: 'codigo', title: 'Código', width: 90 },
-    { data: 'actividad', title: 'Actividad', width: 220 },
-    { data: 'nombre', title: 'Tarea', width: 180 },
-    { data: 'inicio', title: 'Inicio', type: 'date', width: 100, dateFormat: 'YYYY-MM-DD' },
-    { data: 'cierre', title: 'Cierre', type: 'date', width: 100, dateFormat: 'YYYY-MM-DD' },
+    { data: 'titulo', title: 'Titulo', width: 180 },
+    { data: 'descripcion', title: 'Descripcion', width: 220 },
+    {
+      data: 'fecha_creacion',
+      title: 'Fecha Inicio',
+      type: 'date',
+      width: 100,
+      dateFormat: 'YYYY-MM-DD',
+    },
+    {
+      data: 'fecha_limite',
+      title: 'Fecha Cierre',
+      type: 'date',
+      width: 100,
+      dateFormat: 'YYYY-MM-DD',
+    },
     {
       data: 'presupuesto',
       title: 'Presupuesto',
@@ -38,7 +50,9 @@ export function useExcelData() {
       width: 110,
       numericFormat: { pattern: '0,0.00' },
     },
+    { data: 'presupuestoDesglose', title: 'Desglose Presupuesto', width: 250 },
     { data: 'estado', title: 'Estado', width: 100 },
+    { data: 'actividad', title: 'Actividad', width: 220 },
   ])
 
   //Datos de prueba para las fuentes de financiamiento
