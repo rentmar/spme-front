@@ -79,6 +79,13 @@
           >
         </template>
       </v-tooltip>
+      <v-tooltip text="Árbol de presupuesto" location="bottom">
+        <template #activator="{ props }">
+          <v-btn v-bind="props" variant="text" size="small" @click="$emit('open-aside', 'arbol')"
+            >💰 Árbol</v-btn
+          >
+        </template>
+      </v-tooltip>
       <v-tooltip text="Resumen económico" location="bottom">
         <template #activator="{ props }">
           <v-btn v-bind="props" variant="text" size="small" @click="$emit('open-aside', 'resumen')"

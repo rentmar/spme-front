@@ -2,8 +2,9 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { proyectoServicios } from '@/modules/proyecto/services/proyectoService'
 import { procesarRespuestaProyecto } from '../utils'
-import { formatearPayload } from '../utils'
 import { tipoActividadServicio } from '@/modules/proyecto/services/tipoActividadService'
+import { planificacionProyectoServicio } from '../services/planificacionProyectoService'
+import { usePlanificacionPayloadBulk } from '../composables/usePlanificacionPayloadBulk'
 
 export const usePlanificacionExcelStore = defineStore('excel-store', () => {
   //Estados de carga
@@ -17,6 +18,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
   const metadata = ref(null)
   const proyectoId = ref(null) //id del proyecto
   const tiposDeActividad = ref(null)
+  const proyectoSnapshoot = ref(null) //Snapshoot del proyecto, se almacena para seguimiento, no se modifica durante toda la sesion
 
   //Dialogo
   const showDialogCambioActividad = ref(false)
@@ -77,33 +79,41 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
 
   //GUarda los cambios, enia la informacion a la rest api
   //Pendiente -- incluir los datos de las grillas actividad y tarea
-  const guardarCambios = async () => {
+  const guardarCambios = async (motivo, grillaActividades, grillaTareas) => {
+    if (!tieneCambiosSinGuardar.value) {
+      console.warn('No hay cambios para guardar')
+      return { success: false, message: 'No hay cambios para guardar' }
+    }
+    loading.value = true
+    error.value = null
+
     try {
-      //Formatear el payload del historial de cambios
-      const payload = formatearPayload(
-        historialCambiosActividades.value,
-        historialCambiosTareas.value,
-        proyectoId.value,
-      )
-      //Rutina de envio al rest api
-      //Llamada al bulk
-      //rutina de ejemplo fectch
-      const response = await fetch('/api/seguimiento/guardar/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+      const { construirPayload, validarPayload } = usePlanificacionPayloadBulk()
+      const payload = construirPayload({
+        motivo,
+        tablaActividades: grillaActividades || [],
+        tablaTareas: grillaTareas || [],
+        historialActividades: historialCambiosActividades.value,
+        historialTareas: historialCambiosTareas.value,
+        proyectoId: proyectoId.value,
+        proyectoNombre: proyectoActual.value?.titulo,
+        proyectoSnapshot: proyectoSnapshoot.value,
       })
 
-      if (!response.ok) throw new Error('Error al guardar cambios')
-      //Limpiar las variables
-      historialCambiosActividades.value = []
-      historialCambiosTareas.value = []
+      console.log('PAYLOAD: ', payload)
+      const { valido, errores } = validarPayload(payload)
+      if (!valido) throw new Error(errores.join(', '))
+
+      const respuesta = await planificacionProyectoServicio.guardarPlanificacion(payload)
+      return respuesta
+    } catch (e) {
+      error.value = e.message
+      console.error('❌ Error al guardar planificación:', e)
+      throw e
+    } finally {
+      loading.value = false
       tieneCambiosActividades.value = false
       tieneCambiosTareas.value = false
-      //Respuesta
-      return await response.json()
-    } catch (e) {
-      console.error('Error al guardar cambios', e)
     }
   }
 
@@ -173,6 +183,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
 
       // 3. Asignar a los refs
       proyectoActual.value = datos.proyecto
+      proyectoSnapshoot.value = datos.proyecto
       actividades.value = datos.actividades
       tareas.value = datos.tareas
       metadata.value = datos.metadata
@@ -206,8 +217,6 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
       loading.value = false
     }
   }
-
-  //Funcion para extraer el proyecto
 
   //Limpiar el store
   const reset = () => {

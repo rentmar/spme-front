@@ -1,4 +1,3 @@
-```vue
 <!-- AsideTareas.vue -->
 <template>
   <div class="aside-tareas">
@@ -29,8 +28,8 @@
 
     <v-divider></v-divider>
 
-    <!-- Barra de Herramientas -->
-    <div class="aside-toolbar">
+    <!-- Barra de Herramientas - Ocultar si es nueva -->
+    <div class="aside-toolbar" v-if="!actividad?.esNueva">
       <div class="toolbar-row">
         <v-text-field
           v-model="busqueda"
@@ -65,123 +64,135 @@
       </div>
     </div>
 
-    <v-divider></v-divider>
+    <v-divider v-if="!actividad?.esNueva"></v-divider>
 
     <!-- Contenido Principal -->
     <div class="aside-content">
-      <div v-if="tareasFiltradas.length > 0" class="lista-tareas">
-        <div class="tareas-count">
-          {{ tareasFiltradas.length }} subactividad{{ tareasFiltradas.length !== 1 ? 'es' : '' }}
-        </div>
-        <div class="tareas-container">
-          <div
-            v-for="tarea in tareasFiltradas"
-            :key="tarea.id"
-            class="tarea-item"
-            :class="getEstadoClaseBorde(tarea.estado)"
-          >
-            <div class="tarea-content">
-              <div class="tarea-header">
-                <div class="tarea-estado">
-                  <v-icon :color="getEstadoColor(tarea.estado)" size="16">
-                    {{ getEstadoIcon(tarea.estado) }}
-                  </v-icon>
-                  <v-chip
-                    size="x-small"
-                    :color="getEstadoColor(tarea.estado)"
-                    variant="flat"
-                    class="ml-2"
-                  >
-                    {{ obtenerLiteralEstado(tarea.estado) }}
-                  </v-chip>
-                </div>
-                <div class="tarea-info">
-                  <div class="tarea-titulo">{{ tarea.titulo || 'Sin título' }}</div>
-                  <div class="tarea-codigo">{{ tarea.codigo }}</div>
+      <!-- Mensaje para actividad nueva -->
+      <div v-if="actividad?.esNueva" class="estado-vacio">
+        <v-icon size="48" color="warning" class="mb-3">mdi-lock-outline</v-icon>
+        <p class="vacio-texto font-weight-bold">Actividad sin guardar</p>
+        <p class="vacio-subtexto">
+          Es necesario guardar la actividad para proceder con las subactividades.
+        </p>
+      </div>
+
+      <!-- Contenido normal -->
+      <template v-else>
+        <div v-if="tareasFiltradas.length > 0" class="lista-tareas">
+          <div class="tareas-count">
+            {{ tareasFiltradas.length }} subactividad{{ tareasFiltradas.length !== 1 ? 'es' : '' }}
+          </div>
+          <div class="tareas-container">
+            <div
+              v-for="tarea in tareasFiltradas"
+              :key="tarea.id"
+              class="tarea-item"
+              :class="getEstadoClaseBorde(tarea.estado)"
+            >
+              <div class="tarea-content">
+                <div class="tarea-header">
+                  <div class="tarea-estado">
+                    <v-icon :color="getEstadoColor(tarea.estado)" size="16">
+                      {{ getEstadoIcon(tarea.estado) }}
+                    </v-icon>
+                    <v-chip
+                      size="x-small"
+                      :color="getEstadoColor(tarea.estado)"
+                      variant="flat"
+                      class="ml-2"
+                    >
+                      {{ obtenerLiteralEstado(tarea.estado) }}
+                    </v-chip>
+                  </div>
+                  <div class="tarea-info">
+                    <div class="tarea-titulo">{{ tarea.titulo || 'Sin título' }}</div>
+                    <div class="tarea-codigo">{{ tarea.codigo }}</div>
+                  </div>
+
+                  <div class="tarea-actions">
+                    <v-chip
+                      v-if="tarea.presupuesto"
+                      size="x-small"
+                      variant="outlined"
+                      color="green"
+                      class="mr-2"
+                    >
+                      {{ formatearPresupuesto(tarea.presupuesto) }}
+                    </v-chip>
+
+                    <v-menu location="bottom end">
+                      <template #activator="{ props }">
+                        <v-btn v-bind="props" icon size="x-small" variant="text">
+                          <v-icon size="18">mdi-dots-vertical</v-icon>
+                        </v-btn>
+                      </template>
+                      <v-list density="compact">
+                        <v-list-item @click="exportarTarea(tarea)">
+                          <template #prepend
+                            ><v-icon size="16" color="red-darken-2"
+                              >mdi-file-pdf-box</v-icon
+                            ></template
+                          >
+                          <v-list-item-title>Exportar PDF</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item @click="editarTarea(tarea)">
+                          <template #prepend><v-icon size="16">mdi-pencil</v-icon></template>
+                          <v-list-item-title>Editar</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item @click="abrirCambioEstado(tarea)">
+                          <template #prepend><v-icon size="16">mdi-sync</v-icon></template>
+                          <v-list-item-title>Cambiar Estado</v-list-item-title>
+                        </v-list-item>
+                        <v-divider></v-divider>
+                        <v-list-item @click="confirmarEliminar(tarea)" color="error">
+                          <template #prepend
+                            ><v-icon size="16" color="error">mdi-delete</v-icon></template
+                          >
+                          <v-list-item-title>Eliminar</v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu>
+                  </div>
                 </div>
 
-                <div class="tarea-actions">
-                  <v-chip
-                    v-if="tarea.presupuesto"
-                    size="x-small"
-                    variant="outlined"
-                    color="green"
-                    class="mr-2"
-                  >
-                    {{ formatearPresupuesto(tarea.presupuesto) }}
-                  </v-chip>
-
-                  <v-menu location="bottom end">
-                    <template #activator="{ props }">
-                      <v-btn v-bind="props" icon size="x-small" variant="text">
-                        <v-icon size="18">mdi-dots-vertical</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-list density="compact">
-                      <v-list-item @click="exportarTarea(tarea)">
-                        <template #prepend
-                          ><v-icon size="16" color="red-darken-2"
-                            >mdi-file-pdf-box</v-icon
-                          ></template
-                        >
-                        <v-list-item-title>Exportar PDF</v-list-item-title>
-                      </v-list-item>
-                      <v-list-item @click="editarTarea(tarea)">
-                        <template #prepend><v-icon size="16">mdi-pencil</v-icon></template>
-                        <v-list-item-title>Editar</v-list-item-title>
-                      </v-list-item>
-                      <v-list-item @click="abrirCambioEstado(tarea)">
-                        <template #prepend><v-icon size="16">mdi-sync</v-icon></template>
-                        <v-list-item-title>Cambiar Estado</v-list-item-title>
-                      </v-list-item>
-                      <v-divider></v-divider>
-                      <v-list-item @click="confirmarEliminar(tarea)" color="error">
-                        <template #prepend
-                          ><v-icon size="16" color="error">mdi-delete</v-icon></template
-                        >
-                        <v-list-item-title>Eliminar</v-list-item-title>
-                      </v-list-item>
-                    </v-list>
-                  </v-menu>
-                </div>
-              </div>
-
-              <div
-                class="tarea-detalles"
-                v-if="tarea.descripcion || tarea.fecha_limite || tarea.fecha_creacion"
-              >
-                <div class="tarea-meta" v-if="tarea.descripcion">
-                  <span class="descripcion">{{ tarea.descripcion }}</span>
-                </div>
-                <div class="tarea-footer">
-                  <div class="tarea-fechas">
-                    <span v-if="tarea.fecha_limite" class="fecha">
-                      <v-icon size="12" class="mr-1">mdi-calendar-clock</v-icon>
-                      Vence: {{ formatearFecha(tarea.fecha_limite) }}
-                    </span>
-                    <span v-if="tarea.fecha_creacion" class="fecha">
-                      <v-icon size="12" class="mr-1">mdi-calendar-plus</v-icon>
-                      Creada: {{ formatearFecha(tarea.fecha_creacion) }}
-                    </span>
+                <div
+                  class="tarea-detalles"
+                  v-if="tarea.descripcion || tarea.fecha_limite || tarea.fecha_creacion"
+                >
+                  <div class="tarea-meta" v-if="tarea.descripcion">
+                    <span class="descripcion">{{ tarea.descripcion }}</span>
+                  </div>
+                  <div class="tarea-footer">
+                    <div class="tarea-fechas">
+                      <span v-if="tarea.fecha_limite" class="fecha">
+                        <v-icon size="12" class="mr-1">mdi-calendar-clock</v-icon>
+                        Vence: {{ formatearFecha(tarea.fecha_limite) }}
+                      </span>
+                      <span v-if="tarea.fecha_creacion" class="fecha">
+                        <v-icon size="12" class="mr-1">mdi-calendar-plus</v-icon>
+                        Creada: {{ formatearFecha(tarea.fecha_creacion) }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div v-else class="estado-vacio">
-        <v-icon size="48" color="grey-lighten-2" class="mb-3">mdi-format-list-bulleted</v-icon>
-        <p class="vacio-texto">
-          {{ busqueda ? 'No se encontraron tareas' : 'No hay tareas registradas' }}
-        </p>
-        <p class="vacio-subtexto" v-if="!busqueda">Comienza agregando la primera subactividad</p>
-        <v-btn color="primary" variant="outlined" size="small" @click="abrirDialogoNueva">
-          <v-icon left size="16">mdi-plus</v-icon>
-          Crear Primera Subactividad
-        </v-btn>
-      </div>
+        <div v-else class="estado-vacio">
+          <v-icon size="48" color="grey-lighten-2" class="mb-3">mdi-format-list-bulleted</v-icon>
+          <p class="vacio-texto">
+            {{ busqueda ? 'No se encontraron tareas' : 'No hay tareas registradas' }}
+          </p>
+          <p class="vacio-subtexto" v-if="!busqueda">Comienza agregando la primera subactividad</p>
+          <v-btn color="primary" variant="outlined" size="small" @click="abrirDialogoNueva">
+            <v-icon left size="16">mdi-plus</v-icon>
+            Crear Primera Subactividad
+          </v-btn>
+        </div>
+      </template>
     </div>
 
     <!-- Diálogo Nueva/Editar Tarea -->
@@ -189,6 +200,7 @@
       v-model="dialogoNueva"
       :actividad="actividad"
       :tarea="tareaSeleccionada"
+      :procedencia-fondos="props.procedenciaFondos"
       @guardar="guardarTarea"
       @cancelar="dialogoNueva = false"
     />
@@ -251,6 +263,7 @@ import {
 const props = defineProps({
   actividad: { type: Object, required: true },
   presupuestoActividad: { type: [Number, String], required: true },
+  procedenciaFondos: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['close', 'add-tarea', 'update-tarea', 'delete-tarea', 'disable-tarea'])
@@ -513,4 +526,3 @@ const confirmarEliminar = (tarea) => {
   margin-bottom: 16px;
 }
 </style>
-```

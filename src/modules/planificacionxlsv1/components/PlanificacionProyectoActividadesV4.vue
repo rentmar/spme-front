@@ -45,6 +45,7 @@
         :mode="asideMode"
         :actividad="selectedRowData"
         :presupuesto-actividad="selectedRowData.presupuesto"
+        :procedencia-fondos="store.procedenciaFondos || []"
         :selected-row-data="selectedRowData"
         :data="tablaDataActividades"
         :tareas-dummy="tareasDummy"
@@ -77,6 +78,12 @@
     :procedencia-fondos="store.procedenciaFondosIds"
     @guardarDesglose="guardarDesglosePresupuesto"
   ></DialogoDesglosePresupuestoActividad>
+  <!--Dialogo para el envio de informacion-->
+  <DialogoConfirmacionEnvio
+    v-model="showDialogoEnvio"
+    :loading-save="loadingSave"
+    @guardar="confirmarEnvio"
+  ></DialogoConfirmacionEnvio>
   <!--Para debug-->
   <DebugDialog :tablaDataActividades="tablaDataActividades" :tablaDataTareas="tablaDataTareas" />
 </template>
@@ -93,9 +100,11 @@ import ExcelGrid from './ExcelGrid.vue'
 import ExcelAside from './ExcelAside.vue'
 import ExcelStatusBar from './ExcelStatusBar.vue'
 import DialogoDesglosePresupuestoActividad from './Dialogs/DialogoDesglosePresupuestoActividad.vue'
+import DialogoConfirmacionEnvio from './Dialogs/DialogoConfirmacionEnvio.vue'
 //composables
 import { useExcelData } from '../composables/useExcelData.js'
 import { useExcelMenus } from '../composables/useExcelMenus.js'
+import { useSnackbar } from '@/composables/useSnackbar.js'
 //store
 import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore.js'
 import { useUserStore } from '@/stores/user.js'
@@ -120,6 +129,9 @@ const gridHeight = ref(400)
 const selectedCell = ref('A1')
 const selectedValue = ref('')
 
+//Ref para el dialogo de envio
+const showDialogoEnvio = ref(false)
+
 //estado del desglose de presupuesto:
 const dialogoDesglose = ref(false)
 const datosPresupuesto = ref({
@@ -131,6 +143,7 @@ const datosPresupuesto = ref({
 const columnTitle = ref('')
 
 // COMPOSABLES
+const { successMsg, errorMsg, infoMsg } = useSnackbar()
 const {
   tablaDataActividades,
   tablaDataTareas,
@@ -244,12 +257,34 @@ const { contextMenuConfig, contextMenuConfigTareas, ejecutarAccion } = useExcelM
   disableTarea,
 })
 
+const loadingSave = ref(false)
 // Función guardar
 const guardar = async () => {
+  if (!store.tieneCambiosSinGuardar) {
+    infoMsg('No hay cambios para guardar')
+    return
+  }
+  showDialogoEnvio.value = true
+}
+//Confirmar envio
+const confirmarEnvio = async (motivo) => {
+  loadingSave.value = true
+  console.log('MOTIVO: ', motivo)
   try {
-    await seguimiento.guardarCambios()
-  } catch (e) {
-    console.error('Error al guardar:', e)
+    const actividadesConDatos = tablaDataActividades.value.filter(
+      (a) => a.nombreCorto || a.codigo || a.id,
+    )
+    const tareasConDatos = tablaDataTareas.value.filter((t) => t.titulo || t.codigo || t.id)
+    const respuesta = await store.guardarCambios(motivo, actividadesConDatos, tareasConDatos)
+    console.log('RESPUESTA: ', respuesta)
+    successMsg('Informacion almacenada')
+  } catch (error) {
+    loadingSave.value = false
+    console.error('Error al enviar la informacion', error)
+    errorMsg('Error al guardar')
+  } finally {
+    showDialogoEnvio.value = false
+    loadingSave.value = false
   }
 }
 

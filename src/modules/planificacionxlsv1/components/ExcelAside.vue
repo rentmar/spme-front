@@ -16,6 +16,7 @@
         v-if="mode === 'tareas'"
         :actividad="props.actividad"
         :presupuesto-actividad="props.presupuestoActividad"
+        :procedencia-fondos="props.procedenciaFondos"
       />
 
       <!-- ESTRUCTURA -->
@@ -57,6 +58,12 @@
         @update:explorador-abiertos="$emit('update:explorador-abiertos', $event)"
       />
 
+      <!--Arbol presupuestario-->
+      <AsideArbolPresupuesto
+        v-if="mode === 'arbol'"
+        @close="$emit('close')"
+      ></AsideArbolPresupuesto>
+
       <div
         v-if="
           (mode === 'tareas' || mode === 'resumen' || mode === 'explorador') && !selectedRowData
@@ -77,11 +84,13 @@ import AsideEstructura from './aside/AsideEstructura.vue'
 import AsidePresupuesto from './aside/AsidePresupuesto.vue'
 import AsideResumen from './aside/AsideResumen.vue'
 import AsideExplorador from './aside/AsideExplorador.vue'
+import AsideArbolPresupuesto from './aside/AsideArbolPresupuesto.vue'
 
 const props = defineProps({
   mode: String,
   actividad: { type: Object, required: true },
   presupuestoActividad: { type: [Number, String], required: true },
+  procedenciaFondos: { type: Array, default: () => [] },
   selectedRowData: Object,
   data: Array,
   tareasDummy: Array,
@@ -118,6 +127,7 @@ const icon = computed(
       presupuesto: 'mdi-cash-multiple',
       resumen: 'mdi-finance',
       explorador: 'mdi-file-tree',
+      arbol: 'mdi-chart-tree',
     })[props.mode] || 'mdi-information',
 )
 const title = computed(
@@ -128,6 +138,7 @@ const title = computed(
       presupuesto: 'Presupuesto',
       resumen: 'Resumen',
       explorador: 'Explorador',
+      arbol: 'Presupuesto',
     })[props.mode] || '',
 )
 </script>

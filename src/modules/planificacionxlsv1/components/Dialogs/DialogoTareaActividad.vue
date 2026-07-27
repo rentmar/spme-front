@@ -1,3 +1,5 @@
+```vue
+<!-- DialogoTareaActividad.vue -->
 <template>
   <v-dialog v-model="dialog" max-width="1000" persistent>
     <v-card>
@@ -127,16 +129,18 @@
               <v-card-text v-if="mostrarDesglose">
                 <v-alert type="info" density="compact" class="mb-4">
                   El desglose de presupuesto es opcional. Si lo completa, el total no debe exceder
-                  el presupuesto total de la subactividad.
+                  el presupuesto total de la subactividad. Seleccione la fuente de financiamiento
+                  para cada item.
                 </v-alert>
 
                 <v-table density="compact" class="mb-4">
                   <thead>
                     <tr>
-                      <th width="30%">Partida</th>
-                      <th width="30%">Descripción</th>
-                      <th width="25%">Monto (Bs.)</th>
-                      <th width="15%">% del Total</th>
+                      <th width="18%">Partida</th>
+                      <th width="22%">Descripción</th>
+                      <th width="22%">Fuente Financiamiento</th>
+                      <th width="18%">Monto (Bs.)</th>
+                      <th width="10%">% del Total</th>
                       <th width="10%">Acciones</th>
                     </tr>
                   </thead>
@@ -150,8 +154,7 @@
                           placeholder="No partida"
                           :rules="[validadoresDesglose.partida]"
                           @update:model-value="calcularTotales"
-                        >
-                        </v-text-field>
+                        />
                       </td>
                       <td>
                         <v-text-field
@@ -161,7 +164,34 @@
                           placeholder="Descripción del item"
                           :rules="[validadoresDesglose.descripcion]"
                           @update:model-value="calcularTotales"
-                        ></v-text-field>
+                        />
+                      </td>
+                      <td>
+                        <v-select
+                          v-model="item.fuente"
+                          :items="fuentesFinanciamiento"
+                          item-title="financiera"
+                          return-object
+                          variant="underlined"
+                          density="compact"
+                          placeholder="Seleccionar"
+                        >
+                          <template #item="{ item: option, props: optionProps }">
+                            <v-list-item v-bind="optionProps" density="compact">
+                              <template #title>
+                                <span class="text-caption">{{ option.raw.financiera }}</span>
+                              </template>
+                              <template #subtitle>
+                                <span class="text-caption text-medium-emphasis">{{
+                                  option.raw.sigla
+                                }}</span>
+                              </template>
+                            </v-list-item>
+                          </template>
+                          <template #selection="{ item: selected }">
+                            <span class="text-caption">{{ selected?.raw?.financiera }}</span>
+                          </template>
+                        </v-select>
                       </td>
                       <td>
                         <v-text-field
@@ -174,7 +204,7 @@
                           prefix="Bs."
                           :rules="[validadoresDesglose.monto]"
                           @update:model-value="calcularTotales"
-                        ></v-text-field>
+                        />
                       </td>
                       <td class="text-center">{{ calcularPorcentaje(item.monto) }}%</td>
                       <td class="text-center">
@@ -243,8 +273,8 @@
                       Presupuesto asignado correctamente
                     </v-alert>
                     <v-alert v-else type="warning" density="compact" class="mt-2">
-                      Complete todos los campos (Partida, Descripción y Monto) de los items del
-                      desglose, u oculte esta sección si no desea utilizarla
+                      Complete todos los campos (Partida, Descripción, Fuente y Monto) de los items
+                      del desglose, u oculte esta sección si no desea utilizarla
                     </v-alert>
                   </v-card-text>
                 </v-card>
@@ -270,7 +300,6 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-  {{ props.tarea }}
 </template>
 
 <script setup>
@@ -278,22 +307,11 @@ import { ref, computed, watch, nextTick } from 'vue'
 
 // Props
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false,
-  },
-  actividad: {
-    type: Object,
-    default: null,
-  },
-  tarea: {
-    type: Object,
-    default: null,
-  },
-  cargando: {
-    type: Boolean,
-    default: false,
-  },
+  modelValue: { type: Boolean, default: false },
+  actividad: { type: Object, default: null },
+  tarea: { type: Object, default: null },
+  cargando: { type: Boolean, default: false },
+  procedenciaFondos: { type: Array, default: () => [] },
 })
 
 // Emits
@@ -311,6 +329,15 @@ const estadosTarea = [
   { text: 'Completada', value: 'COMPL' },
 ]
 
+// Fuentes de financiamiento desde props
+const fuentesFinanciamiento = computed(() => {
+  return (props.procedenciaFondos || []).map((f) => ({
+    id: f.id,
+    sigla: f.sigla,
+    financiera: f.financiera,
+  }))
+})
+
 // Datos del formulario
 const formData = ref({
   id: null,
@@ -321,11 +348,11 @@ const formData = ref({
   fecha_creacion: '',
   fecha_limite: '',
   presupuesto: '0.00',
-  presupuestoDesglose: null, // Cambiado a null por defecto
+  presupuestoDesglose: null,
 })
 
 // Desglose de presupuesto
-const itemsDesglose = ref([{ partida: '', descripcion: '', monto: '' }])
+const itemsDesglose = ref([{ partida: '', descripcion: '', fuente: null, monto: '' }])
 const totalDesglose = ref(0)
 const diferenciaPresupuesto = ref(0)
 
@@ -346,37 +373,21 @@ const validaciones = {
 //Validadores para el desglose
 const validadoresDesglose = {
   partida: (v) => {
-    if (!v || v.trim() === '') {
-      return 'La partida es requerida'
-    }
-    if (v.length > 50) {
-      return 'La partida no puede exceder 50 caracteres'
-    }
+    if (!v || v.trim() === '') return 'La partida es requerida'
+    if (v.length > 50) return 'La partida no puede exceder 50 caracteres'
     return true
   },
   descripcion: (v) => {
-    if (!v || v.trim() === '') {
-      return 'La descripción es requerida'
-    }
-    if (v.length > 200) {
-      return 'La descripción no puede exceder 200 caracteres'
-    }
+    if (!v || v.trim() === '') return 'La descripción es requerida'
+    if (v.length > 200) return 'La descripción no puede exceder 200 caracteres'
     return true
   },
   monto: (v) => {
-    if (!v && v !== 0) {
-      return 'El monto es requerido'
-    }
+    if (!v && v !== 0) return 'El monto es requerido'
     const montoNum = Number(v)
-    if (isNaN(montoNum)) {
-      return 'Debe ser un número válido'
-    }
-    if (montoNum <= 0) {
-      return 'El monto debe ser mayor a 0'
-    }
-    if (montoNum > 999999999.99) {
-      return 'El monto excede el límite permitido'
-    }
+    if (isNaN(montoNum)) return 'Debe ser un número válido'
+    if (montoNum <= 0) return 'El monto debe ser mayor a 0'
+    if (montoNum > 999999999.99) return 'El monto excede el límite permitido'
     return true
   },
 }
@@ -403,21 +414,16 @@ const resumenColor = computed(() => {
 //Comprobacion de los items
 const tieneItemsValidos = computed(() => {
   return itemsDesglose.value.some((item) => {
-    // Verificar que todos los campos estén llenos y válidos
     const partidaValida = item.partida && item.partida.trim() !== ''
     const descripcionValida = item.descripcion && item.descripcion.trim() !== ''
+    const fuenteValida = item.fuente !== null && item.fuente !== undefined && item.fuente.id
     const montoValido = item.monto && item.monto !== '' && Number(item.monto) > 0
-
-    return partidaValida && descripcionValida && montoValido
+    return partidaValida && descripcionValida && fuenteValida && montoValido
   })
 })
 
 //Validador de formulario
 const formularioValido = computed(() => {
-  // El formulario es válido si:
-  // 1. No se muestra el desglose, O
-  // 2. Se muestra el desglose pero no hay items válidos, O
-  // 3. Se muestra el desglose con items válidos y no excede el presupuesto
   return (
     !mostrarDesglose.value ||
     !tieneItemsValidos.value ||
@@ -430,22 +436,17 @@ watch(
   () => props.modelValue,
   (nuevoValor) => {
     dialog.value = nuevoValor
-    if (nuevoValor) {
-      inicializarFormulario()
-    }
+    if (nuevoValor) inicializarFormulario()
   },
 )
 
 watch(dialog, (nuevoValor) => {
-  if (nuevoValor !== props.modelValue) {
-    emit('update:modelValue', nuevoValor)
-  }
+  if (nuevoValor !== props.modelValue) emit('update:modelValue', nuevoValor)
 })
 
 // Métodos
 const inicializarFormulario = () => {
   if (isEditando.value) {
-    // Modo edición - cargar datos de la tarea existente
     Object.assign(formData.value, {
       id: props.tarea.id,
       codigo: props.tarea.codigo || '',
@@ -457,29 +458,27 @@ const inicializarFormulario = () => {
       presupuesto: props.tarea.presupuesto || '0.00',
     })
 
-    // Cargar desglose existente
     if (props.tarea.presupuestoDesglose && Array.isArray(props.tarea.presupuestoDesglose)) {
       const itemsExistentes = props.tarea.presupuestoDesglose.filter(
         (item) => item.descripcion && item.monto && item.monto !== 0,
       )
       if (itemsExistentes.length > 0) {
-        // Convertir montos a string para el formulario
         itemsDesglose.value = itemsExistentes.map((item) => ({
           partida: item.partida || '',
           descripcion: item.descripcion || '',
+          fuente: item.fuente || null,
           monto: item.monto ? item.monto.toString() : '',
         }))
         mostrarDesglose.value = true
       } else {
-        itemsDesglose.value = [{ partida: '', descripcion: '', monto: '' }]
+        itemsDesglose.value = [{ partida: '', descripcion: '', fuente: null, monto: '' }]
         mostrarDesglose.value = false
       }
     } else {
-      itemsDesglose.value = [{ partida: '', descripcion: '', monto: '' }]
+      itemsDesglose.value = [{ partida: '', descripcion: '', fuente: null, monto: '' }]
       mostrarDesglose.value = false
     }
   } else {
-    // Modo creación - valores por defecto
     const hoy = new Date()
     const fechaLimite = new Date()
     fechaLimite.setDate(fechaLimite.getDate() + 7)
@@ -496,25 +495,21 @@ const inicializarFormulario = () => {
       presupuestoDesglose: null,
     })
 
-    itemsDesglose.value = [{ partida: '', descripcion: '', monto: '' }]
+    itemsDesglose.value = [{ partida: '', descripcion: '', fuente: null, monto: '' }]
     mostrarDesglose.value = false
   }
 
   calcularTotales()
 
-  // Resetear validación del formulario
   nextTick(() => {
-    if (formRef.value) {
-      formRef.value.resetValidation()
-    }
+    if (formRef.value) formRef.value.resetValidation()
   })
 }
 
 const toggleDesglose = () => {
   mostrarDesglose.value = !mostrarDesglose.value
   if (!mostrarDesglose.value) {
-    // Limpiar items cuando se oculta el desglose
-    itemsDesglose.value = [{ partida: '', descripcion: '', monto: '' }]
+    itemsDesglose.value = [{ partida: '', descripcion: '', fuente: null, monto: '' }]
     calcularTotales()
   }
 }
@@ -536,7 +531,7 @@ const calcularPorcentaje = (monto) => {
 
 const agregarItemDesglose = () => {
   if (itemsDesglose.value.length < 10) {
-    itemsDesglose.value.push({ partida: '', descripcion: '', monto: '' })
+    itemsDesglose.value.push({ partida: '', descripcion: '', fuente: null, monto: '' })
   }
 }
 
@@ -552,19 +547,27 @@ const actualizarValidacionPresupuesto = () => {
 }
 
 const prepararDesgloseParaAPI = () => {
-  if (!mostrarDesglose.value || !tieneItemsValidos.value) {
-    return null
-  }
+  if (!mostrarDesglose.value || !tieneItemsValidos.value) return null
 
-  // Filtrar items válidos y convertir montos a números
   const itemsValidos = itemsDesglose.value
     .filter(
       (item) =>
-        item.partida && item.descripcion && item.monto && item.monto !== '' && item.monto !== '0',
+        item.partida &&
+        item.descripcion &&
+        item.fuente &&
+        item.fuente.id &&
+        item.monto &&
+        item.monto !== '' &&
+        Number(item.monto) > 0,
     )
     .map((item) => ({
       partida: item.partida.trim(),
       descripcion: item.descripcion.trim(),
+      fuente: {
+        id: item.fuente.id,
+        sigla: item.fuente.sigla,
+        financiera: item.fuente.financiera,
+      },
       monto: Number(item.monto),
     }))
 
@@ -577,19 +580,15 @@ const guardar = async () => {
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
-  // Preparar el desglose para la API
   const presupuestoDesglose = prepararDesgloseParaAPI()
 
-  // Preparar datos para enviar
   const datosTarea = {
     ...formData.value,
     actividad: props.actividad?.id,
     presupuestoDesglose: presupuestoDesglose,
-    // Asegurar que el presupuesto sea número
     presupuesto: Number(formData.value.presupuesto) || 0,
   }
 
-  // Limpiar campos que no deben enviarse si están vacíos
   if (!datosTarea.codigo) delete datosTarea.codigo
   if (!datosTarea.fecha_creacion) delete datosTarea.fecha_creacion
   if (!datosTarea.fecha_limite) delete datosTarea.fecha_limite
@@ -604,20 +603,16 @@ const cancelar = () => {
   dialog.value = false
 }
 
-// Limpiar formulario cuando se cierra
 watch(dialog, (nuevoValor) => {
   if (!nuevoValor) {
     nextTick(() => {
-      if (formRef.value) {
-        formRef.value.reset()
-      }
+      if (formRef.value) formRef.value.reset()
     })
   }
 })
 </script>
 
 <style scoped>
-/* Estilos opcionales para mejorar la apariencia */
 .v-expansion-panel {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -626,12 +621,11 @@ watch(dialog, (nuevoValor) => {
 .text-error {
   color: #f44336;
 }
-
 .text-warning {
   color: #ff9800;
 }
-
 .text-success {
   color: #4caf50;
 }
 </style>
+```
