@@ -50,7 +50,7 @@
           >
         </template>
       </v-tooltip>
-      <v-tooltip text="Mostrar tareas" location="bottom">
+      <v-tooltip text="Mostrar tareas (Debe seleccionar una Actividad primero)" location="bottom">
         <template #activator="{ props }">
           <v-btn v-bind="props" variant="text" size="small" @click="$emit('open-aside', 'tareas')"
             >📋 Tareas</v-btn

@@ -36,6 +36,9 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
       return data.id
     })
   })
+  const getTareasPorActividad = (actividadId) => {
+    return computed(() => tareas.value.filter((t) => t.actividad === actividadId))
+  }
 
   //-- Historial de cambios
   const historialCambiosActividades = ref([])
@@ -252,6 +255,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     showDialogCambioActividad,
     aceptarCambioActividad,
     cancelarCambioActividad,
+    getTareasPorActividad,
 
     //func
     inicializar,

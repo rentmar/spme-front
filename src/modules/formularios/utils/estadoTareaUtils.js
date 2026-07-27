@@ -101,11 +101,62 @@ export const formatearPresupuesto = (monto) => {
   return `Bs. ${numValue.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
+export const getEstadoColor = (sigla) => {
+  const colores = { PEN: 'orange', EPROG: 'blue', COMPL: 'green' }
+  return colores[sigla] || 'grey'
+}
+
+export const getEstadoIcon = (sigla) => {
+  const iconos = {
+    PEN: 'mdi-clock-outline',
+    EPROG: 'mdi-progress-clock',
+    COMPL: 'mdi-check-circle-outline',
+  }
+  return iconos[sigla] || 'mdi-help-circle-outline'
+}
+
+export const getEstadoClaseBorde = (sigla) => {
+  const clases = { PEN: 'tarea-pen', EPROG: 'tarea-eprog', COMPL: 'tarea-compl' }
+  return clases[sigla] || 'tarea-pen'
+}
+
+// Fecha de hoy en formato YYYY-MM-DD
+export const fechaHoy = () => new Date().toISOString().split('T')[0]
+
+// Fecha límite por defecto (hoy + 7 días)
+export const fechaLimiteDefecto = () => {
+  const fecha = new Date()
+  fecha.setDate(fecha.getDate() + 7)
+  return fecha.toISOString().split('T')[0]
+}
+
+// Validar que fecha_limite >= fecha_creacion
+export const validarFechasTarea = (fechaCreacion, fechaLimite) => {
+  if (!fechaCreacion || !fechaLimite) return true
+  return new Date(fechaLimite) >= new Date(fechaCreacion)
+}
+
+// Formatear monto para API (string a número)
+export const formatearMontoAPI = (monto) => Number(monto) || 0
+
+// Validar monto positivo
+export const validarMontoPositivo = (v) => !v || Number(v) >= 0 || 'El valor debe ser positivo'
+
+// Validar campo requerido
+export const validarRequerido = (v) => !!v || 'Este campo es requerido'
+
+export const validarFechaFormato = (v) =>
+  !v || /^\d{4}-\d{2}-\d{2}$/.test(v) || 'Formato de fecha inválido'
+
 // Exportar todas las funciones juntas
 export default {
   formatearEstadoTarea,
   formatearFecha,
   obtenerLiteralEstado,
   esEstadoValido,
+  getEstadoColor,
+  getEstadoIcon,
+  getEstadoClaseBorde,
+  validarFechaFormato,
   ESTADOS_TAREA,
 }

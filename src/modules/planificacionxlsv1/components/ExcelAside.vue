@@ -14,9 +14,8 @@
       <!-- TAREAS -->
       <AsideTareas
         v-if="mode === 'tareas'"
-        :selected-row-data="selectedRowData"
-        :tareas-dummy="tareasDummy"
-        :fmt="fmt"
+        :actividad="props.actividad"
+        :presupuesto-actividad="props.presupuestoActividad"
       />
 
       <!-- ESTRUCTURA -->
@@ -81,6 +80,8 @@ import AsideExplorador from './aside/AsideExplorador.vue'
 
 const props = defineProps({
   mode: String,
+  actividad: { type: Object, required: true },
+  presupuestoActividad: { type: [Number, String], required: true },
   selectedRowData: Object,
   data: Array,
   tareasDummy: Array,
@@ -133,7 +134,7 @@ const title = computed(
 
 <style scoped>
 .side-aside {
-  width: 360px;
+  width: 600px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;

@@ -33,9 +33,18 @@
         :on-change-tareas="onChangeTareas"
         :context-menu-config-tareas="contextMenuConfigTareas"
       />
+      <!--PROPS REALES
+     TAREAS:
+        actividad type Object
+        presupuesto-actividad type Number, String
+
+
+     -->
       <ExcelAside
-        v-if="showAside"
+        v-if="showAside && selectedRowData"
         :mode="asideMode"
+        :actividad="selectedRowData"
+        :presupuesto-actividad="selectedRowData.presupuesto"
         :selected-row-data="selectedRowData"
         :data="tablaDataActividades"
         :tareas-dummy="tareasDummy"
@@ -339,13 +348,15 @@ const onSelect = (startRow, startCol) => {
     const row = tablaDataActividades.value[startRow]
     selectedRowData.value = row
 
+    console.log('Fila seleccionada: ', selectedRowData)
+
     // Si el tab de tareas está abierto, actualizar automáticamente
-    if (gridTab.value === 'tareas') {
-      actividadSeleccionada.value = row
-      nextTick(() => {
-        gridRef.value?.recargarTareas(tareasFiltradas.value)
-      })
-    }
+    // if (gridTab.value === 'tareas') {
+    //   actividadSeleccionada.value = row
+    //   nextTick(() => {
+    //     gridRef.value?.recargarTareas(tareasFiltradas.value)
+    //   })
+    // }
 
     const col = columns.value[startCol]
     if (col) {
