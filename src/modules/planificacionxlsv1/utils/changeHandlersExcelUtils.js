@@ -84,8 +84,11 @@ function validarFechasActividad(row, oldVal, newVal, tableData) {
   const actividad = tableData.value[row]
   if (actividad.fecha_inicio && actividad.fecha_cierre) {
     if (new Date(actividad.fecha_cierre) < new Date(actividad.fecha_inicio)) {
-      console.warn(`Actividad #${actividad.id}: fecha_cierre no puede ser menor a fecha_inicio`)
+      // console.warn(`Actividad #${actividad.id}: fecha_cierre no puede ser menor a fecha_inicio`)
       actividad.fecha_cierre = oldVal
+      confirm(
+        '⚠️ La fecha de cierre no puede ser menor a la fecha de inicio.\nEl cambio ha sido revertido.',
+      )
       return false
     }
   }
@@ -123,7 +126,7 @@ function validarPresupuestoTarea(row, oldVal, newVal, tableData, store) {
     .reduce((s, t) => s + (+t.presupuesto || 0), 0)
 
   if (totalTareas + (+newVal || 0) > presupuestoActividad) {
-    snackbar.error(`Presupuesto de tareas excede el de la actividad: Bs ${presupuestoActividad}`)
+    snackbar.errorMsg(`Presupuesto de tareas excede el de la actividad: Bs ${presupuestoActividad}`)
     tableData.value[row].presupuesto = oldVal
     return false
   }
@@ -176,13 +179,13 @@ function actualizarEstadoPorFechas(row, oldVal, newVal, tableData) {
 
     actividad.estado = 'PLAN'
     actividad.gradoEjecucion = 'PLANIFICADA'
-    snackbar.success('Actividad planificada correctamente')
+    snackbar.successMsg('Actividad planificada correctamente')
     return
   }
 
   // PLAN → permitir cambio con advertencia
   if (estado === 'PLAN') {
-    snackbar.warning('Cambio de fechas registrado. Debe añadir un justificativo.', 5000)
+    snackbar.warningMsg('Cambio de fechas registrado. Debe añadir un justificativo.', 5000)
     return
   }
 
@@ -190,7 +193,7 @@ function actualizarEstadoPorFechas(row, oldVal, newVal, tableData) {
   if (estado === 'RETR' && fecha_inicio && fecha_cierre) {
     actividad.estado = 'REPROG'
     actividad.gradoEjecucion = 'REPROGRAMACION'
-    snackbar.info('Actividad reprogramada', 3000)
+    snackbar.infoMsg('Actividad reprogramada', 3000)
     return
   }
 
@@ -198,7 +201,7 @@ function actualizarEstadoPorFechas(row, oldVal, newVal, tableData) {
   if (fecha_inicio && fecha_inicio > hoy && estado === 'PLAN') {
     actividad.estado = 'RETR'
     actividad.gradoEjecucion = 'RETRASO'
-    snackbar.error('Actividad en RETRASO: fecha de inicio superior a la fecha actual', 5000)
+    snackbar.errorMsg('Actividad en RETRASO: fecha de inicio superior a la fecha actual', 5000)
     return
   }
 
@@ -206,7 +209,7 @@ function actualizarEstadoPorFechas(row, oldVal, newVal, tableData) {
   if (fecha_cierre && fecha_cierre < hoy && estado === 'PLAN') {
     actividad.estado = 'RETR'
     actividad.gradoEjecucion = 'RETRASO'
-    snackbar.error('Actividad en RETRASO: fecha de cierre vencida', 5000)
+    snackbar.errorMsg('Actividad en RETRASO: fecha de cierre vencida', 5000)
   }
 }
 // Mapa de handlers para ACTIVIDADES
@@ -215,8 +218,8 @@ const actividadHandlers = {
   totalEjecutado: [recalcularSaldoActividad],
   totalReportado: [recalcularSaldoActividad],
   estado: [actualizarGradoEjecucionDesdeEstado],
-  fecha_cierre: [actualizarEstadoPorFechas, validarFechasActividad],
-  fecha_inicio: [actualizarEstadoPorFechas, validarFechasActividad],
+  fecha_cierre: [validarFechasActividad, actualizarEstadoPorFechas],
+  fecha_inicio: [validarFechasActividad, actualizarEstadoPorFechas],
   tipo_actividad: [actualizarTipoActividadId],
 }
 

@@ -158,7 +158,6 @@ export function useExcelData() {
       data: 'procedencia_fondos',
       title: 'Procedencia Fondos',
       width: 250,
-      readOnly: true,
       renderer: tablaRenders.desglosePresupuesto,
     },
     {
@@ -200,6 +199,7 @@ export function useExcelData() {
       title: 'ESTADO',
       width: 150,
       readOnly: true,
+      renderer: tablaRenders.estadoColorActividad,
     },
     {
       data: 'gradoEjecucion',
@@ -290,6 +290,9 @@ export function useExcelData() {
       estado: 'CRD',
       procedencia_fondos: [],
       esNueva: true,
+      tipo_actividad_id: 1,
+      tipo_actividad: 'NODEF-No definido',
+      gradoEjecucion: 'CREADA',
     }
     //arr.push(nuevaFila)
     // Insertar al inicio, antes de las filas placeholder

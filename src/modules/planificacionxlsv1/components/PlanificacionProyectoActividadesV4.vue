@@ -105,6 +105,7 @@ import DialogoConfirmacionEnvio from './Dialogs/DialogoConfirmacionEnvio.vue'
 import { useExcelData } from '../composables/useExcelData.js'
 import { useExcelMenus } from '../composables/useExcelMenus.js'
 import { useSnackbar } from '@/composables/useSnackbar.js'
+import { useSeguimientoCambios } from '../composables/useSeguimientoCambios.js'
 //store
 import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore.js'
 import { useUserStore } from '@/stores/user.js'
@@ -143,6 +144,7 @@ const datosPresupuesto = ref({
 const columnTitle = ref('')
 
 // COMPOSABLES
+const { registrarCambio } = useSeguimientoCambios()
 const { successMsg, errorMsg, infoMsg } = useSnackbar()
 const {
   tablaDataActividades,
@@ -223,23 +225,59 @@ const verTareasDeActividad = async () => {
   }
 }
 
-const guardarDesglosePresupuesto = (nuevoDesglose) => {
-  if (!datosPresupuesto.value?.id) return
+// const guardarDesglosePresupuesto = (nuevoDesglose) => {
+//   if (!datosPresupuesto.value?.id) return
 
+//   const index = tablaDataActividades.value.findIndex((a) => a.id === datosPresupuesto.value.id)
+//   if (index === -1) return
+
+//   // Actualizar la fila en la grilla
+//   tablaDataActividades.value[index].procedencia_fondos = nuevoDesglose
+
+//   // Forzar actualización visual de Handsontable
+//   if (gridRef.value?.hotTableRef?.hotInstance) {
+//     gridRef.value.hotTableRef.hotInstance.setDataAtRowProp(
+//       index,
+//       'procedencia_fondos',
+//       nuevoDesglose,
+//     )
+//     gridRef.value.hotTableRef.hotInstance.render()
+//   }
+// }
+const guardarDesglosePresupuesto = async (nuevoDesglose) => {
+  if (!datosPresupuesto.value?.id) return
+  console.log('Datos Presupuesto: ', datosPresupuesto)
   const index = tablaDataActividades.value.findIndex((a) => a.id === datosPresupuesto.value.id)
   if (index === -1) return
+  // 🎯 GUARDAR VALOR ORIGINAL antes de actualizar
+  const valorAnterior = JSON.stringify(tablaDataActividades.value[index].procedencia_fondos)
+  const valorNuevo = JSON.stringify(nuevoDesglose)
+  console.log('Valor anterior: ', valorAnterior)
+  console.log('Valor nuevo: ', valorNuevo)
 
-  // Actualizar la fila en la grilla
-  tablaDataActividades.value[index].procedencia_fondos = nuevoDesglose
-
-  // Forzar actualización visual de Handsontable
-  if (gridRef.value?.hotTableRef?.hotInstance) {
-    gridRef.value.hotTableRef.hotInstance.setDataAtRowProp(
-      index,
-      'procedencia_fondos',
-      nuevoDesglose,
-    )
-    gridRef.value.hotTableRef.hotInstance.render()
+  if (valorAnterior !== valorNuevo) {
+    // Actualizar la fila en la grilla
+    tablaDataActividades.value[index].procedencia_fondos = nuevoDesglose
+    // Forzar actualización visual de Handsontable
+    if (gridRef.value?.hotTableRef?.hotInstance) {
+      gridRef.value.hotTableRef.hotInstance.setDataAtRowProp(
+        index,
+        'procedencia_fondos',
+        nuevoDesglose,
+      )
+      gridRef.value.hotTableRef.hotInstance.render()
+    }
+    //Registrar cambio
+    registrarCambio({
+      tipo: 'actividad',
+      accion: 'editar',
+      fila_id: datosPresupuesto.value?.id,
+      columna: 'procedencia_fondos',
+      valor_anterior: valorAnterior,
+      valor_nuevo: valorNuevo,
+      actividad_codigo: datosPresupuesto.value?.id,
+      actividad_id: datosPresupuesto.value?.id,
+    })
   }
 }
 
@@ -277,14 +315,15 @@ const confirmarEnvio = async (motivo) => {
     const tareasConDatos = tablaDataTareas.value.filter((t) => t.titulo || t.codigo || t.id)
     const respuesta = await store.guardarCambios(motivo, actividadesConDatos, tareasConDatos)
     console.log('RESPUESTA: ', respuesta)
+    showDialogoEnvio.value = false
+    loadingSave.value = false
     successMsg('Informacion almacenada')
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    window.location.reload()
   } catch (error) {
     loadingSave.value = false
     console.error('Error al enviar la informacion', error)
     errorMsg('Error al guardar')
-  } finally {
-    showDialogoEnvio.value = false
-    loadingSave.value = false
   }
 }
 
@@ -461,6 +500,7 @@ onMounted(async () => {
       esNueva: false,
     }
   })
+  tablaDataActividades.value.sort((a, b) => a.id - b.id)
   tablaDataTareas.value = store.tareas
 
   agregarFilasVacias()

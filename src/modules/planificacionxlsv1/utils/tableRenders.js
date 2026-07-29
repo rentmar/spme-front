@@ -210,8 +210,11 @@ export function renderDesglosePresupuesto(instance, td, row, col, prop, value, c
   btn.textContent = count > 0 ? `Editar` : 'Agregar'
   btn.style.cssText =
     'padding:2px 8px;font-size:10px;cursor:pointer;background:#1a73e8;color:#fff;border:none;border-radius:4px;flex-shrink:0;'
+
+  //Evento del boton
   btn.onclick = (e) => {
     e.stopPropagation()
+
     window.dispatchEvent(new CustomEvent('abrir-desglose', { detail: { row, data } }))
   }
 
@@ -219,6 +222,32 @@ export function renderDesglosePresupuesto(instance, td, row, col, prop, value, c
   container.appendChild(btn)
   td.appendChild(container)
   return td
+}
+
+// eslint-disable-next-line
+export function estadoActividad(instance, td, row, col, prop, value, cellProperties) {
+  Handsontable.renderers.TextRenderer.apply(this, arguments)
+
+  const colores = {
+    CRD: '#9e9e9e', // Creada - gris (no está en la lista, agrego)
+    PLAN: '#64b5f6', // Planificacion - azul claro
+    RETR: '#ff0000', // Retraso - rojo
+    REPROG: '#ffd54f', // Reprogramacion - amarillo
+    EJEC: '#ffa726', // En Ejecucion - naranja
+    REP: '#81c784', // En Reporte - verde
+    FIN: '#003CFF', // Finalizado - azul oscuro
+    DES: '#e0e0e0', // Deshabilitada - gris claro
+  }
+
+  const bg = colores[value] || 'white'
+  td.style.backgroundColor = bg
+
+  // Ajuste automático del color de texto (ej. negro para fondos claros, blanco para oscuros)
+  const oscuros = ['RETR', 'FIN', 'EJEC', 'CRD']
+  td.style.color = oscuros.includes(value) ? '#ffffff' : '#000000'
+
+  td.style.fontWeight = 'bold'
+  td.style.textAlign = 'center'
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -246,4 +275,5 @@ export const tablaRenders = {
   saldo: renderSaldo,
   presupuesto: renderPresupuesto,
   desglosePresupuesto: renderDesglosePresupuesto,
+  estadoColorActividad: estadoActividad,
 }
