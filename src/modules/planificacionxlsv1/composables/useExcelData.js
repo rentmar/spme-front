@@ -102,7 +102,7 @@ export function useExcelData() {
     {
       data: 'codigo',
       title: 'Código',
-      width: 90,
+      width: 120,
       renderer: tablaRenders.celdaSuccess,
     },
     { data: 'nombreCorto', title: 'Nombre', width: 180 },

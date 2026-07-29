@@ -107,7 +107,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn variant="text" @click="cancelarSalir">Cancelar</v-btn>
-        <v-btn color="primary" variant="text" @click="confirmarSalir">💾 Guardar y salir</v-btn>
+        <!-- <v-btn color="primary" variant="text" @click="confirmarSalir">💾 Guardar y salir</v-btn> -->
         <v-btn color="error" variant="text" @click="forceLeave">Salir sin guardar</v-btn>
       </v-card-actions>
     </v-card>
@@ -121,12 +121,14 @@ import PlanificacionProyectoActividadesV4 from '@/modules/planificacionxlsv1/com
 import ConfirmDialogTareas from '@/modules/planificacionxlsv1/components/Dialogs/ConfirmDialogTareas.vue'
 import { usePlanificacionExcelStore } from '@/modules/planificacionxlsv1/stores/usePlanificacionExcelStore'
 import { useUserStore } from '@/stores/user'
+import { usePresupuestoStore } from '@/modules/planificacionxlsv1/stores/usePresupuestoStore'
 import { obtenerClaseEstadoProyecto, obtenerFechaActual } from '@/modules/planificacionxlsv1/utils'
 
 const route = useRoute()
 const proyectoID = route.params.id
 const store = usePlanificacionExcelStore()
 const userStore = useUserStore()
+const storePresupuesto = usePresupuestoStore()
 
 const cargaLista = ref(false)
 const errorCarga = ref(null)
@@ -167,7 +169,7 @@ const cargarDatos = async () => {
   cargaLista.value = false
   errorCarga.value = null
   try {
-    await store.inicializar(proyectoID)
+    await Promise.all([store.inicializar(proyectoID), storePresupuesto.inicializar(proyectoID)])
     cargaLista.value = true
   } catch (error) {
     console.error('Error al cargar la información', error)
@@ -204,18 +206,18 @@ const forceLeave = () => {
   }
 }
 
-const confirmarSalir = async () => {
-  try {
-    alert('Guardar')
-  } catch (e) {
-    console.error('Error al guardar:', e)
-  }
-  showDialogSalir.value = false
-  if (pendingNext.value) {
-    pendingNext.value()
-    pendingNext.value = null
-  }
-}
+// const confirmarSalir = async () => {
+//   try {
+//     alert('Guardar')
+//   } catch (e) {
+//     console.error('Error al guardar:', e)
+//   }
+//   showDialogSalir.value = false
+//   if (pendingNext.value) {
+//     pendingNext.value()
+//     pendingNext.value = null
+//   }
+// }
 
 const cancelarSalir = () => {
   showDialogSalir.value = false

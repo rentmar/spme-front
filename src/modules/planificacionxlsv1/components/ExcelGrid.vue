@@ -18,6 +18,10 @@
       :contextMenu="contextMenuConfig"
       :afterChange="onChange"
       :afterSelection="onSelect"
+      :hiddenColumns="{
+        columns: [3],
+        indicators: false,
+      }"
     />
   </main>
 </template>

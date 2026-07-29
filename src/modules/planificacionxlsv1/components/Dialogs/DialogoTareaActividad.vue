@@ -1,4 +1,3 @@
-```vue
 <!-- DialogoTareaActividad.vue -->
 <template>
   <v-dialog v-model="dialog" max-width="1000" persistent>
@@ -6,6 +5,21 @@
       <v-toolbar color="secondary" :title="tituloDialog"></v-toolbar>
 
       <v-card-text class="pt-6">
+        <!-- Alerta de límite presupuestario -->
+        <v-alert
+          :type="alertaLimiteTipo"
+          density="compact"
+          variant="tonal"
+          class="mb-4"
+          icon="mdi-cash-lock"
+        >
+          <strong>Saldo disponible para asignar:</strong>
+          {{ formatearMonto(props.limitePresupuesto) }}
+          <template v-if="isEditando && props.tarea?.presupuesto">
+            (Presupuesto actual: {{ formatearMonto(props.tarea.presupuesto) }})
+          </template>
+        </v-alert>
+
         <v-form ref="formRef" @submit.prevent="guardar">
           <!-- Código (solo lectura si está editando) -->
           <v-text-field
@@ -59,7 +73,7 @@
                 type="date"
                 variant="outlined"
                 :max="formData.fecha_limite"
-                :rules="[validaciones.fechaValida]"
+                :rules="[validaciones.fechaValida, validaciones.fechaInicioAnterior]"
                 class="mb-4"
                 hint="Fecha en que inicia la subactividad"
                 persistent-hint
@@ -80,17 +94,20 @@
             </v-col>
           </v-row>
 
-          <!-- Presupuesto -->
+          <!-- Presupuesto con límite -->
           <v-text-field
             v-model="formData.presupuesto"
             label="Presupuesto Total (Bs.)"
             type="number"
             step="0.01"
             min="0"
+            :max="props.limitePresupuesto"
             variant="outlined"
             class="mb-4"
             prefix="Bs."
-            :rules="[validaciones.numeroPositivo]"
+            :rules="[validaciones.numeroPositivo, validaciones.noExcedeLimite]"
+            :hint="`Máximo permitido: ${formatearMonto(props.limitePresupuesto)}`"
+            persistent-hint
             @update:model-value="actualizarValidacionPresupuesto"
           ></v-text-field>
 
@@ -129,8 +146,9 @@
               <v-card-text v-if="mostrarDesglose">
                 <v-alert type="info" density="compact" class="mb-4">
                   El desglose de presupuesto es opcional. Si lo completa, el total no debe exceder
-                  el presupuesto total de la subactividad. Seleccione la fuente de financiamiento
-                  para cada item.
+                  el presupuesto total de la subactividad ({{
+                    formatearMonto(formData.presupuesto || 0)
+                  }}). Seleccione la fuente de financiamiento para cada item.
                 </v-alert>
 
                 <v-table density="compact" class="mb-4">
@@ -227,22 +245,28 @@
                 <v-card variant="tonal" :color="resumenColor">
                   <v-card-text class="py-3">
                     <v-row class="text-center">
-                      <v-col cols="4">
+                      <v-col cols="3">
                         <div class="text-caption text-medium-emphasis">Total Desglose</div>
                         <div class="text-h6 font-weight-bold">
                           Bs. {{ totalDesglose.toFixed(2) }}
                         </div>
                       </v-col>
-                      <v-col cols="4">
-                        <div class="text-caption text-medium-emphasis">Presupuesto Total</div>
+                      <v-col cols="3">
+                        <div class="text-caption text-medium-emphasis">Presupuesto Tarea</div>
                         <div class="text-h6 font-weight-bold">
                           Bs. {{ formData.presupuesto || '0.00' }}
                         </div>
                       </v-col>
-                      <v-col cols="4">
+                      <v-col cols="3">
                         <div class="text-caption text-medium-emphasis">Diferencia</div>
                         <div class="text-h6 font-weight-bold" :class="diferenciaColor">
                           Bs. {{ diferenciaPresupuesto.toFixed(2) }}
+                        </div>
+                      </v-col>
+                      <v-col cols="3">
+                        <div class="text-caption text-medium-emphasis">Límite Actividad</div>
+                        <div class="text-h6 font-weight-bold text-primary">
+                          {{ formatearMonto(props.limitePresupuesto) }}
                         </div>
                       </v-col>
                     </v-row>
@@ -253,7 +277,7 @@
                       class="mt-2"
                     >
                       El total del desglose (Bs. {{ totalDesglose.toFixed(2) }}) excede el
-                      presupuesto total (Bs. {{ formData.presupuesto || '0.00' }})
+                      presupuesto de la tarea (Bs. {{ formData.presupuesto || '0.00' }})
                     </v-alert>
                     <v-alert
                       v-else-if="diferenciaPresupuesto > 0 && tieneItemsValidos"
@@ -274,7 +298,7 @@
                     </v-alert>
                     <v-alert v-else type="warning" density="compact" class="mt-2">
                       Complete todos los campos (Partida, Descripción, Fuente y Monto) de los items
-                      del desglose, u oculte esta sección si no desea utilizarla
+                      del desglose, u oculte esta sección si no desea utilizarla.
                     </v-alert>
                   </v-card-text>
                 </v-card>
@@ -312,6 +336,7 @@ const props = defineProps({
   tarea: { type: Object, default: null },
   cargando: { type: Boolean, default: false },
   procedenciaFondos: { type: Array, default: () => [] },
+  limitePresupuesto: { type: Number, default: 0 },
 })
 
 // Emits
@@ -338,6 +363,24 @@ const fuentesFinanciamiento = computed(() => {
   }))
 })
 
+// Helper
+const formatearMonto = (monto) => {
+  const valor = typeof monto === 'string' ? parseFloat(monto) : monto
+  if (isNaN(valor)) return 'Bs 0.00'
+  return new Intl.NumberFormat('es-BO', {
+    style: 'currency',
+    currency: 'BOB',
+    minimumFractionDigits: 2,
+  }).format(valor)
+}
+
+// Tipo de alerta según saldo
+const alertaLimiteTipo = computed(() => {
+  if (props.limitePresupuesto <= 0) return 'error'
+  if (props.limitePresupuesto < 1000) return 'warning'
+  return 'info'
+})
+
 // Datos del formulario
 const formData = ref({
   id: null,
@@ -357,17 +400,42 @@ const totalDesglose = ref(0)
 const diferenciaPresupuesto = ref(0)
 
 // Validaciones
+// ✅ BIEN - Debe estar en validaciones
 const validaciones = {
   requerido: (v) => !!v || 'Este campo es requerido',
-  fechaValida: (v) => !v || /^\d{4}-\d{2}-\d{2}$/.test(v) || 'Formato de fecha inválido',
+  fechaValida: (v) => {
+    if (!v) return true
+    return /^\d{4}-\d{2}-\d{2}$/.test(v) || 'Formato de fecha inválido'
+  },
   fechaPosterior: (v) => {
-    if (!v || !formData.value.fecha_creacion) return true
+    if (!v) return true
+    if (!formData.value.fecha_creacion) return true
     return (
       new Date(v) >= new Date(formData.value.fecha_creacion) ||
       'La fecha de finalización debe ser posterior a la de inicio'
     )
   },
-  numeroPositivo: (v) => !v || Number(v) >= 0 || 'El valor debe ser positivo',
+  fechaInicioAnterior: (v) => {
+    // ✅ AQUÍ
+    if (!v) return true
+    if (!formData.value.fecha_limite) return true
+    return (
+      new Date(v) <= new Date(formData.value.fecha_limite) ||
+      'La fecha de inicio debe ser anterior a la de finalización'
+    )
+  },
+  numeroPositivo: (v) => {
+    if (!v && v !== 0) return true
+    return Number(v) >= 0 || 'El valor debe ser positivo'
+  },
+  noExcedeLimite: (v) => {
+    if (!v && v !== 0) return true
+    const valor = parseFloat(v) || 0
+    if (valor > props.limitePresupuesto) {
+      return `Excede el saldo disponible: ${formatearMonto(props.limitePresupuesto)}`
+    }
+    return true
+  },
 }
 
 //Validadores para el desglose
@@ -382,6 +450,7 @@ const validadoresDesglose = {
     if (v.length > 200) return 'La descripción no puede exceder 200 caracteres'
     return true
   },
+
   monto: (v) => {
     if (!v && v !== 0) return 'El monto es requerido'
     const montoNum = Number(v)
@@ -389,6 +458,15 @@ const validadoresDesglose = {
     if (montoNum <= 0) return 'El monto debe ser mayor a 0'
     if (montoNum > 999999999.99) return 'El monto excede el límite permitido'
     return true
+  },
+
+  // En validaciones, agrega:
+  fechaInicioAnterior: (v) => {
+    if (!v || !formData.value.fecha_limite) return true
+    return (
+      new Date(v) <= new Date(formData.value.fecha_limite) ||
+      'La fecha de inicio debe ser anterior a la de finalización'
+    )
   },
 }
 
@@ -411,7 +489,6 @@ const resumenColor = computed(() => {
   return 'success'
 })
 
-//Comprobacion de los items
 const tieneItemsValidos = computed(() => {
   return itemsDesglose.value.some((item) => {
     const partidaValida = item.partida && item.partida.trim() !== ''
@@ -422,13 +499,14 @@ const tieneItemsValidos = computed(() => {
   })
 })
 
-//Validador de formulario
 const formularioValido = computed(() => {
-  return (
+  const presupuestoValido =
+    !formData.value.presupuesto || parseFloat(formData.value.presupuesto) <= props.limitePresupuesto
+  const desgloseValido =
     !mostrarDesglose.value ||
     !tieneItemsValidos.value ||
     totalDesglose.value <= Number(formData.value.presupuesto)
-  )
+  return presupuestoValido && desgloseValido
 })
 
 // Watchers
@@ -580,20 +658,21 @@ const guardar = async () => {
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
+  const presupuesto = parseFloat(formData.value.presupuesto) || 0
+  if (presupuesto > props.limitePresupuesto) return
+
   const presupuestoDesglose = prepararDesgloseParaAPI()
 
   const datosTarea = {
     ...formData.value,
-    actividad: props.actividad?.id,
+    actividad: props.actividad?.id || props.actividad?.datos?.id,
     presupuestoDesglose: presupuestoDesglose,
-    presupuesto: Number(formData.value.presupuesto) || 0,
+    presupuesto: presupuesto,
   }
 
   if (!datosTarea.codigo) delete datosTarea.codigo
   if (!datosTarea.fecha_creacion) delete datosTarea.fecha_creacion
   if (!datosTarea.fecha_limite) delete datosTarea.fecha_limite
-
-  console.log('Datos a enviar a la API:', JSON.stringify(datosTarea, null, 2))
 
   emit('guardar', datosTarea)
 }
@@ -628,4 +707,3 @@ watch(dialog, (nuevoValor) => {
   color: #4caf50;
 }
 </style>
-```

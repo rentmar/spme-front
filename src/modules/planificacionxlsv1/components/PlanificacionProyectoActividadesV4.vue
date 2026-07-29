@@ -1,67 +1,93 @@
 <!-- PlanificacionProyectoActividadesV4.vue -->
 <template>
   <div class="excel-app">
-    <ExcelToolbar
-      :grid-tab="gridTab"
-      :selected-row-data="selectedRowData"
-      @add-row="addRow"
-      @add-tarea="addTareaHandler"
-      @open-aside="openAside"
-      @ejecutar-accion="ejecutarAccion"
-      @guardar="guardar"
-    />
-    <ExcelFormulaBar
-      :selected-cell="selectedCell"
-      :selected-value="selectedValue"
-      :column-title="columnTitle"
-    />
-    <div class="excel-body">
-      <ExcelGrid
-        v-if="tablaDataActividades.length > 0"
-        ref="gridRef"
-        v-model:grid-tab="gridTab"
-        :data="tablaDataActividades"
-        :columns="columns"
-        :grid-height="gridHeight"
-        :actividad-seleccionada="actividadSeleccionada"
-        :tareas-filtradas="tareasFiltradas"
-        :tareas-columns="tareasColumns"
-        :context-menu-config="contextMenuConfig"
-        :dropdown-menu-config="dropdownMenuConfig"
-        @change="onChange"
-        @select="onSelect"
-        :on-change-tareas="onChangeTareas"
-        :context-menu-config-tareas="contextMenuConfigTareas"
-      />
-      <!--PROPS REALES
-     TAREAS:
-        actividad type Object
-        presupuesto-actividad type Number, String
-
-
-     -->
-      <ExcelAside
-        v-if="showAside && selectedRowData"
-        :mode="asideMode"
-        :actividad="selectedRowData"
-        :presupuesto-actividad="selectedRowData.presupuesto"
-        :procedencia-fondos="store.procedenciaFondos || []"
+    <!-- Toolbar y FormulaBar: solo si hay actividades reales -->
+    <template v-if="hayActividadesReales">
+      <ExcelToolbar
+        :grid-tab="gridTab"
         :selected-row-data="selectedRowData"
-        :data="tablaDataActividades"
-        :tareas-dummy="tareasDummy"
-        :total-plan="totalPlan"
-        :total-ejec="totalEjec"
-        :saldo="saldo"
-        :pct="pct"
-        :fuentes-dummy="fuentesDummy"
-        :arbol-explorador="arbolExplorador"
-        :explorador-abiertos="exploradorAbiertos"
-        @close="showAside = false"
-        @select-from-aside="selectFromAside"
-        @update:explorador-abiertos="exploradorAbiertos = $event"
+        @add-row="addRow"
+        @add-tarea="addTareaHandler"
+        @open-aside="openAside"
+        @ejecutar-accion="ejecutarAccion"
+        @guardar="guardar"
       />
+      <ExcelFormulaBar
+        :selected-cell="selectedCell"
+        :selected-value="selectedValue"
+        :column-title="columnTitle"
+      />
+    </template>
+
+    <div class="excel-body">
+      <!-- ═══════════════ ESTADO VACÍO ═══════════════ -->
+      <div v-if="!hayActividadesReales" class="estado-vacio-actividades">
+        <div class="vacio-content">
+          <v-icon size="72" color="primary" class="mb-4">mdi-clipboard-text-outline</v-icon>
+          <h2 class="text-h5 font-weight-bold mb-3">Sin actividades registradas</h2>
+          <p class="text-body-1 text-medium-emphasis mb-2">
+            Comience agregando la primera actividad para empezar a planificar
+          </p>
+          <p class="text-body-2 text-medium-emphasis mb-6">
+            el presupuesto del proyecto {{ store.proyecto?.codigo || '' }}
+          </p>
+          <v-btn
+            color="primary"
+            size="large"
+            variant="flat"
+            prepend-icon="mdi-plus"
+            @click="addRow"
+            class="px-8"
+          >
+            Agregar Primera Actividad
+          </v-btn>
+        </div>
+      </div>
+
+      <!-- ═══════════════ CONTENIDO NORMAL ═══════════════ -->
+      <template v-else>
+        <ExcelGrid
+          v-if="tablaDataActividades.length > 0"
+          ref="gridRef"
+          v-model:grid-tab="gridTab"
+          :data="tablaDataActividades"
+          :columns="columns"
+          :grid-height="gridHeight"
+          :actividad-seleccionada="actividadSeleccionada"
+          :tareas-filtradas="tareasFiltradas"
+          :tareas-columns="tareasColumns"
+          :context-menu-config="contextMenuConfig"
+          :dropdown-menu-config="dropdownMenuConfig"
+          @change="onChange"
+          @select="onSelect"
+          :on-change-tareas="onChangeTareas"
+          :context-menu-config-tareas="contextMenuConfigTareas"
+        />
+        <ExcelAside
+          v-if="showAside && selectedRowData"
+          :mode="asideMode"
+          :actividad="selectedRowData"
+          :presupuesto-actividad="selectedRowData.presupuesto"
+          :procedencia-fondos="store.procedenciaFondos || []"
+          :selected-row-data="selectedRowData"
+          :data="tablaDataActividades"
+          :tareas-dummy="tareasDummy"
+          :total-plan="totalPlan"
+          :total-ejec="totalEjec"
+          :saldo="saldo"
+          :pct="pct"
+          :fuentes-dummy="fuentesDummy"
+          :arbol-explorador="arbolExplorador"
+          :explorador-abiertos="exploradorAbiertos"
+          @close="showAside = false"
+          @select-from-aside="selectFromAside"
+          @update:explorador-abiertos="exploradorAbiertos = $event"
+        />
+      </template>
     </div>
+
     <ExcelStatusBar
+      v-if="hayActividadesReales"
       :data-length="tablaDataActividades.length"
       :total-plan="totalPlan"
       :total-ejec="totalEjec"
@@ -69,6 +95,7 @@
       :pct="pct"
     />
   </div>
+
   <!--Desglose del presupuesto-->
   <DialogoDesglosePresupuestoActividad
     v-model="dialogoDesglose"
@@ -77,13 +104,13 @@
     :info-actividad="datosPresupuesto.info"
     :procedencia-fondos="store.procedenciaFondosIds"
     @guardarDesglose="guardarDesglosePresupuesto"
-  ></DialogoDesglosePresupuestoActividad>
+  />
   <!--Dialogo para el envio de informacion-->
   <DialogoConfirmacionEnvio
     v-model="showDialogoEnvio"
     :loading-save="loadingSave"
     @guardar="confirmarEnvio"
-  ></DialogoConfirmacionEnvio>
+  />
   <!--Para debug-->
   <DebugDialog :tablaDataActividades="tablaDataActividades" :tablaDataTareas="tablaDataTareas" />
 </template>
@@ -140,12 +167,18 @@ const datosPresupuesto = ref({
   procedencia_fondos: [],
 })
 
+//Comprobacion si hay actividades
+// Computed para saber si hay actividades reales (sin placeholder)
+const hayActividadesReales = computed(() => {
+  return tablaDataActividades.value.some((a) => a.id !== null && a.id !== undefined)
+})
+
 //Estados para el formula menu
 const columnTitle = ref('')
 
 // COMPOSABLES
 const { registrarCambio } = useSeguimientoCambios()
-const { successMsg, errorMsg, infoMsg } = useSnackbar()
+const { successMsg, errorMsg, infoMsg, warningMsg } = useSnackbar()
 const {
   tablaDataActividades,
   tablaDataTareas,
@@ -434,6 +467,13 @@ const onSelect = (startRow, startCol) => {
 
     const col = columns.value[startCol]
     if (col) {
+      //Validacion para celda de presupuesto filas CRD y nuevas
+      if (col.data === 'presupuesto' && (row.estado === 'CRD' || row.esNueva)) {
+        const motivo = row.estado === 'CRD' ? 'estado CRD' : 'no ha sido guardada'
+        warningMsg(`No se puede modificar el presupuesto porque la actividad ${motivo}.`)
+        return
+      }
+      //otros valores
       selectedCell.value = col.data + (startRow + 1)
       selectedValue.value = row[col.data] || ''
       columnTitle.value = col.title || col.data
@@ -564,5 +604,24 @@ onMounted(async () => {
   display: flex;
   overflow: hidden;
   min-height: 0;
+}
+/* ═══════════════════════════════════════════════════ */
+/* ESTADO VACÍO */
+/* ═══════════════════════════════════════════════════ */
+.estado-vacio-actividades {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+}
+
+.vacio-content {
+  text-align: center;
+  max-width: 480px;
+  padding: 48px 32px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 </style>

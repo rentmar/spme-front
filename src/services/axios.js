@@ -142,6 +142,16 @@ const apiEmail = axios.create({
   },
 })
 
+//Instancia para el sistema de presupuestos
+const apiPres = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_PRESUP,
+  withCredentials: false,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
 // Interceptor para agregar token SOLO a apiValid
 apiValid.interceptors.request.use(
   (config) => {
@@ -197,6 +207,19 @@ apiPlan.interceptors.request.use(
     return Promise.reject(error)
   },
 )
+//Interceptores para el presupuesto
+apiPres.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('access_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
 
 //Interceptor comun para ambas instancias
 const errorInterceptor = (error) => {
@@ -217,6 +240,7 @@ apiPrint.interceptors.response.use((response) => response, errorInterceptor)
 apiValid.interceptors.response.use((response) => response, errorInterceptor)
 apiRepPei.interceptors.response.use((response) => response, errorInterceptor)
 apiEmail.interceptors.response.use((response) => response, errorInterceptor)
+apiPres.interceptors.response.use((response) => response, errorInterceptor)
 // Interceptor para manejar errores globales
 // api.interceptors.response.use(
 //   (response) => response,
@@ -240,4 +264,5 @@ export {
   apiValid,
   apiRepPei,
   apiEmail,
+  apiPres,
 }

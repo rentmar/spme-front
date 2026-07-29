@@ -133,7 +133,7 @@ const icon = computed(
 const title = computed(
   () =>
     ({
-      tareas: 'Tareas',
+      tareas: 'Subactividad',
       estructura: 'Estructura',
       presupuesto: 'Presupuesto',
       resumen: 'Resumen',

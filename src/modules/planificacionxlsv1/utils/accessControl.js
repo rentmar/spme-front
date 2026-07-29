@@ -145,8 +145,9 @@ const reglasActividad = {
       'saldo',
       'fecha_inicio',
       'fecha_cierre',
+      'responsable',
     ],
-    bloqueadas: ['responsable', 'procedencia_fondos', 'estado'],
+    bloqueadas: ['procedencia_fondos', 'estado'],
   },
 }
 
@@ -202,10 +203,20 @@ const reglasEstadoActividad = {
       'riesgos',
       'supuestos',
       'tipo_actividad',
+      'responsable',
     ],
   },
   CRD: {
-    todas: true,
+    permitidas: [
+      'codigo',
+      'nombreCorto',
+      'tipo_actividad',
+      'responsable',
+      'fecha_inicio',
+      'fecha_cierre',
+      'supuestos',
+      'riesgos',
+    ],
   },
 }
 
