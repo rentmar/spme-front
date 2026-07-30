@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/views/HomeView.vue'
+//import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import { useUserStore } from '@/stores/user'
 
@@ -21,7 +21,8 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'perfil',
-      component: HomeView,
+      component: () => import('@/views/HomeView.vue'),
+      //component: HomeView,
       meta: { requiresAuth: true },
     },
     {
@@ -201,7 +202,8 @@ const router = createRouter({
     {
       path: '/admin/auditoria',
       name: 'auditoria',
-      component: HomeView,
+      component: () => import('@/views/HomeView.vue'),
+      //component: HomeView,
       meta: { requiresAuth: true },
     },
     {
@@ -225,25 +227,30 @@ const router = createRouter({
     {
       path: '/notificaciones/configuracion',
       name: 'notificaciones-configuracion',
-      component: HomeView,
+      component: () => import('@/views/HomeView.vue'),
+      //component: HomeView,
       meta: { requiresAuth: true },
     },
     {
       path: '/admin/notificaciones',
       name: 'admin-notificaciones',
-      component: HomeView,
+      component: () => import('@/views/HomeView.vue'),
+      //component: HomeView,
       meta: { requiresAuth: true },
     },
     {
       path: '/admin/notificaciones/plantillas',
       name: 'admin-notificaciones-plantillas',
-      component: HomeView,
+      component: () => import('@/views/HomeView.vue'),
+
+      //component: HomeView,
       meta: { requiresAuth: true },
     },
     {
       path: '/admin/notificaciones/configuracion',
       name: 'admin-notificaciones-configuracion',
-      component: HomeView,
+      component: () => import('@/views/HomeView.vue'),
+      //component: HomeView,
       meta: { requiresAuth: true },
     },
     {
@@ -301,12 +308,12 @@ const router = createRouter({
     //   component: () => import('@/views/pei/PeiListaActividades.vue'),
     //   meta: { requiresAuth: true },
     // },
-    {
-      path: '/monitoreo/inicio',
-      name: 'homeMonitoreo',
-      component: () => import('@/views/HomeView.vue'),
-      meta: { requiresAuth: true },
-    },
+    // {
+    //   path: '/monitoreo/inicio',
+    //   name: 'homeMonitoreo',
+    //   component: () => import('@/views/HomeView.vue'),
+    //   meta: { requiresAuth: true },
+    // },
     {
       path: '/monitoreo/formulario01/:id',
       component: () => import('@/views/monitoreo/SolicitudDeFondos.vue'),

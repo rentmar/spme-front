@@ -12,15 +12,30 @@
         @ejecutar-accion="ejecutarAccion"
         @guardar="guardar"
       />
-      <ExcelFormulaBar
-        :selected-cell="selectedCell"
-        :selected-value="selectedValue"
-        :column-title="columnTitle"
-      />
+
+      <!-- FormulaBar colapsable -->
+      <v-expand-transition>
+        <ExcelFormulaBar
+          v-if="showFormulaBar"
+          :selected-cell="selectedCell"
+          :selected-value="selectedValue"
+          :column-title="columnTitle"
+        />
+      </v-expand-transition>
+
+      <!-- Toggle para contraer/expandir FormulaBar -->
+      <div class="formula-toggle" @click="showFormulaBar = !showFormulaBar">
+        <v-icon size="14" class="mr-1">
+          {{ showFormulaBar ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+        </v-icon>
+        <span class="text-caption"
+          >{{ showFormulaBar ? 'Ocultar' : 'Mostrar' }} barra de fórmulas</span
+        >
+      </div>
     </template>
 
     <div class="excel-body">
-      <!-- ═══════════════ ESTADO VACÍO ═══════════════ -->
+      <!-- Estado vacío -->
       <div v-if="!hayActividadesReales" class="estado-vacio-actividades">
         <div class="vacio-content">
           <v-icon size="72" color="primary" class="mb-4">mdi-clipboard-text-outline</v-icon>
@@ -44,7 +59,7 @@
         </div>
       </div>
 
-      <!-- ═══════════════ CONTENIDO NORMAL ═══════════════ -->
+      <!-- Contenido normal -->
       <template v-else>
         <ExcelGrid
           v-if="tablaDataActividades.length > 0"
@@ -63,26 +78,6 @@
           :on-change-tareas="onChangeTareas"
           :context-menu-config-tareas="contextMenuConfigTareas"
         />
-        <ExcelAside
-          v-if="showAside && selectedRowData"
-          :mode="asideMode"
-          :actividad="selectedRowData"
-          :presupuesto-actividad="selectedRowData.presupuesto"
-          :procedencia-fondos="store.procedenciaFondos || []"
-          :selected-row-data="selectedRowData"
-          :data="tablaDataActividades"
-          :tareas-dummy="tareasDummy"
-          :total-plan="totalPlan"
-          :total-ejec="totalEjec"
-          :saldo="saldo"
-          :pct="pct"
-          :fuentes-dummy="fuentesDummy"
-          :arbol-explorador="arbolExplorador"
-          :explorador-abiertos="exploradorAbiertos"
-          @close="showAside = false"
-          @select-from-aside="selectFromAside"
-          @update:explorador-abiertos="exploradorAbiertos = $event"
-        />
       </template>
     </div>
 
@@ -96,7 +91,56 @@
     />
   </div>
 
-  <!--Desglose del presupuesto-->
+  <!-- Aside flotante -->
+  <v-dialog
+    v-model="showAside"
+    max-width="850"
+    scrollable
+    persistent
+    @keydown.esc="showAside = false"
+  >
+    <v-card height="95vh" class="aside-flotante-card">
+      <ExcelAside
+        v-if="showAside"
+        :mode="asideMode"
+        :actividad="selectedRowData"
+        :presupuesto-actividad="selectedRowData?.presupuesto"
+        :procedencia-fondos="store.procedenciaFondos || []"
+        :selected-row-data="selectedRowData"
+        :data="tablaDataActividades"
+        :tareas-dummy="tareasDummy"
+        :total-plan="totalPlan"
+        :total-ejec="totalEjec"
+        :saldo="saldo"
+        :pct="pct"
+        :fuentes-dummy="fuentesDummy"
+        :arbol-explorador="arbolExplorador"
+        :explorador-abiertos="exploradorAbiertos"
+        @close="showAside = false"
+        @select-from-aside="selectFromAside"
+        @update:explorador-abiertos="exploradorAbiertos = $event"
+      />
+    </v-card>
+  </v-dialog>
+
+  <!-- Diálogo: sin fila seleccionada -->
+  <v-dialog v-model="dialogoSinFila" max-width="400" persistent>
+    <v-card>
+      <v-card-text class="pa-6 text-center">
+        <v-icon size="48" color="warning" class="mb-3">mdi-cursor-default-click</v-icon>
+        <p class="text-body-1 font-weight-medium">Seleccione una actividad</p>
+        <p class="text-body-2 text-medium-emphasis">
+          Debe seleccionar una fila en la grilla antes de abrir esta sección.
+        </p>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn color="primary" variant="text" @click="dialogoSinFila = false">Entendido</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <!-- Desglose del presupuesto -->
   <DialogoDesglosePresupuestoActividad
     v-model="dialogoDesglose"
     :presupuesto-total="datosPresupuesto.presupuesto"
@@ -105,13 +149,15 @@
     :procedencia-fondos="store.procedenciaFondosIds"
     @guardarDesglose="guardarDesglosePresupuesto"
   />
-  <!--Dialogo para el envio de informacion-->
+
+  <!-- Diálogo para el envío de información -->
   <DialogoConfirmacionEnvio
     v-model="showDialogoEnvio"
     :loading-save="loadingSave"
     @guardar="confirmarEnvio"
   />
-  <!--Para debug-->
+
+  <!-- Debug -->
   <DebugDialog :tablaDataActividades="tablaDataActividades" :tablaDataTareas="tablaDataTareas" />
 </template>
 
@@ -120,7 +166,6 @@ import { ref, computed, onMounted, nextTick, provide } from 'vue'
 import { registerAllModules } from 'handsontable/registry'
 import 'handsontable/dist/handsontable.full.css'
 import { registerLanguageDictionary, esMX } from 'handsontable/i18n'
-//Componetes
 import ExcelToolbar from './ExcelToolbar.vue'
 import ExcelFormulaBar from './ExcelFormulaBar.vue'
 import ExcelGrid from './ExcelGrid.vue'
@@ -128,24 +173,20 @@ import ExcelAside from './ExcelAside.vue'
 import ExcelStatusBar from './ExcelStatusBar.vue'
 import DialogoDesglosePresupuestoActividad from './Dialogs/DialogoDesglosePresupuestoActividad.vue'
 import DialogoConfirmacionEnvio from './Dialogs/DialogoConfirmacionEnvio.vue'
-//composables
 import { useExcelData } from '../composables/useExcelData.js'
 import { useExcelMenus } from '../composables/useExcelMenus.js'
 import { useSnackbar } from '@/composables/useSnackbar.js'
 import { useSeguimientoCambios } from '../composables/useSeguimientoCambios.js'
-//store
 import { usePlanificacionExcelStore } from '../stores/usePlanificacionExcelStore.js'
 import { useUserStore } from '@/stores/user.js'
-//debug
 import DebugDialog from './Dialogs/DebugDialog.vue'
 
 registerAllModules()
 registerLanguageDictionary(esMX)
 
-//iniciar el store
 const store = usePlanificacionExcelStore()
 const userStore = useUserStore()
-// REFS
+
 const selectedRowData = ref(null)
 const actividadSeleccionada = ref(null)
 const showAside = ref(false)
@@ -156,44 +197,30 @@ const gridRef = ref(null)
 const gridHeight = ref(400)
 const selectedCell = ref('A1')
 const selectedValue = ref('')
-
-//Ref para el dialogo de envio
+const showFormulaBar = ref(true)
 const showDialogoEnvio = ref(false)
-
-//estado del desglose de presupuesto:
 const dialogoDesglose = ref(false)
-const datosPresupuesto = ref({
-  presupuesto: 0,
-  procedencia_fondos: [],
-})
-
-//Comprobacion si hay actividades
-// Computed para saber si hay actividades reales (sin placeholder)
-const hayActividadesReales = computed(() => {
-  return tablaDataActividades.value.some((a) => a.id !== null && a.id !== undefined)
-})
-
-//Estados para el formula menu
+const dialogoSinFila = ref(false)
+const datosPresupuesto = ref({ presupuesto: 0, procedencia_fondos: [] })
 const columnTitle = ref('')
 
-// COMPOSABLES
+const hayActividadesReales = computed(() =>
+  tablaDataActividades.value.some((a) => a.id !== null && a.id !== undefined),
+)
+
 const { registrarCambio } = useSeguimientoCambios()
 const { successMsg, errorMsg, infoMsg, warningMsg } = useSnackbar()
 const {
   tablaDataActividades,
   tablaDataTareas,
-  //data,
   columns,
   tareasDummy,
-  //tareasGridData,
   tareasColumns,
   fuentesDummy,
   totalPlan,
   totalEjec,
   saldo,
   pct,
-  //fmt,
-  //estadoColor,
   addRow,
   addTarea,
   onChange,
@@ -207,91 +234,32 @@ const {
   tipoActividadNombrePorId,
 } = useExcelData()
 
-//Solo para debug:
-// Después de useExcelData()
 provide('tablaDataActividades', tablaDataActividades)
 provide('tablaDataTareas', tablaDataTareas)
 
-///Rutina para mostrar tareas
-
-// const verTareasDeActividad = () => {
-//   if (selectedRowData.value) {
-//     actividadSeleccionada.value = selectedRowData.value
-
-//     gridTab.value = 'tareas'
-//   }
-// }
-
-// const verTareasDeActividad = () => {
-//   if (selectedRowData.value) {
-//     actividadSeleccionada.value = selectedRowData.value
-//     gridTab.value = 'tareas'
-
-//     setTimeout(() => {
-//       const hot = gridRef.value?.tareasTable?.hotInstance
-//       if (hot) {
-//         hot.loadData(tareasFiltradas.value)
-//       }
-//     }, 200)
-//   }
-// }
-
-//Agregar Tarea
 const addTareaHandler = () => {
-  addTarea(actividadSeleccionada.value?.id, () => {
-    gridRef.value?.recargarTareas(tareasFiltradas.value)
-  })
+  addTarea(actividadSeleccionada.value?.id, () =>
+    gridRef.value?.recargarTareas(tareasFiltradas.value),
+  )
 }
 
-// verTareasDeActividad con confirmación
 const verTareasDeActividad = async () => {
-  if (selectedRowData.value) {
-    const puedeCambiar = await seguimiento.confirmarCambioActividad()
-    if (!puedeCambiar) return
-
-    actividadSeleccionada.value = selectedRowData.value
-    gridTab.value = 'tareas'
-
-    setTimeout(() => {
-      gridRef.value?.recargarTareas(tareasFiltradas.value)
-    }, 200)
-  }
+  if (!selectedRowData.value) return
+  const puedeCambiar = await seguimiento.confirmarCambioActividad()
+  if (!puedeCambiar) return
+  actividadSeleccionada.value = selectedRowData.value
+  gridTab.value = 'tareas'
+  setTimeout(() => gridRef.value?.recargarTareas(tareasFiltradas.value), 200)
 }
 
-// const guardarDesglosePresupuesto = (nuevoDesglose) => {
-//   if (!datosPresupuesto.value?.id) return
-
-//   const index = tablaDataActividades.value.findIndex((a) => a.id === datosPresupuesto.value.id)
-//   if (index === -1) return
-
-//   // Actualizar la fila en la grilla
-//   tablaDataActividades.value[index].procedencia_fondos = nuevoDesglose
-
-//   // Forzar actualización visual de Handsontable
-//   if (gridRef.value?.hotTableRef?.hotInstance) {
-//     gridRef.value.hotTableRef.hotInstance.setDataAtRowProp(
-//       index,
-//       'procedencia_fondos',
-//       nuevoDesglose,
-//     )
-//     gridRef.value.hotTableRef.hotInstance.render()
-//   }
-// }
 const guardarDesglosePresupuesto = async (nuevoDesglose) => {
   if (!datosPresupuesto.value?.id) return
-  console.log('Datos Presupuesto: ', datosPresupuesto)
   const index = tablaDataActividades.value.findIndex((a) => a.id === datosPresupuesto.value.id)
   if (index === -1) return
-  // 🎯 GUARDAR VALOR ORIGINAL antes de actualizar
   const valorAnterior = JSON.stringify(tablaDataActividades.value[index].procedencia_fondos)
   const valorNuevo = JSON.stringify(nuevoDesglose)
-  console.log('Valor anterior: ', valorAnterior)
-  console.log('Valor nuevo: ', valorNuevo)
-
   if (valorAnterior !== valorNuevo) {
-    // Actualizar la fila en la grilla
     tablaDataActividades.value[index].procedencia_fondos = nuevoDesglose
-    // Forzar actualización visual de Handsontable
     if (gridRef.value?.hotTableRef?.hotInstance) {
       gridRef.value.hotTableRef.hotInstance.setDataAtRowProp(
         index,
@@ -300,7 +268,6 @@ const guardarDesglosePresupuesto = async (nuevoDesglose) => {
       )
       gridRef.value.hotTableRef.hotInstance.render()
     }
-    //Registrar cambio
     registrarCambio({
       tipo: 'actividad',
       accion: 'editar',
@@ -329,7 +296,6 @@ const { contextMenuConfig, contextMenuConfigTareas, ejecutarAccion } = useExcelM
 })
 
 const loadingSave = ref(false)
-// Función guardar
 const guardar = async () => {
   if (!store.tieneCambiosSinGuardar) {
     infoMsg('No hay cambios para guardar')
@@ -337,17 +303,15 @@ const guardar = async () => {
   }
   showDialogoEnvio.value = true
 }
-//Confirmar envio
+
 const confirmarEnvio = async (motivo) => {
   loadingSave.value = true
-  console.log('MOTIVO: ', motivo)
   try {
     const actividadesConDatos = tablaDataActividades.value.filter(
       (a) => a.nombreCorto || a.codigo || a.id,
     )
     const tareasConDatos = tablaDataTareas.value.filter((t) => t.titulo || t.codigo || t.id)
-    const respuesta = await store.guardarCambios(motivo, actividadesConDatos, tareasConDatos)
-    console.log('RESPUESTA: ', respuesta)
+    await store.guardarCambios(motivo, actividadesConDatos, tareasConDatos)
     showDialogoEnvio.value = false
     loadingSave.value = false
     successMsg('Informacion almacenada')
@@ -355,20 +319,15 @@ const confirmarEnvio = async (motivo) => {
     window.location.reload()
   } catch (error) {
     loadingSave.value = false
-    console.error('Error al enviar la informacion', error)
     errorMsg('Error al guardar')
   }
 }
 
-// COMPUTED
 const tareasFiltradas = computed(() => {
   if (!actividadSeleccionada.value || !tablaDataTareas.value.length) return []
-
   const filtradas = tablaDataTareas.value.filter(
     (t) => t.actividad === actividadSeleccionada.value.id,
   )
-
-  // Agregar 3 filas vacías al final
   const vacias = Array.from({ length: 5 }, () => ({
     id: null,
     codigo: '',
@@ -382,7 +341,6 @@ const tareasFiltradas = computed(() => {
     actividad: '',
     esNueva: false,
   }))
-
   return [...filtradas, ...vacias]
 })
 
@@ -449,52 +407,39 @@ const arbolExplorador = computed(() => {
   ]
 })
 
-// FUNCIONES
 const onSelect = (startRow, startCol) => {
   if (startRow >= 0 && startRow < tablaDataActividades.value.length) {
     const row = tablaDataActividades.value[startRow]
     selectedRowData.value = row
-
-    console.log('Fila seleccionada: ', selectedRowData)
-
-    // Si el tab de tareas está abierto, actualizar automáticamente
-    // if (gridTab.value === 'tareas') {
-    //   actividadSeleccionada.value = row
-    //   nextTick(() => {
-    //     gridRef.value?.recargarTareas(tareasFiltradas.value)
-    //   })
-    // }
-
     const col = columns.value[startCol]
     if (col) {
-      //Validacion para celda de presupuesto filas CRD y nuevas
       if (col.data === 'presupuesto' && (row.estado === 'CRD' || row.esNueva)) {
-        const motivo = row.estado === 'CRD' ? 'estado CRD' : 'no ha sido guardada'
-        warningMsg(`No se puede modificar el presupuesto porque la actividad ${motivo}.`)
+        warningMsg(
+          `No se puede modificar el presupuesto porque la actividad ${row.estado === 'CRD' ? 'estado CRD' : 'no ha sido guardada'}.`,
+        )
         return
       }
-      //otros valores
       selectedCell.value = col.data + (startRow + 1)
       selectedValue.value = row[col.data] || ''
       columnTitle.value = col.title || col.data
     }
   }
 }
-// const onSelect = (startRow, startCol) => {
-//   if (startRow >= 0 && startRow < tablaDataActividades.value.length) {
-//     selectedRowData.value = tablaDataActividades.value[startRow]
-//     const col = columns.value[startCol]
-//     if (col) {
-//       selectedCell.value = col.data + (startRow + 1)
-//       selectedValue.value = tablaDataActividades.value[startRow][col.data] || ''
-//     }
-//   }
-// }
 
 const openAside = (mode) => {
+  if (mode === 'arbol') {
+    asideMode.value = mode
+    showAside.value = true
+    return
+  }
+  if (!selectedRowData.value) {
+    dialogoSinFila.value = true
+    return
+  }
   asideMode.value = mode
   showAside.value = true
 }
+
 const selectFromAside = (act) => {
   selectedRowData.value = act
   asideMode.value = 'tareas'
@@ -503,19 +448,19 @@ const selectFromAside = (act) => {
 const dropdownMenuConfig = {
   items: {
     filter_by_condition: {
-      hidden: function () {
+      hidden() {
         const r = this.getSelectedRangeLast()
         return !r || ![0, 1, 2, 3, 4, 5, 6, 7, 8, 9].includes(r.to.col)
       },
     },
     filter_by_value: {
-      hidden: function () {
+      hidden() {
         const r = this.getSelectedRangeLast()
         return !r || ![0, 1, 2, 3, 4, 5, 6, 7, 8, 9].includes(r.to.col)
       },
     },
     filter_action_bar: {
-      hidden: function () {
+      hidden() {
         const r = this.getSelectedRangeLast()
         return !r || ![0, 1, 2, 3, 4, 5, 6, 7, 8, 9].includes(r.to.col)
       },
@@ -524,36 +469,25 @@ const dropdownMenuConfig = {
 }
 
 onMounted(async () => {
-  // Cargar lista de usuarios si no está cargada
-  if (!userStore.listaUsuarios || userStore.listaUsuarios.length === 0) {
-    await userStore.cargarListaUsuarios()
-  }
-  //tablaDataActividades.value = store.actividades
+  if (!userStore.listaUsuarios?.length) await userStore.cargarListaUsuarios()
   tablaDataActividades.value = store.actividades.map((a) => {
-    const presupuesto = +a.presupuesto || 0
-    const totalEjecutado = +a.totalEjecutado || 0
-
+    const p = +a.presupuesto || 0
+    const e = +a.totalEjecutado || 0
     return {
       ...a,
       tipo_actividad: tipoActividadNombrePorId(a.tipo_actividad_id),
-      saldo: presupuesto - totalEjecutado, // ← Calcular al cargar
+      saldo: p - e,
       esNueva: false,
     }
   })
   tablaDataActividades.value.sort((a, b) => a.id - b.id)
   tablaDataTareas.value = store.tareas
-
   agregarFilasVacias()
-
-  console.log('tablaDataActividades:', tablaDataActividades.value)
-  console.log('tablaDataTareas:', tablaDataTareas.value)
 
   window.addEventListener('abrir-desglose', (e) => {
     const { row, data } = e.detail
     const fila = tablaDataActividades.value[row]
-
     if (!fila) return
-
     datosPresupuesto.value = {
       id: fila.id,
       presupuesto: fila.presupuesto || 0,
@@ -566,11 +500,9 @@ onMounted(async () => {
         responsable: fila.responsable,
       },
     }
-
-    console.log('DATOS PRESS: ', datosPresupuesto)
-
     dialogoDesglose.value = true
   })
+
   nextTick(() => {
     const el = gridRef.value?.$el || gridRef.value
     if (el) {
@@ -605,9 +537,25 @@ onMounted(async () => {
   overflow: hidden;
   min-height: 0;
 }
-/* ═══════════════════════════════════════════════════ */
-/* ESTADO VACÍO */
-/* ═══════════════════════════════════════════════════ */
+.formula-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 8px;
+  background: #f1f3f4;
+  border-top: 1px solid #dadce0;
+  cursor: pointer;
+  color: #5f6368;
+  user-select: none;
+  transition: background 0.15s;
+}
+.formula-toggle:hover {
+  background: #e8eaed;
+}
+.aside-flotante-card {
+  display: flex;
+  flex-direction: column;
+}
 .estado-vacio-actividades {
   flex: 1;
   display: flex;
@@ -615,7 +563,6 @@ onMounted(async () => {
   justify-content: center;
   background: #fafafa;
 }
-
 .vacio-content {
   text-align: center;
   max-width: 480px;

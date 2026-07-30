@@ -51,6 +51,7 @@
       <!-- EXPLORADOR -->
       <AsideExplorador
         v-if="mode === 'explorador'"
+        :actividad="props.actividad"
         :selected-row-data="selectedRowData"
         :arbol-explorador="arbolExplorador"
         :explorador-abiertos="exploradorAbiertos"
@@ -145,13 +146,13 @@ const title = computed(
 
 <style scoped>
 .side-aside {
-  width: 600px;
+  width: 100%;
+  height: 100%;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-left: 1px solid #c4c7c9;
-  overflow-y: auto;
+  overflow: hidden;
 }
 .aside-empty {
   flex: 1;

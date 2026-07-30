@@ -244,6 +244,7 @@
                 </div>
 
                 <v-divider class="my-4"></v-divider>
+                <!-- <DetalleGastosSolicitud></DetalleGastosSolicitud> -->
 
                 <!-- Sección 3: Detalle de Gastos -->
                 <div class="form-section mb-6">
@@ -645,7 +646,8 @@ import { useNotificacionEmail } from '@/modules/notificacionEmail/composables/us
 import DialogoGuardarFormulario from '@/modules/formularios/barraHerramientas/DialogoGuardarFormulario.vue'
 import DialogoGuardarFormularioValidador from '@/modules/formularios/barraHerramientas/DialogoGuardarFormularioValidador.vue'
 import { useSnackbar } from '@/composables/useSnackbar'
-
+import { useActividadPresupuesto } from '@/modules/formularios/store/useActividadPresupuestoStore'
+import DetalleGastosSolicitud from '@/modules/formularios/components/presupuestos/DetalleGastosSolicitud.vue'
 /******* Computed para ligar la informacion al componente InformacionAdicional ***********************************************************************/
 
 //Referencia al componente Informacion adicional
@@ -676,6 +678,9 @@ const { openConfirmDialog } = useConfirmDialog()
 /******************************Fin Dialogo de confirmacion SALIR?*****************************************************************/
 
 /*****FIN COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
+//Iniciar store
+const store = useActividadPresupuesto()
+
 //Inicar Composable
 const { successMsg, errorMsg, warningMsg } = useSnackbar()
 const { notificarRevision } = useNotificacionEmail()
@@ -1026,6 +1031,7 @@ async function cargarDatos() {
 
     const rawData = await response.json()
     datosFormulario.value = strictSanitizeData(rawData)
+    await store.inicializar(idActividad)
     //console.log('Datos cargados exitosamente:', rawData)
   } catch (err) {
     error.value = err.message
@@ -1137,6 +1143,17 @@ async function submitForm() {
     if (totalMontoSolicitado.value <= 0) {
       throw new Error('El monto total solicitado debe ser mayor a cero.')
     }
+
+    // ¿Excede?
+    const excedePresupuesto = computed(() => {
+      return totalMontoSolicitado.value > store.presupuestoDisponible.value
+    })
+
+    // Monto excedido
+    const montoExcedido = computed(() => {
+      if (!excedePresupuesto.value) return 0
+      return totalMontoSolicitado.value - store.presupuestoDisponible.value
+    })
 
     // Validar campos obligatorios
     if (!formData.value.descripcion_actividad) {

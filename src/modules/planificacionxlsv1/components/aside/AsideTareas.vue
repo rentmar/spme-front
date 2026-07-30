@@ -361,7 +361,7 @@
     </div>
 
     <!-- Diálogo de formularios de actividad -->
-    <v-dialog v-model="dialogoFormularios" max-width="500" scrollable>
+    <v-dialog v-model="dialogoFormularios" max-width="550" scrollable>
       <v-card>
         <v-toolbar color="primary" density="compact">
           <v-toolbar-title class="text-body-2">
@@ -377,11 +377,27 @@
             </v-btn>
           </template>
         </v-toolbar>
+
+        <!-- Buscador -->
+        <div class="pa-3 pb-0">
+          <v-text-field
+            v-model="busquedaFormularios"
+            placeholder="Buscar formulario..."
+            density="compact"
+            variant="outlined"
+            hide-details
+            prepend-inner-icon="mdi-magnify"
+            clearable
+          />
+        </div>
+
         <v-card-text class="pa-0">
+          <!-- Lista paginada -->
           <div
-            v-for="form in actividadSeleccionada?.formularios"
+            v-for="form in formulariosPaginados"
             :key="form.id"
             class="formulario-item-dialog"
+            @click="abrirFormulario(form)"
           >
             <v-icon size="16" class="mr-3" :color="getColorTipoSolicitudExtendido(form.tipo)">
               {{ getIconoTipoSolicitud(form.tipo) }}
@@ -396,14 +412,34 @@
             </v-chip>
             <span class="form-monto-dialog ml-auto">{{ formatearMonto(form.monto) }}</span>
             <span class="form-fecha-dialog ml-2">{{ formatDateCorta(form.fecha) }}</span>
+            <v-icon size="14" color="primary" class="ml-2 link-icon">mdi-open-in-new</v-icon>
           </div>
+
+          <!-- Vacío -->
           <div
-            v-if="!actividadSeleccionada?.formularios?.length"
+            v-if="formulariosFiltrados.length === 0"
             class="text-center pa-6 text-caption text-medium-emphasis"
           >
-            No hay formularios registrados
+            <v-icon size="32" color="disabled" class="mb-2">mdi-file-document-outline</v-icon>
+            <p>{{ busquedaFormularios ? 'Sin resultados' : 'No hay formularios registrados' }}</p>
           </div>
         </v-card-text>
+
+        <!-- Paginación -->
+        <v-card-actions v-if="totalPaginas > 1" class="px-4 py-2">
+          <span class="text-caption text-medium-emphasis mr-2">
+            {{ formulariosFiltrados.length }} resultado(s)
+          </span>
+          <v-spacer />
+          <v-pagination
+            v-model="paginaActual"
+            :length="totalPaginas"
+            density="compact"
+            size="small"
+            :total-visible="5"
+            active-color="primary"
+          />
+        </v-card-actions>
       </v-card>
     </v-dialog>
 
@@ -643,6 +679,56 @@ const confirmarEliminar = (tarea) => {
   const index = tareasActividad.value.findIndex((t) => t.id === tarea.id)
   if (tarea.datos?.esNueva) emit('delete-tarea', index)
   else emit('disable-tarea', index)
+}
+
+/////////////////////////////paginacion formularios
+// Paginación y búsqueda de formularios
+const busquedaFormularios = ref('')
+const paginaActual = ref(1)
+const itemsPorPagina = 8
+
+const formulariosFiltrados = computed(() => {
+  const formularios = actividadSeleccionada.value?.formularios || []
+  if (!busquedaFormularios.value) return formularios
+  const q = busquedaFormularios.value.toLowerCase()
+  return formularios.filter(
+    (f) =>
+      f.codigo?.toLowerCase().includes(q) ||
+      getNombreCortoTipoSolicitud(f.tipo)?.toLowerCase().includes(q) ||
+      f.estado?.toLowerCase().includes(q),
+  )
+})
+
+const totalPaginas = computed(() => {
+  return Math.ceil(formulariosFiltrados.value.length / itemsPorPagina) || 1
+})
+
+const formulariosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * itemsPorPagina
+  return formulariosFiltrados.value.slice(inicio, inicio + itemsPorPagina)
+})
+
+// Resetear página al buscar
+watch(busquedaFormularios, () => {
+  paginaActual.value = 1
+})
+
+// Navegar al formulario (usa la lógica de enlaces ya definida)
+function abrirFormulario(form) {
+  if (!form?.uid) return
+  const [tipo, id] = form.uid.split(':')
+  const formularioNum = {
+    solicitud_fondos: '011',
+    solicitud_viaje: '055',
+    solicitud_pago_directo: '088',
+    solicitud_reposicion: '033',
+    rendicion_cuentas: '022',
+  }
+  const num = formularioNum[tipo]
+  if (!num) return
+  const actividadId = actividadSeleccionada.value?.id
+  const url = `/monitoreo/formulario${num}/${actividadId}?solicitud_id=${id}`
+  window.open(url, '_blank')
 }
 </script>
 
