@@ -37,26 +37,12 @@
       <v-row>
         <!-- Panel lateral de información -->
         <v-col cols="12" md="4" lg="3">
-          <v-card elevation="2" rounded="lg" class="mb-4">
-            <v-toolbar color="primary" density="compact">
-              <v-toolbar-title class="text-white">Información General</v-toolbar-title>
-            </v-toolbar>
-            <v-card-text class="pa-4">
-              <div class="info-item mb-3">
-                <div class="text-subtitle-2 text-medium-emphasis">Actividad:</div>
-                <div class="text-body-1 font-weight-medium">
-                  {{ datosFormulario.actividad.nombreCorto }}
-                </div>
-              </div>
-              <div class="info-item mb-3">
-                <div class="text-subtitle-2 text-medium-emphasis">Estado:</div>
-                <v-chip color="warning" size="small" class="mt-1">
-                  <v-icon small class="mr-1">mdi-progress-clock</v-icon>
-                  {{ datosFormulario.actividad.estado }}
-                </v-chip>
-              </div>
-            </v-card-text>
-          </v-card>
+          <!--Actividad Panel de informacion asido-->
+          <ActividadInfoGeneralPanel
+            v-if="actividad"
+            :actividad="actividad"
+            :cargando="loadingActividad"
+          ></ActividadInfoGeneralPanel>
 
           <!-- Tarjeta de resumen rápido -->
           <!-- <v-card elevation="2" rounded="lg" class="mb-4">
@@ -629,6 +615,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import ActividadInfoGeneralPanel from '@/modules/formularios/components/partials/ActividadInfoGeneralPanel.vue'
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
@@ -642,11 +629,11 @@ import InformacionAdicional from '@/modules/formularios/components/InformacionAd
 import { useValidadoresSolFondos } from '@/modules/formularios/composables/useValidadoresSolFondos'
 import BarraHerramientasFormulario from '@/modules/formularios/barraHerramientas/BarraHerramientasFormulario.vue'
 import { useNotificacionEmail } from '@/modules/notificacionEmail/composables/useNotificacionEmail'
+import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
 //Cuadro de dialogo para guardar Formulario
 import DialogoGuardarFormulario from '@/modules/formularios/barraHerramientas/DialogoGuardarFormulario.vue'
 import DialogoGuardarFormularioValidador from '@/modules/formularios/barraHerramientas/DialogoGuardarFormularioValidador.vue'
 import { useSnackbar } from '@/composables/useSnackbar'
-import { useActividadPresupuesto } from '@/modules/formularios/store/useActividadPresupuestoStore'
 import DetalleGastosSolicitud from '@/modules/formularios/components/presupuestos/DetalleGastosSolicitud.vue'
 /******* Computed para ligar la informacion al componente InformacionAdicional ***********************************************************************/
 
@@ -675,11 +662,11 @@ const datosDeLaFormaPago = computed(() => {
 /******************************Dialogo de confirmacion SALIR?*****************************************************************/
 //Iniciar composable
 const { openConfirmDialog } = useConfirmDialog()
+
 /******************************Fin Dialogo de confirmacion SALIR?*****************************************************************/
 
 /*****FIN COMPONENTE SELECCION DE VALIDADORES(SeleccionValidadoresSolicitudes) ******************/
 //Iniciar store
-const store = useActividadPresupuesto()
 
 //Inicar Composable
 const { successMsg, errorMsg, warningMsg } = useSnackbar()
@@ -712,6 +699,8 @@ const coordinadoresList = ref([])
 const acceptedFormats = ref({
   medios: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx',
 })
+
+const { loading: loadingActividad, actividad } = useActividadFormulaioPresupuesto(idActividad)
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)
@@ -1031,7 +1020,6 @@ async function cargarDatos() {
 
     const rawData = await response.json()
     datosFormulario.value = strictSanitizeData(rawData)
-    await store.inicializar(idActividad)
     //console.log('Datos cargados exitosamente:', rawData)
   } catch (err) {
     error.value = err.message

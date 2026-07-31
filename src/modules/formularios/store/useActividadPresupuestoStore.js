@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { presupuestoProyectoServicio } from '@/modules/planificacionxlsv1/services/presupuestoProyectoService'
+import { actividadFormularioServicio } from '../services/actividadFormularioService'
 
 export const useActividadPresupuesto = defineStore('actividad-presupuesto', () => {
   //estado de carga
@@ -10,6 +11,7 @@ export const useActividadPresupuesto = defineStore('actividad-presupuesto', () =
 
   //estado
   const actividadPresupuesto = ref()
+  const actividad = ref()
 
   //getters
   const presupuestoActividad = computed(
@@ -29,9 +31,13 @@ export const useActividadPresupuesto = defineStore('actividad-presupuesto', () =
     if (inicializado.value) return
     loading.value = true
     try {
-      const respuesta = await cargarActividad(idActividad)
-      actividadPresupuesto.value = respuesta.arbol
+      const [nodo, actividadResp] = await Promise.all([
+        cargarNodoActividad(idActividad),
+        cargarActividad(idActividad),
+      ])
+      actividadPresupuesto.value = nodo.arbol
       inicializado.value = true
+      actividad.value = actividadResp
     } catch (error) {
       console.error('Error al inicializar', error)
       throw error
@@ -41,7 +47,7 @@ export const useActividadPresupuesto = defineStore('actividad-presupuesto', () =
   }
 
   //Cargar el nodo de actividad del arbol de presupuestos
-  const cargarActividad = async (idActividad) => {
+  const cargarNodoActividad = async (idActividad) => {
     loading.value = false
     try {
       const respuesta = await presupuestoProyectoServicio.obtenerActividad(idActividad)
@@ -50,6 +56,17 @@ export const useActividadPresupuesto = defineStore('actividad-presupuesto', () =
       console.error('No se pudo cargar la actividad', err)
       error.value = err
       throw err
+    }
+  }
+
+  //Cargar Informacion de la actividad
+  const cargarActividad = async (idActividad) => {
+    loading.value = false
+    try {
+      const respuesta = await actividadFormularioServicio.actividadInformacion(idActividad)
+      return respuesta.data
+    } catch (err) {
+      console.error('Fallo al cargar la info actividad')
     }
   }
 

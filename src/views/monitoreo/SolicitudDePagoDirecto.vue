@@ -36,7 +36,7 @@
       <v-row>
         <!-- Panel lateral de información -->
         <v-col cols="12" md="4" lg="3">
-          <v-card elevation="2" rounded="lg" class="mb-4">
+          <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="primary" density="compact">
               <v-toolbar-title class="text-white">Información General</v-toolbar-title>
             </v-toolbar>
@@ -55,7 +55,12 @@
                 </v-chip>
               </div>
             </v-card-text>
-          </v-card>
+          </v-card> -->
+          <ActividadInfoGeneralPanel
+            v-if="actividad"
+            :actividad="actividad"
+            :cargando="loadingActividad"
+          ></ActividadInfoGeneralPanel>
 
           <!-- Tarjeta de resumen rápido de la solicitud -->
           <v-card elevation="2" rounded="lg" class="mb-4">
@@ -637,7 +642,9 @@ import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useValidadoresSolPagoDirecto } from '@/modules/formularios/composables/useValidadoresSolPagoDirecto'
-
+import { useActividadPresupuesto } from '@/modules/formularios/store/useActividadPresupuestoStore'
+import ActividadInfoGeneralPanel from '@/modules/formularios/components/partials/ActividadInfoGeneralPanel.vue'
+import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
 /******* Computed para ligar la informacion al componente InformacionAdicional ***********************************************************************/
 
 //Referencia al componente Informacion adicional
@@ -694,6 +701,8 @@ const coordinadoresList = ref([])
 const acceptedFormats = ref({
   medios: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx',
 })
+
+const { loading: loadingActividad, actividad } = useActividadFormulaioPresupuesto(idActividad)
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)
