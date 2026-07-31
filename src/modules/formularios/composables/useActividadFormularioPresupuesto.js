@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { presupuestoProyectoServicio } from '@/modules/planificacionxlsv1/services/presupuestoProyectoService'
 import { actividadFormularioServicio } from '../services/actividadFormularioService'
 
@@ -9,6 +9,24 @@ export const useActividadFormulaioPresupuesto = (idActividad) => {
   //Estado
   const actividadPresupuesto = ref(null)
   const actividad = ref(null)
+
+  //--------------------Getters-------------------
+  //Actividad del presupuesto asignado
+  const actividadPresupuestoAsignado = computed(
+    () => actividadPresupuesto.value?.datos.presupuesto_actividad,
+  )
+  //Presupuesto asignado a las tareas
+  const tareasPresupuestoAsignado = computed(
+    () => actividadPresupuesto.value?.datos.presupuesto_tareas,
+  )
+
+  //Presupuesto saldo
+  const actividadPresupuestoDisponible = computed(() => {
+    return (
+      actividadPresupuesto.value?.datos.presupuesto_actividad -
+      actividadPresupuesto.value?.datos.presupuesto_tareas
+    )
+  })
 
   const cargarDatos = async () => {
     loading.value = true
@@ -41,5 +59,9 @@ export const useActividadFormulaioPresupuesto = (idActividad) => {
     error,
     actividadPresupuesto,
     actividad,
+    //gett
+    actividadPresupuestoAsignado,
+    tareasPresupuestoAsignado,
+    actividadPresupuestoDisponible,
   }
 }

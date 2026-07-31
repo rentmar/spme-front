@@ -608,6 +608,9 @@ Bandera comprobacion Informacion Adicional completa: {{ estaCompletaInformacionA
   ></DialogoGuardarFormularioValidador>
   <!--Dialogo de confirmacion para salir -->
   <ConfirmDialog></ConfirmDialog>
+  <pre>Presupuesto Asignado Actividad : {{ actividadPresupuestoAsignado }}</pre>
+  <pre>Presupuesto Asignado a las tareas : {{ tareasPresupuestoAsignado }}</pre>
+  <pre>Presupuesto Disponible para asignacion : {{ actividadPresupuestoDisponible }}</pre>
 </template>
 
 <script setup>
@@ -700,7 +703,15 @@ const acceptedFormats = ref({
   medios: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx',
 })
 
-const { loading: loadingActividad, actividad } = useActividadFormulaioPresupuesto(idActividad)
+//Composable para conexion al arbol de presupuesto
+const {
+  loading: loadingActividad,
+  actividad,
+  actividadPresupuesto, //Nodo de actividad del arbol de presupuesto
+  actividadPresupuestoAsignado, //Presupuesto asignado a la actividad
+  tareasPresupuestoAsignado, //Sumatoria de los presupuestos de tareas
+  actividadPresupuestoDisponible, //Presupuesto disponible de la actividad
+} = useActividadFormulaioPresupuesto(idActividad)
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)

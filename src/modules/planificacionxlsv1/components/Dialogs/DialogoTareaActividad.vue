@@ -15,8 +15,8 @@
         >
           <strong>Saldo disponible para asignar:</strong>
           {{ formatearMonto(props.limitePresupuesto) }}
-          <template v-if="isEditando && props.tarea?.presupuesto">
-            (Presupuesto actual: {{ formatearMonto(props.tarea.presupuesto) }})
+          <template v-if="isEditando && tarea?.presupuesto">
+            (Presupuesto actual: {{ formatearMonto(tarea.presupuesto) }})
           </template>
         </v-alert>
 
@@ -328,6 +328,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
+import { useTareasFormularios } from '../../composables/useTareasFormularios'
 
 // Props
 const props = defineProps({
@@ -353,6 +354,15 @@ const estadosTarea = [
   { text: 'En Progreso', value: 'EPROG' },
   { text: 'Completada', value: 'COMPL' },
 ]
+
+// Referencia para el composable
+const tareaComposable = ref(null)
+const cargandoDatosInterno = ref(false)
+
+// Computed para acceder a la tarea (primero del composable, luego de la prop)
+const tarea = computed(() => {
+  return tareaComposable.value || props.tarea
+})
 
 // Fuentes de financiamiento desde props
 const fuentesFinanciamiento = computed(() => {
@@ -400,7 +410,6 @@ const totalDesglose = ref(0)
 const diferenciaPresupuesto = ref(0)
 
 // Validaciones
-// ✅ BIEN - Debe estar en validaciones
 const validaciones = {
   requerido: (v) => !!v || 'Este campo es requerido',
   fechaValida: (v) => {
@@ -416,7 +425,6 @@ const validaciones = {
     )
   },
   fechaInicioAnterior: (v) => {
-    // ✅ AQUÍ
     if (!v) return true
     if (!formData.value.fecha_limite) return true
     return (
@@ -425,12 +433,16 @@ const validaciones = {
     )
   },
   numeroPositivo: (v) => {
-    if (!v && v !== 0) return true
-    return Number(v) >= 0 || 'El valor debe ser positivo'
+    if (v === '' || v === null || v === undefined) return true
+    const valor = Number(v)
+    if (isNaN(valor)) return 'Debe ser un número válido'
+    if (valor < 0) return 'El valor no puede ser negativo'
+    return true
   },
   noExcedeLimite: (v) => {
-    if (!v && v !== 0) return true
+    if (v === '' || v === null || v === undefined) return true
     const valor = parseFloat(v) || 0
+    if (valor < 0) return 'El valor no puede ser negativo'
     if (valor > props.limitePresupuesto) {
       return `Excede el saldo disponible: ${formatearMonto(props.limitePresupuesto)}`
     }
@@ -438,7 +450,7 @@ const validaciones = {
   },
 }
 
-//Validadores para el desglose
+// Validadores para el desglose
 const validadoresDesglose = {
   partida: (v) => {
     if (!v || v.trim() === '') return 'La partida es requerida'
@@ -450,7 +462,6 @@ const validadoresDesglose = {
     if (v.length > 200) return 'La descripción no puede exceder 200 caracteres'
     return true
   },
-
   monto: (v) => {
     if (!v && v !== 0) return 'El monto es requerido'
     const montoNum = Number(v)
@@ -459,15 +470,6 @@ const validadoresDesglose = {
     if (montoNum > 999999999.99) return 'El monto excede el límite permitido'
     return true
   },
-
-  // En validaciones, agrega:
-  fechaInicioAnterior: (v) => {
-    if (!v || !formData.value.fecha_limite) return true
-    return (
-      new Date(v) <= new Date(formData.value.fecha_limite) ||
-      'La fecha de inicio debe ser anterior a la de finalización'
-    )
-  },
 }
 
 // Computed
@@ -475,9 +477,10 @@ const isEditando = computed(() => !!props.tarea?.id)
 const tituloDialog = computed(() =>
   isEditando.value ? 'Editar Subactividad' : 'Nueva Subactividad',
 )
-const textoBotonGuardar = computed(() =>
-  props.cargando ? 'Guardando...' : isEditando.value ? 'Actualizar' : 'Crear',
-)
+const textoBotonGuardar = computed(() => {
+  if (props.cargando) return 'Guardando...'
+  return isEditando.value ? 'Actualizar' : 'Crear'
+})
 const diferenciaColor = computed(() => {
   if (diferenciaPresupuesto.value < 0) return 'text-error'
   if (diferenciaPresupuesto.value > 0) return 'text-warning'
@@ -500,13 +503,37 @@ const tieneItemsValidos = computed(() => {
 })
 
 const formularioValido = computed(() => {
-  const presupuestoValido =
-    !formData.value.presupuesto || parseFloat(formData.value.presupuesto) <= props.limitePresupuesto
-  const desgloseValido =
-    !mostrarDesglose.value ||
-    !tieneItemsValidos.value ||
-    totalDesglose.value <= Number(formData.value.presupuesto)
-  return presupuestoValido && desgloseValido
+  // Verificar que el título esté completo
+  if (!formData.value.titulo || formData.value.titulo.trim() === '') {
+    return false
+  }
+
+  // Validar presupuesto (puede ser 0 o positivo, no puede exceder el límite)
+  const presupuesto = parseFloat(formData.value.presupuesto) || 0
+  if (presupuesto < 0) {
+    return false
+  }
+
+  // Si hay presupuesto asignado, no puede exceder el límite
+  if (presupuesto > props.limitePresupuesto) {
+    return false
+  }
+
+  // Validar fechas (solo si ambas están presentes)
+  if (formData.value.fecha_creacion && formData.value.fecha_limite) {
+    if (new Date(formData.value.fecha_creacion) > new Date(formData.value.fecha_limite)) {
+      return false
+    }
+  }
+
+  // Validar desglose: si está visible y tiene items válidos, no debe exceder el presupuesto
+  if (mostrarDesglose.value && tieneItemsValidos.value) {
+    if (totalDesglose.value > presupuesto) {
+      return false
+    }
+  }
+
+  return true
 })
 
 // Watchers
@@ -522,46 +549,109 @@ watch(dialog, (nuevoValor) => {
   if (nuevoValor !== props.modelValue) emit('update:modelValue', nuevoValor)
 })
 
-// Métodos
-const inicializarFormulario = () => {
-  if (isEditando.value) {
-    Object.assign(formData.value, {
-      id: props.tarea.id,
-      codigo: props.tarea.codigo || '',
-      titulo: props.tarea.titulo || '',
-      descripcion: props.tarea.descripcion || '',
-      estado: props.tarea.estado || 'PEN',
-      fecha_creacion: props.tarea.fecha_creacion || '',
-      fecha_limite: props.tarea.fecha_limite || '',
-      presupuesto: props.tarea.presupuesto || '0.00',
-    })
+// Método para inicializar el composable solo cuando sea necesario
+const inicializarComposableSiEsNecesario = () => {
+  if (isEditando.value && props.tarea?.id) {
+    // Solo inicializar el composable si estamos editando y tenemos un ID válido
+    const { tarea: tareaResult, loading } = useTareasFormularios(props.tarea.id)
 
-    if (props.tarea.presupuestoDesglose && Array.isArray(props.tarea.presupuestoDesglose)) {
-      const itemsExistentes = props.tarea.presupuestoDesglose.filter(
-        (item) => item.descripcion && item.monto && item.monto !== 0,
-      )
-      if (itemsExistentes.length > 0) {
-        itemsDesglose.value = itemsExistentes.map((item) => ({
-          partida: item.partida || '',
-          descripcion: item.descripcion || '',
-          fuente: item.fuente || null,
-          monto: item.monto ? item.monto.toString() : '',
-        }))
-        mostrarDesglose.value = true
-      } else {
-        itemsDesglose.value = [{ partida: '', descripcion: '', fuente: null, monto: '' }]
-        mostrarDesglose.value = false
-      }
+    // Observar cuando el composable tenga datos
+    watch(
+      () => tareaResult.value,
+      (nuevaTarea) => {
+        if (nuevaTarea) {
+          tareaComposable.value = nuevaTarea
+        }
+      },
+      { immediate: true },
+    )
+
+    // También observar el loading para referencia interna
+    watch(
+      () => loading.value,
+      (nuevoLoading) => {
+        cargandoDatosInterno.value = nuevoLoading
+      },
+      { immediate: true },
+    )
+  }
+}
+
+// Método para llenar el formulario con datos
+const llenarFormularioConDatos = (datosTarea) => {
+  if (!datosTarea) return
+
+  formData.value = {
+    id: datosTarea.id,
+    codigo: datosTarea.codigo || '',
+    titulo: datosTarea.titulo || '',
+    descripcion: datosTarea.descripcion || '',
+    estado: datosTarea.estado || 'PEN',
+    fecha_creacion: datosTarea.fecha_creacion || '',
+    fecha_limite: datosTarea.fecha_limite || '',
+    presupuesto: datosTarea.presupuesto || '0.00',
+  }
+
+  // Cargar desglose si existe
+  if (datosTarea.presupuestoDesglose && Array.isArray(datosTarea.presupuestoDesglose)) {
+    const itemsExistentes = datosTarea.presupuestoDesglose.filter(
+      (item) => item.descripcion && item.monto && item.monto !== 0,
+    )
+    if (itemsExistentes.length > 0) {
+      itemsDesglose.value = itemsExistentes.map((item) => ({
+        partida: item.partida || '',
+        descripcion: item.descripcion || '',
+        fuente: item.fuente || null,
+        monto: item.monto ? item.monto.toString() : '',
+      }))
+      mostrarDesglose.value = true
     } else {
       itemsDesglose.value = [{ partida: '', descripcion: '', fuente: null, monto: '' }]
       mostrarDesglose.value = false
     }
   } else {
+    itemsDesglose.value = [{ partida: '', descripcion: '', fuente: null, monto: '' }]
+    mostrarDesglose.value = false
+  }
+
+  calcularTotales()
+
+  // Forzar validación del formulario después de cargar datos
+  nextTick(() => {
+    if (formRef.value) {
+      formRef.value.validate()
+    }
+  })
+}
+
+// Inicializar formulario
+const inicializarFormulario = () => {
+  if (isEditando.value) {
+    // Para edición: inicializar composable (se ejecutará en background)
+    inicializarComposableSiEsNecesario()
+
+    // Usar inmediatamente los datos de la prop si están disponibles
+    if (props.tarea) {
+      llenarFormularioConDatos(props.tarea)
+    }
+
+    // Observar cambios en los datos del composable para actualizar cuando lleguen
+    const stopWatcher = watch(
+      () => tareaComposable.value,
+      (nuevaTarea) => {
+        if (nuevaTarea && nuevaTarea.id === props.tarea?.id) {
+          llenarFormularioConDatos(nuevaTarea)
+          stopWatcher() // Dejar de observar una vez que tengamos los datos del composable
+        }
+      },
+    )
+  } else {
+    // Para nueva tarea, inicializar con valores por defecto
     const hoy = new Date()
     const fechaLimite = new Date()
     fechaLimite.setDate(fechaLimite.getDate() + 7)
 
-    Object.assign(formData.value, {
+    formData.value = {
       id: null,
       codigo: '',
       titulo: '',
@@ -570,17 +660,19 @@ const inicializarFormulario = () => {
       fecha_creacion: hoy.toISOString().split('T')[0],
       fecha_limite: fechaLimite.toISOString().split('T')[0],
       presupuesto: '0.00',
-      presupuestoDesglose: null,
-    })
+    }
 
     itemsDesglose.value = [{ partida: '', descripcion: '', fuente: null, monto: '' }]
     mostrarDesglose.value = false
+    calcularTotales()
   }
 
-  calcularTotales()
-
   nextTick(() => {
-    if (formRef.value) formRef.value.resetValidation()
+    if (formRef.value) {
+      formRef.value.resetValidation()
+      // Validar después de reset para habilitar/deshabilitar el botón correctamente
+      formRef.value.validate()
+    }
   })
 }
 
@@ -622,6 +714,11 @@ const eliminarItemDesglose = (index) => {
 
 const actualizarValidacionPresupuesto = () => {
   calcularTotales()
+  nextTick(() => {
+    if (formRef.value) {
+      formRef.value.validate()
+    }
+  })
 }
 
 const prepararDesgloseParaAPI = () => {
