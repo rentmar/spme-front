@@ -160,7 +160,8 @@ const router = createRouter({
     {
       path: '/planificacion/cronogramas',
       name: 'cronogramas',
-      component: () => import('@/views/planeamiento/ActividadesGantView.vue'),
+      //component: () => import('@/views/planeamiento/ActividadesGantView.vue'),
+      component: () => import('@/views/planeamiento/GanttSyncfusionView.vue'),
       meta: { requiresAuth: true },
     },
     {
