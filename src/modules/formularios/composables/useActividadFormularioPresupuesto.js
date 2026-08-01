@@ -7,27 +7,106 @@ export const useActividadFormulaioPresupuesto = (idActividad) => {
   const loading = ref(false)
   const error = ref(null)
   //Estado
-  const actividadPresupuesto = ref(null)
-  const actividad = ref(null)
+  const actividadNodoPresupuesto = ref(null) //Nodo de Actividad - Arbol Presupuesto (Presupuesto)
+  const actividadNodoInformacion = ref(null) //Nodo Actividad - Arbol Estructura (Informacion)
+  const formularios = ref([])
 
   //--------------------Getters-------------------
-  //Actividad del presupuesto asignado
+  //Procedencia de fondos
+  const procedenciaFondosActividad = computed(
+    () => actividadNodoInformacion.value?.proyecto.procedencia_fondos,
+  )
+  //Presupuesto asignado a la Actividad
   const actividadPresupuestoAsignado = computed(
-    () => actividadPresupuesto.value?.datos.presupuesto_actividad,
+    () => actividadNodoPresupuesto.value?.datos.presupuesto_actividad,
   )
   //Presupuesto asignado a las tareas
+  //Sumatoria de los presupuestos asignados a las tareas
   const tareasPresupuestoAsignado = computed(
-    () => actividadPresupuesto.value?.datos.presupuesto_tareas,
+    () => actividadNodoPresupuesto.value?.datos.presupuesto_tareas,
   )
 
-  //Presupuesto saldo
+  //Numero de formularios de la actividad
+  const numeroTotalFormularios = computed(() => {
+    if (!formularios.value) return 0
+    return formularios.value.length
+  })
+
+  //Total de solicitudes
+  const totalSolicitudesSinRendicion = computed(() => {
+    if (!formularios.value) return 0
+    return formularios.value
+      .filter((f) => f.tipo !== 'rendicion_cuentas')
+      .reduce((total, f) => total + (Number(f.monto) || 0), 0)
+  })
+  // Resultado: 216,349 - (10 + 456 + 450 + 2000) = 213,433
+
+  /* Resultado:
+{
+  "solicitud_fondos": 40,572
+  "solicitud_reembolso": 8,986
+  "solicitud_viaje": 154,375
+  "solicitud_pago_directo": 5,500
+  "rendicion_cuentas": 2,916
+}
+*/
+  const totalFormulariosPorTipo = computed(() => {
+    if (!formularios.value) return {}
+    return formularios.value.reduce((acc, f) => {
+      acc[f.tipo] = (acc[f.tipo] || 0) + (Number(f.monto) || 0)
+      return acc
+    }, {})
+  })
+
+  /* Resultado:
+{
+  "solicitud_fondos": 40,572
+  "solicitud_reembolso": 8,986
+  "solicitud_viaje": 154,375
+  "solicitud_pago_directo": 5,500
+}
+*/
+  const totalSolicitudesPorTipo = computed(() => {
+    if (!formularios.value) return {}
+    return formularios.value
+      .filter((f) => f.tipo !== 'rendicion_cuentas')
+      .reduce((acc, f) => {
+        acc[f.tipo] = (acc[f.tipo] || 0) + (Number(f.monto) || 0)
+        return acc
+      }, {})
+  })
+
+  /* Resultado:
+{
+  "pendiente": 146,240
+  "borrador": 49,007
+  "aprobado": 10,598
+  "rechazado": 5,500
+}
+*/
+  const totalSolicitudesPorEstado = computed(() => {
+    if (!formularios.value) return {}
+    return formularios.value
+      .filter((f) => f.tipo !== 'rendicion_cuentas')
+      .reduce((acc, f) => {
+        acc[f.estado] = (acc[f.estado] || 0) + (Number(f.monto) || 0)
+        return acc
+      }, {})
+  })
+
+  //Presupuesto disponible
+  //El presupuesot disponible se calculo
+  //Es el resultado de:
+  //actividadPresupuestoAsignado - (tareasPresupuestoAsignado + total asignado a las solicitudes)
+
   const actividadPresupuestoDisponible = computed(() => {
     return (
-      actividadPresupuesto.value?.datos.presupuesto_actividad -
-      actividadPresupuesto.value?.datos.presupuesto_tareas
+      actividadPresupuestoAsignado.value -
+      (tareasPresupuestoAsignado.value + totalSolicitudesSinRendicion.value)
     )
   })
 
+  //Funciones
   const cargarDatos = async () => {
     loading.value = true
     error.value = null
@@ -37,12 +116,14 @@ export const useActividadFormulaioPresupuesto = (idActividad) => {
         actividadFormularioServicio.actividadInformacion(idActividad),
       ])
       //poblar las variables
-      actividadPresupuesto.value = nodo.arbol
-      actividad.value = actividadResp
+      actividadNodoPresupuesto.value = nodo.arbol
 
-      console.log('✅ Datos cargados para actividad:', idActividad)
-      console.log('Presupuesto:', actividadPresupuesto.value)
-      console.log('Actividad:', actividad.value)
+      actividadNodoInformacion.value = actividadResp
+      formularios.value = actividadNodoPresupuesto.value?.formularios
+
+      // console.log('✅ Datos cargados para actividad:', idActividad)
+      // console.log('Presupuesto:', actividadPresupuesto.value)
+      // console.log('Actividad:', actividad.value)
     } catch (err) {
       console.error('❌ Error al cargar actividad:', idActividad, err)
       error.value = err
@@ -57,11 +138,18 @@ export const useActividadFormulaioPresupuesto = (idActividad) => {
   return {
     loading,
     error,
-    actividadPresupuesto,
-    actividad,
+    actividadNodoPresupuesto,
+    actividadNodoInformacion,
     //gett
     actividadPresupuestoAsignado,
-    tareasPresupuestoAsignado,
     actividadPresupuestoDisponible,
+    tareasPresupuestoAsignado,
+    procedenciaFondosActividad,
+    numeroTotalFormularios,
+    //getter totales
+    totalSolicitudesSinRendicion,
+    totalFormulariosPorTipo,
+    totalSolicitudesPorTipo,
+    totalSolicitudesPorEstado,
   }
 }

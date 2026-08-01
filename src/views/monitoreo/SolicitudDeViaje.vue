@@ -514,7 +514,8 @@ import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useValidadoresSolViajes } from '@/modules/formularios/composables/useValidadoresSolViajes'
-
+//Composable
+import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
 /******* Computed para ligar la informacion al componente InformacionAdicional ***********************************************************************/
 
 //Referencia al componente Informacion adicional
@@ -573,6 +574,8 @@ const solicitante = ref(null)
 const numeroFormulario = ref('')
 
 const cargandoGeneral = ref(true)
+//composable para carga de presupuestos
+const { procedenciaFondosActividad } = useActividadFormulaioPresupuesto(idActividad)
 
 //variables para carga de datos
 const datosFormulario = ref(null) //necesario para tarjetas de encabezado

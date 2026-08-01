@@ -600,7 +600,7 @@ import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
-
+import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
 
@@ -630,6 +630,7 @@ const coordinadoresList = ref([])
 const acceptedFormats = ref({
   medios: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx',
 })
+const { procedenciaFondosActividad } = useActividadFormulaioPresupuesto(idActividad)
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)

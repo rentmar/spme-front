@@ -94,7 +94,7 @@
   <!-- Aside flotante -->
   <v-dialog
     v-model="showAside"
-    max-width="850"
+    max-width="1200"
     scrollable
     persistent
     @keydown.esc="showAside = false"

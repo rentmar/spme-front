@@ -110,6 +110,16 @@
           <v-chip
             size="x-small"
             variant="flat"
+            color="orange-lighten-4"
+            text-color="orange-darken-4"
+          >
+            <strong>Total Pres. Solicitudes</strong>&nbsp;{{
+              formatearMonto(totalSolicitudesSinRendicion)
+            }}
+          </v-chip>
+          <v-chip
+            size="x-small"
+            variant="flat"
             color="purple-lighten-4"
             text-color="purple-darken-4"
           >
@@ -548,6 +558,8 @@ import {
   formatearMonto,
 } from '@/modules/formularios/utils/validadoresHelpers'
 import { useSnackbar } from '@/composables/useSnackbar.js'
+import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto.js'
+import { actividadFormularioServicio } from '@/modules/formularios/services/actividadFormularioService.js'
 
 const props = defineProps({
   actividad: { type: Object, required: true },
@@ -563,6 +575,8 @@ const dialogoBusqueda = ref(false)
 const dialogoFormularios = ref(false)
 const tareaSeleccionada = ref(null)
 const actividadSeleccionada = ref(null)
+
+//Obtener los
 
 const { successMsg, errorMsg } = useSnackbar()
 
@@ -589,11 +603,15 @@ const tareasActividad = computed(() => {
   )
 })
 
+//Composable
+const { totalSolicitudesSinRendicion } = useActividadFormulaioPresupuesto(props.actividad.id)
+
 const saldoDisponible = computed(() => {
   if (!actividadSeleccionada.value?.datos) return 0
   const presupuestoActividad = actividadSeleccionada.value.datos.presupuesto_actividad || 0
   const presupuestoTareas = actividadSeleccionada.value.datos.presupuesto_tareas || 0
-  return presupuestoActividad - presupuestoTareas
+  const sumaMontosSolicitudes = totalSolicitudesSinRendicion.value || 0
+  return presupuestoActividad - presupuestoTareas - sumaMontosSolicitudes
 })
 
 const limitePresupuesto = computed(() => {

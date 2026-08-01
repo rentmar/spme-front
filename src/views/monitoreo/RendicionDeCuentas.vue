@@ -624,6 +624,7 @@ import ConfirmDialog from '@/components/layout/partials/ConfirmDialog.vue'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import DialogoGuardarRendicionValidador from '@/modules/formularios/barraHerramientas/DialogoGuardarRendicionValidador.vue'
 import { useValidadoresRendCuentas } from '@/modules/formularios/composables/useValidadoresRendicionCuentas'
+import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
 
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
@@ -659,6 +660,9 @@ const snackbar = ref({ show: false, text: '', color: 'success' })
 // Variables de estado
 const loading = ref(false)
 const isAdmin = ref(false) // Definir el estado isAdmin
+
+///Composable para la carga de los datos del arbol de presupuestos
+const { procedenciaFondosActividad } = useActividadFormulaioPresupuesto(idActividad)
 
 //variables para carga de datos
 const datosFormulario = ref(null)

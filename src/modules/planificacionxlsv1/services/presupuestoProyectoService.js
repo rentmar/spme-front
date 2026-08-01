@@ -26,7 +26,7 @@ export const presupuestoProyectoServicio = {
    */
   obtenerNodo: async (tipoNodo, id, depth = 'all', direction = 'down') => {
     try {
-      const respuesta = await apiPres.get('/arbol-presupuesto/', {
+      const respuesta = await apiPres.get('/proyecto/arbol-presupuesto/', {
         params: {
           nodo: tipoNodo,
           id,
