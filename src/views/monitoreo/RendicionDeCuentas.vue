@@ -601,6 +601,7 @@
   ></DialogoGuardarRendicionValidador>
   <!--Dialogo de confirmacion para salir -->
   <ConfirmDialog></ConfirmDialog>
+  <pre> {{ formData }}</pre>
 </template>
 
 <script setup>
@@ -777,6 +778,7 @@ const actividadData = ref({
 const vinculacionRef = ref(null)
 const solicitudFondosSeleccionada = ref(null)
 const solicitudViajeSeleccionada = ref(null)
+const solicitudPagoDirectoSeleccionada = ref(null)
 
 /* ACTIVIDAD */
 //EVENTO: update:vinculacion
@@ -788,6 +790,7 @@ const manejarActualizacionVinculacion = (vinculacion) => {
     successMsg('Sin Seleccion/Se Elimino seleccion')
     solicitudFondosSeleccionada.value = null
     solicitudViajeSeleccionada.value = null
+    solicitudPagoDirectoSeleccionada.value = null
     return
   }
   //Caso solicitud de Fondos
@@ -800,6 +803,8 @@ const manejarActualizacionVinculacion = (vinculacion) => {
     )
     solicitudFondosSeleccionada.value = vinculacion.id
     solicitudViajeSeleccionada.value = null
+    solicitudPagoDirectoSeleccionada.value = null
+
     return
   }
   //Caso solicitude de viaje
@@ -812,6 +817,22 @@ const manejarActualizacionVinculacion = (vinculacion) => {
     )
     solicitudFondosSeleccionada.value = null
     solicitudViajeSeleccionada.value = vinculacion.id
+    solicitudPagoDirectoSeleccionada.value = null
+
+    return
+  }
+  //Caso solicitude de viaje
+  if (vinculacion.tipo === 'solicitud_pago_directo') {
+    successMsg(
+      'Rendicion de cuentas vinculada a la sol de viaje: ' +
+        vinculacion.detalle?.numeroFormulario +
+        ' ID: ' +
+        vinculacion.id,
+    )
+    solicitudFondosSeleccionada.value = null
+    solicitudViajeSeleccionada.value = null
+    solicitudPagoDirectoSeleccionada.value = vinculacion.id
+
     return
   }
 }
@@ -1546,7 +1567,7 @@ async function submitForm() {
       bloquearIconoRC: true,
       idSolicitudReembolso: null,
       idSolicitudViaje: solicitudViajeSeleccionada.value,
-      idSolicitudPagoDirecto: null,
+      idSolicitudPagoDirecto: solicitudPagoDirectoSeleccionada.value,
       idSolicitudFondos: solicitudFondosSeleccionada.value,
     }
 
@@ -2051,7 +2072,7 @@ const confirmarGuardarDatosForm = async () => {
       bloquearIconoRC: true,
       idSolicitudReembolso: null,
       idSolicitudViaje: solicitudViajeSeleccionada.value,
-      idSolicitudPagoDirecto: null,
+      idSolicitudPagoDirecto: solicitudPagoDirectoSeleccionada.value,
       idSolicitudFondos: solicitudFondosSeleccionada.value,
     }
     console.log('PAYLOAD:', payload)
@@ -2121,7 +2142,7 @@ const confirmarEnvioRevision = async (datosValidadores) => {
       bloquearIconoRC: true,
       idSolicitudReembolso: null,
       idSolicitudViaje: solicitudViajeSeleccionada.value,
-      idSolicitudPagoDirecto: null,
+      idSolicitudPagoDirecto: solicitudPagoDirectoSeleccionada.value,
       idSolicitudFondos: solicitudFondosSeleccionada.value,
     }
     console.log('PAYLOAD:', payload)

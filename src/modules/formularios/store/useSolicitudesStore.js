@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useSolucitudFondos } from '../composables/useSolicitudFondos'
 import { useSolicitudViaje } from '../composables/useSolicitudViaje'
+import { useSolicitudPagoDirecto } from '../composables/useSolicitudPagoDirecto'
 import { useRendicionCuentas } from '../composables/useRendicionCuentas'
 import { useVinculacionesInformeActividad } from '../composables/useVinculacionesInformeActividad'
 
@@ -10,20 +11,24 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
   //Estados - formularios actividad
   const solicitudesFondosActividad = ref([])
   const solicitudesViajeActividad = ref([])
+  const solicitudesPagoDirectoActividad = ref([])
   const rendicionesCuentasExistentesActividad = ref([])
 
   //Estados - formularios de tarea
   const solicitudesFondosTarea = ref([])
   const solicitudesViajeTarea = ref([])
+  const solicitudesPagoDirectoTarea = ref([])
   const rendicionesCuentasExistentesTarea = ref([])
 
   //Estados de carga -act
   const loadingFondosActividad = ref(false)
   const loadingViajesActividad = ref(false)
+  const loadingPagoDirectoActividad = ref(false)
   const loadingRendicionesActividad = ref(false)
   //Estados de carga -tarea
   const loadingFondosTarea = ref(false)
   const loadingViajesTarea = ref(false)
+  const loadingPagoDirectoTarea = ref(false)
   const loadingRendicionesTarea = ref(false)
   //Estados de carga
   const loading = ref(false)
@@ -50,6 +55,13 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     obtenerListaSolViajesPorIdTarea,
     listaSolicitudViajeTarea,
   } = useSolicitudViaje()
+  //Incicial el composable - Sol de PAgo directo
+  const {
+    obtenerListaSolPagoDirectoPorIdActividad,
+    listaSolPagoDirectoActividad,
+    obtenerListaSolPagoDirectoPorIdTarea,
+    listaSolPagoDirectoTarea,
+  } = useSolicitudPagoDirecto()
   //Inciar el composable - Rendicion cuentas
   const {
     obtenerListaRendicionCuentasPorIdActividad,
@@ -76,11 +88,18 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
   const cargarFormulariosDeActividad = async (idActividad) => {
     loading.value = true
     try {
-      await Promise.all[
-        (cargarSolicitudFondosActividad(idActividad),
+      // await Promise.all[
+      //   (cargarSolicitudFondosActividad(idActividad),
+      //   cargarSolicitudViajeActividad(idActividad),
+      //   cargarRendicionCuentasActividad(idActividad),
+      //   cargarSolicitudPagoDirectoActividad(idActividad))
+      // ]
+      await Promise.all([
+        cargarSolicitudFondosActividad(idActividad),
         cargarSolicitudViajeActividad(idActividad),
-        cargarRendicionCuentasActividad(idActividad))
-      ]
+        cargarRendicionCuentasActividad(idActividad),
+        cargarSolicitudPagoDirectoActividad(idActividad),
+      ])
     } catch (err) {
       console.error('Error al cargar formulario de la actividad: ' + idActividad, err)
     } finally {
@@ -111,6 +130,19 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
       console.error('Error al cargar la sol de viaje de la actividad: ', +idActividad, err)
     } finally {
       loadingViajesActividad.value = false
+    }
+  }
+
+  //Cargar Sol de Pago directo de la actividad
+  const cargarSolicitudPagoDirectoActividad = async (idActividad) => {
+    loadingPagoDirectoActividad.value = true
+    try {
+      await obtenerListaSolPagoDirectoPorIdActividad(idActividad)
+      solicitudesPagoDirectoActividad.value = listaSolPagoDirectoActividad.value.solicitudes
+    } catch (err) {
+      console.error('Error al cargar la sol de pago directo de la actividad: ', idActividad, err)
+    } finally {
+      loadingPagoDirectoActividad.value = false
     }
   }
 
@@ -254,6 +286,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     rendicionesCuentasExistentesTarea,
     loadingFondosTarea,
     loadingViajesTarea,
+    loadingPagoDirectoActividad,
     loadingRendicionesTarea,
     error,
     loading,
@@ -262,6 +295,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     //Estado Informe Actividad
     solicitudesViajeInformeActividadActual,
     solicitudesViajeDisponibles,
+    solicitudesPagoDirectoActividad,
     //Estado informe de subactividad/tarea
     solicitudesViajeDisponiblesTarea,
 
