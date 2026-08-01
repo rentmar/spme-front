@@ -35,7 +35,7 @@
 
       <v-row>
         <!-- Panel lateral de información -->
-        <v-col cols="12" md="4" lg="3">
+        <v-col cols="12" md="3" lg="3">
           <!-- <v-card elevation="2" rounded="lg" class="mb-4">
             <v-toolbar color="primary" density="compact">
               <v-toolbar-title class="text-white">Información General</v-toolbar-title>
@@ -57,10 +57,21 @@
             </v-card-text>
           </v-card> -->
           <ActividadInfoGeneralPanel
-            v-if="actividad"
-            :actividad="actividad"
+            v-if="actividadNodoInformacion"
+            :actividad="actividadNodoInformacion"
             :cargando="loadingActividad"
+            :presupuesto-tareas="tareasPresupuestoAsignado"
+            :presupuesto-solicitudes="totalSolicitudesSinRendicion"
+            :presupuesto-disponible="actividadPresupuestoDisponible"
+            :totales-solicitudes="totalSolicitudesPorTipo"
           ></ActividadInfoGeneralPanel>
+          <TareaInfoGeneralPanel
+            v-if="tareaNodoInformacion"
+            :tarea="tareaNodoInformacion"
+            :presupuestoSolicitudesTarea="tareaTotalSolicitudesSinRendicion"
+            :presupuestoDisponibleTarea="tareaPresupuestoDisponible"
+            :totalesSolicitudesTarea="tareaTotalSolicitudesPorTipo"
+          ></TareaInfoGeneralPanel>
 
           <!-- Tarjeta de resumen rápido de la solicitud -->
           <v-card elevation="2" rounded="lg" class="mb-4">
@@ -98,7 +109,7 @@
         </v-col>
 
         <!-- Formulario principal -->
-        <v-col cols="12" md="8" lg="9">
+        <v-col cols="12" md="9" lg="9">
           <v-card elevation="2" rounded="lg">
             <v-toolbar color="primary" density="compact">
               <v-toolbar-title class="text-white">
@@ -262,7 +273,7 @@
                     Detalle de Gastos Solicitados
                   </h3>
 
-                  <div class="d-flex justify-space-between align-center mb-4">
+                  <!-- <div class="d-flex justify-space-between align-center mb-4">
                     <v-btn
                       color="primary"
                       variant="outlined"
@@ -274,107 +285,186 @@
                     <v-chip class="text-subtitle-1" color="primary" variant="outlined">
                       Monto Total Solicitado (Bs.): {{ totalMontoSolicitado.toLocaleString() }}
                     </v-chip>
+                  </div> -->
+                  <div class="d-flex justify-space-between align-center mb-4">
+                    <v-btn
+                      color="primary"
+                      variant="outlined"
+                      prepend-icon="mdi-plus"
+                      @click="addGasto"
+                    >
+                      Agregar Item
+                    </v-btn>
+                    <div class="d-flex align-center ga-4">
+                      <v-chip
+                        class="text-subtitle-1"
+                        :color="excedePresupuesto ? 'error' : 'primary'"
+                        variant="outlined"
+                      >
+                        Monto Total: Bs. {{ totalMontoSolicitado.toLocaleString() }}
+                      </v-chip>
+
+                      <!-- ALERTA DE PRESUPUESTO COMPACTA -->
+                      <v-alert
+                        :type="excedePresupuesto ? 'error' : 'success'"
+                        density="compact"
+                        variant="tonal"
+                        class="mb-0"
+                        :icon="false"
+                        style="min-width: 280px"
+                      >
+                        <div v-if="excedePresupuesto" class="text-caption">
+                          <strong>¡Excedido!</strong>
+                          Límite: Bs. {{ limitePresupuesto.toLocaleString() }} | Excedente: Bs.
+                          {{ montoExcedido.toLocaleString() }}
+                        </div>
+                        <div v-else class="text-caption">
+                          <strong>Disponible:</strong> Bs.
+                          {{ limitePresupuesto.toLocaleString() }} | <strong>Saldo:</strong> Bs.
+                          {{ (limitePresupuesto - totalMontoSolicitado).toLocaleString() }}
+                        </div>
+                      </v-alert>
+                    </div>
                   </div>
 
-                  <v-table class="elevation-1 rounded-lg mb-4 users-table">
-                    <thead>
-                      <tr>
-                        <th class="text-subtitle-2 font-weight-bold fecha-column">Fecha</th>
-                        <th class="text-subtitle-2 font-weight-bold">Partida</th>
-                        <th class="text-subtitle-2 font-weight-bold">Fuente</th>
-                        <th class="text-subtitle-2 font-weight-bold">Factura/Recibo</th>
-                        <th class="text-subtitle-2 font-weight-bold">Descripción</th>
-                        <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
-                        <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
-                        <td class="fecha-column">
-                          <v-text-field
-                            v-model="gasto.fecha"
-                            variant="outlined"
-                            type="date"
-                            bg-color="blue-lighten-5"
-                            hide-details
-                            density="compact"
-                            required
-                            class="fecha-input"
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model="gasto.partida"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="1.1.1"
-                            class="compact-field"
-                            required
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model="gasto.fuente"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="Financiador"
-                            required
-                          ></v-text-field>
-                        </td>
-                        <td>
-                          <v-text-field
-                            v-model="gasto.factura_recibo"
-                            variant="outlined"
-                            bg-color="blue-lighten-5"
-                            hide-details
-                            density="compact"
-                            placeholder="Factura/Recibo"
-                            required
-                          ></v-text-field>
-                        </td>
-                        <td class="wide-column">
-                          <v-text-field
-                            v-model="gasto.descripcion_gasto"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="Descripción del gasto"
-                            required
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model.number="gasto.monto"
-                            type="number"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="0.00"
-                            min="0"
-                            class="compact-field"
-                            required
-                          ></v-text-field>
-                        </td>
-                        <td class="text-center action-column">
-                          <v-btn
-                            icon
-                            color="error"
-                            size="small"
-                            variant="text"
-                            @click="removeGasto(index)"
-                          >
-                            <v-icon>mdi-delete</v-icon>
-                          </v-btn>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </v-table>
+                  <div class="table-responsive">
+                    <v-table class="elevation-1 rounded-lg users-table" density="compact">
+                      <thead>
+                        <tr>
+                          <th style="min-width: 150px">Fecha *</th>
+                          <th style="min-width: 100px">Partida *</th>
+                          <th style="min-width: 160px">Fuente *</th>
+                          <th style="min-width: 140px">Factura/Recibo *</th>
+                          <th style="min-width: 250px">Descripción *</th>
+                          <th style="min-width: 120px">Monto (Bs.) *</th>
+                          <th style="min-width: 50px; width: 50px"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(gasto, index) in formData.detalle_destino_fondos"
+                          :key="index"
+                          :class="{
+                            'bg-red-lighten-5':
+                              !isGastoCompleto(gasto) && formData.detalle_destino_fondos.length > 1,
+                          }"
+                        >
+                          <td>
+                            <input
+                              v-model="gasto.fecha"
+                              type="date"
+                              required
+                              style="
+                                width: 140px;
+                                padding: 8px;
+                                border: 1px solid #bbb;
+                                border-radius: 4px;
+                                background: #e3f2fd;
+                                font-size: 12px;
+                                font-family: inherit;
+                              "
+                            />
+                          </td>
+                          <td>
+                            <v-text-field
+                              v-model="gasto.partida"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              placeholder="1.1.1"
+                              :rules="[validarPartida]"
+                              required
+                              style="min-width: 90px"
+                            ></v-text-field>
+                          </td>
+                          <td>
+                            <v-select
+                              v-model="gasto.fuente"
+                              :items="procedenciaFondosActividad"
+                              item-title="financiera"
+                              return-object
+                              variant="outlined"
+                              density="compact"
+                              placeholder="Financiador"
+                              bg-color="blue-lighten-5"
+                              hide-details
+                              :rules="[validarFuente]"
+                              style="min-width: 150px"
+                            >
+                              <template #item="{ item: option, props: optionProps }">
+                                <v-list-item v-bind="optionProps" density="compact">
+                                  <template #title>
+                                    <span class="text-caption">{{ option.raw.financiera }}</span>
+                                  </template>
+                                  <template #subtitle>
+                                    <span class="text-caption text-medium-emphasis">{{
+                                      option.raw.sigla
+                                    }}</span>
+                                  </template>
+                                </v-list-item>
+                              </template>
+                              <template #selection="{ item: selected }">
+                                <span class="text-caption">{{ selected?.raw?.financiera }}</span>
+                              </template>
+                            </v-select>
+                          </td>
+                          <td>
+                            <v-text-field
+                              v-model="gasto.factura_recibo"
+                              variant="outlined"
+                              bg-color="blue-lighten-5"
+                              hide-details
+                              density="compact"
+                              placeholder="Factura/Recibo"
+                              :rules="[validarFactura]"
+                              required
+                              style="min-width: 130px"
+                            ></v-text-field>
+                          </td>
+                          <td>
+                            <v-text-field
+                              v-model="gasto.descripcion_gasto"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              placeholder="Descripción del gasto"
+                              :rules="[validarDescripcionGasto]"
+                              required
+                              style="min-width: 240px"
+                            ></v-text-field>
+                          </td>
+                          <td>
+                            <v-text-field
+                              v-model.number="gasto.monto"
+                              type="number"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              placeholder="0.00"
+                              min="0"
+                              :rules="[validarMontoGasto]"
+                              required
+                              style="min-width: 110px"
+                            ></v-text-field>
+                          </td>
+                          <td class="text-center">
+                            <v-btn
+                              icon
+                              color="error"
+                              size="x-small"
+                              variant="text"
+                              @click="removeGasto(index)"
+                            >
+                              <v-icon size="16">mdi-delete</v-icon>
+                            </v-btn>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </v-table>
+                  </div>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -666,8 +756,9 @@ import { useSnackbar } from '@/composables/useSnackbar'
 import { validadoresSolReposicionServicio } from '@/modules/formularios/services/validadoresSolReposicionService'
 import { useValidadoresSolReposicion } from '@/modules/formularios/composables/useValidadoresSolReposicion'
 import ActividadInfoGeneralPanel from '@/modules/formularios/components/partials/ActividadInfoGeneralPanel.vue'
+import TareaInfoGeneralPanel from '@/modules/formularios/components/partials/TareaInfoGeneralPanel.vue'
 import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
-
+import { useTareaFormularioPresupuesto } from '@/modules/formularios/composables/useTareaFormularioPresupuesto'
 /******* Computed para ligar la informacion al componente InformacionAdicional ***********************************************************************/
 
 //Referencia al componente Informacion adicional
@@ -726,7 +817,128 @@ const acceptedFormats = ref({
   medios: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx',
 })
 
-const { loading: loadingActividad, actividad } = useActividadFormulaioPresupuesto(idActividad)
+/****************************** PRESUPUESTO y sus Validaciones *********************************************************/
+
+//Composable para conexion al arbol de presupuesto, nodo actividad
+const {
+  loading: loadingActividad, //bandera de carga
+  actividadNodoInformacion, //Nodo Actividad - Informacion de la actividad
+  actividadPresupuestoAsignado, //Presupuesto asignado a la actividad
+  tareasPresupuestoAsignado, //Presupuesto asignado a las tareas
+  numeroSolicitudesActividad, //numero de solicitudes de la actividad
+  totalSolicitudesSinRendicion, //cantidad asignada a las solicitudes
+  actividadPresupuestoDisponible, //Cantidad disponible
+  totalSolicitudesPorTipo, //Desglose de las solicitudes por tipo
+  procedenciaFondosActividad, //procedencia fondos de la actividad
+} = useActividadFormulaioPresupuesto(idActividad)
+
+//Composable para conexion al nodo tareas, inicializacion condicional
+const composableTarea = idTarea ? useTareaFormularioPresupuesto(idTarea) : null
+
+//Extraer datos de la Tarea
+const tareaPresupuestoAsignado = computed(() => composableTarea?.tareaPresupuestoAsignado?.value)
+const tareaNodoInformacion = computed(() => composableTarea?.tareaNodoInformacion?.value || null)
+const tareaNodoPresupuesto = computed(() => composableTarea?.tareaNodoPresupuesto?.value || null)
+const tareaTotalSolicitudesSinRendicion = computed(
+  () => composableTarea?.totalSolicitudesSinRendicion?.value || null,
+)
+const tareaTotalSolicitudesPorTipo = computed(() => composableTarea.totalSolicitudesPorTipo.value)
+
+const tareaPresupuestoDisponible = computed(
+  () => composableTarea?.tareaPresupuestoDisponible?.value || 0,
+)
+//Asignaro el limite del presupuesto
+const limitePresupuesto = computed(() => {
+  //Si hay idTarea, el limite es el presupuesto disponible de la tarea
+  if (idTarea) {
+    return tareaPresupuestoDisponible.value
+  }
+  //Si hay idActividad el limte es el presupuesto disponible de la actividad
+  return actividadPresupuestoDisponible.value
+})
+// AGREGAR después del computed limitePresupuesto
+
+// Computed para verificar si excede el presupuesto
+const excedePresupuesto = computed(() => {
+  return totalMontoSolicitado.value > limitePresupuesto.value
+})
+
+// Computed para calcular el monto excedido
+const montoExcedido = computed(() => {
+  if (!excedePresupuesto.value) return 0
+  return totalMontoSolicitado.value - limitePresupuesto.value
+})
+
+// Computed para verificar si todos los items del desglose están completos
+const desgloseCompleto = computed(() => {
+  if (formData.value.detalle_destino_fondos.length === 0) return false
+  return formData.value.detalle_destino_fondos.every(
+    (gasto) =>
+      gasto.fecha &&
+      gasto.partida &&
+      gasto.partida.trim() !== '' &&
+      gasto.fuente &&
+      gasto.descripcion_gasto &&
+      gasto.descripcion_gasto.trim() !== '' &&
+      gasto.monto &&
+      Number(gasto.monto) > 0,
+  )
+})
+
+// Computed para identificar filas incompletas
+const itemsIncompletos = computed(() => {
+  return formData.value.detalle_destino_fondos
+    .map((gasto, index) => ({
+      index: index + 1,
+      completo:
+        gasto.fecha && gasto.partida && gasto.fuente && gasto.descripcion_gasto && gasto.monto > 0,
+    }))
+    .filter((item) => !item.completo)
+    .map((item) => item.index)
+})
+
+// Funciones de validación para cada campo
+const validarPartida = (v) => {
+  if (!v || v.trim() === '') return 'Partida requerida'
+  return true
+}
+
+const validarFuente = (v) => {
+  if (!v) return 'Fuente requerida'
+  return true
+}
+
+const validarFactura = (v) => {
+  if (!v || v.trim() === '') return 'Factura/Recibo requerido'
+  return true
+}
+
+const validarDescripcionGasto = (v) => {
+  if (!v || v.trim() === '') return 'Descripción requerida'
+  return true
+}
+
+const validarMontoGasto = (v) => {
+  if (!v && v !== 0) return 'Monto requerido'
+  if (Number(v) <= 0) return 'Monto debe ser > 0'
+  return true
+}
+
+// Función para verificar si un gasto individual está completo
+const isGastoCompleto = (gasto) => {
+  return (
+    gasto.fecha &&
+    gasto.partida &&
+    gasto.partida.trim() !== '' &&
+    gasto.fuente &&
+    gasto.descripcion_gasto &&
+    gasto.descripcion_gasto.trim() !== '' &&
+    gasto.monto &&
+    Number(gasto.monto) > 0
+  )
+}
+
+/**************************** FIN PRESUPUESTO Validaciones ***********************************************************/
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)
@@ -1805,6 +2017,16 @@ const validarFormulario = () => {
   if (!estaCompletaInformacionAdicional.value) {
     return 'Complete la información adicional.'
   }
+  if (excedePresupuesto.value) {
+    return `El monto total (Bs. ${totalMontoSolicitado.value.toLocaleString()}) excede el presupuesto disponible (Bs. ${limitePresupuesto.value.toLocaleString()}) por Bs. ${montoExcedido.value.toLocaleString()}`
+  }
+  if (!desgloseCompleto.value) {
+    const filas = itemsIncompletos.value.join(', ')
+    return `Complete todos los campos obligatorios. Filas incompletas: ${filas}`
+  }
+  if (!estaCompletaInformacionAdicional.value) {
+    return 'Complete la información adicional.'
+  }
   return null // null = sin errores
 }
 
@@ -2129,5 +2351,54 @@ const cerrarDialogoRevision = async () => {
 .compact-field {
   font-size: 14px;
   max-width: 100px;
+}
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 16px;
+}
+
+.table-responsive :deep(table) {
+  min-width: 900px;
+}
+
+.table-responsive :deep(th) {
+  background-color: #1976d2 !important;
+  color: white !important;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 10px 6px;
+  white-space: nowrap;
+}
+
+.table-responsive :deep(td) {
+  padding: 4px;
+  vertical-align: middle;
+}
+
+/* Scrollbar estilizada */
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Fila incompleta */
+.bg-red-lighten-5 {
+  background-color: rgba(244, 67, 54, 0.05) !important;
 }
 </style>

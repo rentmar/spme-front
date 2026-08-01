@@ -56,11 +56,23 @@
               </div>
             </v-card-text>
           </v-card> -->
+          <!--Actividad Panel de informacion asido-->
           <ActividadInfoGeneralPanel
-            v-if="actividad"
-            :actividad="actividad"
+            v-if="actividadNodoInformacion"
+            :actividad="actividadNodoInformacion"
             :cargando="loadingActividad"
+            :presupuesto-tareas="tareasPresupuestoAsignado"
+            :presupuesto-solicitudes="totalSolicitudesSinRendicion"
+            :presupuesto-disponible="actividadPresupuestoDisponible"
+            :totales-solicitudes="totalSolicitudesPorTipo"
           ></ActividadInfoGeneralPanel>
+          <TareaInfoGeneralPanel
+            v-if="tareaNodoInformacion"
+            :tarea="tareaNodoInformacion"
+            :presupuestoSolicitudesTarea="tareaTotalSolicitudesSinRendicion"
+            :presupuestoDisponibleTarea="tareaPresupuestoDisponible"
+            :totalesSolicitudesTarea="tareaTotalSolicitudesPorTipo"
+          ></TareaInfoGeneralPanel>
 
           <!-- Tarjeta de resumen rápido de la solicitud -->
           <v-card elevation="2" rounded="lg" class="mb-4">
@@ -217,6 +229,7 @@
                     bg-color="blue-lighten-5"
                     required
                   ></v-textarea>
+                  <!--
                   <v-text-field
                     v-model="textoProcedencia"
                     label="Fuente de Financiamiento"
@@ -224,7 +237,75 @@
                     density="compact"
                     bg-color="blue-lighten-5"
                     required
-                  ></v-text-field>
+                  ></v-text-field> -->
+
+                  <!-- Fuentes de Financiamiento -->
+                  <div class="mb-4">
+                    <v-label class="text-subtitle-2 mb-2">Fuentes de Financiamiento</v-label>
+
+                    <!-- Si NO hay fuente_financiamiento -->
+                    <v-alert
+                      v-if="
+                        !formData.fuente_financiamiento ||
+                        formData.fuente_financiamiento === '' ||
+                        formData.fuente_financiamiento.length === 0
+                      "
+                      type="info"
+                      variant="tonal"
+                      class="mb-3"
+                      icon="mdi-information"
+                      density="compact"
+                    >
+                      <strong>No existe Desglose</strong><br />
+                      No se realizó un desglose de fuentes de financiamiento para esta actividad.
+                    </v-alert>
+
+                    <!-- Si hay fuente_financiamiento, mostrarlo -->
+                    <v-text-field
+                      v-else
+                      v-model="textoProcedencia"
+                      label="Fuentes de Financiamiento"
+                      variant="outlined"
+                      density="compact"
+                      bg-color="grey-lighten-4"
+                      readonly
+                    ></v-text-field>
+
+                    <!-- Lista de financiadores disponibles -->
+                    <div
+                      v-if="procedenciaFondosActividad && procedenciaFondosActividad.length > 0"
+                      class="mt-2"
+                    >
+                      <div class="text-caption text-medium-emphasis mb-1">
+                        Financiadores disponibles:
+                      </div>
+                      <div class="d-flex flex-wrap gap-2">
+                        <v-chip
+                          v-for="fuente in procedenciaFondosActividad"
+                          :key="fuente.id"
+                          color="primary"
+                          variant="outlined"
+                          size="small"
+                          class="mr-2 mb-1"
+                        >
+                          <v-icon start size="x-small">mdi-currency-usd</v-icon>
+                          {{ fuente.financiera }} ({{ fuente.sigla }})
+                        </v-chip>
+                      </div>
+                    </div>
+
+                    <!-- Si NO hay financiadores -->
+                    <v-alert
+                      v-else
+                      type="warning"
+                      variant="tonal"
+                      class="mt-2"
+                      icon="mdi-alert"
+                      density="compact"
+                    >
+                      No hay fuentes de financiamiento configuradas para esta actividad.
+                    </v-alert>
+                  </div>
 
                   <v-col cols="12" md="4">
                     <v-text-field
@@ -269,7 +350,7 @@
                     Agregue todos los gastos asociados a la actividad. Especifique partida,
                     descripción y monto.
                   </v-alert>
-
+                  <!--
                   <div class="d-flex justify-space-between align-center mb-4">
                     <v-btn
                       color="primary"
@@ -282,49 +363,114 @@
                     <v-chip class="text-subtitle-1" color="primary" variant="outlined">
                       Monto Total Solicitado (Bs.): {{ totalMontoSolicitado.toLocaleString() }}
                     </v-chip>
-                  </div>
+                  </div> -->
 
+                  <div class="d-flex justify-space-between align-center mb-4">
+                    <v-btn
+                      color="primary"
+                      variant="outlined"
+                      prepend-icon="mdi-plus"
+                      @click="addGasto"
+                    >
+                      Agregar Item
+                    </v-btn>
+                    <div class="d-flex align-center ga-4">
+                      <v-chip
+                        class="text-subtitle-1"
+                        :color="excedePresupuesto ? 'error' : 'primary'"
+                        variant="outlined"
+                      >
+                        Monto Total: Bs. {{ totalMontoSolicitado.toLocaleString() }}
+                      </v-chip>
+
+                      <!-- ALERTA DE PRESUPUESTO COMPACTA -->
+                      <v-alert
+                        :type="excedePresupuesto ? 'error' : 'success'"
+                        density="compact"
+                        variant="tonal"
+                        class="mb-0"
+                        :icon="false"
+                        style="min-width: 280px"
+                      >
+                        <div v-if="excedePresupuesto" class="text-caption">
+                          <strong>¡Excedido!</strong>
+                          Límite: Bs. {{ limitePresupuesto.toLocaleString() }} | Excedente: Bs.
+                          {{ montoExcedido.toLocaleString() }}
+                        </div>
+                        <div v-else class="text-caption">
+                          <strong>Disponible:</strong> Bs.
+                          {{ limitePresupuesto.toLocaleString() }} | <strong>Saldo:</strong> Bs.
+                          {{ (limitePresupuesto - totalMontoSolicitado).toLocaleString() }}
+                        </div>
+                      </v-alert>
+                    </div>
+                  </div>
                   <v-table class="elevation-1 rounded-lg mb-4 users-table">
                     <thead>
                       <tr>
-                        <th class="text-subtitle-2 font-weight-bold">Partida</th>
-                        <th class="text-subtitle-2 font-weight-bold">Fuente</th>
-                        <th class="text-subtitle-2 font-weight-bold">Descripción</th>
-                        <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
+                        <th class="text-subtitle-2 font-weight-bold">Partida *</th>
+                        <th class="text-subtitle-2 font-weight-bold">Fuente *</th>
+                        <th class="text-subtitle-2 font-weight-bold">Descripción *</th>
+                        <th class="text-subtitle-2 font-weight-bold">Monto (Bs.) *</th>
                         <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
+                      <tr
+                        v-for="(gasto, index) in formData.detalle_destino_fondos"
+                        :key="index"
+                        :class="{
+                          'bg-red-lighten-5':
+                            !isGastoCompleto(gasto) && formData.detalle_destino_fondos.length > 1,
+                        }"
+                      >
                         <td class="narrow-column">
                           <v-text-field
                             v-model="gasto.partida"
                             variant="outlined"
                             density="compact"
-                            hide-details
                             bg-color="blue-lighten-5"
                             placeholder="1.1.1"
-                            class="compact-field"
+                            :rules="[validarPartida]"
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
-                          <v-text-field
+                          <v-select
                             v-model="gasto.fuente"
+                            :items="procedenciaFondosActividad"
+                            item-title="financiera"
+                            return-object
                             variant="outlined"
                             density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
                             placeholder="Financiador"
-                          ></v-text-field>
+                            bg-color="blue-lighten-5"
+                            :rules="[validarFuente]"
+                          >
+                            <template #item="{ item: option, props: optionProps }">
+                              <v-list-item v-bind="optionProps" density="compact">
+                                <template #title>
+                                  <span class="text-caption">{{ option.raw.financiera }}</span>
+                                </template>
+                                <template #subtitle>
+                                  <span class="text-caption text-medium-emphasis">{{
+                                    option.raw.sigla
+                                  }}</span>
+                                </template>
+                              </v-list-item>
+                            </template>
+                            <template #selection="{ item: selected }">
+                              <span class="text-caption">{{ selected?.raw?.financiera }}</span>
+                            </template>
+                          </v-select>
                         </td>
                         <td class="wide-column">
                           <v-text-field
                             v-model="gasto.descripcion_gasto"
                             variant="outlined"
                             density="compact"
-                            hide-details
                             bg-color="blue-lighten-5"
                             placeholder="Descripción del gasto"
+                            :rules="[validarDescripcionGasto]"
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
@@ -333,11 +479,10 @@
                             type="number"
                             variant="outlined"
                             density="compact"
-                            hide-details
                             bg-color="blue-lighten-5"
                             placeholder="0.00"
                             min="0"
-                            class="compact-field"
+                            :rules="[validarMontoGasto]"
                           ></v-text-field>
                         </td>
                         <td class="text-center action-column">
@@ -645,6 +790,8 @@ import { useValidadoresSolPagoDirecto } from '@/modules/formularios/composables/
 import { useActividadPresupuesto } from '@/modules/formularios/store/useActividadPresupuestoStore'
 import ActividadInfoGeneralPanel from '@/modules/formularios/components/partials/ActividadInfoGeneralPanel.vue'
 import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
+import { useTareaFormularioPresupuesto } from '@/modules/formularios/composables/useTareaFormularioPresupuesto'
+import TareaInfoGeneralPanel from '@/modules/formularios/components/partials/TareaInfoGeneralPanel.vue'
 /******* Computed para ligar la informacion al componente InformacionAdicional ***********************************************************************/
 
 //Referencia al componente Informacion adicional
@@ -702,7 +849,116 @@ const acceptedFormats = ref({
   medios: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx',
 })
 
-const { loading: loadingActividad, actividad } = useActividadFormulaioPresupuesto(idActividad)
+/****************************** PRESUPUESTO y sus Validaciones *********************************************************/
+
+//Composable para conexion al arbol de presupuesto, nodo actividad
+const {
+  loading: loadingActividad, //bandera de carga
+  actividadNodoInformacion, //Nodo Actividad - Informacion de la actividad
+  actividadPresupuestoAsignado, //Presupuesto asignado a la actividad
+  tareasPresupuestoAsignado, //Presupuesto asignado a las tareas
+  numeroSolicitudesActividad, //numero de solicitudes de la actividad
+  totalSolicitudesSinRendicion, //cantidad asignada a las solicitudes
+  actividadPresupuestoDisponible, //Cantidad disponible
+  totalSolicitudesPorTipo, //Desglose de las solicitudes por tipo
+  procedenciaFondosActividad, //procedencia fondos de la actividad
+} = useActividadFormulaioPresupuesto(idActividad)
+
+//Composable para conexion al nodo tareas, inicializacion condicional
+const composableTarea = idTarea ? useTareaFormularioPresupuesto(idTarea) : null
+
+//Extraer datos de la Tarea
+const tareaPresupuestoAsignado = computed(() => composableTarea?.tareaPresupuestoAsignado?.value)
+const tareaNodoInformacion = computed(() => composableTarea?.tareaNodoInformacion?.value || null)
+const tareaNodoPresupuesto = computed(() => composableTarea?.tareaNodoPresupuesto?.value || null)
+const tareaTotalSolicitudesSinRendicion = computed(
+  () => composableTarea?.totalSolicitudesSinRendicion?.value || null,
+)
+const tareaTotalSolicitudesPorTipo = computed(() => composableTarea.totalSolicitudesPorTipo.value)
+
+const tareaPresupuestoDisponible = computed(
+  () => composableTarea?.tareaPresupuestoDisponible?.value || 0,
+)
+//Asignaro el limite del presupuesto
+const limitePresupuesto = computed(() => {
+  //Si hay idTarea, el limite es el presupuesto disponible de la tarea
+  if (idTarea) {
+    return tareaPresupuestoDisponible.value
+  }
+  //Si hay idActividad el limte es el presupuesto disponible de la actividad
+  return actividadPresupuestoDisponible.value
+})
+
+// AGREGAR después del computed limitePresupuesto
+const excedePresupuesto = computed(() => {
+  return totalMontoSolicitado.value > limitePresupuesto.value
+})
+
+const montoExcedido = computed(() => {
+  if (!excedePresupuesto.value) return 0
+  return totalMontoSolicitado.value - limitePresupuesto.value
+})
+
+// Validar que todos los items del desglose estén completos
+const desgloseCompleto = computed(() => {
+  if (formData.value.detalle_destino_fondos.length === 0) return false
+  return formData.value.detalle_destino_fondos.every(
+    (gasto) =>
+      gasto.partida &&
+      gasto.partida.trim() !== '' &&
+      gasto.fuente &&
+      gasto.descripcion_gasto &&
+      gasto.descripcion_gasto.trim() !== '' &&
+      gasto.monto &&
+      Number(gasto.monto) > 0,
+  )
+})
+
+const itemsIncompletos = computed(() => {
+  return formData.value.detalle_destino_fondos
+    .map((gasto, index) => ({
+      index: index + 1,
+      completo: gasto.partida && gasto.fuente && gasto.descripcion_gasto && gasto.monto > 0,
+    }))
+    .filter((item) => !item.completo)
+    .map((item) => item.index)
+})
+
+// AGREGAR funciones de validación
+const validarPartida = (v) => {
+  if (!v || v.trim() === '') return 'La partida es requerida'
+  return true
+}
+
+const validarFuente = (v) => {
+  if (!v) return 'La fuente es requerida'
+  return true
+}
+
+const validarDescripcionGasto = (v) => {
+  if (!v || v.trim() === '') return 'La descripción es requerida'
+  return true
+}
+
+const validarMontoGasto = (v) => {
+  if (!v && v !== 0) return 'El monto es requerido'
+  if (Number(v) <= 0) return 'El monto debe ser mayor a 0'
+  return true
+}
+
+const isGastoCompleto = (gasto) => {
+  return (
+    gasto.partida &&
+    gasto.partida.trim() !== '' &&
+    gasto.fuente &&
+    gasto.descripcion_gasto &&
+    gasto.descripcion_gasto.trim() !== '' &&
+    gasto.monto &&
+    Number(gasto.monto) > 0
+  )
+}
+
+/**************************** FIN PRESUPUESTO Validaciones ***********************************************************/
 
 const formData = ref({
   // Campos del usuario (se llenarán automáticamente)
@@ -1529,6 +1785,16 @@ const validarFormulario = () => {
   }
   if (totalMontoSolicitado.value <= 0) {
     return 'El monto total debe ser mayor a cero.'
+  }
+  if (!estaCompletaInformacionAdicional.value) {
+    return 'Complete la información adicional.'
+  }
+  if (excedePresupuesto.value) {
+    return `El monto total (Bs. ${totalMontoSolicitado.value.toLocaleString()}) excede el presupuesto disponible (Bs. ${limitePresupuesto.value.toLocaleString()}) por Bs. ${montoExcedido.value.toLocaleString()}`
+  }
+  if (!desgloseCompleto.value) {
+    const filas = itemsIncompletos.value.join(', ')
+    return `Complete todos los campos obligatorios. Filas incompletas: ${filas}`
   }
   if (!estaCompletaInformacionAdicional.value) {
     return 'Complete la información adicional.'

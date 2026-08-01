@@ -1874,6 +1874,16 @@ const validarFormulario = () => {
   if (!estaCompletaInformacionAdicional.value) {
     return 'Complete la información adicional.'
   }
+  if (excedePresupuesto.value) {
+    return `El monto total (Bs. ${totalMontoSolicitado.value.toLocaleString()}) excede el presupuesto disponible (Bs. ${limitePresupuesto.value.toLocaleString()}) por Bs. ${montoExcedido.value.toLocaleString()}`
+  }
+  if (!desgloseCompleto.value) {
+    const filas = itemsIncompletos.value.join(', ')
+    return `Complete todos los campos obligatorios. Filas incompletas: ${filas}`
+  }
+  if (!estaCompletaInformacionAdicional.value) {
+    return 'Complete la información adicional.'
+  }
   return null // null = sin errores
 }
 
