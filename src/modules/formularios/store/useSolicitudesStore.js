@@ -172,6 +172,7 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
         cargarSolicitudFondosTarea(idActividad, idTarea),
         cargarSolicitudViajesTarea(idActividad, idTarea),
         cargarRendicionCuentasTarea(idActividad, idTarea),
+        cargarSolicitudPagoDirecto(idActividad, idTarea),
       ])
     } catch (err) {
       console.error('Error al cargar los formularios de la Tarea: ' + idTarea, err)
@@ -203,6 +204,19 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
       console.error('Error al cargar las sol de viaje de la tarea: ' + idTarea, err)
     } finally {
       loadingViajesTarea.value = false
+    }
+  }
+
+  //Cargar las solicitides de pago directo de la tarea
+  const cargarSolicitudPagoDirecto = async (idActividad, idTarea) => {
+    loadingPagoDirectoTarea.value = true
+    try {
+      await obtenerListaSolPagoDirectoPorIdTarea(idActividad, idTarea)
+      solicitudesPagoDirectoTarea.value = listaSolPagoDirectoTarea.value.solicitudes
+    } catch (err) {
+      console.error('Error al cargar las sol de pago directo de la tares: ', +idTarea, err)
+    } finally {
+      loadingPagoDirectoTarea.value = false
     }
   }
 
@@ -283,7 +297,9 @@ export const useSolicitudesStore = defineStore('solicitudes-formularios', () => 
     //Estadoos -tarea
     solicitudesFondosTarea,
     solicitudesViajeTarea,
+    solicitudesPagoDirectoTarea,
     rendicionesCuentasExistentesTarea,
+    loadingPagoDirectoTarea,
     loadingFondosTarea,
     loadingViajesTarea,
     loadingPagoDirectoActividad,

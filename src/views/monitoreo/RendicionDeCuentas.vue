@@ -601,7 +601,6 @@
   ></DialogoGuardarRendicionValidador>
   <!--Dialogo de confirmacion para salir -->
   <ConfirmDialog></ConfirmDialog>
-  <pre> {{ formData }}</pre>
 </template>
 
 <script setup>
@@ -858,6 +857,7 @@ const manejarActualizacionVinculacionTarea = (vinculacion) => {
     successMsg('Sin Seleccion/Se Elimino seleccion - Subactividad')
     solicitudFondosSeleccionada.value = null
     solicitudViajeSeleccionada.value = null
+    solicitudPagoDirectoSeleccionada.value = null
     return
   }
   //Caso solicitud de Fondos
@@ -870,6 +870,7 @@ const manejarActualizacionVinculacionTarea = (vinculacion) => {
     )
     solicitudFondosSeleccionada.value = vinculacion.id
     solicitudViajeSeleccionada.value = null
+    solicitudPagoDirectoSeleccionada.value = null
     return
   }
   //Caso solicitude de viaje
@@ -882,6 +883,17 @@ const manejarActualizacionVinculacionTarea = (vinculacion) => {
     )
     solicitudFondosSeleccionada.value = null
     solicitudViajeSeleccionada.value = vinculacion.id
+    solicitudPagoDirectoSeleccionada.value = null
+    return
+  }
+  if (vinculacion.tipo === 'solicitud_pago_directo') {
+    successMsg(
+      'Rendicion vinculada a sol de pago directo subactividad: ' +
+        vinculacion.detalle?.numeroFormulario,
+    )
+    solicitudFondosSeleccionada.value = null
+    solicitudViajeSeleccionada.value = null
+    solicitudPagoDirectoSeleccionada.value = vinculacion.id
     return
   }
 }

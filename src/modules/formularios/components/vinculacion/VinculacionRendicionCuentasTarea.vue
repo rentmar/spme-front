@@ -92,6 +92,37 @@
               </template>
             </v-radio>
           </v-col>
+          <v-col cols="12" md="4">
+            <v-radio
+              value="solicitud_pago_directo"
+              color="primary"
+              class="custom-radio"
+              :disabled="!hayPagoDirectoDisponibles && !cargandoPagoDirecto"
+            >
+              <template v-slot:label>
+                <div class="d-flex align-center w-100">
+                  <v-avatar size="40" color="warning-light" class="mr-3">
+                    <v-icon icon="mdi-credit-card" color="warning" size="24"></v-icon>
+                  </v-avatar>
+                  <div>
+                    <div class="font-weight-medium text-body-1">Solicitud de Pago Directo</div>
+                    <div class="text-caption text-grey">
+                      Vincular a una solicitud de pago directo existente
+                    </div>
+                    <div v-if="totalPagoDirectoVinculadas > 0" class="text-caption text-warning">
+                      {{ totalPagoDirectoVinculadas }} solicitud(es) ya vinculada(s)
+                    </div>
+                    <div
+                      v-if="!hayPagoDirectoDisponibles && !cargandoPagoDirecto"
+                      class="text-caption text-error"
+                    >
+                      No hay solicitudes disponibles
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </v-radio>
+          </v-col>
         </v-row>
       </v-radio-group>
 
@@ -598,6 +629,237 @@
         </div>
       </v-expand-transition>
 
+      <!-- Selector para Solicitud de Pago Directo -->
+      <v-expand-transition>
+        <div v-if="tipoVinculacion === 'solicitud_pago_directo'" class="mt-2">
+          <v-autocomplete
+            v-model="solicitudPagoDirectoSeleccionada"
+            :items="solicitudesPagoDirectoDisponibles"
+            :loading="cargandoPagoDirecto"
+            item-title="displayText"
+            item-value="id"
+            label="Buscar Solicitud de Pago Directo"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Escriba para buscar..."
+            prepend-inner-icon="mdi-magnify"
+            clearable
+            class="mb-3"
+            return-object
+          >
+            <template v-slot:item="{ props, item }">
+              <v-list-item v-bind="props">
+                <template v-slot:prepend>
+                  <v-badge
+                    :color="getEstadoColor(item.raw.estado_validacion)"
+                    dot
+                    offset-x="8"
+                    offset-y="8"
+                  >
+                    <v-icon icon="mdi-credit-card" color="warning"></v-icon>
+                  </v-badge>
+                </template>
+                <v-list-item-title class="font-weight-medium">
+                  <strong>DESCRIPCION:</strong> {{ item.raw.descripcion_actividad }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  <div class="d-flex flex-wrap gap-2 mt-1">
+                    <v-chip size="x-small" variant="outlined" color="grey">
+                      <v-icon icon="mdi-calendar" size="12" class="mr-1"></v-icon>
+                      {{ formatFecha(item.raw.fechaSolicitud) }}
+                    </v-chip>
+                    <v-chip size="x-small" variant="outlined" color="warning">
+                      <v-icon icon="mdi-currency-usd" size="12" class="mr-1"></v-icon>
+                      {{ formatMonto(item.raw.montoSolicitado) }}
+                    </v-chip>
+                    <v-chip
+                      :color="getEstadoColor(item.raw.estado_validacion)"
+                      size="x-small"
+                      text-color="white"
+                    >
+                      {{ getEstadoTexto(item.raw.estado_validacion) }}
+                    </v-chip>
+                  </div>
+                </v-list-item-subtitle>
+              </v-list-item>
+            </template>
+            <template v-slot:selection="{ item }">
+              <div class="d-flex align-center">
+                <v-icon icon="mdi-credit-card" size="small" class="mr-2" color="warning"></v-icon>
+                <span>CODIGO: {{ item.raw.numeroFormulario }}</span>
+                <v-chip size="x-small" class="ml-2" variant="tonal" color="warning">
+                  MONTO: {{ formatMonto(item.raw.montoSolicitado) }}
+                </v-chip>
+              </div>
+            </template>
+          </v-autocomplete>
+
+          <v-alert
+            v-if="totalPagoDirectoVinculadas > 0"
+            type="info"
+            variant="tonal"
+            density="compact"
+            class="mb-3"
+          >
+            <div class="d-flex align-center">
+              <v-icon icon="mdi-information" size="20" class="mr-2"></v-icon>
+              <span
+                >{{ totalPagoDirectoVinculadas }} solicitud(es) de pago directo ya están
+                vinculadas</span
+              >
+            </div>
+          </v-alert>
+          <!--Solicitud de Pago directo-->
+          <v-expand-transition>
+            <v-card
+              v-if="solicitudPagoDirectoSeleccionada"
+              variant="tonal"
+              :color="getEstadoColor(solicitudPagoDirectoSeleccionada.estado_validacion)"
+              class="mt-3"
+              rounded="lg"
+            >
+              <v-card-text class="pa-4">
+                <div class="d-flex justify-space-between align-start mb-2">
+                  <div>
+                    <div class="text-h6 font-weight-medium">
+                      {{ solicitudPagoDirectoSeleccionada.numeroFormulario }}
+                    </div>
+                    <div class="text-caption text-grey">
+                      Solicitante:
+                      {{
+                        solicitudPagoDirectoSeleccionada.solicitante?.nombre_completo ||
+                        'No asignado'
+                      }}
+                    </div>
+                  </div>
+                  <v-chip
+                    :color="getEstadoColor(solicitudPagoDirectoSeleccionada.estado_validacion)"
+                    size="small"
+                    text-color="white"
+                  >
+                    {{ getEstadoTexto(solicitudPagoDirectoSeleccionada.estado_validacion) }}
+                  </v-chip>
+                </div>
+                <v-divider class="my-3"></v-divider>
+                <v-row>
+                  <v-col cols="12" sm="4">
+                    <div class="text-caption text-grey">Monto Solicitado</div>
+                    <div class="text-h6 font-weight-bold text-success">
+                      {{ formatMonto(solicitudPagoDirectoSeleccionada.montoSolicitado) }}
+                    </div>
+                  </v-col>
+                  <v-col cols="12" sm="4">
+                    <div class="text-caption text-grey">Fecha de Solicitud</div>
+                    <div class="font-weight-medium">
+                      {{ formatFecha(solicitudPagoDirectoSeleccionada.fechaSolicitud) }}
+                    </div>
+                  </v-col>
+                  <v-col cols="12" sm="4">
+                    <div class="text-caption text-grey">Forma de Pago</div>
+                    <div class="font-weight-medium">
+                      {{ solicitudPagoDirectoSeleccionada.forma_pago_nombre || 'No especificada' }}
+                    </div>
+                  </v-col>
+                </v-row>
+                <div v-if="solicitudPagoDirectoSeleccionada.descripcion_actividad" class="mt-2">
+                  <div class="text-caption text-grey">Descripción</div>
+                  <div class="text-body-2">
+                    {{ solicitudPagoDirectoSeleccionada.descripcion_actividad }}
+                  </div>
+                </div>
+                <div v-if="solicitudPagoDirectoSeleccionada.lugarSolicitud" class="mt-2">
+                  <div class="text-caption text-grey">Lugar</div>
+                  <div class="text-body-2">
+                    {{ solicitudPagoDirectoSeleccionada.lugarSolicitud }}
+                  </div>
+                </div>
+                <div
+                  v-if="solicitudPagoDirectoSeleccionada.detalleDestinoFondos?.items?.length"
+                  class="mt-3"
+                >
+                  <div class="text-caption text-grey font-weight-bold mb-2">Detalle de Gastos:</div>
+                  <v-table density="compact">
+                    <thead>
+                      <tr>
+                        <th>Partida</th>
+                        <th>Fuente</th>
+                        <th>Concepto</th>
+                        <th>Monto</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="(item, idx) in solicitudPagoDirectoSeleccionada.detalleDestinoFondos
+                          .items"
+                        :key="idx"
+                      >
+                        <td>{{ item.partida_sf || item.partida }}</td>
+                        <td>{{ item.fuente }}</td>
+                        <td>{{ item.concepto }}</td>
+                        <td>{{ formatMonto(item.monto) }}</td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                </div>
+              </v-card-text>
+            </v-card>
+          </v-expand-transition>
+
+          <v-expansion-panels v-if="solicitudesPagoDirectoVinculadas.length > 0" class="mt-4">
+            <v-expansion-panel>
+              <v-expansion-panel-title class="text-subtitle-1 font-weight-medium">
+                <v-icon icon="mdi-history" class="mr-2" color="warning"></v-icon>
+                Pago Directo ya vinculadas ({{ solicitudesPagoDirectoVinculadas.length }})
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <v-list>
+                  <v-list-item
+                    v-for="solicitud in solicitudesPagoDirectoVinculadas"
+                    :key="solicitud.id"
+                    class="mb-2"
+                    border
+                    rounded
+                  >
+                    <template v-slot:prepend
+                      ><v-icon icon="mdi-credit-card" color="grey"></v-icon
+                    ></template>
+                    <v-list-item-title class="font-weight-medium">{{
+                      solicitud.numeroFormulario
+                    }}</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <div class="d-flex flex-wrap gap-2 mt-1">
+                        <v-chip size="x-small" variant="outlined" color="grey">{{
+                          formatFecha(solicitud.fechaSolicitud)
+                        }}</v-chip>
+                        <v-chip size="x-small" variant="outlined" color="warning">{{
+                          formatMonto(solicitud.montoSolicitado)
+                        }}</v-chip>
+                        <v-chip size="x-small" color="warning" variant="tonal">Vinculada</v-chip>
+                      </div>
+                    </v-list-item-subtitle>
+                    <template v-slot:append>
+                      <v-tooltip location="left">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            icon="mdi-information"
+                            variant="text"
+                            size="small"
+                            color="info"
+                            @click="verRendicionVinculada(solicitud.id, 'pago_directo')"
+                          ></v-btn>
+                        </template>
+                        <span>Ver rendición vinculada</span>
+                      </v-tooltip>
+                    </template>
+                  </v-list-item>
+                </v-list>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </div>
+      </v-expand-transition>
+
       <!-- Mensaje cuando no hay solicitudes disponibles -->
       <v-expand-transition>
         <v-alert
@@ -623,7 +885,12 @@
       <!-- Mensaje de confirmación de selección -->
       <v-expand-transition>
         <v-alert
-          v-if="tipoVinculacion && (solicitudFondosSeleccionada || solicitudViajeSeleccionada)"
+          v-if="
+            tipoVinculacion &&
+            (solicitudFondosSeleccionada ||
+              solicitudViajeSeleccionada ||
+              solicitudPagoDirectoSeleccionada)
+          "
           type="success"
           variant="tonal"
           class="mt-4"
@@ -637,7 +904,9 @@
                 {{
                   tipoVinculacion === 'solicitud_fondos'
                     ? 'Solicitud de Fondos'
-                    : 'Solicitud de Viaje'
+                    : tipoVinculacion === 'solicitud_viaje'
+                      ? 'Solicitud de Viaje'
+                      : 'Solicitud de Pago Directo'
                 }}
                 seleccionada
               </div>
@@ -680,6 +949,7 @@ const solicitudesStore = useSolicitudesStore()
 const tipoVinculacion = ref(null)
 const solicitudFondosSeleccionada = ref(null)
 const solicitudViajeSeleccionada = ref(null)
+const solicitudPagoDirectoSeleccionada = ref(null)
 const loading = ref(false)
 const error = ref(null)
 
@@ -695,10 +965,17 @@ const solicitudesViaje = computed(() => {
 const rendicionesExistentes = computed(
   () => solicitudesStore.rendicionesCuentasExistentesTarea || [],
 )
-
+const solicitudesPagoDirecto = computed(() => {
+  const solicitudes = solicitudesStore.solicitudesPagoDirectoTarea || []
+  return solicitudes.filter((s) => s.estado_validacion === 'Aprobado')
+})
+//Banderas de carga
 const cargandoFondos = computed(() => solicitudesStore.loadingFondosTarea)
 const cargandoViajes = computed(() => solicitudesStore.loadingViajesTarea)
-const cargando = computed(() => cargandoFondos.value || cargandoViajes.value)
+const cargando = computed(
+  () => cargandoFondos.value || cargandoViajes.value || cargandoPagoDirecto.value,
+)
+const cargandoPagoDirecto = computed(() => solicitudesStore.loadingPagoDirectoTarea || false)
 
 // IDs de solicitudes ya vinculadas
 const idsFondosVinculadas = computed(() => {
@@ -718,6 +995,15 @@ const idsViajesVinculadas = computed(() => {
     rendicionesExistentes.value
       .filter((rendicion) => rendicion.solicitudViaje)
       .map((rendicion) => rendicion.solicitudViaje),
+  )
+})
+
+const idsPagoDirectoVinculadas = computed(() => {
+  if (!rendicionesExistentes.value.length) return new Set()
+  return new Set(
+    rendicionesExistentes.value
+      .filter((rendicion) => rendicion.solicitudPagoDirecto)
+      .map((rendicion) => rendicion.solicitudPagoDirecto),
   )
 })
 
@@ -744,6 +1030,16 @@ const solicitudesViajeDisponibles = computed(() => {
     }))
 })
 
+const solicitudesPagoDirectoDisponibles = computed(() => {
+  if (!solicitudesPagoDirecto.value.length) return []
+  return solicitudesPagoDirecto.value
+    .filter((solicitud) => !idsPagoDirectoVinculadas.value.has(solicitud.id))
+    .map((solicitud) => ({
+      ...solicitud,
+      displayText: `${solicitud.numeroFormulario} - ${formatMonto(solicitud.montoSolicitado)}`,
+    }))
+})
+
 // Solicitudes vinculadas (para mostrar en collapsable)
 const solicitudesFondosVinculadas = computed(() => {
   if (!solicitudesFondos.value.length) return []
@@ -757,19 +1053,26 @@ const solicitudesViajeVinculadas = computed(() => {
   return solicitudesViaje.value.filter((solicitud) => idsViajesVinculadas.value.has(solicitud.id))
 })
 
+const solicitudesPagoDirectoVinculadas = computed(() => {
+  if (!solicitudesPagoDirecto.value.length) return []
+  return solicitudesPagoDirecto.value.filter((solicitud) =>
+    idsPagoDirectoVinculadas.value.has(solicitud.id),
+  )
+})
+
 // Totales de vinculadas
 const totalFondosVinculadas = computed(() => idsFondosVinculadas.value.size)
 const totalViajesVinculadas = computed(() => idsViajesVinculadas.value.size)
+const totalPagoDirectoVinculadas = computed(() => idsPagoDirectoVinculadas.value.size)
 
 const hayFondosDisponibles = computed(() => solicitudesFondosDisponibles.value.length > 0)
 const hayViajesDisponibles = computed(() => solicitudesViajeDisponibles.value.length > 0)
+const hayPagoDirectoDisponibles = computed(() => solicitudesPagoDirectoDisponibles.value.length > 0)
 
 const haySolicitudesDisponibles = computed(() => {
-  if (tipoVinculacion.value === 'solicitud_fondos') {
-    return hayFondosDisponibles.value
-  } else if (tipoVinculacion.value === 'solicitud_viaje') {
-    return hayViajesDisponibles.value
-  }
+  if (tipoVinculacion.value === 'solicitud_fondos') return hayFondosDisponibles.value
+  if (tipoVinculacion.value === 'solicitud_viaje') return hayViajesDisponibles.value
+  if (tipoVinculacion.value === 'solicitud_pago_directo') return hayPagoDirectoDisponibles.value
   return true
 })
 
@@ -778,6 +1081,8 @@ const mensajeNoDisponible = computed(() => {
     return 'No hay solicitudes de fondos disponibles para vincular a esta rendición'
   } else if (tipoVinculacion.value === 'solicitud_viaje') {
     return 'No hay solicitudes de viaje disponibles para vincular a esta rendición'
+  } else if (tipoVinculacion.value === 'solicitud_pago_directo') {
+    return 'No hay solicitudes de pago directo disponibles para vincular a esta rendición'
   }
   return ''
 })
@@ -785,16 +1090,12 @@ const mensajeNoDisponible = computed(() => {
 // Función para ver rendición vinculada
 const verRendicionVinculada = (solicitudId, tipo) => {
   const rendicion = rendicionesExistentes.value.find((rend) => {
-    if (tipo === 'fondos') {
-      return rend.solicitudFondos === solicitudId
-    } else {
-      return rend.solicitudViaje === solicitudId
-    }
+    if (tipo === 'fondos') return rend.solicitudFondos === solicitudId
+    if (tipo === 'viajes') return rend.solicitudViaje === solicitudId
+    if (tipo === 'pago_directo') return rend.solicitudPagoDirecto === solicitudId
+    return false
   })
-
-  if (rendicion) {
-    emit('verRendicion', rendicion)
-  }
+  if (rendicion) emit('verRendicion', rendicion)
 }
 
 // Métodos auxiliares
@@ -859,61 +1160,78 @@ const cargarDatos = async () => {
 
 // Limpiar selección cuando cambia el tipo de vinculación
 watch(tipoVinculacion, () => {
-  if (tipoVinculacion.value === 'solicitud_fondos') {
-    solicitudViajeSeleccionada.value = null
-  } else if (tipoVinculacion.value === 'solicitud_viaje') {
-    solicitudFondosSeleccionada.value = null
-  }
+  solicitudFondosSeleccionada.value = null
+  solicitudViajeSeleccionada.value = null
+  solicitudPagoDirectoSeleccionada.value = null
 })
 
 // Watcher para emitir cambios de vinculación
-watch([tipoVinculacion, solicitudFondosSeleccionada, solicitudViajeSeleccionada], () => {
-  if (tipoVinculacion.value) {
+watch(
+  [
+    tipoVinculacion,
+    solicitudFondosSeleccionada,
+    solicitudViajeSeleccionada,
+    solicitudPagoDirectoSeleccionada,
+  ],
+  () => {
+    if (!tipoVinculacion.value) {
+      emit('update:vinculacion', null)
+      return
+    }
     let vinculacion = null
-
     if (tipoVinculacion.value === 'solicitud_fondos' && solicitudFondosSeleccionada.value) {
       vinculacion = {
-        tipo: tipoVinculacion.value,
+        tipo: 'solicitud_fondos',
         id: solicitudFondosSeleccionada.value.id,
         detalle: solicitudFondosSeleccionada.value,
       }
     } else if (tipoVinculacion.value === 'solicitud_viaje' && solicitudViajeSeleccionada.value) {
       vinculacion = {
-        tipo: tipoVinculacion.value,
+        tipo: 'solicitud_viaje',
         id: solicitudViajeSeleccionada.value.id,
         detalle: solicitudViajeSeleccionada.value,
       }
+    } else if (
+      tipoVinculacion.value === 'solicitud_pago_directo' &&
+      solicitudPagoDirectoSeleccionada.value
+    ) {
+      vinculacion = {
+        tipo: 'solicitud_pago_directo',
+        id: solicitudPagoDirectoSeleccionada.value.id,
+        detalle: solicitudPagoDirectoSeleccionada.value,
+      }
     }
-
     emit('update:vinculacion', vinculacion)
-  } else {
-    emit('update:vinculacion', null)
-  }
-})
+  },
+)
 
 // Métodos públicos
 const reset = () => {
   tipoVinculacion.value = null
   solicitudFondosSeleccionada.value = null
   solicitudViajeSeleccionada.value = null
+  solicitudPagoDirectoSeleccionada.value = null
 }
 
 const getVinculacion = () => {
-  if (tipoVinculacion.value) {
-    if (tipoVinculacion.value === 'solicitud_fondos' && solicitudFondosSeleccionada.value) {
-      return {
-        tipo: tipoVinculacion.value,
-        id: solicitudFondosSeleccionada.value.id,
-        detalle: solicitudFondosSeleccionada.value,
-      }
-    } else if (tipoVinculacion.value === 'solicitud_viaje' && solicitudViajeSeleccionada.value) {
-      return {
-        tipo: tipoVinculacion.value,
-        id: solicitudViajeSeleccionada.value.id,
-        detalle: solicitudViajeSeleccionada.value,
-      }
+  if (tipoVinculacion.value === 'solicitud_fondos' && solicitudFondosSeleccionada.value)
+    return {
+      tipo: 'solicitud_fondos',
+      id: solicitudFondosSeleccionada.value.id,
+      detalle: solicitudFondosSeleccionada.value,
     }
-  }
+  if (tipoVinculacion.value === 'solicitud_viaje' && solicitudViajeSeleccionada.value)
+    return {
+      tipo: 'solicitud_viaje',
+      id: solicitudViajeSeleccionada.value.id,
+      detalle: solicitudViajeSeleccionada.value,
+    }
+  if (tipoVinculacion.value === 'solicitud_pago_directo' && solicitudPagoDirectoSeleccionada.value)
+    return {
+      tipo: 'solicitud_pago_directo',
+      id: solicitudPagoDirectoSeleccionada.value.id,
+      detalle: solicitudPagoDirectoSeleccionada.value,
+    }
   return null
 }
 
@@ -932,8 +1250,33 @@ defineExpose({
 })
 
 // Hook de ciclo de vida
-onMounted(() => {
-  cargarDatos()
+// onMounted(() => {
+//   cargarDatos()
+// })
+
+onMounted(async () => {
+  await cargarDatos()
+
+  console.log('=== DATOS DEL STORE (TAREA) ===')
+  console.log('solicitudesFondosTarea:', solicitudesStore.solicitudesFondosTarea)
+  console.log('solicitudesViajeTarea:', solicitudesStore.solicitudesViajeTarea)
+  console.log('solicitudesPagoDirectoTarea:', solicitudesStore.solicitudesPagoDirectoTarea)
+  console.log(
+    'rendicionesCuentasExistentesTarea:',
+    solicitudesStore.rendicionesCuentasExistentesTarea,
+  )
+
+  console.log('=== COMPUTED FILTRADOS (TAREA) ===')
+  console.log('solicitudesFondos (Aprobadas):', solicitudesFondos.value)
+  console.log('solicitudesViaje (Aprobadas):', solicitudesViaje.value)
+
+  console.log('=== DISPONIBLES (TAREA) ===')
+  console.log('solicitudesFondosDisponibles:', solicitudesFondosDisponibles.value)
+  console.log('solicitudesViajeDisponibles:', solicitudesViajeDisponibles.value)
+
+  console.log('=== VINCULADAS (TAREA) ===')
+  console.log('idsFondosVinculadas:', [...idsFondosVinculadas.value])
+  console.log('idsViajesVinculadas:', [...idsViajesVinculadas.value])
 })
 </script>
 

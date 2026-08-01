@@ -978,7 +978,9 @@ const rendicionesExistentes = computed(
 //Computed - banderas de carga
 const cargandoFondos = computed(() => solicitudesStore.loadingFondosActividad)
 const cargandoViajes = computed(() => solicitudesStore.loadingViajesActividad)
-const cargando = computed(() => cargandoFondos.value || cargandoViajes.value)
+const cargando = computed(
+  () => cargandoFondos.value || cargandoViajes.value || cargandoPagoDirecto.value,
+)
 const cargandoPagoDirecto = computed(() => solicitudesStore.loadingPagoDirectoActividad)
 
 // IDs de solicitudes ya vinculadas
@@ -1265,30 +1267,6 @@ defineExpose({
 // Reemplaza el onMounted actual con esto:
 onMounted(async () => {
   await cargarDatos()
-
-  console.log('=== DATOS DEL STORE ===')
-  console.log('solicitudesFondosActividad:', solicitudesStore.solicitudesFondosActividad)
-  console.log('solicitudesViajeActividad:', solicitudesStore.solicitudesViajeActividad)
-  console.log('solicitudesPagoDirectoActividad:', solicitudesStore.solicitudesPagoDirectoActividad)
-  console.log(
-    'rendicionesCuentasExistentesActividad:',
-    solicitudesStore.rendicionesCuentasExistentesActividad,
-  )
-
-  console.log('=== COMPUTED FILTRADOS ===')
-  console.log('solicitudesFondos (Aprobadas):', solicitudesFondos.value)
-  console.log('solicitudesViaje (Aprobadas):', solicitudesViaje.value)
-  console.log('solicitudePagoDirecto (aprobadas):', solicitudesPagoDirecto.value)
-
-  console.log('=== DISPONIBLES ===')
-  console.log('solicitudesFondosDisponibles:', solicitudesFondosDisponibles.value)
-  console.log('solicitudesViajeDisponibles:', solicitudesViajeDisponibles.value)
-  console.log('solicitudesPagoDirectoDisponibles', solicitudesPagoDirectoDisponibles)
-
-  console.log('=== VINCULADAS ===')
-  console.log('idsFondosVinculadas:', [...idsFondosVinculadas.value])
-  console.log('idsViajesVinculadas:', [...idsViajesVinculadas.value])
-  console.log('idsPDirecotVinculadas:', [...idsPagoDirectoVinculadas.value])
 })
 </script>
 
