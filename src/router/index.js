@@ -160,8 +160,9 @@ const router = createRouter({
     {
       path: '/planificacion/cronogramas',
       name: 'cronogramas',
+      component: () => import('@/views/planeamiento/GanttView.vue'),
       //component: () => import('@/views/planeamiento/ActividadesGantView.vue'),
-      component: () => import('@/views/planeamiento/GanttSyncfusionView.vue'),
+      // component: () => import('@/views/planeamiento/GanttSyncfusionView.vue'),
       meta: { requiresAuth: true },
     },
     {
@@ -285,10 +286,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     /****************************Monitoreo ************************************************/
+    //Lista de Actividades y proyectos para refactorizar
     {
       path: '/pei/listaactividades/',
       name: 'listadeActividades',
-      component: () => import('@/views/pei/PeiListaActividades.vue'),
+      component: () => import('@/views/pei/PeiListaActividadesV2.vue'),
+      // component: () => import('@/views/pei/PeiListaActividades.vue'),
       meta: { requiresAuth: true },
     },
     {
