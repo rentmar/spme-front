@@ -301,7 +301,7 @@
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
-                          <v-text-field
+                          <!-- <v-text-field
                             v-model="gasto.fuente"
                             variant="outlined"
                             density="compact"
@@ -309,7 +309,34 @@
                             bg-color="blue-lighten-5"
                             placeholder="Financiador"
                             :readonly="soloLectura"
-                          ></v-text-field>
+                          ></v-text-field> -->
+                          <v-select
+                            v-model="gasto.fuente"
+                            :items="procedenciaFondosActividad"
+                            item-title="financiera"
+                            return-object
+                            variant="outlined"
+                            density="compact"
+                            placeholder="Financiador"
+                            bg-color="blue-lighten-5"
+                            :rules="[validarFuente]"
+                          >
+                            <template #item="{ item: option, props: optionProps }">
+                              <v-list-item v-bind="optionProps" density="compact">
+                                <template #title>
+                                  <span class="text-caption">{{ option.raw.financiera }}</span>
+                                </template>
+                                <template #subtitle>
+                                  <span class="text-caption text-medium-emphasis">{{
+                                    option.raw.sigla
+                                  }}</span>
+                                </template>
+                              </v-list-item>
+                            </template>
+                            <template #selection="{ item: selected }">
+                              <span class="text-caption">{{ selected?.raw?.financiera }}</span>
+                            </template>
+                          </v-select>
                         </td>
                         <td class="wide-column">
                           <v-text-field
@@ -666,6 +693,7 @@ import { useRoute, useRouter } from 'vue-router'
 //Composable de impresion
 import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
 
 //Iniciar el store para la sol de viajes
 const storeSolViajes = useSolicitudDeViajesStore()
@@ -727,6 +755,10 @@ const usuario = computed(() => {
     id: userStore.id,
   }
 })
+
+//Iniciar el composable a arbol de presupuesto
+const { procedenciaFondosActividad } = useActividadFormulaioPresupuesto(idActividad)
+
 console.log('ID Usuario:', usuario.value.id)
 
 const baseurl = import.meta.env.VITE_API_BASE

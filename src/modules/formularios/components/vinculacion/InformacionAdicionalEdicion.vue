@@ -270,7 +270,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, ref, computed, watch, nextTick } from 'vue'
 import { formulariosHelpersService } from '../../services/formulariosHelpersService'
 
 // ─── Props ──────────────────────────────────────────────
@@ -319,6 +319,7 @@ const searchLugar = ref('')
 const errorValidacion = ref('')
 const validacionCompleta = ref(false)
 
+// ─── Constantes ─────────────────────────────────────────
 const datosFormaPagoDefault = {
   efectivo: { nombre_efectivo: '', ci_efectivo: '' },
   transferencia: {
@@ -338,90 +339,50 @@ const localFecha = ref(props.fecha || getCurrentDate())
 const localFormaPago = ref(props.formaPago)
 const localDatosFormaPago = ref({ ...datosFormaPagoDefault, ...props.datosFormaPago })
 
-// ─── Sincronización props → local ───────────────────────
-watch(
-  () => props.lugar,
-  (v) => {
-    localLugar.value = v
-  },
-)
-watch(
-  () => props.fecha,
-  (v) => {
-    localFecha.value = v || getCurrentDate()
-  },
-)
-watch(
-  () => props.formaPago,
-  (v) => {
-    localFormaPago.value = v
-  },
-)
-watch(
-  () => props.datosFormaPago,
-  (v) => {
-    localDatosFormaPago.value = { ...datosFormaPagoDefault, ...v }
-  },
-  { deep: true },
-)
+// ─── FUNCIONES (declaradas antes de usarse) ─────────────
 
-// ─── Emitir cambios al padre ────────────────────────────
-watch(localLugar, (v) => emit('update:lugar', v))
-watch(localFecha, (v) => emit('update:fecha', v))
-watch(localFormaPago, (v) => emit('update:formaPago', v))
-watch(localDatosFormaPago, (v) => emit('update:datosFormaPago', v), { deep: true })
+// Función para inicializar combobox desde datos existentes
+const inicializarComboboxDesdeDatos = () => {
+  if (beneficiarios.value.length === 0) return
 
-// ─── Computed ───────────────────────────────────────────
-const lugaresFiltrados = computed(() => {
-  if (!searchLugar.value) return []
-  const filtrados = lugaresSelect.value.filter((l) =>
-    l.toLowerCase().includes(searchLugar.value.toLowerCase()),
-  )
-  return filtrados.length === 0 && searchLugar.value ? [searchLugar.value] : filtrados
-})
+  const datos = localDatosFormaPago.value
 
-const filteredBeneficiariosEfectivo = computed(() => {
-  if (!searchEfectivo.value) return []
-  return beneficiarios.value.filter(
-    (b) =>
-      b.ci.includes(searchEfectivo.value) ||
-      b.nombre.toLowerCase().includes(searchEfectivo.value.toLowerCase()),
-  )
-})
+  // Inicializar CI de Efectivo
+  if (datos.efectivo?.ci_efectivo) {
+    const ben = beneficiarios.value.find((b) => b.ci === datos.efectivo.ci_efectivo)
+    ciSearchEfectivo.value = ben || datos.efectivo.ci_efectivo
+  }
 
-const filteredBeneficiariosTransferencia = computed(() => {
-  if (!searchTransferencia.value) return []
-  return beneficiarios.value.filter(
-    (b) =>
-      b.ci.includes(searchTransferencia.value) ||
-      b.nombre.toLowerCase().includes(searchTransferencia.value.toLowerCase()),
-  )
-})
+  // Inicializar CI de Transferencia
+  if (datos.transferencia?.ci_transferencia) {
+    const ben = beneficiarios.value.find((b) => b.ci === datos.transferencia.ci_transferencia)
+    ciSearchTransferencia.value = ben || datos.transferencia.ci_transferencia
+  }
 
-const filteredBeneficiariosCheque = computed(() => {
-  if (!searchCheque.value) return []
-  return beneficiarios.value.filter(
-    (b) =>
-      b.ci.includes(searchCheque.value) ||
-      b.nombre.toLowerCase().includes(searchCheque.value.toLowerCase()),
-  )
-})
+  // Inicializar CI de Cheque
+  if (datos.cheque?.ci_cheque) {
+    const ben = beneficiarios.value.find((b) => b.ci === datos.cheque.ci_cheque)
+    ciSearchCheque.value = ben || datos.cheque.ci_cheque
+  }
+}
 
-const mostrarFormaEfectivo = computed(
-  () => localFormaPago.value === 1 || localFormaPago.value === '1',
-)
-const mostrarFormaTransferencia = computed(
-  () => localFormaPago.value === 2 || localFormaPago.value === '2',
-)
-const mostrarFormaCheque = computed(
-  () => localFormaPago.value === 3 || localFormaPago.value === '3',
-)
-
-// ─── Validación de estructura de datosFormaPago ─────────
+// Validación de estructura de datosFormaPago
 const validarDatosFormaPago = (datos) => {
   const errores = []
-  if (!datos || typeof datos !== 'object') return 'datosFormaPago debe ser un objeto'
+  if (!datos || typeof datos !== 'object') return ''
 
+  // Verificar que el objeto tenga AL MENOS un sub-objeto con contenido
+  const tieneDatosReales =
+    (datos.efectivo && (datos.efectivo.nombre_efectivo || datos.efectivo.ci_efectivo)) ||
+    (datos.transferencia &&
+      (datos.transferencia.nombre_transferencia || datos.transferencia.ci_transferencia)) ||
+    (datos.cheque && (datos.cheque.nombre_cheque || datos.cheque.ci_cheque)) ||
+    (datos.otros && (datos.otros.nombre_otros || datos.otros.ci_otros))
+
+  // Si no hay datos reales, es la carga inicial, no validar
+  if (!tieneDatosReales) return ''
+
+  // Validar estructura de efectivo
   if (!datos.efectivo || typeof datos.efectivo !== 'object') {
     errores.push('Falta el objeto "efectivo"')
   } else {
@@ -431,6 +392,7 @@ const validarDatosFormaPago = (datos) => {
       errores.push('efectivo.ci_efectivo debe ser string')
   }
 
+  // Validar estructura de transferencia
   if (!datos.transferencia || typeof datos.transferencia !== 'object') {
     errores.push('Falta el objeto "transferencia"')
   } else {
@@ -447,6 +409,7 @@ const validarDatosFormaPago = (datos) => {
     })
   }
 
+  // Validar estructura de cheque
   if (!datos.cheque || typeof datos.cheque !== 'object') {
     errores.push('Falta el objeto "cheque"')
   } else {
@@ -455,6 +418,7 @@ const validarDatosFormaPago = (datos) => {
     if (typeof datos.cheque.ci_cheque !== 'string') errores.push('cheque.ci_cheque debe ser string')
   }
 
+  // Validar estructura de otros
   if (!datos.otros || typeof datos.otros !== 'object') {
     errores.push('Falta el objeto "otros"')
   } else {
@@ -466,19 +430,7 @@ const validarDatosFormaPago = (datos) => {
   return errores.length > 0 ? errores.join('; ') : ''
 }
 
-// Validar al recibir datosFormaPago
-watch(
-  () => props.datosFormaPago,
-  (nuevosDatos) => {
-    if (nuevosDatos && Object.keys(nuevosDatos).length > 0) {
-      const error = validarDatosFormaPago(nuevosDatos)
-      errorValidacion.value = error || ''
-    }
-  },
-  { immediate: true, deep: true },
-)
-
-// ─── Validación de campos completos ─────────────────────
+// Validación de campos completos
 const validarCamposCompletos = () => {
   if (!localLugar.value) return false
   if (!localFormaPago.value) return false
@@ -503,13 +455,14 @@ const validarCamposCompletos = () => {
   return true
 }
 
-watch(
-  [localLugar, localFormaPago, localDatosFormaPago],
-  () => {
-    validacionCompleta.value = validarCamposCompletos()
-  },
-  { deep: true },
-)
+// Utilidad para fecha actual
+function getCurrentDate() {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 // ─── Handlers ───────────────────────────────────────────
 const handleFormaPagoChange = () => {
@@ -582,14 +535,128 @@ const soloNumeros = (e) => {
   if (!/^\d$/.test(char)) e.preventDefault()
 }
 
-// ─── Utilidades ─────────────────────────────────────────
-function getCurrentDate() {
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
+// ─── Computed ───────────────────────────────────────────
+const lugaresFiltrados = computed(() => {
+  if (!searchLugar.value) return []
+  const filtrados = lugaresSelect.value.filter((l) =>
+    l.toLowerCase().includes(searchLugar.value.toLowerCase()),
+  )
+  return filtrados.length === 0 && searchLugar.value ? [searchLugar.value] : filtrados
+})
+
+const filteredBeneficiariosEfectivo = computed(() => {
+  if (!searchEfectivo.value) return []
+  return beneficiarios.value.filter(
+    (b) =>
+      b.ci.includes(searchEfectivo.value) ||
+      b.nombre.toLowerCase().includes(searchEfectivo.value.toLowerCase()),
+  )
+})
+
+const filteredBeneficiariosTransferencia = computed(() => {
+  if (!searchTransferencia.value) return []
+  return beneficiarios.value.filter(
+    (b) =>
+      b.ci.includes(searchTransferencia.value) ||
+      b.nombre.toLowerCase().includes(searchTransferencia.value.toLowerCase()),
+  )
+})
+
+const filteredBeneficiariosCheque = computed(() => {
+  if (!searchCheque.value) return []
+  return beneficiarios.value.filter(
+    (b) =>
+      b.ci.includes(searchCheque.value) ||
+      b.nombre.toLowerCase().includes(searchCheque.value.toLowerCase()),
+  )
+})
+
+const mostrarFormaEfectivo = computed(
+  () => localFormaPago.value === 1 || localFormaPago.value === '1',
+)
+const mostrarFormaTransferencia = computed(
+  () => localFormaPago.value === 2 || localFormaPago.value === '2',
+)
+const mostrarFormaCheque = computed(
+  () => localFormaPago.value === 3 || localFormaPago.value === '3',
+)
+
+// ─── Sincronización props → local ───────────────────────
+watch(
+  () => props.lugar,
+  (v) => {
+    localLugar.value = v
+  },
+)
+watch(
+  () => props.fecha,
+  (v) => {
+    localFecha.value = v || getCurrentDate()
+  },
+)
+watch(
+  () => props.formaPago,
+  (v) => {
+    localFormaPago.value = v
+  },
+)
+watch(
+  () => props.datosFormaPago,
+  (v) => {
+    if (v && Object.keys(v).length > 0) {
+      // SIEMPRE completar con la estructura default
+      localDatosFormaPago.value = {
+        efectivo: { ...datosFormaPagoDefault.efectivo, ...(v.efectivo || {}) },
+        transferencia: { ...datosFormaPagoDefault.transferencia, ...(v.transferencia || {}) },
+        cheque: { ...datosFormaPagoDefault.cheque, ...(v.cheque || {}) },
+        otros: { ...datosFormaPagoDefault.otros, ...(v.otros || {}) },
+      }
+      inicializarComboboxDesdeDatos()
+    }
+  },
+  { deep: true },
+)
+
+// ─── Emitir cambios al padre ────────────────────────────
+watch(localLugar, (v) => emit('update:lugar', v))
+watch(localFecha, (v) => emit('update:fecha', v))
+watch(localFormaPago, (v) => emit('update:formaPago', v))
+watch(localDatosFormaPago, (v) => emit('update:datosFormaPago', v), { deep: true })
+
+// ─── Validación de estructura ───────────────────────────
+watch(
+  () => props.datosFormaPago,
+  (nuevosDatos) => {
+    if (!nuevosDatos || Object.keys(nuevosDatos).length === 0) {
+      errorValidacion.value = ''
+      return
+    }
+
+    // Completar el objeto para validación
+    const datosCompletos = {
+      efectivo: { ...datosFormaPagoDefault.efectivo, ...(nuevosDatos.efectivo || {}) },
+      transferencia: {
+        ...datosFormaPagoDefault.transferencia,
+        ...(nuevosDatos.transferencia || {}),
+      },
+      cheque: { ...datosFormaPagoDefault.cheque, ...(nuevosDatos.cheque || {}) },
+      otros: { ...datosFormaPagoDefault.otros, ...(nuevosDatos.otros || {}) },
+    }
+
+    const error = validarDatosFormaPago(datosCompletos)
+    errorValidacion.value = error || ''
+  },
+  { immediate: true, deep: true },
+)
+
+// ─── Validación de completitud ──────────────────────────
+watch(
+  [localLugar, localFormaPago, localDatosFormaPago],
+  () => {
+    validacionCompleta.value = validarCamposCompletos()
+  },
+  { deep: true },
+)
 
 // ─── Exponer al padre ───────────────────────────────────
 defineExpose({
@@ -621,6 +688,10 @@ const cargarInformacion = async () => {
     ])
     beneficiarios.value = benef.todos
     lugaresSelect.value = lugar.lugares_unicos
+
+    // Después de cargar los beneficiarios, inicializar los combobox
+    await nextTick()
+    inicializarComboboxDesdeDatos()
   } catch (error) {
     console.error('Error al cargar informacion', error)
   }

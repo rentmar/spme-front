@@ -295,15 +295,33 @@
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
-                          <v-text-field
+                          <v-select
                             v-model="gasto.fuente"
+                            :items="procedenciaFondosActividad"
+                            item-title="financiera"
+                            return-object
                             variant="outlined"
                             density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
                             placeholder="Financiador"
-                            :readonly="soloLectura"
-                          ></v-text-field>
+                            bg-color="blue-lighten-5"
+                            :rules="[validarFuente]"
+                          >
+                            <template #item="{ item: option, props: optionProps }">
+                              <v-list-item v-bind="optionProps" density="compact">
+                                <template #title>
+                                  <span class="text-caption">{{ option.raw.financiera }}</span>
+                                </template>
+                                <template #subtitle>
+                                  <span class="text-caption text-medium-emphasis">{{
+                                    option.raw.sigla
+                                  }}</span>
+                                </template>
+                              </v-list-item>
+                            </template>
+                            <template #selection="{ item: selected }">
+                              <span class="text-caption">{{ selected?.raw?.financiera }}</span>
+                            </template>
+                          </v-select>
                         </td>
                         <td class="wide-column">
                           <v-text-field
@@ -349,7 +367,7 @@
                 <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 4: Información Adicional -->
-                <div class="form-section mb-6">
+                <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-information</v-icon>
                     Información Adicional
@@ -364,7 +382,7 @@
                         bg-color="blue-lighten-5"
                         :readonly="soloLectura"
                       ></v-text-field>
-                      <!-- <v-select
+                       <v-select
                         v-model="formData.forma_pago"
                         :items="formasPagoOptions"
                         item-title="formaPago"
@@ -372,7 +390,7 @@
                         label="Forma de Pago"
                         variant="outlined"
                         readonly
-                      ></v-select> -->
+                      ></v-select>
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-text-field
@@ -494,7 +512,7 @@
                       ></InformacionAdicionalEdicion>
                     </v-col>
                   </v-row>
-                </div>
+                </div> -->
 
                 <!-- Sección 5: Firmas -->
                 <!-- <div class="form-section mb-6">
@@ -656,6 +674,7 @@
   <!-- <pre>{{ formData.detalle_destino_fondos }}</pre> -->
   <!-- {{ '***************************************B' }}
   <pre>{{ datosFormulario1 }}</pre> -->
+  <!-- <pre>{{ procedenciaFondosActividad }}</pre> -->
 </template>
 
 <script setup>
@@ -676,6 +695,8 @@ import InformacionAdicionalEdicion from '@/modules/formularios/components/vincul
 import { useSolicitudFondosStore } from '@/modules/formularios/store/useSolicitudDeFondosStore'
 import RevisorSolicitudFondos from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudFondos.vue'
 import RedactorSolicitudFondos from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/RedactorSolicitudFondos.vue'
+import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
+
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
 // Inciar el store
@@ -728,6 +749,8 @@ console.log('ID Solicitud:', idSolicitud)
 console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
 //console.log('ID aaaaaaa', JSON.stringify(route,null,2))
+
+const { procedenciaFondosActividad } = useActividadFormulaioPresupuesto(idActividad)
 
 const userStore = useUserStore()
 const usuario = computed(() => {
@@ -2222,5 +2245,106 @@ onMounted(async () => {
 .compact-field {
   font-size: 14px;
   max-width: 100px;
+}
+
+/* Arreglar el select de fuente en la tabla */
+:deep(.v-select .v-field__input) {
+  min-height: auto !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+:deep(.v-select .v-select__selection-text) {
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+:deep(.v-select.compact-select .v-field) {
+  min-height: 40px !important;
+}
+
+:deep(.v-select.compact-select .v-field__input) {
+  padding: 4px 8px !important;
+}
+
+:deep(.v-select .v-list-item-title) {
+  font-size: 13px !important;
+  white-space: normal !important;
+}
+
+:deep(.v-select .v-list-item-subtitle) {
+  font-size: 11px !important;
+}
+/* Mejorar el aspecto de los selects en la tabla */
+.users-table :deep(td) {
+  vertical-align: middle !important;
+}
+
+.users-table :deep(.v-select) {
+  min-width: 120px;
+}
+
+.users-table :deep(.v-field__outline) {
+  --v-field-border-opacity: 0.3;
+}
+
+/* Ajuste específico para la columna de fuente */
+.narrow-column {
+  width: 15%;
+  min-width: 130px;
+}
+
+/* Asegurar que el texto en el select no se corte */
+:deep(.v-select__selection) {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+}
+/* Altura uniforme para inputs y selects en la tabla */
+.users-table :deep(.v-field) {
+  min-height: 40px !important;
+  max-height: 40px !important;
+}
+
+.users-table :deep(.v-field__input) {
+  min-height: 40px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: flex;
+  align-items: center;
+}
+
+.users-table :deep(.v-select .v-field__input) {
+  min-height: 40px !important;
+  padding: 0 8px !important;
+}
+
+.users-table :deep(.v-text-field .v-field__input) {
+  min-height: 40px !important;
+  padding: 0 8px !important;
+}
+
+/* Ajustar el texto del select */
+:deep(.v-select__selection-text) {
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Alinear verticalmente el select con los text-fields */
+.users-table :deep(.v-select) {
+  position: relative;
+  top: 10px; /* Baja el select completo - ajusta este valor */
+}
+
+.users-table :deep(.v-select .v-field__input) {
+  padding-top: 2px !important; /* Ajuste fino del texto */
+}
+
+.users-table :deep(.v-select .v-field) {
+  margin-top: 0 !important;
 }
 </style>

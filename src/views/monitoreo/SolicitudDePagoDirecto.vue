@@ -932,9 +932,10 @@ const validarPartida = (v) => {
 
 const validarFuente = (v) => {
   if (!v) return 'La fuente es requerida'
+  if (typeof v === 'object' && Object.keys(v).length === 0) return 'La fuente es requerida'
+  if (typeof v === 'string' && v.trim() === '') return 'La fuente es requerida'
   return true
 }
-
 const validarDescripcionGasto = (v) => {
   if (!v || v.trim() === '') return 'La descripción es requerida'
   return true
@@ -978,7 +979,7 @@ const formData = ref({
   id_tarea: 0,
   id_usuario: 0,
   // Resto de campos del formulario
-  detalle_destino_fondos: [{ partida: '', fuente: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [{ partida: '', fuente: null, descripcion_gasto: '', monto: 0 }],
   monto_solicitado: 0,
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
@@ -1322,7 +1323,7 @@ function addGasto() {
   //esta funcion adiciona una fila de detalle de gasto al vista
   formData.value.detalle_destino_fondos.push({
     partida: '',
-    fuente: '',
+    fuente: null,
     descripcion_gasto: '',
     monto: 0,
   })
@@ -1507,7 +1508,7 @@ function resetForm() {
   Object.assign(formData.value, {
     descripcion_actividad: '',
     objetivo_actividad: '',
-    detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+    detalle_destino_fondos: [{ partida: '', fuente: null, descripcion_gasto: '', monto: 0 }],
     forma_pago: '',
     lugar_solicitud: '',
     fecha_solicitud: getCurrentDate(),
@@ -1866,6 +1867,7 @@ const confirmarGuardarDatosForm = async () => {
       detalle_destino_fondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida_sf: gasto.partida,
+          fuente: gasto.fuente,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
@@ -1936,6 +1938,7 @@ const confirmarEnvioRevision = async (datosValidadores) => {
       detalle_destino_fondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida_sf: gasto.partida,
+          fuente: gasto.fuente,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),

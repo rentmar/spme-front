@@ -1,364 +1,183 @@
 <template>
-  <div style="padding: 20px; height: 600px">
-    <!-- 🔍 BUSCADOR + BOTONES -->
-    <div
-      style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap"
-    >
+  <v-container fluid class="pa-4" style="height: 600px">
+    <!-- 🔍 BARRA DE HERRAMIENTAS -->
+    <v-row class="mb-3 align-center">
       <!-- Buscador -->
-      <div style="flex: 1; max-width: 400px">
-        <input
+      <v-col cols="12" md="4">
+        <v-text-field
           v-model="searchQuery"
-          type="text"
-          placeholder="🔍 Buscar proyecto, actividad o tarea..."
-          style="
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-          "
+          prepend-inner-icon="mdi-magnify"
+          placeholder="Buscar proyecto, actividad o tarea..."
+          variant="outlined"
+          density="compact"
+          hide-details
+          clearable
+          @click:clear="clearSearch"
+          bg-color="white"
         />
-      </div>
+      </v-col>
 
       <!-- Contador -->
-      <div style="font-size: 14px; color: #666">{{ visibleCount }} tareas visibles</div>
+      <v-col cols="auto" class="d-none d-md-flex">
+        <v-chip variant="tonal" color="primary" size="small" label>
+          {{ visibleCount }} tareas visibles
+        </v-chip>
+      </v-col>
+
+      <v-spacer />
 
       <!-- Botones Expandir/Colapsar -->
-      <button
-        @click="expandAll"
-        style="
-          padding: 8px 16px;
-          cursor: pointer;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          background: #4caf50;
-          color: white;
-          font-weight: 500;
-        "
-      >
-        📂 Expandir
-      </button>
-      <button
-        @click="collapseAll"
-        style="
-          padding: 8px 16px;
-          cursor: pointer;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          background: #ff9800;
-          color: white;
-          font-weight: 500;
-        "
-      >
-        📁 Colapsar
-      </button>
-      <button
-        @click="clearSearch"
-        style="
-          padding: 8px 16px;
-          cursor: pointer;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          background: #f5f5f5;
-        "
-      >
-        ✕ Limpiar
-      </button>
+      <v-col cols="auto">
+        <v-btn-group density="compact" variant="elevated" divided>
+          <v-btn
+            color="success"
+            prepend-icon="mdi-arrow-expand-all"
+            @click="expandAll"
+            text="Expandir"
+          />
+          <v-btn
+            color="warning"
+            prepend-icon="mdi-arrow-collapse-all"
+            @click="collapseAll"
+            text="Colapsar"
+          />
+        </v-btn-group>
+      </v-col>
 
-      <!-- Separador -->
-      <div style="width: 1px; height: 30px; background: #ddd"></div>
-
-      <!-- 🔎 Botones de Escala -->
-      <div style="display: flex; gap: 5px; align-items: center">
-        <span style="font-size: 13px; color: #666; font-weight: 500; margin-right: 5px"
-          >Escala:</span
+      <!-- Escala -->
+      <v-col cols="auto" class="ml-2">
+        <v-btn-toggle
+          v-model="currentView"
+          density="compact"
+          divided
+          mandatory
+          @update:model-value="setView"
         >
-        <button
-          v-for="view in views"
-          :key="view.value"
-          @click="setView(view.value)"
-          :style="{
-            padding: '6px 14px',
-            cursor: 'pointer',
-            border: currentView === view.value ? '2px solid #4CAF50' : '1px solid #ddd',
-            borderRadius: '4px',
-            background: currentView === view.value ? '#4CAF50' : '#f5f5f5',
-            color: currentView === view.value ? 'white' : '#333',
-            fontWeight: currentView === view.value ? '600' : '400',
-            transition: 'all 0.2s',
-          }"
-        >
-          {{ view.label }}
-        </button>
-      </div>
-    </div>
+          <v-btn
+            v-for="view in views"
+            :key="view.value"
+            :value="view.value"
+            :prepend-icon="view.icon"
+            size="small"
+          >
+            {{ view.label }}
+          </v-btn>
+        </v-btn-toggle>
+      </v-col>
+    </v-row>
 
     <!-- 📊 Gantt -->
-    <div
-      ref="ganttContainer"
-      style="height: 400px; border: 1px solid #eee; border-radius: 4px"
-    ></div>
+    <v-card variant="outlined" class="gantt-card">
+      <div ref="ganttContainer" style="height: 400px"></div>
+    </v-card>
 
-    <!-- ========================================== -->
     <!-- 📋 MODAL DE INFORMACIÓN -->
-    <!-- ========================================== -->
-    <div
-      v-if="showModal"
-      @click.self="closeModal"
-      style="
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-      "
-    >
-      <div
-        style="
-          background: white;
-          border-radius: 12px;
-          padding: 30px;
-          max-width: 500px;
-          width: 90%;
-          max-height: 80vh;
-          overflow-y: auto;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-          animation: fadeIn 0.3s ease;
-        "
-      >
-        <!-- Cabecera -->
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-          "
-        >
-          <h3 style="margin: 0; color: #333">📋 Detalles de la Tarea</h3>
-          <button
-            @click="closeModal"
-            style="
-              background: none;
-              border: none;
-              font-size: 24px;
-              cursor: pointer;
-              color: #999;
-              padding: 0 8px;
-            "
-          >
-            ✕
-          </button>
-        </div>
+    <v-dialog v-model="showModal" max-width="500" transition="dialog-bottom-transition">
+      <v-card rounded="lg">
+        <v-toolbar :color="getTypeColor(selectedTask?.type || getTaskType(selectedTask))" dark>
+          <v-toolbar-title class="text-subtitle-1 font-weight-bold">
+            📋 Detalles de la Tarea
+          </v-toolbar-title>
+          <v-spacer />
+          <v-btn icon="mdi-close" @click="closeModal" variant="text" />
+        </v-toolbar>
 
-        <!-- Información -->
-        <div v-if="selectedTask" style="display: flex; flex-direction: column; gap: 12px">
-          <!-- Tipo con color -->
-          <div
-            style="
-              display: inline-block;
-              padding: 4px 12px;
-              border-radius: 20px;
-              font-size: 12px;
-              font-weight: 600;
-              color: white;
-              align-self: flex-start;
-            "
-            :style="{
-              background: getTypeColor(selectedTask.type || getTaskType(selectedTask)),
-            }"
-          >
-            {{ getTypeLabel(selectedTask.type || getTaskType(selectedTask)) }}
-          </div>
-
-          <!-- Nombre -->
-          <div>
-            <label
-              style="
-                font-size: 12px;
-                color: #999;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-              "
-              >Nombre</label
+        <v-card-text class="pa-4" v-if="selectedTask">
+          <div class="d-flex flex-column gap-3">
+            <!-- Tipo -->
+            <v-chip
+              :color="getTypeColor(selectedTask.type || getTaskType(selectedTask))"
+              class="align-self-start"
+              size="small"
+              label
             >
-            <p style="margin: 4px 0 0 0; font-size: 18px; font-weight: 600; color: #222">
-              {{ selectedTask.text }}
-            </p>
-          </div>
+              {{ getTypeLabel(selectedTask.type || getTaskType(selectedTask)) }}
+            </v-chip>
 
-          <!-- ID -->
-          <div>
-            <label
-              style="
-                font-size: 12px;
-                color: #999;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-              "
-              >ID</label
-            >
-            <p style="margin: 4px 0 0 0; font-size: 14px; color: #555">#{{ selectedTask.id }}</p>
-          </div>
-
-          <!-- Fechas -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px">
+            <!-- Nombre -->
             <div>
-              <label
-                style="
-                  font-size: 12px;
-                  color: #999;
-                  font-weight: 600;
-                  text-transform: uppercase;
-                  letter-spacing: 0.5px;
-                "
-                >📅 Inicio</label
-              >
-              <p style="margin: 4px 0 0 0; font-size: 14px; color: #555">
-                {{ formatDate(selectedTask.start_date) }}
-              </p>
+              <div class="text-caption text-grey font-weight-bold text-uppercase">Nombre</div>
+              <div class="text-h6 font-weight-bold mt-1">{{ selectedTask.text }}</div>
             </div>
+
+            <!-- ID -->
             <div>
-              <label
-                style="
-                  font-size: 12px;
-                  color: #999;
-                  font-weight: 600;
-                  text-transform: uppercase;
-                  letter-spacing: 0.5px;
-                "
-                >📅 Fin</label
-              >
-              <p style="margin: 4px 0 0 0; font-size: 14px; color: #555">
-                {{ formatDate(selectedTask.end_date || getEndDate(selectedTask)) }}
-              </p>
+              <div class="text-caption text-grey font-weight-bold text-uppercase">ID</div>
+              <div class="text-body-1 mt-1">#{{ selectedTask.id }}</div>
+            </div>
+
+            <!-- Fechas -->
+            <v-row>
+              <v-col cols="6">
+                <div class="text-caption text-grey font-weight-bold text-uppercase">📅 Inicio</div>
+                <div class="text-body-2 mt-1">{{ formatDate(selectedTask.start_date) }}</div>
+              </v-col>
+              <v-col cols="6">
+                <div class="text-caption text-grey font-weight-bold text-uppercase">📅 Fin</div>
+                <div class="text-body-2 mt-1">
+                  {{ formatDate(selectedTask.end_date || getEndDate(selectedTask)) }}
+                </div>
+              </v-col>
+            </v-row>
+
+            <!-- Duración y Progreso -->
+            <v-row>
+              <v-col cols="6">
+                <div class="text-caption text-grey font-weight-bold text-uppercase">
+                  ⏱️ Duración
+                </div>
+                <div class="text-body-2 mt-1">{{ selectedTask.duration || 0 }} días</div>
+              </v-col>
+              <v-col cols="6">
+                <div class="text-caption text-grey font-weight-bold text-uppercase">
+                  📊 Progreso
+                </div>
+                <div class="text-body-2 mt-1">
+                  {{ Math.round((selectedTask.progress || 0) * 100) }}%
+                </div>
+              </v-col>
+            </v-row>
+
+            <!-- Barra de progreso -->
+            <v-progress-linear
+              :model-value="Math.round((selectedTask.progress || 0) * 100)"
+              color="success"
+              height="10"
+              rounded
+            />
+
+            <!-- Padre -->
+            <div v-if="selectedTask.parent !== 0">
+              <div class="text-caption text-grey font-weight-bold text-uppercase">
+                👆 Tarea Padre
+              </div>
+              <div class="text-body-2 mt-1">{{ getParentName(selectedTask.parent) || 'N/A' }}</div>
+            </div>
+
+            <!-- Subtareas -->
+            <div v-if="getChildren(selectedTask.id).length > 0">
+              <div class="text-caption text-grey font-weight-bold text-uppercase">
+                📂 Subtareas ({{ getChildren(selectedTask.id).length }})
+              </div>
+              <v-list density="compact" class="mt-1 pa-0">
+                <v-list-item
+                  v-for="child in getChildren(selectedTask.id)"
+                  :key="child.id"
+                  :title="child.text"
+                  class="text-body-2"
+                />
+              </v-list>
             </div>
           </div>
+        </v-card-text>
 
-          <!-- Duración y Progreso -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px">
-            <div>
-              <label
-                style="
-                  font-size: 12px;
-                  color: #999;
-                  font-weight: 600;
-                  text-transform: uppercase;
-                  letter-spacing: 0.5px;
-                "
-                >⏱️ Duración</label
-              >
-              <p style="margin: 4px 0 0 0; font-size: 14px; color: #555">
-                {{ selectedTask.duration || 0 }} días
-              </p>
-            </div>
-            <div>
-              <label
-                style="
-                  font-size: 12px;
-                  color: #999;
-                  font-weight: 600;
-                  text-transform: uppercase;
-                  letter-spacing: 0.5px;
-                "
-                >📊 Progreso</label
-              >
-              <p style="margin: 4px 0 0 0; font-size: 14px; color: #555">
-                {{ Math.round((selectedTask.progress || 0) * 100) }}%
-              </p>
-            </div>
-          </div>
-
-          <!-- Barra de progreso visual -->
-          <div style="margin-top: 5px">
-            <div
-              style="
-                width: 100%;
-                height: 8px;
-                background: #f0f0f0;
-                border-radius: 4px;
-                overflow: hidden;
-              "
-            >
-              <div
-                style="
-                  height: 100%;
-                  background: linear-gradient(90deg, #4caf50, #8bc34a);
-                  border-radius: 4px;
-                  transition: width 0.3s ease;
-                "
-                :style="{ width: Math.round((selectedTask.progress || 0) * 100) + '%' }"
-              ></div>
-            </div>
-          </div>
-
-          <!-- Padre (si tiene) -->
-          <div v-if="selectedTask.parent !== 0">
-            <label
-              style="
-                font-size: 12px;
-                color: #999;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-              "
-              >👆 Tarea Padre</label
-            >
-            <p style="margin: 4px 0 0 0; font-size: 14px; color: #555">
-              {{ getParentName(selectedTask.parent) || 'N/A' }}
-            </p>
-          </div>
-
-          <!-- Subtareas (si tiene) -->
-          <div v-if="getChildren(selectedTask.id).length > 0">
-            <label
-              style="
-                font-size: 12px;
-                color: #999;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-              "
-              >📂 Subtareas ({{ getChildren(selectedTask.id).length }})</label
-            >
-            <ul style="margin: 4px 0 0 0; padding-left: 20px; color: #555; font-size: 14px">
-              <li v-for="child in getChildren(selectedTask.id)" :key="child.id">
-                {{ child.text }}
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Botón cerrar -->
-        <div style="margin-top: 20px; text-align: right">
-          <button
-            @click="closeModal"
-            style="
-              padding: 10px 24px;
-              background: #4caf50;
-              color: white;
-              border: none;
-              border-radius: 6px;
-              cursor: pointer;
-              font-size: 14px;
-              font-weight: 500;
-            "
-          >
-            Cerrar
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn color="success" variant="elevated" @click="closeModal" text="Cerrar" />
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>
 
 <script setup>
@@ -373,24 +192,21 @@ const ganttContainer = ref(null)
 const searchQuery = ref('')
 let ganttInitialized = false
 
-// Modal
 const showModal = ref(false)
 const selectedTask = ref(null)
 
-// Escala
 const currentView = ref('week')
 const views = [
-  { label: '📅 Día', value: 'day' },
-  { label: '📅 Semana', value: 'week' },
-  { label: '📅 Mes', value: 'month' },
-  { label: '📅 Año', value: 'year' },
+  { label: 'Día', value: 'day', icon: 'mdi-calendar-day' },
+  { label: 'Semana', value: 'week', icon: 'mdi-calendar-week' },
+  { label: 'Mes', value: 'month', icon: 'mdi-calendar-month' },
+  { label: 'Año', value: 'year', icon: 'mdi-calendar' },
 ]
 
 // ============================================
 // 📊 DATOS
 // ============================================
 const allTasks = [
-  // PROYECTOS (Nivel 0)
   {
     id: 1,
     text: '🏗️ Proyecto: Edificio Corporativo',
@@ -409,8 +225,6 @@ const allTasks = [
     parent: 0,
     open: false,
   },
-
-  // ACTIVIDADES (Nivel 1)
   {
     id: 2,
     text: '  📋 Planificación',
@@ -456,8 +270,6 @@ const allTasks = [
     parent: 100,
     open: true,
   },
-
-  // TAREAS (Nivel 2)
   {
     id: 5,
     text: '    📝 Requisitos y Alcance',
@@ -571,8 +383,8 @@ const allTasks = [
 // ============================================
 // 🛠️ FUNCIONES DE AYUDA
 // ============================================
-
 const getTaskType = (task) => {
+  if (!task) return 'task'
   if (task.parent === 0) return 'project'
   const parent = allTasks.find((t) => t.id === task.parent)
   if (parent && parent.parent === 0) return 'activity'
@@ -585,21 +397,18 @@ const getTypeLabel = (type) => {
 }
 
 const getTypeColor = (type) => {
-  const colors = { project: '#4CAF50', activity: '#2196F3', task: '#FF9800' }
-  return colors[type] || '#999'
+  const colors = { project: 'green', activity: 'blue', task: 'orange' }
+  return colors[type] || 'grey'
 }
 
 const formatDate = (date) => {
   if (!date) return 'N/A'
   const d = new Date(date)
-  return d.toLocaleDateString('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
+  return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 const getEndDate = (task) => {
+  if (!task) return 'N/A'
   if (task.end_date) return task.end_date
   const start = new Date(task.start_date)
   start.setDate(start.getDate() + (task.duration || 0))
@@ -635,19 +444,14 @@ const getAncestors = (taskId) => {
 
 const filteredTasks = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
-
-  if (!query) {
-    return allTasks
-  }
+  if (!query) return allTasks
 
   const matched = allTasks.filter((task) => task.text.toLowerCase().includes(query))
-
   const parentIds = new Set()
   matched.forEach((task) => {
     const ancestors = getAncestors(task.id)
     ancestors.forEach((a) => parentIds.add(a.id))
   })
-
   const idsToShow = new Set()
   matched.forEach((t) => idsToShow.add(t.id))
   parentIds.forEach((id) => idsToShow.add(id))
@@ -660,31 +464,18 @@ const visibleCount = computed(() => filteredTasks.value.length)
 // ============================================
 // 🎯 BOTONES
 // ============================================
-
 const expandAll = () => {
   if (!ganttInitialized) return
-
   const allTasksGantt = gantt.getTaskByTime()
   const projects = allTasksGantt.filter((task) => task.parent === 0)
-
-  projects.forEach((project) => {
-    gantt.open(project.id)
-  })
-
-  console.log('📂 Expandido todo')
+  projects.forEach((project) => gantt.open(project.id))
 }
 
 const collapseAll = () => {
   if (!ganttInitialized) return
-
   const allTasksGantt = gantt.getTaskByTime()
   const projects = allTasksGantt.filter((task) => task.parent === 0)
-
-  projects.forEach((project) => {
-    gantt.close(project.id)
-  })
-
-  console.log('📁 Colapsado todo')
+  projects.forEach((project) => gantt.close(project.id))
 }
 
 const clearSearch = () => {
@@ -694,14 +485,10 @@ const clearSearch = () => {
 // ============================================
 // 🔎 FUNCIONES DE ESCALA
 // ============================================
-
 const setView = (view) => {
   if (!ganttInitialized) return
 
-  currentView.value = view
-
   let scales = []
-
   switch (view) {
     case 'day':
       scales = [
@@ -736,19 +523,15 @@ const setView = (view) => {
 
   gantt.config.scales = scales
   gantt.render()
-
-  console.log(`🔎 Escala cambiada a: ${view}`)
 }
 
 // ============================================
 // 📋 MODAL
 // ============================================
-
 const openModal = (task) => {
   const fullTask = allTasks.find((t) => t.id === task.id) || task
   selectedTask.value = fullTask
   showModal.value = true
-  console.log('📋 Modal abierto para:', fullTask.text)
 }
 
 const closeModal = () => {
@@ -775,9 +558,97 @@ const updateGantt = () => {
 
   gantt.clearAll()
   gantt.parse(data)
-
-  // Restaurar la vista después de actualizar
   setView(currentView.value)
+}
+
+// ============================================
+// 🌐 CONFIGURAR IDIOMA ESPAÑOL
+// ============================================
+const setSpanishLocale = () => {
+  gantt.locale = {
+    date: {
+      month_full: [
+        'Enero',
+        'Febrero',
+        'Marzo',
+        'Abril',
+        'Mayo',
+        'Junio',
+        'Julio',
+        'Agosto',
+        'Septiembre',
+        'Octubre',
+        'Noviembre',
+        'Diciembre',
+      ],
+      month_short: [
+        'Ene',
+        'Feb',
+        'Mar',
+        'Abr',
+        'May',
+        'Jun',
+        'Jul',
+        'Ago',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dic',
+      ],
+      day_full: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+      day_short: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+    },
+    labels: {
+      hour: 'Hora',
+      hours: 'Horas',
+      day: 'Día',
+      days: 'Días',
+      week: 'Semana',
+      weeks: 'Semanas',
+      month: 'Mes',
+      months: 'Meses',
+      year: 'Año',
+      years: 'Años',
+      task: 'Tarea',
+      start_date: 'Fecha de inicio',
+      duration: 'Duración',
+      progress: 'Progreso',
+      text: 'Texto',
+      details: 'Detalles',
+      resource: 'Recurso',
+      resources: 'Recursos',
+      link: 'Enlace',
+      links: 'Enlaces',
+      add_link: 'Añadir enlace',
+      remove_link: 'Eliminar enlace',
+      no_links: 'Sin enlaces',
+      no_data: 'Sin datos',
+      no_resources: 'Sin recursos',
+      save: 'Guardar',
+      cancel: 'Cancelar',
+      delete: 'Eliminar',
+      add: 'Añadir',
+      edit: 'Editar',
+      close: 'Cerrar',
+      confirm: 'Confirmar',
+      delete_task: 'Eliminar tarea',
+      delete_link: 'Eliminar enlace',
+      delete_item: 'Eliminar elemento',
+      day_view: 'Día',
+      week_view: 'Semana',
+      month_view: 'Mes',
+      year_view: 'Año',
+      Unit: 'Unidad',
+      Value: 'Valor',
+      'Add task': 'Añadir tarea',
+      'Add resource': 'Añadir recurso',
+      'Remove resource': 'Eliminar recurso',
+      'No resources assigned': 'Sin recursos asignados',
+    },
+  }
+  gantt.config.date_format = '%d/%m/%Y'
+  gantt.config.xml_date = '%d/%m/%Y'
+  gantt.config.week_start = 1
 }
 
 // ============================================
@@ -786,15 +657,13 @@ const updateGantt = () => {
 const initGantt = () => {
   if (!ganttContainer.value) return
 
-  gantt.config.xml_date = '%Y-%m-%d'
+  setSpanishLocale()
 
-  // Escala inicial: Semana
   gantt.config.scales = [
     { unit: 'week', step: 1, format: 'Semana %W' },
     { unit: 'day', step: 1, format: '%d %M' },
   ]
 
-  // Solo visual
   gantt.config.readonly = true
   gantt.config.drag_project = false
   gantt.config.drag_progress = false
@@ -806,36 +675,16 @@ const initGantt = () => {
   gantt.config.show_editor = false
   gantt.config.show_links = false
 
-  gantt.locale.labels = {
-    ...gantt.locale.labels,
-    month: 'Mes',
-    week: 'Semana',
-    day: 'Día',
-    hour: 'Hora',
-    minute: 'Minuto',
-  }
-
   gantt.init(ganttContainer.value)
   ganttInitialized = true
 
-  const data = {
-    data: allTasks,
-    links: [],
-  }
+  const data = { data: allTasks, links: [] }
   gantt.parse(data)
 
-  // ==========================================
-  // 👆 EVENTO - SOLO PARA CLIC EN LA BARRA
-  // ==========================================
-
-  // ✅ Evento principal: clic en la barra
   gantt.attachEvent('onTaskClick', (id, e) => {
     const task = gantt.getTask(id)
-
-    // 🔍 Verificar si el clic fue en la barra (lado derecho)
     const target = e.target || e.srcElement
 
-    // ✅ Detectar si es un icono de colapso/expansión
     const isCollapseIcon =
       target.closest('.gantt_tree_icon') ||
       target.closest('.gantt_folder') ||
@@ -846,60 +695,27 @@ const initGantt = () => {
       target.closest('.gantt_tree_content') ||
       target.closest('.gantt_row')
 
-    // ✅ Detectar si es la barra
     const isTaskBar =
       target.closest('.gantt_task_content') ||
       target.closest('.gantt_task') ||
       target.classList.contains('gantt_task_content') ||
       target.classList.contains('gantt_task')
 
-    // 🔥 Si es icono de colapso, NO abrir modal y permitir acción
-    if (isCollapseIcon) {
-      // Dejar que DHTMLX maneje el colapso/expansión
-      return true // Retorna true para permitir la acción por defecto
-    }
-
-    // Si es la barra, abrir modal
+    if (isCollapseIcon) return true
     if (isTaskBar && task) {
       openModal(task)
-      return false // Bloquear acciones predeterminadas
+      return false
     }
-
-    // Otros clics (texto, etc.) - permitir acción por defecto
     return true
   })
 
-  // Bloquear doble clic
-  gantt.attachEvent('onTaskDblClick', () => {
-    return false
-  })
-
-  // Bloquear edición
-  gantt.attachEvent('onBeforeTaskAdd', () => {
-    return false
-  })
-
-  gantt.attachEvent('onBeforeTaskDelete', () => {
-    return false
-  })
-
-  gantt.attachEvent('onBeforeTaskUpdate', () => {
-    return false
-  })
-
-  gantt.attachEvent('onBeforeLinkAdd', () => {
-    return false
-  })
-
-  gantt.attachEvent('onBeforeLinkDelete', () => {
-    return false
-  })
-
-  gantt.attachEvent('onBeforeTaskDrag', () => {
-    return false
-  })
-
-  console.log('✅ Gantt visual - Colapso individual funcionando + Modal en barras')
+  gantt.attachEvent('onTaskDblClick', () => false)
+  gantt.attachEvent('onBeforeTaskAdd', () => false)
+  gantt.attachEvent('onBeforeTaskDelete', () => false)
+  gantt.attachEvent('onBeforeTaskUpdate', () => false)
+  gantt.attachEvent('onBeforeLinkAdd', () => false)
+  gantt.attachEvent('onBeforeLinkDelete', () => false)
+  gantt.attachEvent('onBeforeTaskDrag', () => false)
 }
 
 // ============================================
@@ -908,9 +724,7 @@ const initGantt = () => {
 watch(
   filteredTasks,
   () => {
-    if (ganttInitialized) {
-      updateGantt()
-    }
+    if (ganttInitialized) updateGantt()
   },
   { deep: true },
 )
@@ -919,36 +733,17 @@ watch(
 // 🚀 MONTAJE
 // ============================================
 onMounted(() => {
-  nextTick(() => {
-    initGantt()
-  })
+  nextTick(() => initGantt())
 })
 </script>
 
 <style scoped>
-input:focus {
-  outline: none;
-  border-color: #4caf50;
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+.gantt-card {
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-}
-
-button:active {
-  transform: scale(0.98);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.gap-3 {
+  gap: 12px;
 }
 </style>

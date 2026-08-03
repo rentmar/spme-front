@@ -540,7 +540,7 @@
             </div> -->
 
             <!-- Botones de acción -->
-            <div class="d-flex justify-end gap-3 mt-8">
+            <!-- <div class="d-flex justify-end gap-3 mt-8">
               <v-btn
                 color="error"
                 variant="outlined"
@@ -569,7 +569,7 @@
               >
                 Enviar Rendicion
               </v-btn>
-            </div>
+            </div> -->
           </v-form>
         </v-card-text>
       </v-card>

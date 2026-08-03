@@ -904,7 +904,9 @@ const validarPartida = (v) => {
 }
 
 const validarFuente = (v) => {
-  if (!v) return 'Fuente requerida'
+  if (!v) return 'La fuente es requerida'
+  if (typeof v === 'object' && Object.keys(v).length === 0) return 'La fuente es requerida'
+  if (typeof v === 'string' && v.trim() === '') return 'La fuente es requerida'
   return true
 }
 
@@ -959,7 +961,7 @@ const formData = ref({
   id_usuario: 0,
   // Resto de campos del formulario
   detalle_destino_fondos: [
-    { fecha: '', partida: '', fuente: '', factura_recibo: '', descripcion_gasto: '', monto: 0 },
+    { fecha: '', partida: '', fuente: null, factura_recibo: '', descripcion_gasto: '', monto: 0 },
   ],
   monto_solicitado: 0,
   lugar_solicitud: '',
@@ -1390,7 +1392,7 @@ function addGasto() {
   formData.value.detalle_destino_fondos.push({
     fecha: '',
     partida: '',
-    fuente: '',
+    fuente: null,
     factura_recibo: '',
     descripcion_gasto: '',
     monto: 0,
@@ -1572,7 +1574,7 @@ function resetForm() {
     descripcion_actividad: '',
     objetivo_actividad: '',
     detalle_destino_fondos: [
-      { fecha: '', partida: '', fuente: '', factura_recibo: '', descripcion_gasto: '', monto: 0 },
+      { fecha: '', partida: '', fuente: null, factura_recibo: '', descripcion_gasto: '', monto: 0 },
     ],
     forma_pago: '',
     lugar_solicitud: '',
@@ -2094,6 +2096,7 @@ const confirmarGuardarDatosForm = async () => {
       detalleDestinoFondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida: gasto.partida,
+          fuente: gasto.fuente,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
@@ -2162,6 +2165,7 @@ const confirmarEnvioRevision = async (datosValidadores) => {
       detalleDestinoFondos: {
         items: formData.value.detalle_destino_fondos.map((gasto) => ({
           partida: gasto.partida,
+          fuente: gasto.fuente,
           concepto: gasto.descripcion_gasto,
           monto: Number(gasto.monto),
         })),
