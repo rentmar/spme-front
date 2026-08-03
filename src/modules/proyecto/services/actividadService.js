@@ -1,6 +1,30 @@
 import api from '@/services/axios'
 
 export const actividadServicios = {
+  /**************************** Actividades CRUD ******************************************* */
+  /*LIsta de las actividades*/
+  actividadAll: async () => {
+    try {
+      const respuesta = await api.get('/actividades-proyectos-lista/')
+      return respuesta.data
+    } catch (error) {
+      console.err('Axios: error al obtenr las actividades')
+      throw error
+    }
+  },
+  /* Actividad por id */
+  actividadPorId: async (idActividad) => {
+    try {
+      const respuesta = await api.get('/actividades-proyectos-lista/' + idActividad + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: error al cargar las actividad con id: ', idActividad)
+      throw error
+    }
+  },
+
+  /**************************** Actividades CRUD ******************************************* */
+
   /* Fetch Actividades */
   all: async () => {
     try {

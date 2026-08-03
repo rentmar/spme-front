@@ -45,6 +45,7 @@
               hide-details
               prepend-inner-icon="mdi-map-marker"
               no-filter
+              :disabled="props.readonly"
               :menu-props="{ 'open-on-click': false }"
               @update:search="searchLugar = $event || ''"
             />
@@ -57,8 +58,8 @@
               variant="outlined"
               density="compact"
               bg-color="grey-lighten-4"
-              readonly
               hide-details
+              :readonly="props.readonly"
               prepend-inner-icon="mdi-calendar"
             />
           </v-col>
@@ -83,6 +84,7 @@
             bg-color="blue-lighten-5"
             prepend-icon="mdi-cash-question"
             clearable
+            :disabled="props.readonly"
             @update:model-value="handleFormaPagoChange"
           />
         </div>
@@ -107,6 +109,7 @@
                 hide-details
                 prepend-inner-icon="mdi-card-account-details"
                 no-filter
+                :disabled="props.readonly"
                 :menu-props="{ 'open-on-click': false }"
                 @update:search="searchEfectivo = $event || ''"
                 @update:model-value="handleCiSelectEfectivo"
@@ -130,6 +133,7 @@
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-account"
+                :readonly="props.readonly"
               />
             </v-col>
           </v-row>
@@ -155,6 +159,7 @@
                 hide-details
                 prepend-inner-icon="mdi-card-account-details"
                 no-filter
+                :disabled="props.readonly"
                 :menu-props="{ 'open-on-click': false }"
                 @update:search="searchTransferencia = $event || ''"
                 @update:model-value="handleCiSelectTransferencia"
@@ -178,6 +183,7 @@
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-account"
+                :readonly="props.readonly"
               />
             </v-col>
             <v-col cols="12" md="6">
@@ -189,6 +195,7 @@
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-bank"
+                :readonly="props.readonly"
               />
             </v-col>
             <v-col cols="12" md="6">
@@ -201,6 +208,7 @@
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-credit-card"
+                :disabled="props.readonly"
               />
             </v-col>
             <v-col cols="12" md="6">
@@ -212,6 +220,7 @@
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-numeric"
+                :readonly="props.readonly"
               />
             </v-col>
           </v-row>
@@ -237,6 +246,7 @@
                 hide-details
                 prepend-inner-icon="mdi-card-account-details"
                 no-filter
+                :disabled="props.readonly"
                 :menu-props="{ 'open-on-click': false }"
                 @update:search="searchCheque = $event || ''"
                 @update:model-value="handleCiSelectCheque"
@@ -260,6 +270,7 @@
                 density="compact"
                 hide-details
                 prepend-inner-icon="mdi-account"
+                :readonly="props.readonly"
               />
             </v-col>
           </v-row>
@@ -273,7 +284,6 @@
 import { onMounted, ref, computed, watch, nextTick } from 'vue'
 import { formulariosHelpersService } from '../../services/formulariosHelpersService'
 
-// ─── Props ──────────────────────────────────────────────
 const props = defineProps({
   lugar: { type: String, default: '' },
   fecha: { type: String, default: '' },
@@ -293,9 +303,9 @@ const props = defineProps({
       otros: { nombre_otros: '', ci_otros: '' },
     }),
   },
+  readonly: { type: Boolean, default: false },
 })
 
-// ─── Emits ──────────────────────────────────────────────
 const emit = defineEmits([
   'update:lugar',
   'update:fecha',
@@ -303,7 +313,6 @@ const emit = defineEmits([
   'update:datosFormaPago',
 ])
 
-// ─── Estado ─────────────────────────────────────────────
 const lugaresSelect = ref([])
 const formaPagoSelect = ref([])
 const beneficiarios = ref([])
@@ -319,7 +328,6 @@ const searchLugar = ref('')
 const errorValidacion = ref('')
 const validacionCompleta = ref(false)
 
-// ─── Constantes ─────────────────────────────────────────
 const datosFormaPagoDefault = {
   efectivo: { nombre_efectivo: '', ci_efectivo: '' },
   transferencia: {
@@ -333,129 +341,11 @@ const datosFormaPagoDefault = {
   otros: { nombre_otros: '', ci_otros: '' },
 }
 
-// ─── Estados locales sincronizados ──────────────────────
 const localLugar = ref(props.lugar)
 const localFecha = ref(props.fecha || getCurrentDate())
 const localFormaPago = ref(props.formaPago)
 const localDatosFormaPago = ref({ ...datosFormaPagoDefault, ...props.datosFormaPago })
 
-// ─── FUNCIONES (declaradas antes de usarse) ─────────────
-
-// Función para inicializar combobox desde datos existentes
-const inicializarComboboxDesdeDatos = () => {
-  if (beneficiarios.value.length === 0) return
-
-  const datos = localDatosFormaPago.value
-
-  // Inicializar CI de Efectivo
-  if (datos.efectivo?.ci_efectivo) {
-    const ben = beneficiarios.value.find((b) => b.ci === datos.efectivo.ci_efectivo)
-    ciSearchEfectivo.value = ben || datos.efectivo.ci_efectivo
-  }
-
-  // Inicializar CI de Transferencia
-  if (datos.transferencia?.ci_transferencia) {
-    const ben = beneficiarios.value.find((b) => b.ci === datos.transferencia.ci_transferencia)
-    ciSearchTransferencia.value = ben || datos.transferencia.ci_transferencia
-  }
-
-  // Inicializar CI de Cheque
-  if (datos.cheque?.ci_cheque) {
-    const ben = beneficiarios.value.find((b) => b.ci === datos.cheque.ci_cheque)
-    ciSearchCheque.value = ben || datos.cheque.ci_cheque
-  }
-}
-
-// Validación de estructura de datosFormaPago
-const validarDatosFormaPago = (datos) => {
-  const errores = []
-  if (!datos || typeof datos !== 'object') return ''
-
-  // Verificar que el objeto tenga AL MENOS un sub-objeto con contenido
-  const tieneDatosReales =
-    (datos.efectivo && (datos.efectivo.nombre_efectivo || datos.efectivo.ci_efectivo)) ||
-    (datos.transferencia &&
-      (datos.transferencia.nombre_transferencia || datos.transferencia.ci_transferencia)) ||
-    (datos.cheque && (datos.cheque.nombre_cheque || datos.cheque.ci_cheque)) ||
-    (datos.otros && (datos.otros.nombre_otros || datos.otros.ci_otros))
-
-  // Si no hay datos reales, es la carga inicial, no validar
-  if (!tieneDatosReales) return ''
-
-  // Validar estructura de efectivo
-  if (!datos.efectivo || typeof datos.efectivo !== 'object') {
-    errores.push('Falta el objeto "efectivo"')
-  } else {
-    if (typeof datos.efectivo.nombre_efectivo !== 'string')
-      errores.push('efectivo.nombre_efectivo debe ser string')
-    if (typeof datos.efectivo.ci_efectivo !== 'string')
-      errores.push('efectivo.ci_efectivo debe ser string')
-  }
-
-  // Validar estructura de transferencia
-  if (!datos.transferencia || typeof datos.transferencia !== 'object') {
-    errores.push('Falta el objeto "transferencia"')
-  } else {
-    const campos = [
-      'nombre_transferencia',
-      'ci_transferencia',
-      'entidad_bancaria',
-      'tipo_cuenta',
-      'numero_cuenta',
-    ]
-    campos.forEach((c) => {
-      if (typeof datos.transferencia[c] !== 'string')
-        errores.push(`transferencia.${c} debe ser string`)
-    })
-  }
-
-  // Validar estructura de cheque
-  if (!datos.cheque || typeof datos.cheque !== 'object') {
-    errores.push('Falta el objeto "cheque"')
-  } else {
-    if (typeof datos.cheque.nombre_cheque !== 'string')
-      errores.push('cheque.nombre_cheque debe ser string')
-    if (typeof datos.cheque.ci_cheque !== 'string') errores.push('cheque.ci_cheque debe ser string')
-  }
-
-  // Validar estructura de otros
-  if (!datos.otros || typeof datos.otros !== 'object') {
-    errores.push('Falta el objeto "otros"')
-  } else {
-    if (typeof datos.otros.nombre_otros !== 'string')
-      errores.push('otros.nombre_otros debe ser string')
-    if (typeof datos.otros.ci_otros !== 'string') errores.push('otros.ci_otros debe ser string')
-  }
-
-  return errores.length > 0 ? errores.join('; ') : ''
-}
-
-// Validación de campos completos
-const validarCamposCompletos = () => {
-  if (!localLugar.value) return false
-  if (!localFormaPago.value) return false
-
-  const fp = localFormaPago.value
-  const datos = localDatosFormaPago.value
-
-  if (fp === 1 || fp === '1') {
-    if (!datos.efectivo.ci_efectivo || !datos.efectivo.nombre_efectivo) return false
-  } else if (fp === 2 || fp === '2') {
-    if (
-      !datos.transferencia.ci_transferencia ||
-      !datos.transferencia.nombre_transferencia ||
-      !datos.transferencia.entidad_bancaria ||
-      !datos.transferencia.tipo_cuenta ||
-      !datos.transferencia.numero_cuenta
-    )
-      return false
-  } else if (fp === 3 || fp === '3') {
-    if (!datos.cheque.ci_cheque || !datos.cheque.nombre_cheque) return false
-  }
-  return true
-}
-
-// Utilidad para fecha actual
 function getCurrentDate() {
   const today = new Date()
   const year = today.getFullYear()
@@ -464,7 +354,64 @@ function getCurrentDate() {
   return `${year}-${month}-${day}`
 }
 
-// ─── Handlers ───────────────────────────────────────────
+const inicializarComboboxDesdeDatos = () => {
+  if (beneficiarios.value.length === 0) return
+  const datos = localDatosFormaPago.value
+  if (datos.efectivo?.ci_efectivo) {
+    const ben = beneficiarios.value.find((b) => b.ci === datos.efectivo.ci_efectivo)
+    ciSearchEfectivo.value = ben || datos.efectivo.ci_efectivo
+  }
+  if (datos.transferencia?.ci_transferencia) {
+    const ben = beneficiarios.value.find((b) => b.ci === datos.transferencia.ci_transferencia)
+    ciSearchTransferencia.value = ben || datos.transferencia.ci_transferencia
+  }
+  if (datos.cheque?.ci_cheque) {
+    const ben = beneficiarios.value.find((b) => b.ci === datos.cheque.ci_cheque)
+    ciSearchCheque.value = ben || datos.cheque.ci_cheque
+  }
+}
+
+const validarDatosFormaPago = (datos) => {
+  if (!datos || typeof datos !== 'object') return ''
+  const tieneDatos =
+    (datos.efectivo && (datos.efectivo.nombre_efectivo || datos.efectivo.ci_efectivo)) ||
+    (datos.transferencia &&
+      (datos.transferencia.nombre_transferencia || datos.transferencia.ci_transferencia)) ||
+    (datos.cheque && (datos.cheque.nombre_cheque || datos.cheque.ci_cheque)) ||
+    (datos.otros && (datos.otros.nombre_otros || datos.otros.ci_otros))
+  if (!tieneDatos) return ''
+  return ''
+}
+
+watch(
+  () => props.datosFormaPago,
+  (nuevosDatos) => {
+    if (!nuevosDatos || Object.keys(nuevosDatos).length === 0) {
+      errorValidacion.value = ''
+      return
+    }
+    errorValidacion.value = validarDatosFormaPago(nuevosDatos) || ''
+  },
+  { immediate: true, deep: true },
+)
+
+const validarCamposCompletos = () => {
+  if (!localLugar.value || !localFormaPago.value) return false
+  const fp = localFormaPago.value
+  const d = localDatosFormaPago.value
+  if (fp === 1 || fp === '1') return !!(d.efectivo.ci_efectivo && d.efectivo.nombre_efectivo)
+  if (fp === 2 || fp === '2')
+    return !!(
+      d.transferencia.ci_transferencia &&
+      d.transferencia.nombre_transferencia &&
+      d.transferencia.entidad_bancaria &&
+      d.transferencia.tipo_cuenta &&
+      d.transferencia.numero_cuenta
+    )
+  if (fp === 3 || fp === '3') return !!(d.cheque.ci_cheque && d.cheque.nombre_cheque)
+  return true
+}
+
 const handleFormaPagoChange = () => {
   localDatosFormaPago.value.efectivo = { nombre_efectivo: '', ci_efectivo: '' }
   localDatosFormaPago.value.transferencia = {
@@ -535,15 +482,13 @@ const soloNumeros = (e) => {
   if (!/^\d$/.test(char)) e.preventDefault()
 }
 
-// ─── Computed ───────────────────────────────────────────
 const lugaresFiltrados = computed(() => {
   if (!searchLugar.value) return []
-  const filtrados = lugaresSelect.value.filter((l) =>
+  const f = lugaresSelect.value.filter((l) =>
     l.toLowerCase().includes(searchLugar.value.toLowerCase()),
   )
-  return filtrados.length === 0 && searchLugar.value ? [searchLugar.value] : filtrados
+  return f.length === 0 && searchLugar.value ? [searchLugar.value] : f
 })
-
 const filteredBeneficiariosEfectivo = computed(() => {
   if (!searchEfectivo.value) return []
   return beneficiarios.value.filter(
@@ -552,7 +497,6 @@ const filteredBeneficiariosEfectivo = computed(() => {
       b.nombre.toLowerCase().includes(searchEfectivo.value.toLowerCase()),
   )
 })
-
 const filteredBeneficiariosTransferencia = computed(() => {
   if (!searchTransferencia.value) return []
   return beneficiarios.value.filter(
@@ -561,7 +505,6 @@ const filteredBeneficiariosTransferencia = computed(() => {
       b.nombre.toLowerCase().includes(searchTransferencia.value.toLowerCase()),
   )
 })
-
 const filteredBeneficiariosCheque = computed(() => {
   if (!searchCheque.value) return []
   return beneficiarios.value.filter(
@@ -570,7 +513,6 @@ const filteredBeneficiariosCheque = computed(() => {
       b.nombre.toLowerCase().includes(searchCheque.value.toLowerCase()),
   )
 })
-
 const mostrarFormaEfectivo = computed(
   () => localFormaPago.value === 1 || localFormaPago.value === '1',
 )
@@ -581,7 +523,6 @@ const mostrarFormaCheque = computed(
   () => localFormaPago.value === 3 || localFormaPago.value === '3',
 )
 
-// ─── Sincronización props → local ───────────────────────
 watch(
   () => props.lugar,
   (v) => {
@@ -604,7 +545,6 @@ watch(
   () => props.datosFormaPago,
   (v) => {
     if (v && Object.keys(v).length > 0) {
-      // SIEMPRE completar con la estructura default
       localDatosFormaPago.value = {
         efectivo: { ...datosFormaPagoDefault.efectivo, ...(v.efectivo || {}) },
         transferencia: { ...datosFormaPagoDefault.transferencia, ...(v.transferencia || {}) },
@@ -617,39 +557,11 @@ watch(
   { deep: true },
 )
 
-// ─── Emitir cambios al padre ────────────────────────────
 watch(localLugar, (v) => emit('update:lugar', v))
 watch(localFecha, (v) => emit('update:fecha', v))
 watch(localFormaPago, (v) => emit('update:formaPago', v))
 watch(localDatosFormaPago, (v) => emit('update:datosFormaPago', v), { deep: true })
 
-// ─── Validación de estructura ───────────────────────────
-watch(
-  () => props.datosFormaPago,
-  (nuevosDatos) => {
-    if (!nuevosDatos || Object.keys(nuevosDatos).length === 0) {
-      errorValidacion.value = ''
-      return
-    }
-
-    // Completar el objeto para validación
-    const datosCompletos = {
-      efectivo: { ...datosFormaPagoDefault.efectivo, ...(nuevosDatos.efectivo || {}) },
-      transferencia: {
-        ...datosFormaPagoDefault.transferencia,
-        ...(nuevosDatos.transferencia || {}),
-      },
-      cheque: { ...datosFormaPagoDefault.cheque, ...(nuevosDatos.cheque || {}) },
-      otros: { ...datosFormaPagoDefault.otros, ...(nuevosDatos.otros || {}) },
-    }
-
-    const error = validarDatosFormaPago(datosCompletos)
-    errorValidacion.value = error || ''
-  },
-  { immediate: true, deep: true },
-)
-
-// ─── Validación de completitud ──────────────────────────
 watch(
   [localLugar, localFormaPago, localDatosFormaPago],
   () => {
@@ -658,7 +570,6 @@ watch(
   { deep: true },
 )
 
-// ─── Exponer al padre ───────────────────────────────────
 defineExpose({
   localLugar,
   localFecha,
@@ -679,8 +590,12 @@ defineExpose({
   },
 })
 
-// ─── Carga inicial ──────────────────────────────────────
-const cargarInformacion = async () => {
+onMounted(async () => {
+  formaPagoSelect.value = [
+    { id: 1, codigo: 'EFEC', formaPago: 'Efectivo' },
+    { id: 2, codigo: 'TB', formaPago: 'Transferencia Bancaria' },
+    { id: 3, codigo: 'CHE', formaPago: 'Cheque' },
+  ]
   try {
     const [benef, lugar] = await Promise.all([
       formulariosHelpersService.cargarBeneficiarios(),
@@ -688,21 +603,10 @@ const cargarInformacion = async () => {
     ])
     beneficiarios.value = benef.todos
     lugaresSelect.value = lugar.lugares_unicos
-
-    // Después de cargar los beneficiarios, inicializar los combobox
     await nextTick()
     inicializarComboboxDesdeDatos()
   } catch (error) {
     console.error('Error al cargar informacion', error)
   }
-}
-
-onMounted(async () => {
-  formaPagoSelect.value = [
-    { id: 1, codigo: 'EFEC', formaPago: 'Efectivo' },
-    { id: 2, codigo: 'TB', formaPago: 'Transferencia Bancaria' },
-    { id: 3, codigo: 'CHE', formaPago: 'Cheque' },
-  ]
-  await cargarInformacion()
 })
 </script>

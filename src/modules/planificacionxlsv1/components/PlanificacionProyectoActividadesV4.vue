@@ -158,7 +158,7 @@
   />
 
   <!-- Debug -->
-  <DebugDialog :tablaDataActividades="tablaDataActividades" :tablaDataTareas="tablaDataTareas" />
+  <!-- <DebugDialog :tablaDataActividades="tablaDataActividades" :tablaDataTareas="tablaDataTareas" /> -->
 </template>
 
 <script setup>

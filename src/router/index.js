@@ -160,8 +160,8 @@ const router = createRouter({
     {
       path: '/planificacion/cronogramas',
       name: 'cronogramas',
-      component: () => import('@/views/planeamiento/GanttView.vue'),
-      //component: () => import('@/views/planeamiento/ActividadesGantView.vue'),
+      // component: () => import('@/views/planeamiento/GanttView.vue'),
+      component: () => import('@/views/planeamiento/ActividadesGantView.vue'),
       // component: () => import('@/views/planeamiento/GanttSyncfusionView.vue'),
       meta: { requiresAuth: true },
     },
@@ -355,9 +355,12 @@ const router = createRouter({
     },
     {
       path: '/monitoreo/formulario055/:id',
-      component: () => import('@/views/monitoreo/SolicitudDeViajeValidar.vue'),
+      // component: () => import('@/views/monitoreo/SolicitudDeViajeValidar.vue'),
+      component: () => import('@/views/monitoreo/SolicitudDeViajeValidarV2.vue'),
+
       meta: { requiresAuth: true },
     },
+
     {
       path: '/monitoreo/formulario08/:id',
       component: () => import('@/views/monitoreo/SolicitudDePagoDirecto.vue'),

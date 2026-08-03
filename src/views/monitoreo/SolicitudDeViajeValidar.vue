@@ -298,6 +298,7 @@
                             placeholder="1.1.1"
                             class="compact-field"
                             :readonly="soloLectura"
+                            :rules="[validarPartida]"
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
@@ -319,6 +320,7 @@
                             density="compact"
                             placeholder="Financiador"
                             bg-color="blue-lighten-5"
+                            :readonly="soloLectura"
                             :rules="[validarFuente]"
                           >
                             <template #item="{ item: option, props: optionProps }">
@@ -347,6 +349,7 @@
                             bg-color="blue-lighten-5"
                             placeholder="Descripción del gasto"
                             :readonly="soloLectura"
+                            :rules="[validarDescripcionGasto]"
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
@@ -361,6 +364,7 @@
                             min="0"
                             class="compact-field"
                             :readonly="soloLectura"
+                            :rules="[validarMontoGasto]"
                           ></v-text-field>
                         </td>
                         <td class="text-center action-column">
@@ -381,9 +385,27 @@
                 </div>
 
                 <v-divider class="my-4"></v-divider>
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Informacion Adicional
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <InformacionAdicionalEdicion
+                        ref="infoRef"
+                        :lugar="solicitudDeViaje.lugarSolicitud || ''"
+                        :fecha="solicitudDeViaje.fechaSolicitud || ''"
+                        :forma-pago="solicitudDeViaje.formaPago_id || ''"
+                        :datos-forma-pago="solicitudDeViaje.datos_forma_pago || {}"
+                      />
+                    </v-col>
+                  </v-row>
+                </div>
+                <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 3: Información Adicional -->
-                <div class="form-section mb-6">
+                <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-information</v-icon>
                     Información Adicional
@@ -504,7 +526,7 @@
                   </div>
                 </div>
 
-                <v-divider class="my-4"></v-divider>
+                <v-divider class="my-4"></v-divider> -->
 
                 <!-- Sección 4: Firmas -->
                 <!-- <div class="form-section mb-6">
@@ -684,6 +706,7 @@ import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdH
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
 import RevisorSolicitudViajes from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudViajes.vue'
 import RedactorSolicitudViajes from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/RedactorSolicitudViajes.vue'
+import InformacionAdicionalEdicion from '@/modules/formularios/components/vinculacion/InformacionAdicionalEdicion.vue'
 //Store para la Solicitud de viajes
 import { useSolicitudDeViajesStore } from '@/modules/formularios/store/useSolicitudDeViajesStore'
 import axios from 'axios'
@@ -697,7 +720,7 @@ import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composab
 
 //Iniciar el store para la sol de viajes
 const storeSolViajes = useSolicitudDeViajesStore()
-
+const infoRef = ref()
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
 //Inicializar el composable
@@ -795,11 +818,11 @@ const formData = ref({
   id_tarea: null,
   id_actividad: 0,
   id_usuario: 0,
-  detalle_destino_fondos: [{ partida: '', fuente: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [{ partida: '', fuente: null, descripcion_gasto: '', monto: 0 }],
   forma_pago: null,
   formaPago: null,
   datos_forma_pago: {
-    otros: { nombre_otros: '', ci_otros: '' },
+    efectivo: { nombre_efectivo: '', ci_efectivo: '' },
     transferencia: {
       nombre_transferencia: '',
       ci_transferencia: '',
@@ -807,6 +830,8 @@ const formData = ref({
       tipo_cuenta: '',
       numero_cuenta: '',
     },
+    cheque: { nombre_cheque: '', ci_cheque: '' },
+    otros: { nombre_otros: '', ci_otros: '' },
   },
   lugar_solicitud: '',
   fecha_solicitud: getCurrentDate(),
@@ -1189,6 +1214,10 @@ async function cargarSolicitudesDeViaje() {
     const rawData = await response.json()
     //console.log('SoicitudDeViaje Recibido@@@@@@@@@@@@@@:', JSON.stringify(rawData,null,2))
     solicitudDeViaje.value = rawData.solicitudes[0]
+    console.log(
+      'datos_forma_pago del backend:',
+      JSON.stringify(solicitudDeViaje.value.datos_forma_pago, null, 2),
+    )
 
     formData.value.evento = solicitudDeViaje.value.evento || ''
     formData.value.fecha_evento = solicitudDeViaje.value.fechaEvento || ''
@@ -1204,7 +1233,7 @@ async function cargarSolicitudesDeViaje() {
     formData.value.detalle_destino_fondos = solicitudDeViaje.value.detalleGasto.items.map(
       (item) => ({
         partida: item.partida || '',
-        fuente: item.fuente || '',
+        fuente: item.fuente || null,
         descripcion_gasto: item.concepto || '',
         monto: item.monto || 0,
       }),
@@ -1212,6 +1241,9 @@ async function cargarSolicitudesDeViaje() {
     formData.value.forma_pago = solicitudDeViaje.value.formaPago_id
     formData.value.id_responsable = solicitudDeViaje.value.responsable_id
     formData.value.id_coordinador = solicitudDeViaje.value.coordinador_id
+    formData.value.datos_forma_pago = solicitudDeViaje.value.datos_forma_pago
+    formData.value.lugar_solicitud = solicitudDeViaje.value.lugarSolicitud || ''
+    formData.value.fecha_solicitud = solicitudDeViaje.value.fechaSolicitud || ''
 
     //console.log('Datos cargados exitosamente:', JSON.stringify(formData.value.detalle_destino_fondos,null,2))
 
@@ -1240,7 +1272,7 @@ async function cargarSolicitudesDeViaje() {
 function addGasto() {
   formData.value.detalle_destino_fondos.push({
     partida: '',
-    fuente: '',
+    fuente: null,
     descripcion_gasto: '',
     monto: 0,
   })
@@ -1253,6 +1285,12 @@ function removeGasto(index) {
 }
 
 async function submitForm() {
+  if (infoRef.value) {
+    formData.value.lugar_solicitud = infoRef.value.localLugar
+    formData.value.fecha_solicitud = infoRef.value.localFecha
+    formData.value.forma_pago = infoRef.value.localFormaPago
+    formData.value.datos_forma_pago = { ...infoRef.value.localDatosFormaPago }
+  }
   loading.value = true
   try {
     const requiredFields = [
@@ -1454,7 +1492,7 @@ function resetForm() {
     fondos_unitas: '',
     justificacion_asistencia: '',
     tareas_previas: '',
-    detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+    detalle_destino_fondos: [{ partida: '', fuente: null, descripcion_gasto: '', monto: 0 }],
     forma_pago: '',
     lugar_solicitud: '',
     fecha_solicitud: getCurrentDate(),
@@ -1717,7 +1755,7 @@ function actualizarDatosFormulario(solicitud) {
   //actualizarDetalleDestinoFondos(formDatSF.value.detalleDestinoFondossf)
 
   // Actualizar los campos de Información Adicional - pasar solicitud directamente
-  actualizarInformacionAdicional(solicitud)
+  //actualizarInformacionAdicional(solicitud)
   actualizarValidadores()
 }
 
@@ -1757,37 +1795,32 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
 
 // Función para actualizar los campos de Información Adicional
 function actualizarInformacionAdicional(solicitud) {
-  // Actualizar forma_pago
   formData.value.forma_pago = formDatSF.value.formaPago_idsf
-
-  // Actualizar lugar_solicitud
   formData.value.lugar_solicitud = formDatSF.value.lugarSolicitudsf
-
-  // Actualizar fecha_solicitud
   formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
 
-  // Actualizar datos_forma_pago desde solicitud directamente
-
   if (solicitud && solicitud.datos_forma_pago) {
-    const datosPago = solicitud.datos_forma_pago
-
-    // Los datos ya vienen en el formato correcto desde el backend
-    // Solo necesitamos asignarlos directamente
-    if (datosPago.transferencia) {
-      formData.value.datos_forma_pago.transferencia = {
-        nombre_transferencia: datosPago.transferencia.nombre_transferencia || '',
-        ci_transferencia: datosPago.transferencia.ci_transferencia || '',
-        entidad_bancaria: datosPago.transferencia.entidad_bancaria || '',
-        tipo_cuenta: datosPago.transferencia.tipo_cuenta || '',
-        numero_cuenta: datosPago.transferencia.numero_cuenta || '',
-      }
-    }
-
-    if (datosPago.otros) {
-      formData.value.datos_forma_pago.otros = {
-        nombre_otros: datosPago.otros.nombre_otros || '',
-        ci_otros: datosPago.otros.ci_otros || '',
-      }
+    const dp = solicitud.datos_forma_pago
+    formData.value.datos_forma_pago = {
+      efectivo: {
+        nombre_efectivo: dp.efectivo?.nombre_efectivo || '',
+        ci_efectivo: dp.efectivo?.ci_efectivo || '',
+      },
+      transferencia: {
+        nombre_transferencia: dp.transferencia?.nombre_transferencia || '',
+        ci_transferencia: dp.transferencia?.ci_transferencia || '',
+        entidad_bancaria: dp.transferencia?.entidad_bancaria || '',
+        tipo_cuenta: dp.transferencia?.tipo_cuenta || '',
+        numero_cuenta: dp.transferencia?.numero_cuenta || '',
+      },
+      cheque: {
+        nombre_cheque: dp.cheque?.nombre_cheque || '',
+        ci_cheque: dp.cheque?.ci_cheque || '',
+      },
+      otros: {
+        nombre_otros: dp.otros?.nombre_otros || '',
+        ci_otros: dp.otros?.ci_otros || '',
+      },
     }
   }
 }
@@ -2027,7 +2060,34 @@ onMounted(async () => {
     cargarFormasDePago(),
     storeSolViajes.cargarSolicitud(idSolicitud),
   ])
+  console.log(
+    'formData.datos_forma_pago después de carga:',
+    JSON.stringify(formData.value.datos_forma_pago, null, 2),
+  )
 })
+// ⬇️ AGREGAR DESPUÉS DE LOS IMPORTS
+const validarPartida = (v) => {
+  if (!v || v.trim() === '') return 'La partida es requerida'
+  return true
+}
+
+const validarFuente = (v) => {
+  if (!v) return 'La fuente es requerida'
+  if (typeof v === 'object' && Object.keys(v).length === 0) return 'La fuente es requerida'
+  if (typeof v === 'string' && v.trim() === '') return 'La fuente es requerida'
+  return true
+}
+
+const validarDescripcionGasto = (v) => {
+  if (!v || v.trim() === '') return 'La descripción es requerida'
+  return true
+}
+
+const validarMontoGasto = (v) => {
+  if (!v && v !== 0) return 'El monto es requerido'
+  if (Number(v) <= 0) return 'El monto debe ser mayor a 0'
+  return true
+}
 </script>
 
 <style scoped>
@@ -2151,5 +2211,9 @@ onMounted(async () => {
 .compact-field {
   font-size: 14px;
   max-width: 100px;
+}
+/* Control simple de posición vertical para el select */
+.users-table :deep(.v-select) {
+  transform: translateY(10px);
 }
 </style>

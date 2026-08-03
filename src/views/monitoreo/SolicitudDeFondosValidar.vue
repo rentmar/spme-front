@@ -292,6 +292,7 @@
                             placeholder="1.1.1"
                             class="compact-field"
                             :readonly="soloLectura"
+                            :rules="[validarPartida]"
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
@@ -332,6 +333,7 @@
                             bg-color="blue-lighten-5"
                             placeholder="Descripción del gasto"
                             :readonly="soloLectura"
+                            :rules="[validarDescripcionGasto]"
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
@@ -345,6 +347,7 @@
                             placeholder="0.00"
                             class="compact-field"
                             :readonly="soloLectura"
+                            :rules="[validarMontoGasto]"
                           ></v-text-field>
                         </td>
                         <td class="text-center action-column">
@@ -366,6 +369,25 @@
 
                 <v-divider class="my-4"></v-divider>
 
+                <!--Seccion 5: Informacion Adicional-->
+                <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Informacion Adicional
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <InformacionAdicionalEdicion
+                        ref="infoRef"
+                        :lugar="formData.lugar_solicitud"
+                        :fecha="formData.fecha_solicitud"
+                        :forma-pago="formData.forma_pago"
+                        :datos-forma-pago="formData.datos_forma_pago"
+                      ></InformacionAdicionalEdicion>
+                    </v-col>
+                  </v-row>
+                </div>
+                <v-divider class="my-4"></v-divider>
                 <!-- Sección 4: Información Adicional -->
                 <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
@@ -691,6 +713,7 @@ import { useNotificaciones } from '@/modules/notificacion/composables/useNotific
 import EstadoValidacionSolicitudFondos from '@/modules/formularios/components/validadores/componenteEstadoVotacion/EstadoValidacionSolicitudFondos.vue'
 import ValidacionRedactorSolFondos from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/ValidacionRedactorSolFondos.vue'
 import InformacionAdicionalEdicion from '@/modules/formularios/components/vinculacion/InformacionAdicionalEdicion.vue'
+import InformacionAdicional from '@/modules/formularios/components/InformacionAdicional.vue'
 //Iniciar el estore
 import { useSolicitudFondosStore } from '@/modules/formularios/store/useSolicitudDeFondosStore'
 import RevisorSolicitudFondos from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudFondos.vue'
@@ -748,6 +771,7 @@ const idSolicitud = route.query.solicitud_id || null
 console.log('ID Solicitud:', idSolicitud)
 console.log('ID Actividad:', idActividad)
 console.log('ID Tarea:', idTarea)
+const infoRef = ref()
 //console.log('ID aaaaaaa', JSON.stringify(route,null,2))
 
 const { procedenciaFondosActividad } = useActividadFormulaioPresupuesto(idActividad)
@@ -796,7 +820,7 @@ const formData = ref({
   id_actividad: 0,
   id_usuario: 0,
   // Resto de campos del formulario
-  detalle_destino_fondos: [{ partida: '', fuente: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [{ partida: '', fuente: null, descripcion_gasto: '', monto: 0 }],
   forma_pago: null,
   datos_forma_pago: {
     otros: { nombre_otros: '', ci_otros: '' },
@@ -1329,7 +1353,7 @@ async function cargarSolicitudFondos() {
 function addGasto() {
   formData.value.detalle_destino_fondos.push({
     partida: '',
-    fuente: '',
+    fuente: null,
     descripcion_gasto: '',
     monto: 0,
   })
@@ -1342,6 +1366,12 @@ function removeGasto(index) {
 }
 
 async function submitForm() {
+  if (infoRef.value) {
+    formData.value.lugar_solicitud = infoRef.value.localLugar
+    formData.value.fecha_solicitud = infoRef.value.localFecha
+    formData.value.forma_pago = infoRef.value.localFormaPago
+    formData.value.datos_forma_pago = { ...infoRef.value.localDatosFormaPago }
+  }
   loading.value = true
   try {
     //Validar si el formulario está completo
@@ -1656,7 +1686,7 @@ function resetForm() {
   Object.assign(formData.value, {
     descripcion_actividad: '',
     objetivo_actividad: '',
-    detalle_destino_fondos: [{ partida: '', descripcion_gasto: '', monto: 0 }],
+    detalle_destino_fondos: [{ partida: '', fuente: null, descripcion_gasto: '', monto: 0 }],
     forma_pago: '',
     lugar_solicitud: '',
     fecha_solicitud: getCurrentDate(),
@@ -1968,41 +1998,36 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
 
 // Función para actualizar los campos de Información Adicional
 function actualizarInformacionAdicional(solicitud) {
-  // Actualizar forma_pago
   formData.value.forma_pago = formDatSF.value.formaPago_idsf
-
-  // Actualizar lugar_solicitud
   formData.value.lugar_solicitud = formDatSF.value.lugarSolicitudsf
-
-  // Actualizar fecha_solicitud
   formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
 
-  // Actualizar datos_forma_pago desde solicitud directamente
-
   if (solicitud && solicitud.datos_forma_pago) {
-    const datosPago = solicitud.datos_forma_pago
+    const dp = solicitud.datos_forma_pago
 
-    // Los datos ya vienen en el formato correcto desde el backend
-    // Solo necesitamos asignarlos directamente
-    if (datosPago.transferencia) {
-      formData.value.datos_forma_pago.transferencia = {
-        nombre_transferencia: datosPago.transferencia.nombre_transferencia || '',
-        ci_transferencia: datosPago.transferencia.ci_transferencia || '',
-        entidad_bancaria: datosPago.transferencia.entidad_bancaria || '',
-        tipo_cuenta: datosPago.transferencia.tipo_cuenta || '',
-        numero_cuenta: datosPago.transferencia.numero_cuenta || '',
-      }
-    }
-
-    if (datosPago.otros) {
-      formData.value.datos_forma_pago.otros = {
-        nombre_otros: datosPago.otros.nombre_otros || '',
-        ci_otros: datosPago.otros.ci_otros || '',
-      }
+    formData.value.datos_forma_pago = {
+      efectivo: {
+        nombre_efectivo: dp.efectivo?.nombre_efectivo || '',
+        ci_efectivo: dp.efectivo?.ci_efectivo || '',
+      },
+      transferencia: {
+        nombre_transferencia: dp.transferencia?.nombre_transferencia || '',
+        ci_transferencia: dp.transferencia?.ci_transferencia || '',
+        entidad_bancaria: dp.transferencia?.entidad_bancaria || '',
+        tipo_cuenta: dp.transferencia?.tipo_cuenta || '',
+        numero_cuenta: dp.transferencia?.numero_cuenta || '',
+      },
+      cheque: {
+        nombre_cheque: dp.cheque?.nombre_cheque || '',
+        ci_cheque: dp.cheque?.ci_cheque || '',
+      },
+      otros: {
+        nombre_otros: dp.otros?.nombre_otros || '',
+        ci_otros: dp.otros?.ci_otros || '',
+      },
     }
   }
 }
-
 // Función para extraer y formatear los validadores por ID
 function actualizarValidadores() {
   if (!datosFormulario.value || !datosFormulario.value.validadores) return
@@ -2122,8 +2147,31 @@ onMounted(async () => {
     //console.log('5. Estado final - cargandoGeneral:', cargandoGeneral.value)
   }
 })
-</script>
+/*******************************  Validadores ***********************************/
+// ⬇️ AGREGAR DESPUÉS DE LOS IMPORTS
+const validarPartida = (v) => {
+  if (!v || v.trim() === '') return 'La partida es requerida'
+  return true
+}
 
+const validarFuente = (v) => {
+  if (!v) return 'La fuente es requerida'
+  if (typeof v === 'object' && Object.keys(v).length === 0) return 'La fuente es requerida'
+  if (typeof v === 'string' && v.trim() === '') return 'La fuente es requerida'
+  return true
+}
+
+const validarDescripcionGasto = (v) => {
+  if (!v || v.trim() === '') return 'La descripción es requerida'
+  return true
+}
+
+const validarMontoGasto = (v) => {
+  if (!v && v !== 0) return 'El monto es requerido'
+  if (Number(v) <= 0) return 'El monto debe ser mayor a 0'
+  return true
+}
+</script>
 <style scoped>
 .solicitud-fondos-container {
   max-width: 1400px;
@@ -2185,17 +2233,14 @@ onMounted(async () => {
   .solicitud-fondos-container {
     padding: 16px 12px;
   }
-
   .form-section {
     padding: 20px;
     margin-bottom: 20px;
   }
-
   .d-flex.justify-end {
     flex-direction: column;
     gap: 8px;
   }
-
   .d-flex.justify-end .v-btn {
     width: 100%;
   }
@@ -2205,13 +2250,12 @@ onMounted(async () => {
   .v-card {
     margin: 8px 0;
   }
-
   .form-section {
     padding: 16px;
   }
 }
 
-/* Mejora el aspecto de la tabla */
+/* Tabla */
 :deep(.v-table) {
   border-radius: 8px;
   overflow: hidden;
@@ -2222,16 +2266,18 @@ onMounted(async () => {
   color: white !important;
   font-weight: 600;
   font-size: 14px;
-  padding: 16px 12px;
+  padding: 12px 8px;
 }
 
 :deep(.v-table td) {
-  padding: 12px;
+  padding: 6px 8px;
   background-color: #fafafa;
+  vertical-align: middle !important;
 }
 
 .narrow-column {
   width: 15%;
+  min-width: 130px;
 }
 
 .wide-column {
@@ -2247,26 +2293,42 @@ onMounted(async () => {
   max-width: 100px;
 }
 
-/* Arreglar el select de fuente en la tabla */
-:deep(.v-select .v-field__input) {
-  min-height: auto !important;
+/* Campos del formulario dentro de la tabla - altura uniforme */
+.users-table :deep(.v-input) {
+  margin-top: 0 !important;
   padding-top: 0 !important;
-  padding-bottom: 0 !important;
 }
 
-:deep(.v-select .v-select__selection-text) {
-  font-size: 14px !important;
-  line-height: 1.2 !important;
-  white-space: normal !important;
-  word-break: break-word !important;
-}
-
-:deep(.v-select.compact-select .v-field) {
+.users-table :deep(.v-input__control) {
   min-height: 40px !important;
 }
 
-:deep(.v-select.compact-select .v-field__input) {
-  padding: 4px 8px !important;
+.users-table :deep(.v-field) {
+  min-height: 40px !important;
+}
+
+.users-table :deep(.v-field__input) {
+  min-height: 40px !important;
+  padding: 0 8px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.users-table :deep(.v-field__outline) {
+  --v-field-border-opacity: 0.3;
+}
+
+.users-table :deep(.v-select) {
+  min-width: 120px;
+}
+
+/* Texto del select */
+:deep(.v-select__selection-text) {
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 :deep(.v-select .v-list-item-title) {
@@ -2277,74 +2339,8 @@ onMounted(async () => {
 :deep(.v-select .v-list-item-subtitle) {
   font-size: 11px !important;
 }
-/* Mejorar el aspecto de los selects en la tabla */
-.users-table :deep(td) {
-  vertical-align: middle !important;
-}
-
+/* Control simple de posición vertical para el select */
 .users-table :deep(.v-select) {
-  min-width: 120px;
-}
-
-.users-table :deep(.v-field__outline) {
-  --v-field-border-opacity: 0.3;
-}
-
-/* Ajuste específico para la columna de fuente */
-.narrow-column {
-  width: 15%;
-  min-width: 130px;
-}
-
-/* Asegurar que el texto en el select no se corte */
-:deep(.v-select__selection) {
-  overflow: visible !important;
-  text-overflow: clip !important;
-  white-space: normal !important;
-}
-/* Altura uniforme para inputs y selects en la tabla */
-.users-table :deep(.v-field) {
-  min-height: 40px !important;
-  max-height: 40px !important;
-}
-
-.users-table :deep(.v-field__input) {
-  min-height: 40px !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  display: flex;
-  align-items: center;
-}
-
-.users-table :deep(.v-select .v-field__input) {
-  min-height: 40px !important;
-  padding: 0 8px !important;
-}
-
-.users-table :deep(.v-text-field .v-field__input) {
-  min-height: 40px !important;
-  padding: 0 8px !important;
-}
-
-/* Ajustar el texto del select */
-:deep(.v-select__selection-text) {
-  font-size: 14px !important;
-  line-height: 1.2 !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* Alinear verticalmente el select con los text-fields */
-.users-table :deep(.v-select) {
-  position: relative;
-  top: 10px; /* Baja el select completo - ajusta este valor */
-}
-
-.users-table :deep(.v-select .v-field__input) {
-  padding-top: 2px !important; /* Ajuste fino del texto */
-}
-
-.users-table :deep(.v-select .v-field) {
-  margin-top: 0 !important;
+  transform: translateY(10px);
 }
 </style>

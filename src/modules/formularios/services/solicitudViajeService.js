@@ -32,9 +32,9 @@ export const solicitudViajeServicio = {
       throw error
     }
   },
-  solViajeUpdate: async (id) => {
+  solViajeUpdate: async (id, data) => {
     try {
-      const respuesta = await api.put('/solicitud-viaje/' + id + '/')
+      const respuesta = await api.put('/solicitud-viaje/' + id + '/', data)
       return respuesta.data
     } catch (error) {
       console.error('Axios: Error al actualizar la ' + id, error)

@@ -313,7 +313,7 @@
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
-                          <v-text-field
+                          <!-- <v-text-field
                             v-model="gasto.fuente"
                             variant="outlined"
                             density="compact"
@@ -321,7 +321,33 @@
                             bg-color="blue-lighten-5"
                             placeholder="Financiador"
                             :readonly="soloLectura"
-                          ></v-text-field>
+                          ></v-text-field> -->
+                          <v-select
+                            v-model="gasto.fuente"
+                            :items="procedenciaFondosActividad"
+                            item-title="financiera"
+                            return-object
+                            variant="outlined"
+                            density="compact"
+                            placeholder="Financiador"
+                            bg-color="blue-lighten-5"
+                          >
+                            <template #item="{ item: option, props: optionProps }">
+                              <v-list-item v-bind="optionProps" density="compact">
+                                <template #title>
+                                  <span class="text-caption">{{ option.raw.financiera }}</span>
+                                </template>
+                                <template #subtitle>
+                                  <span class="text-caption text-medium-emphasis">{{
+                                    option.raw.sigla
+                                  }}</span>
+                                </template>
+                              </v-list-item>
+                            </template>
+                            <template #selection="{ item: selected }">
+                              <span class="text-caption">{{ selected?.raw?.financiera }}</span>
+                            </template>
+                          </v-select>
                         </td>
                         <td>
                           <v-text-field
@@ -664,7 +690,7 @@ import { useNotificaciones } from '@/modules/notificacion/composables/useNotific
 import { useSolicitudDeReposicionStore } from '@/modules/formularios/store/useSolicitudDeReposicionStore'
 import RevisorSolicitudReposicion from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudReposicion.vue'
 import RedactorSolicitudReposicion from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/RedactorSolicitudReposicion.vue'
-
+import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
 //Inciciar el store
 const storeSolReposicion = useSolicitudDeReposicionStore()
 
@@ -726,6 +752,7 @@ const usuario = computed(() => {
   }
 })
 console.log('ID Usuario:', usuario.value.id)
+const { procedenciaFondosActividad } = useActividadFormulaioPresupuesto(idActividad)
 
 const baseurl = import.meta.env.VITE_API_BASE
 

@@ -299,7 +299,7 @@
                           ></v-text-field>
                         </td>
                         <td class="narrow-column">
-                          <v-text-field
+                          <!-- <v-text-field
                             v-model="gasto.fuente"
                             variant="outlined"
                             density="compact"
@@ -307,7 +307,33 @@
                             bg-color="blue-lighten-5"
                             placeholder="Financiador"
                             :readonly="soloLectura"
-                          ></v-text-field>
+                          ></v-text-field> -->
+                          <v-select
+                            v-model="gasto.fuente"
+                            :items="procedenciaFondosActividad"
+                            item-title="financiera"
+                            return-object
+                            variant="outlined"
+                            density="compact"
+                            placeholder="Financiador"
+                            bg-color="blue-lighten-5"
+                          >
+                            <template #item="{ item: option, props: optionProps }">
+                              <v-list-item v-bind="optionProps" density="compact">
+                                <template #title>
+                                  <span class="text-caption">{{ option.raw.financiera }}</span>
+                                </template>
+                                <template #subtitle>
+                                  <span class="text-caption text-medium-emphasis">{{
+                                    option.raw.sigla
+                                  }}</span>
+                                </template>
+                              </v-list-item>
+                            </template>
+                            <template #selection="{ item: selected }">
+                              <span class="text-caption">{{ selected?.raw?.financiera }}</span>
+                            </template>
+                          </v-select>
                         </td>
                         <td class="wide-column">
                           <v-text-field
@@ -640,7 +666,7 @@ import { useSolicitudDePagoDirectoStore } from '@/modules/formularios/store/useS
 //componente
 import RevisorSolicitudPagoDirecto from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudPagoDirecto.vue'
 import RedactorSolicitudPagoDirecto from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/RedactorSolicitudPagoDirecto.vue'
-
+import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
 //Iniciar el store
 const storeSolPagoDirecto = useSolicitudDePagoDirectoStore()
 
@@ -703,6 +729,7 @@ const usuario = computed(() => {
 })
 console.log('ID Usuario:', usuario.value.id)
 
+const { procedenciaFondosActividad } = useActividadFormulaioPresupuesto(idActividad)
 const baseurl = import.meta.env.VITE_API_BASE
 
 //variables para carga de datos
@@ -1831,5 +1858,9 @@ onMounted(async () => {
 .compact-field {
   font-size: 14px;
   max-width: 100px;
+}
+/* Control simple de posición vertical para el select */
+.users-table :deep(.v-select) {
+  transform: translateY(10px);
 }
 </style>
