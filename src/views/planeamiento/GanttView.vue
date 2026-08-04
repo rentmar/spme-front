@@ -296,10 +296,11 @@ const filteredTasks = computed(() => filterTasks(searchQuery.value, tasks.value)
 const visibleCount = computed(() => filteredTasks.value.length)
 
 // Wrappers para compatibilidad con el template
+//eslint-disable-next-line
 function getParentNameWrapper(parentId) {
   return getParentName(parentId, tasks.value)
 }
-
+//eslint-disable-next-line
 function getChildrenWrapper(taskId) {
   return getChildren(taskId, tasks.value)
 }

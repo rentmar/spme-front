@@ -2,6 +2,8 @@ import { VIEW_SCALES } from './constants'
 // import { prepareTasksForGantt, createTodayMarker } from './taskHelpers'
 import { createTodayMarker } from './dateHelpers'
 import { prepareTasksForGantt } from './taskHelpers'
+import { ganttLocaleES } from './ganttLocale'
+
 /**
  * Inicializa la configuración base del Gantt
  * @param {Object} ganttInstance - Instancia de dhtmlxGantt
@@ -10,6 +12,9 @@ export function initializeGanttConfig(ganttInstance) {
   ganttInstance.config.date_format = '%d/%m/%Y'
   ganttInstance.config.scales = VIEW_SCALES.year
   ganttInstance.config.readonly = true
+
+  //Aplicar localizacion en español
+  ganttInstance.i18n.setLocale(ganttLocaleES)
 
   // Templates para estilos de filas
   ganttInstance.templates.grid_row_class = function (start, end, task) {
