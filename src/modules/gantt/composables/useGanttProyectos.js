@@ -21,14 +21,7 @@ export function useGanttProyectos() {
       tasks.value = []
     } finally {
       loadingGantt.value = false
-      console.log('loadingGantt final:', loadingGantt.value) // ← debug
     }
-  }
-
-  //Cargar los proyectos, actividades y tareas
-  async function cargarTasksProyectos() {
-    const respuesta = await ganttServicio.datosGantt()
-    tasks.value = respuesta.data
   }
 
   return {

@@ -258,6 +258,23 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { gantt } from 'dhtmlx-gantt'
 import 'dhtmlx-gantt/codebase/dhtmlxgantt.css'
 import { useGanttProyectos } from '@/modules/gantt/composables/useGanttProyectos'
+import {
+  VIEWS,
+  ESTADO_COLOR,
+  ESTADO_LABEL,
+  formatDate,
+  getEndDate,
+  getTodayFormatted,
+  getParentName,
+  getChildren,
+  filterTasks,
+  initializeGanttConfig,
+  loadGanttData,
+  setupGanttEvents,
+  changeGanttScale,
+  expandAllProjects,
+  collapseAllProjects,
+} from '@/modules/gantt/utils'
 
 const ganttContainer = ref(null)
 const showModal = ref(false)
@@ -267,152 +284,46 @@ const searchQuery = ref('')
 const ganttHeight = ref(300)
 let ganttInitialized = false
 
-const todayFormatted = computed(() =>
-  new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-)
-
-const views = [
-  { label: 'Día', value: 'day', icon: 'mdi-calendar-day' },
-  { label: 'Semana', value: 'week', icon: 'mdi-calendar-week' },
-  { label: 'Mes', value: 'month', icon: 'mdi-calendar-month' },
-  { label: 'Año', value: 'year', icon: 'mdi-calendar' },
-  { label: 'Lustro', value: 'lustro', icon: 'mdi-calendar-multiselect' },
-]
-
-const estadoColor = {
-  ES: '#42A5F5',
-  EP: '#FFA726',
-  CRD: '#BDBDBD',
-  PLAN: '#64b5f6',
-  RETR: '#ef5350',
-  REPROG: '#ffd54f',
-  EJEC: '#ffa726',
-  REP: '#81c784',
-  FIN: '#4CAF50',
-  PEN: '#BDBDBD',
-  EPROG: '#ffa726',
-  COMPL: '#66BB6A',
-}
-const estadoLabel = {
-  ES: 'Estructuración',
-  EP: 'En Planificación',
-  CRD: 'Creada',
-  PLAN: 'Planificada',
-  RETR: 'Retraso',
-  REPROG: 'Reprogramación',
-  EJEC: 'En Ejecución',
-  REP: 'En Reporte',
-  FIN: 'Finalizado',
-  PEN: 'Pendiente',
-  EPROG: 'En Progreso',
-  COMPL: 'Completada',
-}
-
 const { tasks, loadingGantt, inicializar } = useGanttProyectos()
 
-function getAncestors(taskId) {
-  const ancestors = []
-  let current = tasks.value.find((t) => t.id === taskId)
-  while (current && current.parent !== 0) {
-    const parent = tasks.value.find((t) => t.id === current.parent)
-    if (parent) {
-      ancestors.push(parent)
-      current = parent
-    } else break
-  }
-  return ancestors
-}
+// Constantes expuestas al template
+const views = VIEWS
+const estadoLabel = ESTADO_LABEL
 
-const filteredTasks = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
-  if (!query) return tasks.value
-  const matched = tasks.value.filter((task) => task.text.toLowerCase().includes(query))
-  const parentIds = new Set()
-  matched.forEach((task) => getAncestors(task.id).forEach((a) => parentIds.add(a.id)))
-  const idsToShow = new Set()
-  matched.forEach((t) => idsToShow.add(t.id))
-  parentIds.forEach((id) => idsToShow.add(id))
-  return tasks.value.filter((task) => idsToShow.has(task.id))
-})
+const todayFormatted = computed(() => getTodayFormatted())
+
+const filteredTasks = computed(() => filterTasks(searchQuery.value, tasks.value))
 const visibleCount = computed(() => filteredTasks.value.length)
 
-function formatDate(date) {
-  if (!date) return 'N/A'
-  return new Date(date).toLocaleDateString('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
+// Wrappers para compatibilidad con el template
+function getParentNameWrapper(parentId) {
+  return getParentName(parentId, tasks.value)
 }
-function getEndDate(task) {
-  if (!task) return 'N/A'
-  const start = new Date(task.start_date)
-  start.setDate(start.getDate() + (task.duration || 0))
-  return start.toISOString().split('T')[0]
-}
-function getParentName(parentId) {
-  return tasks.value.find((t) => t.id === parentId)?.text || 'N/A'
-}
-function getChildren(taskId) {
-  return tasks.value.filter((t) => t.parent === taskId)
+
+function getChildrenWrapper(taskId) {
+  return getChildren(taskId, tasks.value)
 }
 
 function expandAll() {
-  if (ganttInitialized)
-    gantt.eachTask((task) => {
-      if (task.parent === 0) gantt.open(task.id)
-    })
+  if (ganttInitialized) expandAllProjects(gantt)
 }
+
 function collapseAll() {
-  if (ganttInitialized)
-    gantt.eachTask((task) => {
-      if (task.parent === 0) gantt.close(task.id)
-    })
+  if (ganttInitialized) collapseAllProjects(gantt)
 }
 
 function cambiarEscala(view) {
-  if (!ganttInitialized) return
-  const escalas = {
-    day: [
-      { unit: 'month', step: 1, format: '%F %Y' },
-      { unit: 'day', step: 1, format: '%d %M' },
-      { unit: 'hour', step: 2, format: '%H:%i' },
-    ],
-    week: [
-      { unit: 'month', step: 1, format: '%F %Y' },
-      { unit: 'week', step: 1, format: 'Sem. %W' },
-      { unit: 'day', step: 1, format: '%D %d' },
-    ],
-    month: [
-      { unit: 'year', step: 1, format: '%Y' },
-      { unit: 'month', step: 1, format: '%F' },
-      { unit: 'day', step: 1, format: '%d' },
-    ],
-    year: [
-      { unit: 'year', step: 1, format: '%Y' },
-      { unit: 'month', step: 1, format: '%M' },
-    ],
-    lustro: [
-      { unit: 'year', step: 5, format: '%Y' },
-      { unit: 'year', step: 1, format: '%Y' },
-    ],
-  }
-  gantt.config.scales = escalas[view] || escalas.year
-  gantt.render()
+  if (ganttInitialized) changeGanttScale(gantt, view)
 }
 
 function actualizarGantt() {
   if (!ganttContainer.value || !ganttInitialized) return
-  gantt.clearAll()
-  gantt.parse({
-    data: filteredTasks.value.map((t) => ({
-      ...t,
-      color: estadoColor[t.estado] || '#BDBDBD',
-      duration: t.duration || 1,
-      progress: t.progress || 0,
-      open: t.open !== undefined ? t.open : true,
-    })),
-  })
+  loadGanttData(gantt, filteredTasks.value, ESTADO_COLOR)
+}
+
+function handleTaskClick(task) {
+  selectedTask.value = tasks.value.find((t) => t.id === task.id) || task
+  showModal.value = true
 }
 
 watch(searchQuery, () => {
@@ -420,60 +331,12 @@ watch(searchQuery, () => {
 })
 
 function initGantt() {
-  gantt.config.date_format = '%d/%m/%Y'
-  gantt.config.scales = [
-    { unit: 'year', step: 1, format: '%Y' },
-    { unit: 'month', step: 1, format: '%M' },
-  ]
-  gantt.config.readonly = true
-
-  gantt.templates.grid_row_class = function (start, end, task) {
-    if (task.type === 'project') return 'row-project'
-    if (task.parent >= 100000 && task.parent < 200000) return 'row-actividad'
-    if (task.parent >= 200000) return 'row-tarea'
-    return ''
-  }
-
+  initializeGanttConfig(gantt)
   gantt.init(ganttContainer.value)
   ganttInitialized = true
 
-  const tasksWithColors = tasks.value.map((t) => ({
-    ...t,
-    color: estadoColor[t.estado] || '#BDBDBD',
-    duration: t.duration || 1,
-    progress: t.progress || 0,
-  }))
-
-  const today = new Date()
-  const todayStr = today.toISOString().split('T')[0]
-  const marcaHoy = {
-    text: `📅 Hoy`,
-    start_date: todayStr,
-    duration: 1,
-    type: 'task',
-    parent: 0,
-    color: '#E53935',
-    readonly: true,
-  }
-
-  tasksWithColors.unshift({ id: 998, ...marcaHoy })
-  tasksWithColors.push({ id: 999, ...marcaHoy })
-
-  gantt.parse({ data: tasksWithColors })
-
-  gantt.attachEvent('onTaskClick', (id, e) => {
-    const task = gantt.getTask(id)
-    const target = e.target || e.srcElement
-    if (target.closest('.gantt_tree_icon,.gantt_folder,.gantt_file,.gantt_tree_content,.gantt_row'))
-      return true
-    if (task.id === 998 || task.id === 999) return true
-    if (target.closest('.gantt_task_content,.gantt_task')) {
-      selectedTask.value = tasks.value.find((t) => t.id === task.id) || task
-      showModal.value = true
-      return false
-    }
-    return true
-  })
+  loadGanttData(gantt, tasks.value, ESTADO_COLOR)
+  setupGanttEvents(gantt, handleTaskClick)
 }
 
 onMounted(async () => {
