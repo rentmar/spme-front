@@ -12,67 +12,173 @@
     </v-overlay>
 
     <div v-if="!loadingGantt">
-      <!-- 🎛️ BARRA DE CONTROL -->
-      <div class="gantt-controls mb-2">
-        <v-text-field
-          v-model="searchQuery"
-          prepend-inner-icon="mdi-magnify"
-          placeholder="Buscar..."
-          variant="outlined"
-          density="compact"
-          hide-details
-          clearable
-          @click:clear="searchQuery = ''"
-          bg-color="white"
-          style="max-width: 250px"
-        />
-        <v-divider vertical class="mx-2" />
-        <v-btn-toggle
-          v-model="currentView"
-          density="compact"
-          divided
-          mandatory
-          @update:model-value="cambiarEscala"
-        >
-          <v-btn
-            v-for="view in views"
-            :key="view.value"
-            :value="view.value"
-            size="x-small"
-            :prepend-icon="view.icon"
-            :text="view.label"
-          />
-        </v-btn-toggle>
-        <v-divider vertical class="mx-2" />
-        <v-btn-group density="compact" variant="tonal" divided>
-          <v-btn
-            color="success"
-            size="x-small"
-            prepend-icon="mdi-arrow-expand-all"
-            @click="expandAll"
-            >Expandir</v-btn
-          >
-          <v-btn
-            color="warning"
-            size="x-small"
-            prepend-icon="mdi-arrow-collapse-all"
-            @click="collapseAll"
-            >Colapsar</v-btn
-          >
-        </v-btn-group>
-        <v-spacer />
-        <v-chip color="error" variant="outlined" size="x-small" prepend-icon="mdi-calendar-today">{{
-          todayFormatted
-        }}</v-chip>
-        <span class="text-caption text-grey ml-2">{{ visibleCount }} tareas</span>
-      </div>
+      <!-- 🏗️ ENCABEZADO -->
+      <v-card class="gantt-header-card mb-2" elevation="0" rounded="lg">
+        <v-card-text class="pa-2">
+          <v-row dense align="center">
+            <v-col cols="auto">
+              <v-avatar color="primary" size="36" class="mr-2">
+                <v-icon icon="mdi-chart-gantt" color="white" size="20" />
+              </v-avatar>
+            </v-col>
+            <v-col>
+              <h2 class="text-h6 font-weight-bold mb-0">Cronograma de Proyectos</h2>
+              <div class="text-caption text-grey">
+                Planificación estratégica · {{ visibleCount }} elementos
+              </div>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
 
-      <div ref="ganttContainer" class="gantt-chart"></div>
+      <!-- 🎛️ BARRA DE CONTROL -->
+      <v-card class="gantt-toolbar mb-2" elevation="0" rounded="lg">
+        <v-card-text class="pa-2">
+          <v-row dense align="center">
+            <v-col cols="3">
+              <v-text-field
+                v-model="searchQuery"
+                prepend-inner-icon="mdi-magnify"
+                placeholder="Buscar proyectos, actividades o tareas..."
+                variant="outlined"
+                density="compact"
+                hide-details
+                clearable
+                @click:clear="searchQuery = ''"
+                bg-color="white"
+                class="search-field"
+              />
+            </v-col>
+            <v-divider vertical class="mx-2" />
+            <v-col cols="auto">
+              <v-btn-toggle
+                v-model="currentView"
+                density="compact"
+                divided
+                mandatory
+                @update:model-value="cambiarEscala"
+                class="scale-toggle"
+              >
+                <v-btn
+                  v-for="view in views"
+                  :key="view.value"
+                  :value="view.value"
+                  size="x-small"
+                  :prepend-icon="view.icon"
+                  :text="view.label"
+                />
+              </v-btn-toggle>
+            </v-col>
+            <v-divider vertical class="mx-2" />
+            <v-col cols="auto">
+              <v-btn
+                color="success"
+                size="x-small"
+                variant="tonal"
+                @click="expandAll"
+                class="text-none"
+              >
+                <v-icon start size="16">mdi-arrow-expand-all</v-icon>
+                Expandir
+              </v-btn>
+            </v-col>
+            <v-col cols="auto">
+              <v-btn
+                color="warning"
+                size="x-small"
+                variant="tonal"
+                @click="collapseAll"
+                class="text-none"
+              >
+                <v-icon start size="16">mdi-arrow-collapse-all</v-icon>
+                Colapsar
+              </v-btn>
+            </v-col>
+            <v-spacer />
+            <v-col cols="auto">
+              <v-chip
+                color="error"
+                variant="tonal"
+                size="x-small"
+                prepend-icon="mdi-calendar-today"
+                class="today-chip"
+                >{{ todayFormatted }}</v-chip
+              >
+            </v-col>
+            <v-divider vertical class="mx-2" />
+            <v-col cols="auto" style="min-width: 180px">
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <v-slider
+                    v-model="ganttHeight"
+                    min="200"
+                    max="800"
+                    step="50"
+                    hide-details
+                    density="compact"
+                    color="success"
+                    track-color="green-lighten-4"
+                    prepend-icon="mdi-arrow-up-down"
+                    v-bind="props"
+                  />
+                </template>
+                <span>Ajustar el Alto</span>
+              </v-tooltip>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+
+      <!-- 📊 Gantt -->
+      <v-card class="gantt-chart-card" elevation="0" rounded="lg">
+        <div ref="ganttContainer" :style="{ height: ganttHeight + 'px' }"></div>
+      </v-card>
+
+      <!-- 📌 PIE -->
+      <div class="gantt-footer mt-1">
+        <div class="legend-item">
+          <span>🏗️</span>
+          <span>Proyecto</span>
+        </div>
+        <div class="legend-item">
+          <span>📋</span>
+          <span>Actividad</span>
+        </div>
+        <div class="legend-item">
+          <span>🏷️</span>
+          <span>Tarea</span>
+        </div>
+        <v-divider vertical class="mx-2" />
+        <span class="text-caption text-grey mr-2">Estados:</span>
+        <div class="legend-item">
+          <v-icon size="10" color="#64b5f6">mdi-circle</v-icon>
+          <span>Planificada</span>
+        </div>
+        <div class="legend-item">
+          <v-icon size="10" color="#ffa726">mdi-circle</v-icon>
+          <span>En Ejecución</span>
+        </div>
+        <div class="legend-item">
+          <v-icon size="10" color="#ef5350">mdi-circle</v-icon>
+          <span>Retraso</span>
+        </div>
+        <div class="legend-item">
+          <v-icon size="10" color="#4CAF50">mdi-circle</v-icon>
+          <span>Finalizado</span>
+        </div>
+        <v-spacer />
+        <span class="text-caption text-grey">💡 Click en una barra para ver detalles</span>
+      </div>
 
       <!-- 📋 MODAL -->
       <v-dialog v-model="showModal" max-width="480" transition="dialog-bottom-transition">
-        <v-card rounded="lg" v-if="selectedTask">
-          <v-toolbar :color="selectedTask.color || '#1976d2'" dark density="compact">
+        <v-card rounded="lg" v-if="selectedTask" class="modal-card">
+          <v-toolbar
+            :color="selectedTask.color || '#1976d2'"
+            dark
+            density="compact"
+            class="modal-toolbar"
+          >
             <v-toolbar-title class="text-subtitle-2 font-weight-bold">{{
               selectedTask.text
             }}</v-toolbar-title>
@@ -82,28 +188,41 @@
           <v-card-text class="pa-3">
             <v-row dense>
               <v-col cols="6">
-                <span class="text-caption text-grey">📅 Inicio</span>
-                <div class="text-body-2 font-weight-medium">
-                  {{ formatDate(selectedTask.start_date) }}
+                <div class="modal-field">
+                  <v-icon size="14" color="primary" class="mr-1">mdi-calendar-start</v-icon>
+                  <span class="text-caption text-grey">Inicio</span>
+                  <div class="text-body-2 font-weight-medium">
+                    {{ formatDate(selectedTask.start_date) }}
+                  </div>
                 </div>
               </v-col>
               <v-col cols="6">
-                <span class="text-caption text-grey">📅 Fin</span>
-                <div class="text-body-2 font-weight-medium">
-                  {{ formatDate(getEndDate(selectedTask)) }}
+                <div class="modal-field">
+                  <v-icon size="14" color="primary" class="mr-1">mdi-calendar-end</v-icon>
+                  <span class="text-caption text-grey">Fin</span>
+                  <div class="text-body-2 font-weight-medium">
+                    {{ formatDate(getEndDate(selectedTask)) }}
+                  </div>
                 </div>
               </v-col>
               <v-col cols="6">
-                <span class="text-caption text-grey">⏱️ Duración</span>
-                <div class="text-body-2">{{ selectedTask.duration }} días</div>
+                <div class="modal-field">
+                  <v-icon size="14" color="primary" class="mr-1">mdi-clock-outline</v-icon>
+                  <span class="text-caption text-grey">Duración</span>
+                  <div class="text-body-2">{{ selectedTask.duration }} días</div>
+                </div>
               </v-col>
               <v-col cols="6">
-                <span class="text-caption text-grey">📊 Progreso</span>
-                <div class="text-body-2">{{ Math.round((selectedTask.progress || 0) * 100) }}%</div>
+                <div class="modal-field">
+                  <v-icon size="14" color="primary" class="mr-1">mdi-progress-check</v-icon>
+                  <span class="text-caption text-grey">Progreso</span>
+                  <div class="text-body-2">
+                    {{ Math.round((selectedTask.progress || 0) * 100) }}%
+                  </div>
+                </div>
               </v-col>
               <v-col cols="12">
-                <span class="text-caption text-grey">🏷️ Estado</span>
-                <v-chip size="x-small" :color="selectedTask.color" class="ml-1">{{
+                <v-chip size="x-small" :color="selectedTask.color" class="mt-1">{{
                   estadoLabel[selectedTask.estado]
                 }}</v-chip>
               </v-col>
@@ -145,6 +264,7 @@ const showModal = ref(false)
 const selectedTask = ref(null)
 const currentView = ref('year')
 const searchQuery = ref('')
+const ganttHeight = ref(300)
 let ganttInitialized = false
 
 const todayFormatted = computed(() =>
@@ -164,11 +284,14 @@ const estadoColor = {
   EP: '#FFA726',
   CRD: '#BDBDBD',
   PLAN: '#64b5f6',
-  RETR: '#ff0000',
+  RETR: '#ef5350',
   REPROG: '#ffd54f',
   EJEC: '#ffa726',
   REP: '#81c784',
-  FIN: '#003CFF',
+  FIN: '#4CAF50',
+  PEN: '#BDBDBD',
+  EPROG: '#ffa726',
+  COMPL: '#66BB6A',
 }
 const estadoLabel = {
   ES: 'Estructuración',
@@ -180,7 +303,11 @@ const estadoLabel = {
   EJEC: 'En Ejecución',
   REP: 'En Reporte',
   FIN: 'Finalizado',
+  PEN: 'Pendiente',
+  EPROG: 'En Progreso',
+  COMPL: 'Completada',
 }
+
 const { tasks, loadingGantt, inicializar } = useGanttProyectos()
 
 function getAncestors(taskId) {
@@ -300,6 +427,13 @@ function initGantt() {
   ]
   gantt.config.readonly = true
 
+  gantt.templates.grid_row_class = function (start, end, task) {
+    if (task.type === 'project') return 'row-project'
+    if (task.parent >= 100000 && task.parent < 200000) return 'row-actividad'
+    if (task.parent >= 200000) return 'row-tarea'
+    return ''
+  }
+
   gantt.init(ganttContainer.value)
   ganttInitialized = true
 
@@ -355,26 +489,104 @@ watch(loadingGantt, async (val) => {
 </script>
 
 <style scoped>
+/* ── Contenedor ─────────────────────────── */
 .gantt-wrapper {
-  padding: 16px;
-  background: #fafafa;
+  padding: 12px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  min-height: 100vh;
 }
-.gantt-controls {
+
+/* ── Header ─────────────────────────────── */
+.gantt-header-card {
+  border: 1px solid #dde1e6;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fb 100%);
+}
+
+/* ── Toolbar ────────────────────────────── */
+.gantt-toolbar {
+  border: 1px solid #dde1e6;
+  background: white;
+}
+.search-field :deep(.v-field__outline) {
+  --v-field-border-opacity: 0.15;
+}
+.today-chip {
+  font-weight: 500;
+}
+.scale-toggle :deep(.v-btn--active) {
+  font-weight: 700;
+}
+
+/* ── Chart ──────────────────────────────── */
+.gantt-chart-card {
+  border: 1px solid #dde1e6;
+  background: white;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Footer ─────────────────────────────── */
+.gantt-footer {
   display: flex;
   align-items: center;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fb 100%);
+  border: 1px solid #dde1e6;
+  border-radius: 6px;
 }
-.gantt-chart {
-  height: 400px;
-  margin-top: 8px;
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 16px;
+  font-size: 11px;
+  color: #666;
 }
+
+/* ── Modal ──────────────────────────────── */
+.modal-card {
+  overflow: hidden;
+}
+.modal-toolbar {
+  letter-spacing: 0.3px;
+}
+.modal-field {
+  margin-bottom: 8px;
+}
+
+/* ── Grid ────────────────────────────────── */
+:deep(.row-project) {
+  background-color: #e8f5e9 !important;
+}
+:deep(.row-actividad) {
+  background-color: #e3f2fd !important;
+}
+:deep(.row-tarea) {
+  background-color: #fff3e0 !important;
+}
+
+/* ── Gantt ──────────────────────────────── */
 :deep(.gantt_task_line) {
   border-radius: 4px;
   cursor: pointer;
+  transition: filter 0.2s ease;
 }
 :deep(.gantt_task_line:hover) {
-  filter: brightness(1.15);
+  filter: brightness(1.1);
 }
 :deep(.gantt_task_progress) {
   border-radius: 4px 0 0 4px;
+}
+:deep(.gantt_grid_scale),
+:deep(.gantt_task_scale) {
+  background: #f5f5f5;
+  font-weight: 500;
+  font-size: 11px;
+}
+:deep(.gantt_row) {
+  border-bottom: 1px solid #f0f0f0;
+}
+:deep(.gantt_tree_content) {
+  font-size: 13px;
 }
 </style>
