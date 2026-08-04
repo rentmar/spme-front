@@ -1,749 +1,380 @@
 <template>
-  <v-container fluid class="pa-4" style="height: 600px">
-    <!-- 🔍 BARRA DE HERRAMIENTAS -->
-    <v-row class="mb-3 align-center">
-      <!-- Buscador -->
-      <v-col cols="12" md="4">
+  <div class="gantt-wrapper">
+    <!-- Overlay de carga -->
+    <v-overlay
+      :model-value="loadingGantt"
+      class="align-center justify-center"
+      persistent
+      opacity="0.8"
+    >
+      <v-progress-circular indeterminate color="primary" size="64" width="6" />
+      <p class="mt-3 text-white">Cargando cronograma...</p>
+    </v-overlay>
+
+    <div v-if="!loadingGantt">
+      <!-- 🎛️ BARRA DE CONTROL -->
+      <div class="gantt-controls mb-2">
         <v-text-field
           v-model="searchQuery"
           prepend-inner-icon="mdi-magnify"
-          placeholder="Buscar proyecto, actividad o tarea..."
+          placeholder="Buscar..."
           variant="outlined"
           density="compact"
           hide-details
           clearable
-          @click:clear="clearSearch"
+          @click:clear="searchQuery = ''"
           bg-color="white"
+          style="max-width: 250px"
         />
-      </v-col>
-
-      <!-- Contador -->
-      <v-col cols="auto" class="d-none d-md-flex">
-        <v-chip variant="tonal" color="primary" size="small" label>
-          {{ visibleCount }} tareas visibles
-        </v-chip>
-      </v-col>
-
-      <v-spacer />
-
-      <!-- Botones Expandir/Colapsar -->
-      <v-col cols="auto">
-        <v-btn-group density="compact" variant="elevated" divided>
-          <v-btn
-            color="success"
-            prepend-icon="mdi-arrow-expand-all"
-            @click="expandAll"
-            text="Expandir"
-          />
-          <v-btn
-            color="warning"
-            prepend-icon="mdi-arrow-collapse-all"
-            @click="collapseAll"
-            text="Colapsar"
-          />
-        </v-btn-group>
-      </v-col>
-
-      <!-- Escala -->
-      <v-col cols="auto" class="ml-2">
+        <v-divider vertical class="mx-2" />
         <v-btn-toggle
           v-model="currentView"
           density="compact"
           divided
           mandatory
-          @update:model-value="setView"
+          @update:model-value="cambiarEscala"
         >
           <v-btn
             v-for="view in views"
             :key="view.value"
             :value="view.value"
+            size="x-small"
             :prepend-icon="view.icon"
-            size="small"
-          >
-            {{ view.label }}
-          </v-btn>
+            :text="view.label"
+          />
         </v-btn-toggle>
-      </v-col>
-    </v-row>
+        <v-divider vertical class="mx-2" />
+        <v-btn-group density="compact" variant="tonal" divided>
+          <v-btn
+            color="success"
+            size="x-small"
+            prepend-icon="mdi-arrow-expand-all"
+            @click="expandAll"
+            >Expandir</v-btn
+          >
+          <v-btn
+            color="warning"
+            size="x-small"
+            prepend-icon="mdi-arrow-collapse-all"
+            @click="collapseAll"
+            >Colapsar</v-btn
+          >
+        </v-btn-group>
+        <v-spacer />
+        <v-chip color="error" variant="outlined" size="x-small" prepend-icon="mdi-calendar-today">{{
+          todayFormatted
+        }}</v-chip>
+        <span class="text-caption text-grey ml-2">{{ visibleCount }} tareas</span>
+      </div>
 
-    <!-- 📊 Gantt -->
-    <v-card variant="outlined" class="gantt-card">
-      <div ref="ganttContainer" style="height: 400px"></div>
-    </v-card>
+      <div ref="ganttContainer" class="gantt-chart"></div>
 
-    <!-- 📋 MODAL DE INFORMACIÓN -->
-    <v-dialog v-model="showModal" max-width="500" transition="dialog-bottom-transition">
-      <v-card rounded="lg">
-        <v-toolbar :color="getTypeColor(selectedTask?.type || getTaskType(selectedTask))" dark>
-          <v-toolbar-title class="text-subtitle-1 font-weight-bold">
-            📋 Detalles de la Tarea
-          </v-toolbar-title>
-          <v-spacer />
-          <v-btn icon="mdi-close" @click="closeModal" variant="text" />
-        </v-toolbar>
-
-        <v-card-text class="pa-4" v-if="selectedTask">
-          <div class="d-flex flex-column gap-3">
-            <!-- Tipo -->
-            <v-chip
-              :color="getTypeColor(selectedTask.type || getTaskType(selectedTask))"
-              class="align-self-start"
-              size="small"
-              label
-            >
-              {{ getTypeLabel(selectedTask.type || getTaskType(selectedTask)) }}
-            </v-chip>
-
-            <!-- Nombre -->
-            <div>
-              <div class="text-caption text-grey font-weight-bold text-uppercase">Nombre</div>
-              <div class="text-h6 font-weight-bold mt-1">{{ selectedTask.text }}</div>
-            </div>
-
-            <!-- ID -->
-            <div>
-              <div class="text-caption text-grey font-weight-bold text-uppercase">ID</div>
-              <div class="text-body-1 mt-1">#{{ selectedTask.id }}</div>
-            </div>
-
-            <!-- Fechas -->
-            <v-row>
+      <!-- 📋 MODAL -->
+      <v-dialog v-model="showModal" max-width="480" transition="dialog-bottom-transition">
+        <v-card rounded="lg" v-if="selectedTask">
+          <v-toolbar :color="selectedTask.color || '#1976d2'" dark density="compact">
+            <v-toolbar-title class="text-subtitle-2 font-weight-bold">{{
+              selectedTask.text
+            }}</v-toolbar-title>
+            <v-spacer />
+            <v-btn icon="mdi-close" @click="showModal = false" variant="text" size="small" />
+          </v-toolbar>
+          <v-card-text class="pa-3">
+            <v-row dense>
               <v-col cols="6">
-                <div class="text-caption text-grey font-weight-bold text-uppercase">📅 Inicio</div>
-                <div class="text-body-2 mt-1">{{ formatDate(selectedTask.start_date) }}</div>
-              </v-col>
-              <v-col cols="6">
-                <div class="text-caption text-grey font-weight-bold text-uppercase">📅 Fin</div>
-                <div class="text-body-2 mt-1">
-                  {{ formatDate(selectedTask.end_date || getEndDate(selectedTask)) }}
+                <span class="text-caption text-grey">📅 Inicio</span>
+                <div class="text-body-2 font-weight-medium">
+                  {{ formatDate(selectedTask.start_date) }}
                 </div>
               </v-col>
-            </v-row>
-
-            <!-- Duración y Progreso -->
-            <v-row>
               <v-col cols="6">
-                <div class="text-caption text-grey font-weight-bold text-uppercase">
-                  ⏱️ Duración
+                <span class="text-caption text-grey">📅 Fin</span>
+                <div class="text-body-2 font-weight-medium">
+                  {{ formatDate(getEndDate(selectedTask)) }}
                 </div>
-                <div class="text-body-2 mt-1">{{ selectedTask.duration || 0 }} días</div>
               </v-col>
               <v-col cols="6">
-                <div class="text-caption text-grey font-weight-bold text-uppercase">
-                  📊 Progreso
-                </div>
-                <div class="text-body-2 mt-1">
-                  {{ Math.round((selectedTask.progress || 0) * 100) }}%
-                </div>
+                <span class="text-caption text-grey">⏱️ Duración</span>
+                <div class="text-body-2">{{ selectedTask.duration }} días</div>
+              </v-col>
+              <v-col cols="6">
+                <span class="text-caption text-grey">📊 Progreso</span>
+                <div class="text-body-2">{{ Math.round((selectedTask.progress || 0) * 100) }}%</div>
+              </v-col>
+              <v-col cols="12">
+                <span class="text-caption text-grey">🏷️ Estado</span>
+                <v-chip size="x-small" :color="selectedTask.color" class="ml-1">{{
+                  estadoLabel[selectedTask.estado]
+                }}</v-chip>
               </v-col>
             </v-row>
-
-            <!-- Barra de progreso -->
             <v-progress-linear
               :model-value="Math.round((selectedTask.progress || 0) * 100)"
-              color="success"
-              height="10"
+              :color="selectedTask.color"
+              height="6"
               rounded
+              class="my-2"
             />
-
-            <!-- Padre -->
-            <div v-if="selectedTask.parent !== 0">
-              <div class="text-caption text-grey font-weight-bold text-uppercase">
-                👆 Tarea Padre
-              </div>
-              <div class="text-body-2 mt-1">{{ getParentName(selectedTask.parent) || 'N/A' }}</div>
+            <div v-if="selectedTask.parent !== 0" class="text-caption text-grey mt-1">
+              👆 Padre: {{ getParentName(selectedTask.parent) }}
             </div>
-
-            <!-- Subtareas -->
-            <div v-if="getChildren(selectedTask.id).length > 0">
-              <div class="text-caption text-grey font-weight-bold text-uppercase">
-                📂 Subtareas ({{ getChildren(selectedTask.id).length }})
-              </div>
-              <v-list density="compact" class="mt-1 pa-0">
-                <v-list-item
-                  v-for="child in getChildren(selectedTask.id)"
-                  :key="child.id"
-                  :title="child.text"
-                  class="text-body-2"
-                />
-              </v-list>
+            <div v-if="getChildren(selectedTask.id).length > 0" class="text-caption text-grey mt-1">
+              📂 Subtareas: {{ getChildren(selectedTask.id).length }}
             </div>
-          </div>
-        </v-card-text>
-
-        <v-card-actions class="pa-4">
-          <v-spacer />
-          <v-btn color="success" variant="elevated" @click="closeModal" text="Cerrar" />
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-container>
+          </v-card-text>
+          <v-card-actions class="pa-2 pt-0">
+            <v-spacer />
+            <v-btn color="primary" variant="flat" size="small" @click="showModal = false"
+              >Cerrar</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick, computed } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { gantt } from 'dhtmlx-gantt'
 import 'dhtmlx-gantt/codebase/dhtmlxgantt.css'
+import { useGanttProyectos } from '@/modules/gantt/composables/useGanttProyectos'
 
-// ============================================
-// 📊 ESTADO
-// ============================================
 const ganttContainer = ref(null)
+const showModal = ref(false)
+const selectedTask = ref(null)
+const currentView = ref('year')
 const searchQuery = ref('')
 let ganttInitialized = false
 
-const showModal = ref(false)
-const selectedTask = ref(null)
+const todayFormatted = computed(() =>
+  new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+)
 
-const currentView = ref('week')
 const views = [
   { label: 'Día', value: 'day', icon: 'mdi-calendar-day' },
   { label: 'Semana', value: 'week', icon: 'mdi-calendar-week' },
   { label: 'Mes', value: 'month', icon: 'mdi-calendar-month' },
   { label: 'Año', value: 'year', icon: 'mdi-calendar' },
+  { label: 'Lustro', value: 'lustro', icon: 'mdi-calendar-multiselect' },
 ]
 
-// ============================================
-// 📊 DATOS
-// ============================================
-const allTasks = [
-  {
-    id: 1,
-    text: '🏗️ Proyecto: Edificio Corporativo',
-    start_date: '2026-01-01',
-    duration: 180,
-    progress: 0.35,
-    parent: 0,
-    open: false,
-  },
-  {
-    id: 100,
-    text: '🏗️ Proyecto: Parque Industrial',
-    start_date: '2026-03-01',
-    duration: 210,
-    progress: 0.1,
-    parent: 0,
-    open: false,
-  },
-  {
-    id: 2,
-    text: '  📋 Planificación',
-    start_date: '2026-01-01',
-    duration: 45,
-    progress: 0.9,
-    parent: 1,
-    open: true,
-  },
-  {
-    id: 3,
-    text: '  🔨 Construcción',
-    start_date: '2026-02-01',
-    duration: 105,
-    progress: 0.3,
-    parent: 1,
-    open: true,
-  },
-  {
-    id: 4,
-    text: '  🧪 Pruebas y Control',
-    start_date: '2026-05-01',
-    duration: 60,
-    progress: 0,
-    parent: 1,
-    open: true,
-  },
-  {
-    id: 101,
-    text: '  📋 Estudio de Suelo',
-    start_date: '2026-03-01',
-    duration: 45,
-    progress: 0.6,
-    parent: 100,
-    open: true,
-  },
-  {
-    id: 102,
-    text: '  🏗️ Movimiento de Tierras',
-    start_date: '2026-04-01',
-    duration: 90,
-    progress: 0.2,
-    parent: 100,
-    open: true,
-  },
-  {
-    id: 5,
-    text: '    📝 Requisitos y Alcance',
-    start_date: '2026-01-01',
-    duration: 10,
-    progress: 1,
-    parent: 2,
-    open: true,
-  },
-  {
-    id: 6,
-    text: '    🎨 Diseño Arquitectónico',
-    start_date: '2026-01-08',
-    duration: 13,
-    progress: 1,
-    parent: 2,
-    open: true,
-  },
-  {
-    id: 7,
-    text: '    📑 Permisos y Licencias',
-    start_date: '2026-01-21',
-    duration: 26,
-    progress: 0.8,
-    parent: 2,
-    open: true,
-  },
-  {
-    id: 8,
-    text: '    🏗️ Cimentación',
-    start_date: '2026-02-01',
-    duration: 43,
-    progress: 0.6,
-    parent: 3,
-    open: true,
-  },
-  {
-    id: 9,
-    text: '    🧱 Estructura',
-    start_date: '2026-03-01',
-    duration: 60,
-    progress: 0.25,
-    parent: 3,
-    open: true,
-  },
-  {
-    id: 10,
-    text: '    🔌 Instalaciones',
-    start_date: '2026-04-01',
-    duration: 45,
-    progress: 0.1,
-    parent: 3,
-    open: true,
-  },
-  {
-    id: 11,
-    text: '    ✅ Pruebas de Calidad',
-    start_date: '2026-05-01',
-    duration: 30,
-    progress: 0,
-    parent: 4,
-    open: true,
-  },
-  {
-    id: 12,
-    text: '    📋 Inspección Final',
-    start_date: '2026-06-01',
-    duration: 15,
-    progress: 0,
-    parent: 4,
-    open: true,
-  },
-  {
-    id: 103,
-    text: '    📊 Estudio Geotécnico',
-    start_date: '2026-03-01',
-    duration: 30,
-    progress: 0.8,
-    parent: 101,
-    open: true,
-  },
-  {
-    id: 104,
-    text: '    📋 Informe de Suelo',
-    start_date: '2026-04-01',
-    duration: 15,
-    progress: 0.4,
-    parent: 101,
-    open: true,
-  },
-  {
-    id: 105,
-    text: '    🚜 Excavación',
-    start_date: '2026-04-01',
-    duration: 45,
-    progress: 0.3,
-    parent: 102,
-    open: true,
-  },
-  {
-    id: 106,
-    text: '    🏗️ Nivelación',
-    start_date: '2026-05-16',
-    duration: 45,
-    progress: 0.1,
-    parent: 102,
-    open: true,
-  },
-]
-
-// ============================================
-// 🛠️ FUNCIONES DE AYUDA
-// ============================================
-const getTaskType = (task) => {
-  if (!task) return 'task'
-  if (task.parent === 0) return 'project'
-  const parent = allTasks.find((t) => t.id === task.parent)
-  if (parent && parent.parent === 0) return 'activity'
-  return 'task'
+const estadoColor = {
+  ES: '#42A5F5',
+  EP: '#FFA726',
+  CRD: '#BDBDBD',
+  PLAN: '#64b5f6',
+  RETR: '#ff0000',
+  REPROG: '#ffd54f',
+  EJEC: '#ffa726',
+  REP: '#81c784',
+  FIN: '#003CFF',
 }
-
-const getTypeLabel = (type) => {
-  const labels = { project: '📊 Proyecto', activity: '📋 Actividad', task: '📄 Tarea' }
-  return labels[type] || 'Tarea'
+const estadoLabel = {
+  ES: 'Estructuración',
+  EP: 'En Planificación',
+  CRD: 'Creada',
+  PLAN: 'Planificada',
+  RETR: 'Retraso',
+  REPROG: 'Reprogramación',
+  EJEC: 'En Ejecución',
+  REP: 'En Reporte',
+  FIN: 'Finalizado',
 }
+const { tasks, loadingGantt, inicializar } = useGanttProyectos()
 
-const getTypeColor = (type) => {
-  const colors = { project: 'green', activity: 'blue', task: 'orange' }
-  return colors[type] || 'grey'
-}
-
-const formatDate = (date) => {
-  if (!date) return 'N/A'
-  const d = new Date(date)
-  return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
-
-const getEndDate = (task) => {
-  if (!task) return 'N/A'
-  if (task.end_date) return task.end_date
-  const start = new Date(task.start_date)
-  start.setDate(start.getDate() + (task.duration || 0))
-  return start.toISOString().split('T')[0]
-}
-
-const getParentName = (parentId) => {
-  const parent = allTasks.find((t) => t.id === parentId)
-  return parent ? parent.text : null
-}
-
-const getChildren = (taskId) => {
-  return allTasks.filter((t) => t.parent === taskId)
-}
-
-// ============================================
-// 🔍 BUSCADOR
-// ============================================
-const getAncestors = (taskId) => {
+function getAncestors(taskId) {
   const ancestors = []
-  let current = allTasks.find((t) => t.id === taskId)
+  let current = tasks.value.find((t) => t.id === taskId)
   while (current && current.parent !== 0) {
-    const parent = allTasks.find((t) => t.id === current.parent)
+    const parent = tasks.value.find((t) => t.id === current.parent)
     if (parent) {
       ancestors.push(parent)
       current = parent
-    } else {
-      break
-    }
+    } else break
   }
   return ancestors
 }
 
 const filteredTasks = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
-  if (!query) return allTasks
-
-  const matched = allTasks.filter((task) => task.text.toLowerCase().includes(query))
+  if (!query) return tasks.value
+  const matched = tasks.value.filter((task) => task.text.toLowerCase().includes(query))
   const parentIds = new Set()
-  matched.forEach((task) => {
-    const ancestors = getAncestors(task.id)
-    ancestors.forEach((a) => parentIds.add(a.id))
-  })
+  matched.forEach((task) => getAncestors(task.id).forEach((a) => parentIds.add(a.id)))
   const idsToShow = new Set()
   matched.forEach((t) => idsToShow.add(t.id))
   parentIds.forEach((id) => idsToShow.add(id))
-
-  return allTasks.filter((task) => idsToShow.has(task.id))
+  return tasks.value.filter((task) => idsToShow.has(task.id))
 })
-
 const visibleCount = computed(() => filteredTasks.value.length)
 
-// ============================================
-// 🎯 BOTONES
-// ============================================
-const expandAll = () => {
-  if (!ganttInitialized) return
-  const allTasksGantt = gantt.getTaskByTime()
-  const projects = allTasksGantt.filter((task) => task.parent === 0)
-  projects.forEach((project) => gantt.open(project.id))
+function formatDate(date) {
+  if (!date) return 'N/A'
+  return new Date(date).toLocaleDateString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+}
+function getEndDate(task) {
+  if (!task) return 'N/A'
+  const start = new Date(task.start_date)
+  start.setDate(start.getDate() + (task.duration || 0))
+  return start.toISOString().split('T')[0]
+}
+function getParentName(parentId) {
+  return tasks.value.find((t) => t.id === parentId)?.text || 'N/A'
+}
+function getChildren(taskId) {
+  return tasks.value.filter((t) => t.parent === taskId)
 }
 
-const collapseAll = () => {
-  if (!ganttInitialized) return
-  const allTasksGantt = gantt.getTaskByTime()
-  const projects = allTasksGantt.filter((task) => task.parent === 0)
-  projects.forEach((project) => gantt.close(project.id))
+function expandAll() {
+  if (ganttInitialized)
+    gantt.eachTask((task) => {
+      if (task.parent === 0) gantt.open(task.id)
+    })
+}
+function collapseAll() {
+  if (ganttInitialized)
+    gantt.eachTask((task) => {
+      if (task.parent === 0) gantt.close(task.id)
+    })
 }
 
-const clearSearch = () => {
-  searchQuery.value = ''
-}
-
-// ============================================
-// 🔎 FUNCIONES DE ESCALA
-// ============================================
-const setView = (view) => {
+function cambiarEscala(view) {
   if (!ganttInitialized) return
-
-  let scales = []
-  switch (view) {
-    case 'day':
-      scales = [
-        { unit: 'day', step: 1, format: '%d %M' },
-        { unit: 'hour', step: 1, format: '%H' },
-      ]
-      break
-    case 'week':
-      scales = [
-        { unit: 'week', step: 1, format: 'Semana %W' },
-        { unit: 'day', step: 1, format: '%d %M' },
-      ]
-      break
-    case 'month':
-      scales = [
-        { unit: 'month', step: 1, format: '%F %Y' },
-        { unit: 'day', step: 1, format: '%d' },
-      ]
-      break
-    case 'year':
-      scales = [
-        { unit: 'year', step: 1, format: '%Y' },
-        { unit: 'month', step: 1, format: '%M' },
-      ]
-      break
-    default:
-      scales = [
-        { unit: 'month', step: 1, format: '%F %Y' },
-        { unit: 'day', step: 1, format: '%d' },
-      ]
+  const escalas = {
+    day: [
+      { unit: 'month', step: 1, format: '%F %Y' },
+      { unit: 'day', step: 1, format: '%d %M' },
+      { unit: 'hour', step: 2, format: '%H:%i' },
+    ],
+    week: [
+      { unit: 'month', step: 1, format: '%F %Y' },
+      { unit: 'week', step: 1, format: 'Sem. %W' },
+      { unit: 'day', step: 1, format: '%D %d' },
+    ],
+    month: [
+      { unit: 'year', step: 1, format: '%Y' },
+      { unit: 'month', step: 1, format: '%F' },
+      { unit: 'day', step: 1, format: '%d' },
+    ],
+    year: [
+      { unit: 'year', step: 1, format: '%Y' },
+      { unit: 'month', step: 1, format: '%M' },
+    ],
+    lustro: [
+      { unit: 'year', step: 5, format: '%Y' },
+      { unit: 'year', step: 1, format: '%Y' },
+    ],
   }
-
-  gantt.config.scales = scales
+  gantt.config.scales = escalas[view] || escalas.year
   gantt.render()
 }
 
-// ============================================
-// 📋 MODAL
-// ============================================
-const openModal = (task) => {
-  const fullTask = allTasks.find((t) => t.id === task.id) || task
-  selectedTask.value = fullTask
-  showModal.value = true
-}
-
-const closeModal = () => {
-  showModal.value = false
-  selectedTask.value = null
-}
-
-// ============================================
-// 📦 ACTUALIZAR GANTT
-// ============================================
-const updateGantt = () => {
+function actualizarGantt() {
   if (!ganttContainer.value || !ganttInitialized) return
-
-  const data = {
-    data: filteredTasks.value.map((task) => ({
-      ...task,
-      duration: task.duration || 1,
-      progress: task.progress || 0,
-      parent: task.parent || 0,
-      open: task.open !== undefined ? task.open : true,
-    })),
-    links: [],
-  }
-
   gantt.clearAll()
-  gantt.parse(data)
-  setView(currentView.value)
+  gantt.parse({
+    data: filteredTasks.value.map((t) => ({
+      ...t,
+      color: estadoColor[t.estado] || '#BDBDBD',
+      duration: t.duration || 1,
+      progress: t.progress || 0,
+      open: t.open !== undefined ? t.open : true,
+    })),
+  })
 }
 
-// ============================================
-// 🌐 CONFIGURAR IDIOMA ESPAÑOL
-// ============================================
-const setSpanishLocale = () => {
-  gantt.locale = {
-    date: {
-      month_full: [
-        'Enero',
-        'Febrero',
-        'Marzo',
-        'Abril',
-        'Mayo',
-        'Junio',
-        'Julio',
-        'Agosto',
-        'Septiembre',
-        'Octubre',
-        'Noviembre',
-        'Diciembre',
-      ],
-      month_short: [
-        'Ene',
-        'Feb',
-        'Mar',
-        'Abr',
-        'May',
-        'Jun',
-        'Jul',
-        'Ago',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dic',
-      ],
-      day_full: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-      day_short: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
-    },
-    labels: {
-      hour: 'Hora',
-      hours: 'Horas',
-      day: 'Día',
-      days: 'Días',
-      week: 'Semana',
-      weeks: 'Semanas',
-      month: 'Mes',
-      months: 'Meses',
-      year: 'Año',
-      years: 'Años',
-      task: 'Tarea',
-      start_date: 'Fecha de inicio',
-      duration: 'Duración',
-      progress: 'Progreso',
-      text: 'Texto',
-      details: 'Detalles',
-      resource: 'Recurso',
-      resources: 'Recursos',
-      link: 'Enlace',
-      links: 'Enlaces',
-      add_link: 'Añadir enlace',
-      remove_link: 'Eliminar enlace',
-      no_links: 'Sin enlaces',
-      no_data: 'Sin datos',
-      no_resources: 'Sin recursos',
-      save: 'Guardar',
-      cancel: 'Cancelar',
-      delete: 'Eliminar',
-      add: 'Añadir',
-      edit: 'Editar',
-      close: 'Cerrar',
-      confirm: 'Confirmar',
-      delete_task: 'Eliminar tarea',
-      delete_link: 'Eliminar enlace',
-      delete_item: 'Eliminar elemento',
-      day_view: 'Día',
-      week_view: 'Semana',
-      month_view: 'Mes',
-      year_view: 'Año',
-      Unit: 'Unidad',
-      Value: 'Valor',
-      'Add task': 'Añadir tarea',
-      'Add resource': 'Añadir recurso',
-      'Remove resource': 'Eliminar recurso',
-      'No resources assigned': 'Sin recursos asignados',
-    },
-  }
+watch(searchQuery, () => {
+  if (ganttInitialized) actualizarGantt()
+})
+
+function initGantt() {
   gantt.config.date_format = '%d/%m/%Y'
-  gantt.config.xml_date = '%d/%m/%Y'
-  gantt.config.week_start = 1
-}
-
-// ============================================
-// 🚀 INICIALIZAR GANTT
-// ============================================
-const initGantt = () => {
-  if (!ganttContainer.value) return
-
-  setSpanishLocale()
-
   gantt.config.scales = [
-    { unit: 'week', step: 1, format: 'Semana %W' },
-    { unit: 'day', step: 1, format: '%d %M' },
+    { unit: 'year', step: 1, format: '%Y' },
+    { unit: 'month', step: 1, format: '%M' },
   ]
-
   gantt.config.readonly = true
-  gantt.config.drag_project = false
-  gantt.config.drag_progress = false
-  gantt.config.drag_resize = false
-  gantt.config.drag_links = false
-  gantt.config.drag_mode = false
-  gantt.config.details_on_create = false
-  gantt.config.details_on_dblclick = false
-  gantt.config.show_editor = false
-  gantt.config.show_links = false
 
   gantt.init(ganttContainer.value)
   ganttInitialized = true
 
-  const data = { data: allTasks, links: [] }
-  gantt.parse(data)
+  const tasksWithColors = tasks.value.map((t) => ({
+    ...t,
+    color: estadoColor[t.estado] || '#BDBDBD',
+    duration: t.duration || 1,
+    progress: t.progress || 0,
+  }))
+
+  const today = new Date()
+  const todayStr = today.toISOString().split('T')[0]
+  const marcaHoy = {
+    text: `📅 Hoy`,
+    start_date: todayStr,
+    duration: 1,
+    type: 'task',
+    parent: 0,
+    color: '#E53935',
+    readonly: true,
+  }
+
+  tasksWithColors.unshift({ id: 998, ...marcaHoy })
+  tasksWithColors.push({ id: 999, ...marcaHoy })
+
+  gantt.parse({ data: tasksWithColors })
 
   gantt.attachEvent('onTaskClick', (id, e) => {
     const task = gantt.getTask(id)
     const target = e.target || e.srcElement
-
-    const isCollapseIcon =
-      target.closest('.gantt_tree_icon') ||
-      target.closest('.gantt_folder') ||
-      target.closest('.gantt_file') ||
-      target.classList.contains('gantt_tree_icon') ||
-      target.classList.contains('gantt_folder') ||
-      target.classList.contains('gantt_file') ||
-      target.closest('.gantt_tree_content') ||
-      target.closest('.gantt_row')
-
-    const isTaskBar =
-      target.closest('.gantt_task_content') ||
-      target.closest('.gantt_task') ||
-      target.classList.contains('gantt_task_content') ||
-      target.classList.contains('gantt_task')
-
-    if (isCollapseIcon) return true
-    if (isTaskBar && task) {
-      openModal(task)
+    if (target.closest('.gantt_tree_icon,.gantt_folder,.gantt_file,.gantt_tree_content,.gantt_row'))
+      return true
+    if (task.id === 998 || task.id === 999) return true
+    if (target.closest('.gantt_task_content,.gantt_task')) {
+      selectedTask.value = tasks.value.find((t) => t.id === task.id) || task
+      showModal.value = true
       return false
     }
     return true
   })
-
-  gantt.attachEvent('onTaskDblClick', () => false)
-  gantt.attachEvent('onBeforeTaskAdd', () => false)
-  gantt.attachEvent('onBeforeTaskDelete', () => false)
-  gantt.attachEvent('onBeforeTaskUpdate', () => false)
-  gantt.attachEvent('onBeforeLinkAdd', () => false)
-  gantt.attachEvent('onBeforeLinkDelete', () => false)
-  gantt.attachEvent('onBeforeTaskDrag', () => false)
 }
 
-// ============================================
-// 🎯 WATCHERS
-// ============================================
-watch(
-  filteredTasks,
-  () => {
-    if (ganttInitialized) updateGantt()
-  },
-  { deep: true },
-)
+onMounted(async () => {
+  await inicializar()
+})
 
-// ============================================
-// 🚀 MONTAJE
-// ============================================
-onMounted(() => {
-  nextTick(() => initGantt())
+watch(loadingGantt, async (val) => {
+  if (!val && !ganttInitialized) {
+    await nextTick()
+    initGantt()
+  }
 })
 </script>
 
 <style scoped>
-.gantt-card {
-  border-radius: 8px;
-  overflow: hidden;
+.gantt-wrapper {
+  padding: 16px;
+  background: #fafafa;
 }
-
-.gap-3 {
-  gap: 12px;
+.gantt-controls {
+  display: flex;
+  align-items: center;
+}
+.gantt-chart {
+  height: 400px;
+  margin-top: 8px;
+}
+:deep(.gantt_task_line) {
+  border-radius: 4px;
+  cursor: pointer;
+}
+:deep(.gantt_task_line:hover) {
+  filter: brightness(1.15);
+}
+:deep(.gantt_task_progress) {
+  border-radius: 4px 0 0 4px;
 }
 </style>
