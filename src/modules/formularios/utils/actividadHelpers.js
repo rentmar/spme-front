@@ -1,4 +1,5 @@
 // utils/actividadHelpers.js
+import { ESTADO_COLOR, ESTADO_LABEL } from '@/modules/gantt/utils'
 
 /**
  * Obtiene el ícono según el tipo de actividad

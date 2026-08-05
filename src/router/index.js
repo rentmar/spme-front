@@ -290,8 +290,16 @@ const router = createRouter({
     {
       path: '/pei/listaactividades/',
       name: 'listadeActividades',
-      component: () => import('@/views/pei/PeiListaActividadesV2.vue'),
-      // component: () => import('@/views/pei/PeiListaActividades.vue'),
+      // component: () => import('@/views/monitoreo/ListaSolicitudesActividades.vue'),
+      component: () => import('@/views/pei/PeiListaActividades.vue'),
+      meta: { requiresAuth: true },
+    },
+    //Nuevo componente para listas de actividad y tarea en el menu monitoreo
+    //monitoreo->Solicitud/Reposicion
+    {
+      path: '/monitoreo/actividades-formularios/',
+      name: 'listaActividadesTareasFormularios',
+      component: () => import('@/views/monitoreo/ListaSolicitudesActividadesView.vue'),
       meta: { requiresAuth: true },
     },
     {

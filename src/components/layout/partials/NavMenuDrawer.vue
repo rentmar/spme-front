@@ -91,7 +91,14 @@
       </template>
 
       <!-- PROYECTOS con chip distintivo -->
-      <v-list-item value="monitoring-requests-proyectos" to="/pei/listaactividades?showButton=1">
+      <!-- <v-list-item value="monitoring-requests-proyectos" to="/pei/listaactividades?showButton=1">
+        <template v-slot:prepend>
+          <v-chip size="x-small" class="mr-2" density="compact">PROY</v-chip>
+          <v-icon icon="mdi-account-alert"></v-icon>
+        </template>
+        <v-list-item-title class="text-wrap">Solicitud/Reposición</v-list-item-title>
+      </v-list-item> -->
+      <v-list-item value="monitoring-requests-proyectos" to="/monitoreo/actividades-formularios/">
         <template v-slot:prepend>
           <v-chip size="x-small" class="mr-2" density="compact">PROY</v-chip>
           <v-icon icon="mdi-account-alert"></v-icon>
