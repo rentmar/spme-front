@@ -1,3 +1,5 @@
+// src/modules/gantt/utils/taskHelpers.js
+
 /**
  * Obtiene todos los ancestros de una tarea
  * @param {number} taskId - ID de la tarea

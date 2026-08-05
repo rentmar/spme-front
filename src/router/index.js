@@ -303,6 +303,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/monitoreo/actividades-rendiciones/',
+      name: 'listaActividadesTareasRendiciones',
+      component: () => import('@/views/monitoreo/ListaRendicionesActividadesView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/pei/listaactividadespei/',
       name: 'listaActividadesPei',
       component: () => import('@/views/pei/PeiListaActividadespei.vue'),

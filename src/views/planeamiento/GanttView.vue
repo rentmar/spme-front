@@ -235,10 +235,13 @@
               class="my-2"
             />
             <div v-if="selectedTask.parent !== 0" class="text-caption text-grey mt-1">
-              👆 Padre: {{ getParentName(selectedTask.parent) }}
+              👆 Padre: {{ getParentNameWrapper(selectedTask.parent) }}
             </div>
-            <div v-if="getChildren(selectedTask.id).length > 0" class="text-caption text-grey mt-1">
-              📂 Subtareas: {{ getChildren(selectedTask.id).length }}
+            <div
+              v-if="getChildrenWrapper(selectedTask.id).length > 0"
+              class="text-caption text-grey mt-1"
+            >
+              📂 Subtareas: {{ getChildrenWrapper(selectedTask.id).length }}
             </div>
           </v-card-text>
           <v-card-actions class="pa-2 pt-0">
@@ -296,11 +299,11 @@ const filteredTasks = computed(() => filterTasks(searchQuery.value, tasks.value)
 const visibleCount = computed(() => filteredTasks.value.length)
 
 // Wrappers para compatibilidad con el template
-//eslint-disable-next-line
+
 function getParentNameWrapper(parentId) {
   return getParentName(parentId, tasks.value)
 }
-//eslint-disable-next-line
+
 function getChildrenWrapper(taskId) {
   return getChildren(taskId, tasks.value)
 }
