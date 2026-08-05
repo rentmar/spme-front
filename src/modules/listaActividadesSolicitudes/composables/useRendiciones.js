@@ -1,17 +1,24 @@
 // src/modules/listaActividadesSolicitudes/composables/useRendiciones.js
 import { ref, computed } from 'vue'
-import { listaRendicionesServicio } from '../services/listaRendicionesService'
 import { useUserStore } from '@/stores/user'
+import { useUserPermissions } from '@/stores/useUserPermissions'
+import { listaRendicionesServicio } from '../services/listaRendicionesService'
+import { proyectoServicios } from '@/modules/proyecto/services/proyectoService'
+//filtros
+import { filtrarPorProyectosHabilitados, filtrarPorRol } from '../utils'
 
 export function useRendiciones() {
   //Inicializacion del store
-  const userStore = useUserStore()
+  const userStore = useUserStore() //store de usuarios
+  const usuarioPermisosStore = useUserPermissions() //store de permisos para el usuario
 
   //Estados de carga
   const loadingRendiciones = ref(false)
+  const loading = ref(false)
   const error = ref(null)
   const todasLasActividades = ref([])
   const emptyResponse = ref(false)
+  const listaIdsProyectosHabilitados = ref([]) //todos los proyectos habilitados
 
   // Paginación manual
   const paginaActual = ref(1)
@@ -22,18 +29,18 @@ export function useRendiciones() {
   const statusFilters = ref([])
 
   // ─── FILTRO POR ROL (TEMPORAL) ───
-  function filtrarPorRol(lista) {
-    if (!userStore.rol) return lista
-    switch (userStore.rol) {
-      case 'coordinador':
-        return lista.filter((a) => a.proyecto?.coordinacion_id === userStore.coordinacionId)
-      case 'responsable':
-        return lista.filter((a) => a.responsable?.id === userStore.userId)
-      case 'administrador':
-      default:
-        return lista
-    }
-  }
+  // function filtrarPorRol(lista) {
+  //   if (!userStore.rol) return lista
+  //   switch (userStore.rol) {
+  //     case 'coordinador':
+  //       return lista.filter((a) => a.proyecto?.coordinacion_id === userStore.coordinacionId)
+  //     case 'responsable':
+  //       return lista.filter((a) => a.responsable?.id === userStore.userId)
+  //     case 'administrador':
+  //     default:
+  //       return lista
+  //   }
+  // }
 
   // ─── FILTROS LOCALES ───
   function filtrarLocal(lista) {
@@ -54,12 +61,29 @@ export function useRendiciones() {
   async function cargarTodas() {
     loadingRendiciones.value = true
     try {
-      const respuesta = await listaRendicionesServicio.obtenerActividades({
-        page: 1,
-        page_size: 9999,
-      })
-      if (respuesta.success) {
-        const porRol = filtrarPorRol(respuesta.results)
+      const [_, data] = await Promise.all([
+        cargarListaIdsProyectosHabilitados(),
+        listaRendicionesServicio.obtenerActividades({
+          page: 1,
+          page_size: 9999,
+        }),
+      ])
+      //Acceder al store para el acceso de proyecto
+      const proyectosAccesiblesIds = usuarioPermisosStore.proyectosAccesiblesIds || []
+
+      if (data.success) {
+        //Filtrar por proyectos habilitados
+        const habilitadas = filtrarPorProyectosHabilitados(
+          data.results,
+          listaIdsProyectosHabilitados.value,
+        )
+        //Filtro por Rol
+        const porRol = filtrarPorRol(
+          habilitadas,
+          userStore.userData,
+          userStore.rol,
+          proyectosAccesiblesIds,
+        )
         todasLasActividades.value = porRol
         paginaActual.value = 1
         emptyResponse.value = porRol.length === 0
@@ -71,6 +95,17 @@ export function useRendiciones() {
       throw err
     } finally {
       loadingRendiciones.value = false
+    }
+  }
+  const cargarListaIdsProyectosHabilitados = async () => {
+    loading.value = true
+    try {
+      const respuesta = await proyectoServicios.listaIdsProyectosHabilitados()
+      listaIdsProyectosHabilitados.value = respuesta.ids
+    } catch (err) {
+      console.error('Error al cargar la lista de id de proyectos habilitados', err)
+    } finally {
+      loading.value = false
     }
   }
 

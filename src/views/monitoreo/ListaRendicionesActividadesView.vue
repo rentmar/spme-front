@@ -80,17 +80,17 @@
 
           <v-divider class="my-4" />
 
-          <VistaLista
+          <VistaListaRendiciones
             v-if="vistaActual === 'lista'"
             :actividades="actividades"
             @accion="handleAccion"
           />
-          <VistaProyecto
+          <VistaProyectoRendiciones
             v-if="vistaActual === 'proyecto'"
             :proyectos="proyectosFiltrados"
             @accion="handleAccion"
           />
-          <VistaResponsable
+          <VistaResponsableRendiciones
             v-if="vistaActual === 'responsable'"
             :responsables="responsablesFiltrados"
             @accion="handleAccion"
@@ -142,9 +142,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import VistaLista from '@/modules/listaActividadesSolicitudes/components/VistaLista.vue'
-import VistaProyecto from '@/modules/listaActividadesSolicitudes/components/VistaProyecto.vue'
-import VistaResponsable from '@/modules/listaActividadesSolicitudes/components/VistaResponsable.vue'
+import VistaListaRendiciones from '@/modules/listaActividadesSolicitudes/components/VistaListaRendiciones.vue'
+import VistaProyectoRendiciones from '@/modules/listaActividadesSolicitudes/components/VistaProyectoRendiciones.vue'
+import VistaResponsableRendiciones from '@/modules/listaActividadesSolicitudes/components/VistaResponsableRendiciones.vue'
 import PanelEstadisticas from '@/modules/listaActividadesSolicitudes/components/PanelEstadisticas.vue'
 import DialogValidarRendicion from '@/modules/listaActividadesSolicitudes/components/dialogos/DialogValidarRendicion.vue'
 import { useRendiciones } from '@/modules/listaActividadesSolicitudes/composables/useRendiciones'

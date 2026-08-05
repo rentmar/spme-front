@@ -43,7 +43,7 @@
 </template>
 
 <script setup>
-import DialogValidarBase from '@/modules/listaActividadesSolicitudes/components/dialogos/DialogValidarBase.vue'
+import DialogValidarBase from './DialogValidarBase.vue'
 import { useRendicionCuentas } from '@/modules/formularios/composables/useRendicionCuentas.js'
 
 const props = defineProps({
@@ -55,25 +55,32 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const {
-  listaRendicionesActividad,
-  obtenerListaRendicionesPorIdActividad,
-  listaRendicionesTarea,
-  obtenerListaRendicionesPorIdTarea,
+  listaRendicionCuentasActividad,
+  obtenerListaRendicionCuentasPorIdActividad,
+  listaRendicionCuentasTarea,
+  obtenerListaRendicionCuentasPorIdTarea,
 } = useRendicionCuentas()
 
 async function cargarRendiciones(actividadId, tareaId) {
-  let data
-  if (tareaId) {
-    await obtenerListaRendicionesPorIdTarea(actividadId, tareaId)
-    data = listaRendicionesTarea.value?.rendiciones || listaRendicionesTarea.value?.solicitudes
-  } else {
-    await obtenerListaRendicionesPorIdActividad(actividadId)
-    data =
-      listaRendicionesActividad.value?.rendiciones || listaRendicionesActividad.value?.solicitudes
-  }
-  return { items: data || [] }
-}
+  console.log('cargarRendiciones llamado con:', { actividadId, tareaId })
 
+  let resp
+  if (tareaId) {
+    await obtenerListaRendicionCuentasPorIdTarea(actividadId, tareaId)
+    resp = listaRendicionCuentasTarea.value
+  } else {
+    await obtenerListaRendicionCuentasPorIdActividad(actividadId)
+    resp = listaRendicionCuentasActividad.value
+  }
+
+  console.log('Respuesta completa del composable:', resp)
+  console.log('Claves disponibles:', resp ? Object.keys(resp) : 'resp es undefined/null')
+
+  const data = resp?.rendiciones || resp?.solicitudes || resp?.results || []
+  console.log('Data extraída:', data)
+
+  return { items: Array.isArray(data) ? data : [] }
+}
 function estadoColor(estado) {
   const map = {
     Aprobado: 'success',
