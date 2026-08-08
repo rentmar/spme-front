@@ -1471,7 +1471,8 @@ async function submitForm() {
 
     //console.log('Respuesta del servidor:', JSON.stringify(response, null, 2))
     setTimeout(() => {
-      router.push('/pei/listaactividades?showButton=1')
+      // router.push('/pei/listaactividades?showButton=1')
+      router.push('/monitoreo/actividades-formularios/')
     }, 1000)
   } catch (error) {
     console.error('Error completo:', error.response?.data || error.message)

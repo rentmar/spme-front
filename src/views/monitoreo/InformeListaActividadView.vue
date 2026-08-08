@@ -249,11 +249,11 @@
                       </template>
                     </v-tooltip>
 
-                    <v-tooltip text="Ver Informe de Actividad/Subactividad" location="top">
+                    <v-tooltip text="Ver Lista de Informe de Actividad/Subactividad" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
                           v-bind="props"
-                          icon="mdi-file-document-multiple-outline"
+                          icon="mdi-eye"
                           variant="text"
                           color="cyan"
                           size="small"
@@ -279,7 +279,7 @@
                 >
                   <v-card variant="outlined" rounded="lg" class="bg-grey-lighten-4">
                     <v-card-text class="pa-4">
-                      <div class="d-flex justify-space-between align-center mb-3">
+                      <!-- <div class="d-flex justify-space-between align-center mb-3">
                         <span class="text-subtitle-2 font-weight-medium d-flex align-center">
                           <v-icon size="18" color="primary" class="mr-1">mdi-playlist-check</v-icon>
                           Subactividades de {{ actividad.codigo }}
@@ -293,7 +293,7 @@
                         >
                           Añadir Subactividad
                         </v-btn>
-                      </div>
+                      </div> -->
 
                       <v-list density="compact" class="py-0 bg-transparent">
                         <v-list-item
@@ -487,7 +487,7 @@
                           <div class="text-caption text-grey">
                             No hay subactividades para esta actividad
                           </div>
-                          <v-btn
+                          <!-- <v-btn
                             color="primary"
                             variant="text"
                             size="small"
@@ -496,7 +496,7 @@
                           >
                             <v-icon left size="16">mdi-plus</v-icon>
                             Crear la primera subactividad
-                          </v-btn>
+                          </v-btn> -->
                         </div>
                       </v-list>
                     </v-card-text>

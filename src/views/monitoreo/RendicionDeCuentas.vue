@@ -1690,7 +1690,8 @@ async function submitForm() {
     console.log('Respuesta del servidor:', JSON.stringify(data, null, 2))
 
     setTimeout(() => {
-      router.push('/pei/listaactividades?showButton=2')
+      // router.push('/pei/listaactividades?showButton=2')
+      router.push('/monitoreo/actividades-rendiciones/')
     }, 1000)
   } catch (error) {
     console.error('Error completo:', error)
@@ -2017,7 +2018,8 @@ const cancelarSalir = async () => {
   })
 
   if (confirmado) {
-    router.push('/pei/listaactividades?showButton=1')
+    // router.push('/pei/listaactividades?showButton=1')
+    router.push('/monitoreo/actividades-rendiciones/')
   }
 }
 
@@ -2102,7 +2104,8 @@ const confirmarGuardarDatosForm = async () => {
 
     dialogoGuardarRef.value?.cerrar()
     successMsg('Formulario guardado exitosamente.')
-    router.push('/pei/listaactividades?showButton=1')
+    // router.push('/pei/listaactividades?showButton=1')
+    router.push('/monitoreo/actividades-rendiciones/')
   } catch (error) {
     console.error('Error al guardar:', error)
     errorMsg('Error al guardar: ${error.message}')
@@ -2180,7 +2183,8 @@ const confirmarEnvioRevision = async (datosValidadores) => {
 
     dialogoGuardarRef.value?.cerrar()
     successMsg('Formulario guardado exitosamente.')
-    router.push('/pei/listaactividades?showButton=1')
+    // router.push('/pei/listaactividades?showButton=1')
+    router.push('/monitoreo/actividades-rendiciones/')
   } catch (error) {
     console.error('Error al guardar:', error)
     errorMsg('Error al guardar: ${error.message}')

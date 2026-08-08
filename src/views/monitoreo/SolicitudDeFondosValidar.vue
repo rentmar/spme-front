@@ -1515,7 +1515,8 @@ async function submitForm() {
     //console.log('Respuesta del servidor:',  JSON.stringify(data, null, 2))
 
     setTimeout(() => {
-      router.push('/pei/listaactividades?showButton=1')
+      // router.push('/pei/listaactividades?showButton=1')
+      router.push('/monitoreo/actividades-formularios/')
     }, 1000)
 
     return data
@@ -1673,7 +1674,8 @@ async function validarSolicitud(idValidador, ListaValidadores) {
     alert('Solicitud validada exitosamente.')
 
     // Redireccionar
-    router.push('/pei/listaactividades?showButton=1')
+    // router.push('/pei/listaactividades?showButton=1')
+    router.push('/monitoreo/actividades-formularios/')
   } catch (err) {
     console.error('Error al validar la solicitud:', err)
     alert(`Error al validar la solicitud: ${err.message}`)
@@ -2113,7 +2115,9 @@ onMounted(async () => {
   // Verificar parámetros mínimos
   if (!idActividad || !idSolicitud) {
     alert('Error: Faltan parámetros necesarios en la URL')
-    router.push('/pei/listaactividades?showButton=1')
+    // router.push('/pei/listaactividades?showButton=1')
+    router.push('/monitoreo/actividades-formularios/')
+
     return
   }
 
@@ -2139,7 +2143,8 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error durante la carga:', error)
     // Redirigir si hay error
-    router.push('/pei/listaactividades?showButton=1')
+    // router.push('/pei/listaactividades?showButton=1')
+    router.push('/monitoreo/actividades-formularios/')
   } finally {
     // Siempre ocultar el overlay de carga después de 3 segundos máximo
     cargandoGeneral.value = false

@@ -1557,7 +1557,8 @@ async function submitForm() {
     console.log('Respuesta del servidor:', JSON.stringify(data, null, 2))
 
     setTimeout(() => {
-      router.push('/pei/listaactividades?showButton=1')
+      // router.push('/pei/listaactividades?showButton=1')
+      router.push('/monitoreo/actividades-formularios/')
     }, 1000)
 
     return data
@@ -2064,7 +2065,8 @@ const cancelarSalir = async () => {
   })
 
   if (confirmado) {
-    router.push('/pei/listaactividades?showButton=1')
+    // router.push('/pei/listaactividades?showButton=1')
+    router.push('/monitoreo/actividades-formularios/')
   }
 }
 /*******************************Funciones para el cuadro de dialogo: Guardar Formulario ********************************************************/
@@ -2139,7 +2141,8 @@ const confirmarGuardarDatosForm = async () => {
 
     dialogoGuardarRef.value?.cerrar()
     successMsg('Formulario guardado exitosamente.')
-    router.push('/pei/listaactividades?showButton=1')
+    // router.push('/pei/listaactividades?showButton=1')
+    router.push('/monitoreo/actividades-formularios/')
   } catch (error) {
     console.error('Error al guardar:', error)
     errorMsg(`Error al guardar: ${error.message}`)
@@ -2212,7 +2215,8 @@ const confirmarEnvioRevision = async (datosValidadores) => {
 
     dialogoGuardarRef.value?.cerrar()
     successMsg('Formulario guardado exitosamente.')
-    router.push('/pei/listaactividades?showButton=1')
+    // router.push('/pei/listaactividades?showButton=1')
+    router.push('/monitoreo/actividades-formularios/')
   } catch (error) {
     console.error('Error al guardar:', error)
     errorMsg(`Error al guardar: ${error.message}`)
