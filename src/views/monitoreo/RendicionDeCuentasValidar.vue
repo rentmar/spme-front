@@ -308,106 +308,134 @@
                       Monto Total de Gasto (Bs.): {{ totalMontoGastado }}
                     </v-chip>
                   </div>
-
-                  <v-table class="elevation-1 rounded-lg mb-4 users-table">
-                    <thead>
-                      <tr>
-                        <th class="text-subtitle-2 font-weight-bold fecha-column">Fecha</th>
-                        <th class="text-subtitle-2 font-weight-bold">Partida</th>
-                        <th class="text-subtitle-2 font-weight-bold">Fuente</th>
-                        <th class="text-subtitle-2 font-weight-bold">Factura/Recibo</th>
-                        <th class="text-subtitle-2 font-weight-bold">Descripción</th>
-                        <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
-                        <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(gasto, index) in formDataRC.detalle_gastos" :key="index">
-                        <td class="fecha-column">
-                          <v-text-field
-                            v-model="gasto.fecha"
-                            type="date"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            class="fecha-input"
-                            :readonly="soloLectura"
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model="gasto.partida"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="1.1.1"
-                            class="compact-field"
-                            :readonly="soloLectura"
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model="gasto.fuente"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="Financiador"
-                            :readonly="soloLectura"
-                          ></v-text-field>
-                        </td>
-                        <td>
-                          <v-text-field
-                            v-model="gasto.factura_recibo"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            :readonly="soloLectura"
-                          ></v-text-field>
-                        </td>
-                        <td class="wide-column">
-                          <v-text-field
-                            v-model="gasto.descripcion_gasto"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="Descripción del gasto"
-                            :readonly="soloLectura"
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model.number="gasto.monto"
-                            type="number"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="0.00"
-                            min="0"
-                            class="compact-field"
-                            :readonly="soloLectura"
-                          ></v-text-field>
-                        </td>
-                        <td class="text-center action-column">
-                          <v-btn
-                            icon
-                            color="error"
-                            size="small"
-                            variant="text"
-                            @click="eliminarGasto(index)"
-                            :disabled="soloLectura"
-                          >
-                            <v-icon>mdi-delete</v-icon>
-                          </v-btn>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </v-table>
+                  <div class="tabla-scroll">
+                    <v-table class="elevation-1 rounded-lg mb-4 users-table">
+                      <thead>
+                        <tr>
+                          <th class="text-subtitle-2 font-weight-bold fecha-column">Fecha</th>
+                          <th class="text-subtitle-2 font-weight-bold">Partida</th>
+                          <th class="text-subtitle-2 font-weight-bold">Fuente</th>
+                          <th class="text-subtitle-2 font-weight-bold">Factura/Recibo</th>
+                          <th class="text-subtitle-2 font-weight-bold">Descripción</th>
+                          <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
+                          <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(gasto, index) in formDataRC.detalle_gastos" :key="index">
+                          <td class="fecha-column">
+                            <v-text-field
+                              v-model="gasto.fecha"
+                              type="date"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              class="fecha-input"
+                              :readonly="soloLectura"
+                            ></v-text-field>
+                          </td>
+                          <td class="narrow-column">
+                            <v-text-field
+                              v-model="gasto.partida"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              placeholder="1.1.1"
+                              class="compact-field"
+                              :readonly="soloLectura"
+                            ></v-text-field>
+                          </td>
+                          <td class="narrow-column">
+                            <v-select
+                              v-model="gasto.fuente"
+                              :items="procedenciaFondosActividad"
+                              item-title="financiera"
+                              return-object
+                              variant="outlined"
+                              density="compact"
+                              placeholder="Financiador"
+                              bg-color="blue-lighten-5"
+                              :rules="[validarFuente]"
+                            >
+                              <template #item="{ item: option, props: optionProps }">
+                                <v-list-item v-bind="optionProps" density="compact">
+                                  <template #title>
+                                    <span class="text-caption">{{ option.raw.financiera }}</span>
+                                  </template>
+                                  <template #subtitle>
+                                    <span class="text-caption text-medium-emphasis">{{
+                                      option.raw.sigla
+                                    }}</span>
+                                  </template>
+                                </v-list-item>
+                              </template>
+                              <template #selection="{ item: selected }">
+                                <span class="text-caption">{{ selected?.raw?.financiera }}</span>
+                              </template>
+                            </v-select>
+                            <!-- <v-text-field
+                              v-model="gasto.fuente"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              placeholder="Financiador"
+                              :readonly="soloLectura"
+                            ></v-text-field> -->
+                          </td>
+                          <td>
+                            <v-text-field
+                              v-model="gasto.factura_recibo"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              :readonly="soloLectura"
+                            ></v-text-field>
+                          </td>
+                          <td class="wide-column">
+                            <v-text-field
+                              v-model="gasto.descripcion_gasto"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              placeholder="Descripción del gasto"
+                              :readonly="soloLectura"
+                            ></v-text-field>
+                          </td>
+                          <td class="narrow-column">
+                            <v-text-field
+                              v-model.number="gasto.monto"
+                              type="number"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              placeholder="0.00"
+                              min="0"
+                              class="compact-field"
+                              :readonly="soloLectura"
+                            ></v-text-field>
+                          </td>
+                          <td class="text-center action-column">
+                            <v-btn
+                              icon
+                              color="error"
+                              size="small"
+                              variant="text"
+                              @click="eliminarGasto(index)"
+                              :disabled="soloLectura"
+                            >
+                              <v-icon>mdi-delete</v-icon>
+                            </v-btn>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </v-table>
+                  </div>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
@@ -650,6 +678,7 @@ import { useNotificaciones } from '@/modules/notificacion/composables/useNotific
 import { useRendicionCuentasStore } from '@/modules/formularios/store/useRendicionCuentasStore'
 import RevisorRendicionCuentas from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorRendicionCuentas.vue'
 import RedactorRendicionCuentas from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/RedactorRendicionCuentas.vue'
+import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
 
 //Iniciar el store
 const storeRendicion = useRendicionCuentasStore()
@@ -717,6 +746,9 @@ const baseurl = import.meta.env.VITE_API_BASE
 const { usuario } = useUsuario()
 
 const idRendicionCreada = ref(null)
+
+//composable
+const { procedenciaFondosActividad } = useActividadFormulaioPresupuesto(idActividad)
 
 // --- NUEVAS VARIABLES PARA SOLICITUDES DE FONDOS ---
 const solicitudesFondos = ref([])
@@ -817,7 +849,7 @@ const formDataRC = ref({
   fecha_actividadRC: '',
 
   detalle_gastos: [
-    { fecha: '', partida: '', fuente: '', factura_recibo: '', descripcion: '', monto: 0 },
+    { fecha: '', partida: '', fuente: null, factura_recibo: '', descripcion: '', monto: 0 },
   ],
   lugar_solicitudRC: '',
   fecha_solicitudRC: '',
@@ -1685,10 +1717,10 @@ watch(
 onMounted(async () => {
   try {
     cargandoGeneral.value = true
+    await cargarDatos()
 
     // Ejecutar todas las cargas de datos en paralelo
     await Promise.all([
-      cargarDatos(),
       cargarRendicionesDeCuenta(),
       cargarSolicitudFondos(),
       cargarSolicitudesFondos(),
@@ -1731,6 +1763,7 @@ function agregarGasto() {
   formDataRC.value.detalle_gastos.push({
     fecha: '',
     partida: '',
+    fuente: null,
     factura_recibo: '',
     descripcion_gasto: '',
     monto: 0,
@@ -1773,6 +1806,7 @@ async function submitForm() {
         (gasto) =>
           !gasto.fecha ||
           !gasto.partida ||
+          !gasto.fuente ||
           !gasto.factura_recibo ||
           !gasto.descripcion_gasto ||
           gasto.monto <= 0,
@@ -1873,90 +1907,90 @@ async function submitForm() {
       throw new Error(errorData.detail || `Error HTTP: ${response.status}`)
     }
 
-    const responseData = await response.json()
+    //const responseData = await response.json()
     //console.log('Rendición enviada con éxito:', responseData)
 
     // GUARDAR EL ID DE LA RENDICIÓN CREADA
-    idRendicionCreada.value = responseData.id || responseData.rendicion_id
-    numeroFormularioSF.value = responseData.numero_formulario
+    // idRendicionCreada.value = responseData.id || responseData.rendicion_id
+    // numeroFormularioSF.value = responseData.numero_formulario
 
-    const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${responseData.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
-    const cuerpoMensaje = {
-      destinatario_id: payload.coordinador,
-      asunto: 'Rendicion de Cuentas - Coordinador',
-      contenido:
-        'Rendicion de cuentas pediente del formulario ' +
-        numeroFormularioSF.value +
-        '. URL: ' +
-        urlForm,
-      tipo: 'sistema',
-      prioridad: 3,
-    }
-    await enviarMensajeAutomatico(cuerpoMensaje)
+    // const urlForm = `${window.location.origin}/monitoreo/formulario022/${formData.value.id_actividad}?solicitud_id=${responseData.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+    // const cuerpoMensaje = {
+    //   destinatario_id: payload.coordinador,
+    //   asunto: 'Rendicion de Cuentas - Coordinador',
+    //   contenido:
+    //     'Rendicion de cuentas pediente del formulario ' +
+    //     numeroFormularioSF.value +
+    //     '. URL: ' +
+    //     urlForm,
+    //   tipo: 'sistema',
+    //   prioridad: 3,
+    // }
+    // await enviarMensajeAutomatico(cuerpoMensaje)
 
-    const cuerpoMensaje2 = {
-      destinatario_id: payload.contador,
-      asunto: 'Rendicion de Cuentas - Contador',
-      contenido:
-        'Rendicion de Cuentas pediente del formulario ' +
-        numeroFormularioSF.value +
-        '. URL: ' +
-        urlForm,
-      tipo: 'sistema',
-      prioridad: 3,
-    }
-    await enviarMensajeAutomatico(cuerpoMensaje2)
+    // const cuerpoMensaje2 = {
+    //   destinatario_id: payload.contador,
+    //   asunto: 'Rendicion de Cuentas - Contador',
+    //   contenido:
+    //     'Rendicion de Cuentas pediente del formulario ' +
+    //     numeroFormularioSF.value +
+    //     '. URL: ' +
+    //     urlForm,
+    //   tipo: 'sistema',
+    //   prioridad: 3,
+    // }
+    // await enviarMensajeAutomatico(cuerpoMensaje2)
 
-    const cuerpoMensaje3 = {
-      destinatario_id: payload.administrador,
-      asunto: 'Rendicion de Cuentas - Administrador',
-      contenido:
-        'Rendicion de Cuentas pediente del formulario ' +
-        numeroFormularioSF.value +
-        '. URL: ' +
-        urlForm,
-      tipo: 'sistema',
-      prioridad: 3,
-    }
+    // const cuerpoMensaje3 = {
+    //   destinatario_id: payload.administrador,
+    //   asunto: 'Rendicion de Cuentas - Administrador',
+    //   contenido:
+    //     'Rendicion de Cuentas pediente del formulario ' +
+    //     numeroFormularioSF.value +
+    //     '. URL: ' +
+    //     urlForm,
+    //   tipo: 'sistema',
+    //   prioridad: 3,
+    // }
 
     exportToExcel()
     resetForm()
 
-    await enviarMensajeAutomatico(cuerpoMensaje3)
+    // await enviarMensajeAutomatico(cuerpoMensaje3)
 
     ///////// Enviar notificación por correo al coordinador y al contador//////////
-    try {
-      const emailPayload = {
-        emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter(
-          (email) => email,
-        ),
-        datos_solicitud: {
-          codigo: numeroFormularioSF.value || 'SOL-PROV',
-          titulo: 'Rendicion de Cuentas',
-          solicitante: nombreCompletoSolicitante.value,
-          tipo: 'Rendicion de Actividad',
-          prioridad: 'alta',
-          descripcion:
-            formData.value.descripcion_actividad || 'Rendicion de Cuentas para actividad',
-          url_revision: urlForm,
-        },
-      }
-      //console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
-      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailPayload),
-      })
+    // try {
+    //   const emailPayload = {
+    //     emails: [correoCoordinadorActual, correoContadorActual, correoAdministradorActual].filter(
+    //       (email) => email,
+    //     ),
+    //     datos_solicitud: {
+    //       codigo: numeroFormularioSF.value || 'SOL-PROV',
+    //       titulo: 'Rendicion de Cuentas',
+    //       solicitante: nombreCompletoSolicitante.value,
+    //       tipo: 'Rendicion de Actividad',
+    //       prioridad: 'alta',
+    //       descripcion:
+    //         formData.value.descripcion_actividad || 'Rendicion de Cuentas para actividad',
+    //       url_revision: urlForm,
+    //     },
+    //   }
+    //   //console.log('emailPayload enviado al servidor:', JSON.stringify(emailPayload, null, 2))
+    //   const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(emailPayload),
+    //   })
 
-      if (emailResponse.ok) {
-        console.log('Correo de notificación enviado exitosamente')
-      } else {
-        console.warn('No se pudo enviar el correo de notificación')
-      }
-    } catch (emailError) {
-      console.error('Error al enviar correo de notificación:', emailError)
-    }
-    ///////////////////////////////////////////////////////////////////////////////
+    //   if (emailResponse.ok) {
+    //     console.log('Correo de notificación enviado exitosamente')
+    //   } else {
+    //     console.warn('No se pudo enviar el correo de notificación')
+    //   }
+    // } catch (emailError) {
+    //   console.error('Error al enviar correo de notificación:', emailError)
+    // }
+    // ///////////////////////////////////////////////////////////////////////////////
 
     //console.log('Respuesta del servidor:',  JSON.stringify(responseData, null, 2))
     // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_coordinador, null, 2))
@@ -2247,6 +2281,12 @@ function getCurrentDate1() {
 //   cargarSolicitudesFondos()
 //   getSolicitudFondosInfo(idActividad, idTarea)
 // })
+const validarFuente = (v) => {
+  if (!v) return 'La fuente es requerida'
+  if (typeof v === 'object' && Object.keys(v).length === 0) return 'La fuente es requerida'
+  if (typeof v === 'string' && v.trim() === '') return 'La fuente es requerida'
+  return true
+}
 </script>
 
 <style scoped>
@@ -2256,6 +2296,7 @@ function getCurrentDate1() {
   padding: 20px 16px;
 }
 
+/* ─── TARJETAS ─── */
 .v-card {
   border-radius: 8px;
   overflow: hidden;
@@ -2268,6 +2309,7 @@ function getCurrentDate1() {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* ─── SECCIONES DEL FORMULARIO ─── */
 .form-section {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   padding: 24px;
@@ -2286,6 +2328,7 @@ function getCurrentDate1() {
   align-items: center;
 }
 
+/* ─── INFO ITEMS ─── */
 .info-item {
   padding: 8px 0;
 }
@@ -2294,45 +2337,158 @@ function getCurrentDate1() {
   gap: 12px;
 }
 
+/* ═══════════════════════════════════════════ */
+/* ─── TABLA DE GASTOS ─── */
+/* ═══════════════════════════════════════════ */
+
+.tabla-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+}
+
 .users-table {
+  min-width: 900px;
   width: 100%;
 }
 
-.users-table th {
-  background-color: #f5f5f5;
+.users-table :deep(.v-table__wrapper) {
+  overflow-x: auto !important;
+}
+
+.users-table :deep(thead th) {
+  background: #1976d2 !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  padding: 10px 6px !important;
+  white-space: nowrap !important;
   position: sticky;
   top: 0;
   z-index: 2;
+  text-align: left !important;
 }
 
-.fecha-column {
-  width: 180px;
-  min-width: 180px;
-  max-width: 200px;
+.users-table :deep(tbody td) {
+  padding: 3px 5px !important;
+  vertical-align: middle !important;
+  border-bottom: 1px solid #e8e8e8 !important;
 }
 
-.fecha-input {
-  width: 100%;
+.users-table :deep(tbody tr:hover td) {
+  background-color: #f0f4ff;
 }
 
-/* Ajustes responsivos */
+/* Anchos de columna */
+.users-table :deep(th:nth-child(1)),
+.users-table :deep(td:nth-child(1)) {
+  width: 130px;
+  min-width: 130px;
+}
+.users-table :deep(th:nth-child(2)),
+.users-table :deep(td:nth-child(2)) {
+  width: 85px;
+  min-width: 85px;
+}
+.users-table :deep(th:nth-child(3)),
+.users-table :deep(td:nth-child(3)) {
+  width: 140px;
+  min-width: 140px;
+}
+.users-table :deep(th:nth-child(4)),
+.users-table :deep(td:nth-child(4)) {
+  width: 120px;
+  min-width: 120px;
+}
+.users-table :deep(th:nth-child(5)),
+.users-table :deep(td:nth-child(5)) {
+  width: auto;
+  min-width: 200px;
+}
+.users-table :deep(th:nth-child(6)),
+.users-table :deep(td:nth-child(6)) {
+  width: 110px;
+  min-width: 110px;
+}
+.users-table :deep(th:nth-child(7)),
+.users-table :deep(td:nth-child(7)) {
+  width: 40px;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Inputs compactos */
+.users-table :deep(.v-field) {
+  min-height: 32px !important;
+}
+.users-table :deep(.v-field__input) {
+  min-height: 32px !important;
+  padding: 4px 8px !important;
+  font-size: 13px !important;
+}
+.users-table :deep(.v-field__outline) {
+  --v-field-border-opacity: 0.3;
+}
+.users-table :deep(.v-input__details) {
+  display: none;
+}
+.users-table :deep(td:nth-child(6) input) {
+  text-align: right;
+  font-weight: 500;
+}
+.users-table :deep(input[type='date']) {
+  font-size: 12px !important;
+}
+
+/* Scrollbar */
+.tabla-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.tabla-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+.tabla-scroll::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 3px;
+}
+.tabla-scroll::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+/* ═══════════════════════════════════════════ */
+/* ─── RESPONSIVE ─── */
+/* ═══════════════════════════════════════════ */
+
 @media (max-width: 960px) {
   .rendicion-de-cuentas-container {
-    padding: 16px 12px;
+    padding: 12px 8px;
   }
-
   .form-section {
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 16px;
+    margin-bottom: 16px;
   }
-
+  .form-section h3 {
+    font-size: 16px !important;
+  }
   .d-flex.justify-end {
     flex-direction: column;
     gap: 8px;
   }
-
   .d-flex.justify-end .v-btn {
     width: 100%;
+  }
+  .users-table {
+    min-width: 800px;
+  }
+  .users-table :deep(thead th) {
+    font-size: 11px !important;
+    padding: 8px 4px !important;
+  }
+  .users-table :deep(.v-field__input) {
+    font-size: 12px !important;
   }
 }
 
@@ -2340,45 +2496,26 @@ function getCurrentDate1() {
   .v-card {
     margin: 8px 0;
   }
-
   .form-section {
-    padding: 16px;
+    padding: 12px;
   }
-}
-
-/* Mejora el aspecto de la tabla */
-:deep(.v-table) {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-:deep(.v-table th) {
-  background-color: #1976d2 !important;
-  color: white !important;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 16px 12px;
-}
-
-:deep(.v-table td) {
-  padding: 12px;
-  background-color: #fafafa;
-}
-
-.narrow-column {
-  width: 15%;
-}
-
-.wide-column {
-  width: 50%;
-}
-
-.action-column {
-  width: 15%;
-}
-
-.compact-field {
-  font-size: 14px;
-  max-width: 100px;
+  .users-table {
+    min-width: 700px;
+  }
+  .users-table :deep(thead th) {
+    font-size: 10px !important;
+    padding: 6px 3px !important;
+  }
+  .users-table :deep(tbody td) {
+    padding: 2px 3px !important;
+  }
+  .users-table :deep(.v-field) {
+    min-height: 28px !important;
+  }
+  .users-table :deep(.v-field__input) {
+    min-height: 28px !important;
+    padding: 2px 4px !important;
+    font-size: 11px !important;
+  }
 }
 </style>
