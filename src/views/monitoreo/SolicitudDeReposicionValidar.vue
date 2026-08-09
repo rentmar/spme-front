@@ -273,47 +273,48 @@
                     </v-chip>
                   </div>
 
-                  <v-table class="elevation-1 rounded-lg mb-4 users-table">
-                    <thead>
-                      <tr>
-                        <th class="text-subtitle-2 font-weight-bold fecha-column">Fecha</th>
-                        <th class="text-subtitle-2 font-weight-bold">Partida</th>
-                        <th class="text-subtitle-2 font-weight-bold">Fuente</th>
-                        <th class="text-subtitle-2 font-weight-bold">Factura/Recibo</th>
-                        <th class="text-subtitle-2 font-weight-bold">Descripción</th>
-                        <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
-                        <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
-                        <td class="fecha-column">
-                          <v-text-field
-                            v-model="gasto.fecha"
-                            variant="outlined"
-                            type="date"
-                            bg-color="blue-lighten-5"
-                            hide-details
-                            density="compact"
-                            required
-                            class="fecha-input"
-                            :readonly="soloLectura"
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model="gasto.partida"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="1.1.1"
-                            class="compact-field"
-                            :readonly="soloLectura"
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <!-- <v-text-field
+                  <div class="tabla-scroll">
+                    <v-table class="elevation-1 rounded-lg mb-4 users-table">
+                      <thead>
+                        <tr>
+                          <th class="text-subtitle-2 font-weight-bold fecha-column">Fecha</th>
+                          <th class="text-subtitle-2 font-weight-bold">Partida</th>
+                          <th class="text-subtitle-2 font-weight-bold">Fuente</th>
+                          <th class="text-subtitle-2 font-weight-bold">Factura/Recibo</th>
+                          <th class="text-subtitle-2 font-weight-bold">Descripción</th>
+                          <th class="text-subtitle-2 font-weight-bold">Monto (Bs.)</th>
+                          <th class="text-subtitle-2 font-weight-bold text-center">Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(gasto, index) in formData.detalle_destino_fondos" :key="index">
+                          <td class="fecha-column">
+                            <v-text-field
+                              v-model="gasto.fecha"
+                              variant="outlined"
+                              type="date"
+                              bg-color="blue-lighten-5"
+                              hide-details
+                              density="compact"
+                              required
+                              class="fecha-input"
+                              :readonly="soloLectura"
+                            ></v-text-field>
+                          </td>
+                          <td class="narrow-column">
+                            <v-text-field
+                              v-model="gasto.partida"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              placeholder="1.1.1"
+                              class="compact-field"
+                              :readonly="soloLectura"
+                            ></v-text-field>
+                          </td>
+                          <td class="narrow-column">
+                            <!-- <v-text-field
                             v-model="gasto.fuente"
                             variant="outlined"
                             density="compact"
@@ -322,90 +323,110 @@
                             placeholder="Financiador"
                             :readonly="soloLectura"
                           ></v-text-field> -->
-                          <v-select
-                            v-model="gasto.fuente"
-                            :items="procedenciaFondosActividad"
-                            item-title="financiera"
-                            return-object
-                            variant="outlined"
-                            density="compact"
-                            placeholder="Financiador"
-                            bg-color="blue-lighten-5"
-                          >
-                            <template #item="{ item: option, props: optionProps }">
-                              <v-list-item v-bind="optionProps" density="compact">
-                                <template #title>
-                                  <span class="text-caption">{{ option.raw.financiera }}</span>
-                                </template>
-                                <template #subtitle>
-                                  <span class="text-caption text-medium-emphasis">{{
-                                    option.raw.sigla
-                                  }}</span>
-                                </template>
-                              </v-list-item>
-                            </template>
-                            <template #selection="{ item: selected }">
-                              <span class="text-caption">{{ selected?.raw?.financiera }}</span>
-                            </template>
-                          </v-select>
-                        </td>
-                        <td>
-                          <v-text-field
-                            v-model="gasto.factura_recibo"
-                            variant="outlined"
-                            bg-color="blue-lighten-5"
-                            hide-details
-                            density="compact"
-                            placeholder="Factura/Recibo"
-                            :readonly="soloLectura"
-                          ></v-text-field>
-                        </td>
-                        <td class="wide-column">
-                          <v-text-field
-                            v-model="gasto.concepto"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="Descripción del gasto"
-                            :readonly="soloLectura"
-                          ></v-text-field>
-                        </td>
-                        <td class="narrow-column">
-                          <v-text-field
-                            v-model.number="gasto.monto"
-                            type="number"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            bg-color="blue-lighten-5"
-                            placeholder="0.00"
-                            min="0"
-                            class="compact-field"
-                            :readonly="soloLectura"
-                          ></v-text-field>
-                        </td>
-                        <td class="text-center action-column">
-                          <v-btn
-                            icon
-                            color="error"
-                            size="small"
-                            variant="text"
-                            @click="removeGasto(index)"
-                            :disabled="soloLectura"
-                          >
-                            <v-icon>mdi-delete</v-icon>
-                          </v-btn>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </v-table>
+                            <v-select
+                              v-model="gasto.fuente"
+                              :items="procedenciaFondosActividad"
+                              item-title="financiera"
+                              return-object
+                              variant="outlined"
+                              density="compact"
+                              placeholder="Financiador"
+                              bg-color="blue-lighten-5"
+                            >
+                              <template #item="{ item: option, props: optionProps }">
+                                <v-list-item v-bind="optionProps" density="compact">
+                                  <template #title>
+                                    <span class="text-caption">{{ option.raw.financiera }}</span>
+                                  </template>
+                                  <template #subtitle>
+                                    <span class="text-caption text-medium-emphasis">{{
+                                      option.raw.sigla
+                                    }}</span>
+                                  </template>
+                                </v-list-item>
+                              </template>
+                              <template #selection="{ item: selected }">
+                                <span class="text-caption">{{ selected?.raw?.financiera }}</span>
+                              </template>
+                            </v-select>
+                          </td>
+                          <td>
+                            <v-text-field
+                              v-model="gasto.factura_recibo"
+                              variant="outlined"
+                              bg-color="blue-lighten-5"
+                              hide-details
+                              density="compact"
+                              placeholder="Factura/Recibo"
+                              :readonly="soloLectura"
+                            ></v-text-field>
+                          </td>
+                          <td class="wide-column">
+                            <v-text-field
+                              v-model="gasto.concepto"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              placeholder="Descripción del gasto"
+                              :readonly="soloLectura"
+                            ></v-text-field>
+                          </td>
+                          <td class="narrow-column">
+                            <v-text-field
+                              v-model.number="gasto.monto"
+                              type="number"
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              bg-color="blue-lighten-5"
+                              placeholder="0.00"
+                              min="0"
+                              class="compact-field"
+                              :readonly="soloLectura"
+                            ></v-text-field>
+                          </td>
+                          <td class="text-center action-column">
+                            <v-btn
+                              icon
+                              color="error"
+                              size="small"
+                              variant="text"
+                              @click="removeGasto(index)"
+                              :disabled="soloLectura"
+                            >
+                              <v-icon>mdi-delete</v-icon>
+                            </v-btn>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </v-table>
+                  </div>
                 </div>
 
                 <v-divider class="my-4"></v-divider>
 
                 <!-- Sección 4: Información Adicional -->
+                <!-- Sección 4: Información Adicional -->
                 <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Informacion Adicional
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <InformacionAdicionalEdicion
+                        ref="infoRef"
+                        :lugar="formData.lugar_solicitud"
+                        :fecha="formData.fecha_solicitud"
+                        :forma-pago="formData.forma_pago"
+                        :datos-forma-pago="formData.datos_forma_pago"
+                        :readonly="soloLectura"
+                      />
+                    </v-col>
+                  </v-row>
+                </div>
+                <!-- <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-information</v-icon>
                     Información Adicional
@@ -522,7 +543,7 @@
                       </v-col>
                     </v-row>
                   </div>
-                </div>
+                </div> -->
 
                 <v-divider class="my-4"></v-divider>
 
@@ -681,11 +702,13 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'
+import InformacionAdicionalEdicion from '@/modules/formularios/components/vinculacion/InformacionAdicionalEdicion.vue'
 import { useImpresionFormularios } from '@/modules/impresiones/composables/useImpresionFormularios'
 import { useUserStore } from '@/stores/user'
 import * as XLSX from 'xlsx'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificaciones } from '@/modules/notificacion/composables/useNotificaciones'
+import { useSnackbar } from '@/composables/useSnackbar'
 //store
 import { useSolicitudDeReposicionStore } from '@/modules/formularios/store/useSolicitudDeReposicionStore'
 import RevisorSolicitudReposicion from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudReposicion.vue'
@@ -693,7 +716,8 @@ import RedactorSolicitudReposicion from '@/modules/formularios/components/valida
 import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
 //Inciciar el store
 const storeSolReposicion = useSolicitudDeReposicionStore()
-
+//Referencia al componente
+const infoRef = ref()
 //Inicar Composable
 const { enviarMensajeAutomatico } = useNotificaciones()
 /*************************** Generar PDFs *******************************************/
@@ -753,7 +777,8 @@ const usuario = computed(() => {
 })
 console.log('ID Usuario:', usuario.value.id)
 const { procedenciaFondosActividad } = useActividadFormulaioPresupuesto(idActividad)
-
+//COmposable
+const { warningMsg, successMsg } = useSnackbar()
 const baseurl = import.meta.env.VITE_API_BASE
 
 //variables para carga de datos
@@ -786,7 +811,7 @@ const formData = ref({
   id_actividad: 0,
   id_usuario: 0,
   detalle_destino_fondos: [
-    { fecha: '', partida: '', fuente: '', factura_recibo: '', concepto: '', monto: 0 },
+    { fecha: '', partida: '', fuente: null, factura_recibo: '', concepto: '', monto: 0 },
   ],
   forma_pago: null,
   datos_forma_pago: {
@@ -1151,7 +1176,7 @@ function addGasto() {
   formData.value.detalle_destino_fondos.push({
     fecha: '',
     partida: '',
-    fuente: '',
+    fuente: null,
     factura_recibo: '',
     concepto: '',
     monto: 0,
@@ -1167,6 +1192,19 @@ function removeGasto(index) {
 async function submitForm() {
   loading.value = true
   try {
+    if (infoRef.value) {
+      formData.value.lugar_solicitud = infoRef.value.localLugar
+      formData.value.fecha_solicitud = infoRef.value.localFecha
+      formData.value.forma_pago = infoRef.value.localFormaPago
+      formData.value.datos_forma_pago = { ...infoRef.value.localDatosFormaPago }
+    }
+    if (!infoRef.value?.validacionCompleta) {
+      warningMsg(
+        'Por favor, complete todos los campos de Información Adicional (lugar, forma de pago y datos del beneficiario)',
+      )
+      return
+    }
+
     if (
       !formData.value.lugar_solicitud ||
       !formData.value.forma_pago ||
@@ -1296,7 +1334,8 @@ async function submitForm() {
     }
 
     setTimeout(() => {
-      router.push('/pei/listaactividades?showButton=1')
+      // router.push('/pei/listaactividades?showButton=1')
+      router.push('/monitoreo/actividades-formularios/')
     }, 1000)
 
     return data
@@ -1709,29 +1748,56 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
   }
 }
 
+// function actualizarInformacionAdicional(solicitud) {
+//   formData.value.forma_pago = formDatSF.value.formaPago_idsf
+//   formData.value.lugar_solicitud = formDatSF.value.lugarSolicitudsf
+//   formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
+
+//   if (solicitud && solicitud.datos_forma_pago) {
+//     const datosPago = solicitud.datos_forma_pago
+
+//     if (datosPago.transferencia) {
+//       formData.value.datos_forma_pago.transferencia = {
+//         nombre_transferencia: datosPago.transferencia.nombre_transferencia || '',
+//         ci_transferencia: datosPago.transferencia.ci_transferencia || '',
+//         entidad_bancaria: datosPago.transferencia.entidad_bancaria || '',
+//         tipo_cuenta: datosPago.transferencia.tipo_cuenta || '',
+//         numero_cuenta: datosPago.transferencia.numero_cuenta || '',
+//       }
+//     }
+
+//     if (datosPago.otros) {
+//       formData.value.datos_forma_pago.otros = {
+//         nombre_otros: datosPago.otros.nombre_otros || '',
+//         ci_otros: datosPago.otros.ci_otros || '',
+//       }
+//     }
+//   }
+// }
 function actualizarInformacionAdicional(solicitud) {
   formData.value.forma_pago = formDatSF.value.formaPago_idsf
   formData.value.lugar_solicitud = formDatSF.value.lugarSolicitudsf
   formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
 
-  if (solicitud && solicitud.datos_forma_pago) {
-    const datosPago = solicitud.datos_forma_pago
+  const defecto = {
+    efectivo: { nombre_efectivo: '', ci_efectivo: '' },
+    transferencia: {
+      nombre_transferencia: '',
+      ci_transferencia: '',
+      entidad_bancaria: '',
+      tipo_cuenta: '',
+      numero_cuenta: '',
+    },
+    cheque: { nombre_cheque: '', ci_cheque: '' },
+    otros: { nombre_otros: '', ci_otros: '' },
+  }
 
-    if (datosPago.transferencia) {
-      formData.value.datos_forma_pago.transferencia = {
-        nombre_transferencia: datosPago.transferencia.nombre_transferencia || '',
-        ci_transferencia: datosPago.transferencia.ci_transferencia || '',
-        entidad_bancaria: datosPago.transferencia.entidad_bancaria || '',
-        tipo_cuenta: datosPago.transferencia.tipo_cuenta || '',
-        numero_cuenta: datosPago.transferencia.numero_cuenta || '',
-      }
-    }
-
-    if (datosPago.otros) {
-      formData.value.datos_forma_pago.otros = {
-        nombre_otros: datosPago.otros.nombre_otros || '',
-        ci_otros: datosPago.otros.ci_otros || '',
-      }
+  if (solicitud?.datos_forma_pago) {
+    formData.value.datos_forma_pago = {
+      efectivo: { ...defecto.efectivo, ...solicitud.datos_forma_pago.efectivo },
+      transferencia: { ...defecto.transferencia, ...solicitud.datos_forma_pago.transferencia },
+      cheque: { ...defecto.cheque, ...solicitud.datos_forma_pago.cheque },
+      otros: { ...defecto.otros, ...solicitud.datos_forma_pago.otros },
     }
   }
 }
@@ -1805,6 +1871,7 @@ onMounted(async () => {
   padding: 20px 16px;
 }
 
+/* ─── TARJETAS ─── */
 .v-card {
   border-radius: 8px;
   overflow: hidden;
@@ -1817,6 +1884,7 @@ onMounted(async () => {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* ─── SECCIONES DEL FORMULARIO ─── */
 .form-section {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   padding: 24px;
@@ -1835,53 +1903,177 @@ onMounted(async () => {
   align-items: center;
 }
 
+/* ─── INFO ITEMS ─── */
 .info-item {
   padding: 8px 0;
 }
 
+/* ─── ESPACIADOS ─── */
+.gap-2 {
+  gap: 8px;
+}
 .gap-3 {
   gap: 12px;
 }
 
+/* ═══════════════════════════════════════════ */
+/* ─── TABLA DE GASTOS ─── */
+/* ═══════════════════════════════════════════ */
+
+.tabla-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+}
+
 .users-table {
+  min-width: 950px;
   width: 100%;
 }
 
-.users-table th {
-  background-color: #f5f5f5;
+.users-table :deep(.v-table__wrapper) {
+  overflow-x: auto !important;
+}
+
+.users-table :deep(thead th) {
+  background: #1976d2 !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  padding: 10px 6px !important;
+  white-space: nowrap !important;
   position: sticky;
   top: 0;
   z-index: 2;
+  text-align: left !important;
 }
 
-.fecha-column {
-  width: 180px;
-  min-width: 180px;
-  max-width: 200px;
+.users-table :deep(tbody td) {
+  padding: 3px 5px !important;
+  vertical-align: middle !important;
+  border-bottom: 1px solid #e8e8e8 !important;
 }
 
-.fecha-input {
-  width: 100%;
+.users-table :deep(tbody tr:hover td) {
+  background-color: #f0f4ff;
 }
 
-/* Ajustes responsivos */
+/* Anchos de columna */
+.users-table :deep(th:nth-child(1)),
+.users-table :deep(td:nth-child(1)) {
+  width: 135px;
+  min-width: 135px;
+}
+.users-table :deep(th:nth-child(2)),
+.users-table :deep(td:nth-child(2)) {
+  width: 85px;
+  min-width: 85px;
+}
+.users-table :deep(th:nth-child(3)),
+.users-table :deep(td:nth-child(3)) {
+  width: 145px;
+  min-width: 145px;
+}
+.users-table :deep(th:nth-child(4)),
+.users-table :deep(td:nth-child(4)) {
+  width: 125px;
+  min-width: 125px;
+}
+.users-table :deep(th:nth-child(5)),
+.users-table :deep(td:nth-child(5)) {
+  width: auto;
+  min-width: 200px;
+}
+.users-table :deep(th:nth-child(6)),
+.users-table :deep(td:nth-child(6)) {
+  width: 115px;
+  min-width: 115px;
+}
+.users-table :deep(th:nth-child(7)),
+.users-table :deep(td:nth-child(7)) {
+  width: 40px;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Inputs compactos */
+.users-table :deep(.v-field) {
+  min-height: 32px !important;
+}
+.users-table :deep(.v-field__input) {
+  min-height: 32px !important;
+  padding: 4px 8px !important;
+  font-size: 13px !important;
+}
+.users-table :deep(.v-field__outline) {
+  --v-field-border-opacity: 0.3;
+}
+.users-table :deep(.v-input__details) {
+  display: none;
+}
+.users-table :deep(td:nth-child(6) input) {
+  text-align: right;
+  font-weight: 500;
+}
+.users-table :deep(.v-select__selection-text) {
+  font-size: 13px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.users-table :deep(input[type='date']) {
+  font-size: 12px !important;
+}
+
+/* Scrollbar */
+.tabla-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.tabla-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+.tabla-scroll::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 3px;
+}
+.tabla-scroll::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+/* ═══════════════════════════════════════════ */
+/* ─── RESPONSIVE ─── */
+/* ═══════════════════════════════════════════ */
+
 @media (max-width: 960px) {
   .solicitud-viaje-container {
-    padding: 16px 12px;
+    padding: 12px 8px;
   }
-
   .form-section {
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 16px;
+    margin-bottom: 16px;
   }
-
+  .form-section h3 {
+    font-size: 16px !important;
+  }
   .d-flex.justify-end {
     flex-direction: column;
     gap: 8px;
   }
-
   .d-flex.justify-end .v-btn {
     width: 100%;
+  }
+  .users-table {
+    min-width: 800px;
+  }
+  .users-table :deep(thead th) {
+    font-size: 11px !important;
+    padding: 8px 4px !important;
+  }
+  .users-table :deep(.v-field__input) {
+    font-size: 12px !important;
   }
 }
 
@@ -1889,45 +2081,26 @@ onMounted(async () => {
   .v-card {
     margin: 8px 0;
   }
-
   .form-section {
-    padding: 16px;
+    padding: 12px;
   }
-}
-
-/* Mejora el aspecto de la tabla */
-:deep(.v-table) {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-:deep(.v-table th) {
-  background-color: #1976d2 !important;
-  color: white !important;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 16px 12px;
-}
-
-:deep(.v-table td) {
-  padding: 12px;
-  background-color: #fafafa;
-}
-
-.narrow-column {
-  width: 15%;
-}
-
-.wide-column {
-  width: 50%;
-}
-
-.action-column {
-  width: 15%;
-}
-
-.compact-field {
-  font-size: 14px;
-  max-width: 100px;
+  .users-table {
+    min-width: 700px;
+  }
+  .users-table :deep(thead th) {
+    font-size: 10px !important;
+    padding: 6px 3px !important;
+  }
+  .users-table :deep(tbody td) {
+    padding: 2px 3px !important;
+  }
+  .users-table :deep(.v-field) {
+    min-height: 28px !important;
+  }
+  .users-table :deep(.v-field__input) {
+    min-height: 28px !important;
+    padding: 2px 4px !important;
+    font-size: 11px !important;
+  }
 }
 </style>
