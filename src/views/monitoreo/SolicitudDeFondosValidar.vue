@@ -626,7 +626,7 @@
                     variant="outlined"
                     size="large"
                     prepend-icon="mdi-cancel"
-                    :to="`/pei/listaactividades?showButton=1`"
+                    :to="`/monitoreo/actividades-formularios/`"
                   >
                     Cancelar
                   </v-btn>

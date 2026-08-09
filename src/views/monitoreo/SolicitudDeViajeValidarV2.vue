@@ -323,7 +323,7 @@
                     color="error"
                     variant="outlined"
                     prepend-icon="mdi-cancel"
-                    to="/pei/listaactividades?showButton=1"
+                    to="/monitoreo/actividades-formularios/"
                     >Cancelar</v-btn
                   >
                   <v-btn
@@ -371,7 +371,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 // Componentes
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
@@ -386,8 +386,10 @@ import { useImpresionFormularios } from '@/modules/impresiones/composables/useIm
 import { useSolicitudViajeEditarValidar } from '@/modules/formularios/composables/useSolicitudViajeEditarValidar'
 import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
 import { useTareaFormularioPresupuesto } from '@/modules/formularios/composables/useTareaFormularioPresupuesto'
+import { useSnackbar } from '@/composables/useSnackbar'
 //stores
 import { useSolicitudDeViajesStore } from '@/modules/formularios/store/useSolicitudDeViajesStore'
+
 // ── Parámetros de ruta ────────────────────
 const route = useRoute()
 const idSolicitud = route.query.solicitud_id || null
@@ -395,10 +397,14 @@ const idActividad = route.params.id || null
 const idTarea = route.query.tarea_id || null
 const infoRef = ref()
 
+const router = useRouter()
+
 //Iniciaar el store
 const storeSolViajes = useSolicitudDeViajesStore()
 
 // ── Composable ────────────────────────────
+//Composable para mensajes
+const { successMsg } = useSnackbar()
 //composable para impresion
 const { generarPdfSolicitudViaje, generarPdfSolicitudViajeTareas } = useImpresionFormularios()
 
@@ -466,7 +472,10 @@ async function submitForm() {
     formData.value.datos_forma_pago = { ...infoRef.value.localDatosFormaPago }
   }
   const ok = await actualizar()
-  if (ok) alert('Actualizado con éxito')
+  if (ok) {
+    successMsg('Formulario actualizado')
+    router.push('/monitoreo/actividades-formularios/')
+  }
 }
 
 // ── Botones PDF ───────────────────────────

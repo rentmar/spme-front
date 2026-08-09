@@ -567,7 +567,7 @@
                     variant="outlined"
                     size="large"
                     prepend-icon="mdi-cancel"
-                    :to="`/pei/listaactividades?showButton=2`"
+                    :to="`/monitoreo/actividades-rendiciones/`"
                   >
                     Cancelar
                   </v-btn>
@@ -1963,7 +1963,8 @@ async function submitForm() {
     // console.log('Respuesta del servidor:',  JSON.stringify(formData.value.correo_contador, null, 2))
 
     setTimeout(() => {
-      router.push('/pei/listaactividades?showButton=2')
+      // router.push('/pei/listaactividades?showButton=2')
+      router.push('/monitoreo/actividades-rendiciones/')
       //router.go(0)
     }, 1000)
   } catch (error) {

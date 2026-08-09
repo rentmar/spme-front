@@ -382,6 +382,23 @@
                 <!-- Sección 4: Información Adicional -->
                 <div class="form-section mb-6">
                   <h3 class="text-h6 mb-4 primary--text">
+                    <v-icon color="primary" class="mr-2">mdi-signature</v-icon>
+                    Informacion Adicional
+                  </h3>
+                  <v-row>
+                    <v-col cols="12">
+                      <InformacionAdicionalEdicion
+                        ref="infoRef"
+                        :lugar="formData.lugar_solicitud"
+                        :fecha="formData.fecha_solicitud"
+                        :forma-pago="formData.forma_pago"
+                        :datos-forma-pago="formData.datos_forma_pago"
+                      ></InformacionAdicionalEdicion>
+                    </v-col>
+                  </v-row>
+                </div>
+                <!-- <div class="form-section mb-6">
+                  <h3 class="text-h6 mb-4 primary--text">
                     <v-icon color="primary" class="mr-2">mdi-information</v-icon>
                     Información Adicional
                   </h3>
@@ -497,7 +514,7 @@
                       </v-col>
                     </v-row>
                   </div>
-                </div>
+                </div> -->
 
                 <v-divider class="my-4"></v-divider>
 
@@ -581,7 +598,7 @@
                     variant="outlined"
                     size="large"
                     prepend-icon="mdi-cancel"
-                    :to="`/pei/listaactividades?showButton=1`"
+                    :to="`/monitoreo/actividades-formularios/`"
                   >
                     Cancelar
                   </v-btn>
@@ -664,6 +681,7 @@ import { useNotificaciones } from '@/modules/notificacion/composables/useNotific
 //store
 import { useSolicitudDePagoDirectoStore } from '@/modules/formularios/store/useSolicitudDePagoDirectoStore'
 //componente
+import InformacionAdicionalEdicion from '@/modules/formularios/components/vinculacion/InformacionAdicionalEdicion.vue'
 import RevisorSolicitudPagoDirecto from '@/modules/formularios/components/validadores/componenteEstadoVotacion/RevisorSolicitudPagoDirecto.vue'
 import RedactorSolicitudPagoDirecto from '@/modules/formularios/components/validadores/componenteRedactorEstadoValidacion/RedactorSolicitudPagoDirecto.vue'
 import { useActividadFormulaioPresupuesto } from '@/modules/formularios/composables/useActividadFormularioPresupuesto'
@@ -728,7 +746,8 @@ const usuario = computed(() => {
   }
 })
 console.log('ID Usuario:', usuario.value.id)
-
+//referncia al componente
+const infoRef = ref()
 const { procedenciaFondosActividad } = useActividadFormulaioPresupuesto(idActividad)
 const baseurl = import.meta.env.VITE_API_BASE
 
@@ -761,7 +780,7 @@ const formData = ref({
   fuente_financiamiento: '',
   id_actividad: 0,
   id_usuario: 0,
-  detalle_destino_fondos: [{ partida: '', fuente: '', descripcion_gasto: '', monto: 0 }],
+  detalle_destino_fondos: [{ partida: '', fuente: null, descripcion_gasto: '', monto: 0 }],
   forma_pago: null,
   datos_forma_pago: {
     otros: { nombre_otros: '', ci_otros: '' },
@@ -1107,7 +1126,7 @@ async function cargarSolicitudPago() {
 function addGasto() {
   formData.value.detalle_destino_fondos.push({
     partida: '',
-    fuente: '',
+    fuente: null,
     descripcion_gasto: '',
     monto: 0,
   })
@@ -1122,6 +1141,13 @@ function removeGasto(index) {
 async function submitForm() {
   loading.value = true
   try {
+    // Obtener datos del componente
+    if (infoRef.value) {
+      formData.value.lugar_solicitud = infoRef.value.localLugar
+      formData.value.fecha_solicitud = infoRef.value.localFecha
+      formData.value.forma_pago = infoRef.value.localFormaPago
+      formData.value.datos_forma_pago = { ...infoRef.value.localDatosFormaPago }
+    }
     if (
       !formData.value.lugar_solicitud ||
       !formData.value.forma_pago ||
@@ -1134,18 +1160,18 @@ async function submitForm() {
       throw new Error('El monto total solicitado debe ser mayor a cero.')
     }
 
-    const coordinadorSeleccionado = coordinadoresList.value.find(
-      (coordinador) => coordinador.id === formData.value.idcoordinador,
-    )
-    const contadorSeleccionado = responsablesList.value.find(
-      (contador) => contador.id === formData.value.idresponsable,
-    )
+    // const coordinadorSeleccionado = coordinadoresList.value.find(
+    //   (coordinador) => coordinador.id === formData.value.idcoordinador,
+    // )
+    // const contadorSeleccionado = responsablesList.value.find(
+    //   (contador) => contador.id === formData.value.idresponsable,
+    // )
 
-    const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
-    const correoContadorActual = contadorSeleccionado?.correo || ''
+    // const correoCoordinadorActual = coordinadorSeleccionado?.correo || ''
+    // const correoContadorActual = contadorSeleccionado?.correo || ''
 
-    formData.value.correo_coordinador = correoCoordinadorActual
-    formData.value.correo_contador = correoContadorActual
+    formData.value.correo_coordinador = null
+    formData.value.correo_contador = null
 
     const payload = {
       detalleDestinoFondos: {
@@ -1203,55 +1229,56 @@ async function submitForm() {
       tipo: 'sistema',
       prioridad: 3,
     }
-    await enviarMensajeAutomatico(cuerpoMensaje)
+    //await enviarMensajeAutomatico(cuerpoMensaje)
 
-    const cuerpoMensaje2 = {
-      destinatario_id: payload.contador,
-      asunto: 'Solicitud de Fondos - Contador',
-      contenido:
-        'Solicitud de Fondos pediente del formulario ' +
-        numeroFormularioSF.value +
-        '. URL: ' +
-        urlForm,
-      tipo: 'sistema',
-      prioridad: 3,
-    }
+    // const cuerpoMensaje2 = {
+    //   destinatario_id: payload.contador,
+    //   asunto: 'Solicitud de Fondos - Contador',
+    //   contenido:
+    //     'Solicitud de Fondos pediente del formulario ' +
+    //     numeroFormularioSF.value +
+    //     '. URL: ' +
+    //     urlForm,
+    //   tipo: 'sistema',
+    //   prioridad: 3,
+    // }
 
     exportToExcel()
     resetForm()
 
-    await enviarMensajeAutomatico(cuerpoMensaje2)
+    //await enviarMensajeAutomatico(cuerpoMensaje2)
 
-    try {
-      const emailPayload = {
-        emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
-        datos_solicitud: {
-          codigo: numeroFormularioSF.value || 'SOL-PROV',
-          titulo: 'Formulario Sol. Fondos',
-          solicitante: nombreCompletoSolicitante.value,
-          tipo: 'Solicitud de Actividad',
-          prioridad: 'alta',
-          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
-        },
-      }
-      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailPayload),
-      })
+    // try {
+    // const emailPayload = {
+    //   emails: '',
+    //   datos_solicitud: {
+    //     codigo: numeroFormularioSF.value || 'SOL-PROV',
+    //     titulo: 'Formulario Sol. Fondos',
+    //     solicitante: nombreCompletoSolicitante.value,
+    //     tipo: 'Solicitud de Actividad',
+    //     prioridad: 'alta',
+    //     descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
+    //     url_revision: `${window.location.origin}/monitoreo/formulario011/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+    //   },
+    // }
+    // const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(emailPayload),
+    // })
 
-      if (emailResponse.ok) {
-        console.log('Correo de notificación enviado exitosamente')
-      } else {
-        console.warn('No se pudo enviar el correo de notificación')
-      }
-    } catch (emailError) {
-      console.error('Error al enviar correo de notificación:', emailError)
-    }
+    // if (emailResponse.ok) {
+    //   console.log('Correo de notificación enviado exitosamente')
+    // } else {
+    //   console.warn('No se pudo enviar el correo de notificación')
+    // }
+    // } catch (emailError) {
+    //   console.error('Error al enviar correo de notificación:', emailError)
+    // }
 
     setTimeout(() => {
-      router.push('/pei/listaactividades?showButton=1')
+      // router.push('/pei/listaactividades?showButton=1')
+      router.push('/monitoreo/actividades-formularios/')
     }, 1000)
 
     return data
@@ -1368,7 +1395,8 @@ async function validarSolicitud(idValidador, ListaValidadores) {
     }
 
     alert('Solicitud validada exitosamente.')
-    router.push('/pei/listaactividades?showButton=1')
+    // router.push('/pei/listaactividades?showButton=1')
+    router.push('/monitoreo/actividades-formularios/')
   } catch (err) {
     console.error('Error al validar la solicitud:', err)
     alert(`Error al validar la solicitud: ${err.message}`)
@@ -1618,10 +1646,6 @@ function actualizarDatosFormulario(solicitud) {
 
 function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
   try {
-    console.log(
-      'Detalle de destino de fondos recibido:',
-      JSON.stringify(detalleDestinoFondos, null, 2),
-    )
     if (!detalleDestinoFondos) {
       formData.value.detalle_destino_fondos = []
       return
@@ -1634,9 +1658,9 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
       detalleParseado = detalleDestinoFondos
     }
 
-    formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
-      partida: item.partida_sf,
-      fuente: item.fuente || '',
+    formData.value.detalle_destino_fondos = detalleParseado.items.map((item) => ({
+      partida: item.partida || item.partida_sf || '', // ← acepta ambos nombres
+      fuente: item.fuente || '', // ← objeto o string
       descripcion_gasto: item.concepto || '',
       monto: item.monto || 0,
     }))
@@ -1646,32 +1670,90 @@ function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
   }
 }
 
+// function actualizarDetalleDestinoFondos(detalleDestinoFondos) {
+//   try {
+//     console.log(
+//       'Detalle de destino de fondos recibido:',
+//       JSON.stringify(detalleDestinoFondos, null, 2),
+//     )
+//     if (!detalleDestinoFondos) {
+//       formData.value.detalle_destino_fondos = []
+//       return
+//     }
+
+//     let detalleParseado
+//     if (typeof detalleDestinoFondos === 'string') {
+//       detalleParseado = JSON.parse(detalleDestinoFondos)
+//     } else {
+//       detalleParseado = detalleDestinoFondos
+//     }
+
+//     formData.value.detalle_destino_fondos = detalleParseado.items.map((item, index) => ({
+//       partida: item.partida_sf,
+//       fuente: item.fuente || '',
+//       descripcion_gasto: item.concepto || '',
+//       monto: item.monto || 0,
+//     }))
+//   } catch (error) {
+//     console.error('Error al parsear detalleDestinoFondos:', error)
+//     formData.value.detalle_destino_fondos = []
+//   }
+// }
+
 function actualizarInformacionAdicional(solicitud) {
   formData.value.forma_pago = formDatSF.value.formaPago_idsf
   formData.value.lugar_solicitud = formDatSF.value.lugarSolicitudsf
   formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
 
-  if (solicitud && solicitud.datos_forma_pago) {
-    const datosPago = solicitud.datos_forma_pago
+  const defecto = {
+    efectivo: { nombre_efectivo: '', ci_efectivo: '' },
+    transferencia: {
+      nombre_transferencia: '',
+      ci_transferencia: '',
+      entidad_bancaria: '',
+      tipo_cuenta: '',
+      numero_cuenta: '',
+    },
+    cheque: { nombre_cheque: '', ci_cheque: '' },
+    otros: { nombre_otros: '', ci_otros: '' },
+  }
 
-    if (datosPago.transferencia) {
-      formData.value.datos_forma_pago.transferencia = {
-        nombre_transferencia: datosPago.transferencia.nombre_transferencia || '',
-        ci_transferencia: datosPago.transferencia.ci_transferencia || '',
-        entidad_bancaria: datosPago.transferencia.entidad_bancaria || '',
-        tipo_cuenta: datosPago.transferencia.tipo_cuenta || '',
-        numero_cuenta: datosPago.transferencia.numero_cuenta || '',
-      }
-    }
-
-    if (datosPago.otros) {
-      formData.value.datos_forma_pago.otros = {
-        nombre_otros: datosPago.otros.nombre_otros || '',
-        ci_otros: datosPago.otros.ci_otros || '',
-      }
+  if (solicitud?.datos_forma_pago) {
+    formData.value.datos_forma_pago = {
+      efectivo: { ...defecto.efectivo, ...solicitud.datos_forma_pago.efectivo },
+      transferencia: { ...defecto.transferencia, ...solicitud.datos_forma_pago.transferencia },
+      cheque: { ...defecto.cheque, ...solicitud.datos_forma_pago.cheque },
+      otros: { ...defecto.otros, ...solicitud.datos_forma_pago.otros },
     }
   }
 }
+
+// function actualizarInformacionAdicional(solicitud) {
+//   formData.value.forma_pago = formDatSF.value.formaPago_idsf
+//   formData.value.lugar_solicitud = formDatSF.value.lugarSolicitudsf
+//   formData.value.fecha_solicitud = formDatSF.value.fechaSolicitudsf
+
+//   if (solicitud && solicitud.datos_forma_pago) {
+//     const datosPago = solicitud.datos_forma_pago
+
+//     if (datosPago.transferencia) {
+//       formData.value.datos_forma_pago.transferencia = {
+//         nombre_transferencia: datosPago.transferencia.nombre_transferencia || '',
+//         ci_transferencia: datosPago.transferencia.ci_transferencia || '',
+//         entidad_bancaria: datosPago.transferencia.entidad_bancaria || '',
+//         tipo_cuenta: datosPago.transferencia.tipo_cuenta || '',
+//         numero_cuenta: datosPago.transferencia.numero_cuenta || '',
+//       }
+//     }
+
+//     if (datosPago.otros) {
+//       formData.value.datos_forma_pago.otros = {
+//         nombre_otros: datosPago.otros.nombre_otros || '',
+//         ci_otros: datosPago.otros.ci_otros || '',
+//       }
+//     }
+//   }
+// }
 
 function actualizarValidadores() {
   if (!datosFormulario.value || !datosFormulario.value.validadores) return
