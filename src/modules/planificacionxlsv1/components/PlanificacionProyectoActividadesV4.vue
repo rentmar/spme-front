@@ -156,13 +156,19 @@
     :loading-save="loadingSave"
     @guardar="confirmarEnvio"
   />
+  <!--Dialogo para la asignacion de la estructura-->
+  <AsignacionNodoIndicador
+    v-model="dialogoAsignacion"
+    :actividad-data="selectedRowData"
+    @guardar="actualizarEstructuraProcedencia"
+  />
 
   <!-- Debug -->
   <!-- <DebugDialog :tablaDataActividades="tablaDataActividades" :tablaDataTareas="tablaDataTareas" /> -->
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, provide } from 'vue'
+import { ref, computed, onMounted, nextTick, provide, onUnmounted } from 'vue'
 import { registerAllModules } from 'handsontable/registry'
 import 'handsontable/dist/handsontable.full.css'
 import { registerLanguageDictionary, esMX } from 'handsontable/i18n'
@@ -173,6 +179,7 @@ import ExcelAside from './ExcelAside.vue'
 import ExcelStatusBar from './ExcelStatusBar.vue'
 import DialogoDesglosePresupuestoActividad from './Dialogs/DialogoDesglosePresupuestoActividad.vue'
 import DialogoConfirmacionEnvio from './Dialogs/DialogoConfirmacionEnvio.vue'
+import AsignacionNodoIndicador from './Dialogs/AsignacionNodoIndicador.vue'
 import { useExcelData } from '../composables/useExcelData.js'
 import { useExcelMenus } from '../composables/useExcelMenus.js'
 import { useSnackbar } from '@/composables/useSnackbar.js'
@@ -236,6 +243,51 @@ const {
 
 provide('tablaDataActividades', tablaDataActividades)
 provide('tablaDataTareas', tablaDataTareas)
+
+/************************ Dialogo Asignacion Estructura **************************************/
+const dialogoAsignacion = ref(false)
+const filaEditando = ref(null)
+
+const abrirAsignacionEstructura = (event) => {
+  const { row, data } = event.detail
+  const filaCompleta = tablaDataActividades.value[row]
+  if (!filaCompleta) return
+
+  filaEditando.value = row
+  selectedRowData.value = filaCompleta
+  dialogoAsignacion.value = true
+}
+
+const actualizarEstructuraProcedencia = (nuevoDato) => {
+  if (filaEditando.value !== null) {
+    const valorAnterior = tablaDataActividades.value[filaEditando.value].estructuraProcedencia
+
+    tablaDataActividades.value[filaEditando.value].estructuraProcedencia = nuevoDato
+
+    if (gridRef.value?.hotTableRef?.hotInstance) {
+      gridRef.value.hotTableRef.hotInstance.setDataAtRowProp(
+        filaEditando.value,
+        'estructuraProcedencia',
+        nuevoDato,
+      )
+      gridRef.value.hotTableRef.hotInstance.render()
+    }
+
+    seguimiento.registrarCambio({
+      tipo: 'actividad',
+      accion: 'editar',
+      fila_id: tablaDataActividades.value[filaEditando.value].id,
+      columna: 'estructuraProcedencia',
+      valor_anterior: valorAnterior ? JSON.stringify(valorAnterior) : null,
+      valor_nuevo: JSON.stringify(nuevoDato),
+      actividad_codigo: tablaDataActividades.value[filaEditando.value].codigo,
+      actividad_id: tablaDataActividades.value[filaEditando.value].id,
+    })
+
+    filaEditando.value = null
+  }
+}
+/************************ Fin Dialogo Asignacion Estructura **************************************/
 
 const addTareaHandler = () => {
   addTarea(actividadSeleccionada.value?.id, () =>
@@ -468,6 +520,25 @@ const dropdownMenuConfig = {
   },
 }
 
+const manejarDesglose = (e) => {
+  const { row, data } = e.detail
+  const fila = tablaDataActividades.value[row]
+  if (!fila) return
+  datosPresupuesto.value = {
+    id: fila.id,
+    presupuesto: fila.presupuesto || 0,
+    procedencia_fondos: data || [],
+    info: {
+      codigo: fila.codigo,
+      nombreCorto: fila.nombreCorto,
+      estado: fila.estado,
+      gradoEjecucion: fila.gradoEjecucion,
+      responsable: fila.responsable,
+    },
+  }
+  dialogoDesglose.value = true
+}
+
 onMounted(async () => {
   if (!userStore.listaUsuarios?.length) await userStore.cargarListaUsuarios()
   tablaDataActividades.value = store.actividades.map((a) => {
@@ -484,24 +555,8 @@ onMounted(async () => {
   tablaDataTareas.value = store.tareas
   agregarFilasVacias()
 
-  window.addEventListener('abrir-desglose', (e) => {
-    const { row, data } = e.detail
-    const fila = tablaDataActividades.value[row]
-    if (!fila) return
-    datosPresupuesto.value = {
-      id: fila.id,
-      presupuesto: fila.presupuesto || 0,
-      procedencia_fondos: data || [],
-      info: {
-        codigo: fila.codigo,
-        nombreCorto: fila.nombreCorto,
-        estado: fila.estado,
-        gradoEjecucion: fila.gradoEjecucion,
-        responsable: fila.responsable,
-      },
-    }
-    dialogoDesglose.value = true
-  })
+  window.addEventListener('abrir-desglose', manejarDesglose)
+  window.addEventListener('abrir-asignacion-estructura', abrirAsignacionEstructura)
 
   nextTick(() => {
     const el = gridRef.value?.$el || gridRef.value
@@ -512,6 +567,11 @@ onMounted(async () => {
       }).observe(el)
     }
   })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('abrir-desglose', manejarDesglose)
+  window.removeEventListener('abrir-asignacion-estructura', abrirAsignacionEstructura)
 })
 </script>
 

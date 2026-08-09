@@ -217,6 +217,13 @@ export function useExcelData() {
       ],
     },
     {
+      data: 'estructuraProcedencia',
+      title: 'Relacion Estructura',
+      width: 180,
+      renderer: tablaRenders.estructuraProcedencia,
+      readOnly: true,
+    },
+    {
       data: 'objetivo_pei',
       title: 'Objetivo PEI',
       type: 'numeric',

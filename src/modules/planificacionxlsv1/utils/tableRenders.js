@@ -251,6 +251,146 @@ export function estadoActividad(instance, td, row, col, prop, value, cellPropert
 }
 
 // ═══════════════════════════════════════════════════════════
+// RENDER PARA ESTRUCTURA DE PROCEDENCIA
+// ═══════════════════════════════════════════════════════════
+export function renderEstructuraProcedencia(instance, td, row, col, prop, value, cellProperties) {
+  Handsontable.renderers.TextRenderer.apply(this, arguments)
+
+  // No renderizar en filas placeholder
+  const rowId = instance.getDataAtRowProp(row, 'id')
+  if (rowId === null || rowId === undefined || rowId === '') {
+    td.innerHTML = ''
+    return td
+  }
+
+  td.innerHTML = ''
+  td.style.verticalAlign = 'middle'
+  td.style.textAlign = 'left'
+  td.style.padding = '4px 8px'
+
+  const actividadId = rowId
+
+  let datosParseados = null
+  let tieneDatos = false
+
+  if (value && value !== '' && value !== 'null') {
+    try {
+      datosParseados = typeof value === 'string' ? JSON.parse(value) : value
+      const selecciones = datosParseados?.seleccionesSimples
+      tieneDatos = selecciones && selecciones.objetivoGeneralId
+    } catch {
+      tieneDatos = false
+    }
+  }
+
+  const container = document.createElement('div')
+  container.style.cssText = `
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+  `
+
+  if (!tieneDatos) {
+    const info = document.createElement('div')
+    info.style.cssText = 'flex:1;min-width:0;'
+    info.innerHTML = '<span style="color:#999;font-style:italic;font-size:10px;">Sin asignar</span>'
+    container.appendChild(info)
+
+    const btn = document.createElement('button')
+    btn.textContent = 'Asignar'
+    btn.style.cssText = `
+      padding: 2px 8px;
+      font-size: 10px;
+      cursor: pointer;
+      background: #ff9800;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      flex-shrink: 0;
+    `
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      window.dispatchEvent(
+        new CustomEvent('abrir-asignacion-estructura', {
+          detail: { row, data: null, actividadId },
+        }),
+      )
+    })
+    container.appendChild(btn)
+    td.appendChild(container)
+    return td
+  }
+
+  const selecciones = datosParseados.seleccionesSimples
+  const d = datosParseados.datosProcedencia
+
+  const ogCodigo = d?.objetivogeneral?.data?.codigo || '—'
+  const resOG = d?.objetivogeneral?.data?.resultados_og?.find(
+    (r) => r.id === selecciones.resultadoOGId,
+  )
+  const resCodigo = resOG?.codigo || '—'
+  const proc = resOG?.proceso_resultado_og?.find((p) => p.id === selecciones.procesoOGId)
+  const procCodigo = proc?.codigo || '—'
+
+  const totalIndOG = selecciones.indicadorOGIds?.length || 0
+  const totalIndRes = selecciones.indicadorResultadoOGIds?.length || 0
+
+  const info = document.createElement('div')
+  info.style.cssText = 'flex:1;min-width:0;'
+
+  const lineas = [
+    { icono: '🔗', label: 'OG', valor: ogCodigo },
+    { icono: '📊', label: 'Ind.OG', valor: totalIndOG },
+    { icono: '🎯', label: 'Res', valor: resCodigo },
+    { icono: '📈', label: 'Ind.Res', valor: totalIndRes },
+    { icono: '⚙️', label: 'Proc', valor: procCodigo },
+  ]
+
+  lineas.forEach((linea) => {
+    const div = document.createElement('div')
+    div.style.cssText = `
+      font-size: 9px;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.4;
+    `
+    div.textContent = `${linea.icono} ${linea.label}: ${linea.valor}`
+    info.appendChild(div)
+  })
+
+  container.appendChild(info)
+
+  const btn = document.createElement('button')
+  btn.textContent = 'Editar'
+  btn.style.cssText = `
+    padding: 2px 8px;
+    font-size: 10px;
+    cursor: pointer;
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    flex-shrink: 0;
+  `
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation()
+    window.dispatchEvent(
+      new CustomEvent('abrir-asignacion-estructura', {
+        detail: { row, data: datosParseados, actividadId },
+      }),
+    )
+  })
+
+  container.appendChild(btn)
+  td.appendChild(container)
+  return td
+}
+
+// ═══════════════════════════════════════════════════════════
 // EXPORTAR TODOS
 // ═══════════════════════════════════════════════════════════
 
@@ -276,4 +416,5 @@ export const tablaRenders = {
   presupuesto: renderPresupuesto,
   desglosePresupuesto: renderDesglosePresupuesto,
   estadoColorActividad: estadoActividad,
+  estructuraProcedencia: renderEstructuraProcedencia,
 }
