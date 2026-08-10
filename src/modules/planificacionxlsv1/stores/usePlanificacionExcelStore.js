@@ -13,6 +13,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
   const initialized = ref(false)
   //Datos
   const proyectoActual = ref(null)
+  const proyectoEstructura = ref(null) //Estructura del proyecto
   const actividades = ref([])
   const tareas = ref([])
   const metadata = ref(null)
@@ -177,7 +178,8 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     try {
       // 1. Obtener datos del servicio
       const respuesta = await proyectoServicios.obtenerActividadesActivasPorProyectoId(idproyecto)
-      const ta = await cargarTiposDeActividad()
+      const ta = await cargarTiposDeActividad() //tipos de actividad
+      const pes = await proyectoServicios.estructuraPorId(idproyecto)
       // 2. ═══ PROCESAR LA RESPUESTA ═══
       const datos = procesarRespuestaProyecto(respuesta)
 
@@ -187,7 +189,8 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
       actividades.value = datos.actividades
       tareas.value = datos.tareas
       metadata.value = datos.metadata
-      tiposDeActividad.value = ta
+      tiposDeActividad.value = ta //tipos de actividad para el select
+      proyectoEstructura.value = pes //carga la estructura del proyecto
 
       console.log('✅ Proyecto cargado:', {
         codigo: datos.proyecto?.codigo,
@@ -223,6 +226,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     actividades.value = []
     tareas.value = []
     proyectoActual.value = null
+    proyectoEstructura.value = null
     proyectoId.value = null
     initialized.value = false
     error.value = null
@@ -239,6 +243,7 @@ export const usePlanificacionExcelStore = defineStore('excel-store', () => {
     actividades,
     tareas,
     proyectoActual,
+    proyectoEstructura,
     proyectoId,
     metadata, //variable de los estados no computed
     tiposDeActividad,

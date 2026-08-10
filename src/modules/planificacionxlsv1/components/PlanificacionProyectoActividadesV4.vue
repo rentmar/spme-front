@@ -160,6 +160,7 @@
   <AsignacionNodoIndicador
     v-model="dialogoAsignacion"
     :actividad-data="selectedRowData"
+    :proyecto-estructura="store.proyectoEstructura"
     @guardar="actualizarEstructuraProcedencia"
   />
 
@@ -370,6 +371,7 @@ const confirmarEnvio = async (motivo) => {
     await new Promise((resolve) => setTimeout(resolve, 1500))
     window.location.reload()
   } catch (error) {
+    console.error('Error al enviar la informacion desde el V4', error)
     loadingSave.value = false
     errorMsg('Error al guardar')
   }

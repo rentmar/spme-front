@@ -253,6 +253,9 @@ export function estadoActividad(instance, td, row, col, prop, value, cellPropert
 // ═══════════════════════════════════════════════════════════
 // RENDER PARA ESTRUCTURA DE PROCEDENCIA
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// RENDER PARA ESTRUCTURA DE PROCEDENCIA
+// ═══════════════════════════════════════════════════════════
 export function renderEstructuraProcedencia(instance, td, row, col, prop, value, cellProperties) {
   Handsontable.renderers.TextRenderer.apply(this, arguments)
 
@@ -325,28 +328,75 @@ export function renderEstructuraProcedencia(instance, td, row, col, prop, value,
 
   const selecciones = datosParseados.seleccionesSimples
   const d = datosParseados.datosProcedencia
+  const ogData = d?.objetivogeneral?.data
 
-  const ogCodigo = d?.objetivogeneral?.data?.codigo || '—'
-  const resOG = d?.objetivogeneral?.data?.resultados_og?.find(
-    (r) => r.id === selecciones.resultadoOGId,
-  )
-  const resCodigo = resOG?.codigo || '—'
-  const proc = resOG?.proceso_resultado_og?.find((p) => p.id === selecciones.procesoOGId)
-  const procCodigo = proc?.codigo || '—'
+  const ogCodigo = ogData?.codigo || '—'
+
+  // Rama Izquierda (OG)
+  const resOG = ogData?.resultados_og?.find((r) => r.id === selecciones.resultadoOGId)
+  const resCodigo = resOG?.codigo || null
+  const procOG = resOG?.proceso_resultado_og?.find((p) => p.id === selecciones.procesoOGId)
+  const procCodigo = procOG?.codigo || null
 
   const totalIndOG = selecciones.indicadorOGIds?.length || 0
-  const totalIndRes = selecciones.indicadorResultadoOGIds?.length || 0
+  const totalIndResOG = selecciones.indicadorResultadoOGIds?.length || 0
 
+  // Rama Derecha (OE)
+  const oe = ogData?.objetivos_especificos_og?.find(
+    (o) => o.id === selecciones.objetivoEspecificoId,
+  )
+  const oeCodigo = oe?.codigo || null
+  const totalIndOE = selecciones.indicadorOEIds?.length || 0
+
+  const resOE = oe?.resultados_oe?.find((r) => r.id === selecciones.resultadoOEId)
+  const prodOE = oe?.productos_oe?.find((p) => p.id === selecciones.productoOEId)
+  const procEspecificoOE = oe?.proceso_oe?.find((p) => p.id === selecciones.procesoEspecificoOEId)
+
+  const totalIndResOE = selecciones.indicadorResultadoOEIds?.length || 0
+  const totalProdResOE = selecciones.productoResultadoOEIds?.length || 0
+  const procResOE = resOE?.proceso_resultado_oe?.find(
+    (p) => p.id === selecciones.procesoResultadoOEId,
+  )
+  const procProdOE = prodOE?.proceso_producto_oe?.find(
+    (p) => p.id === selecciones.procesoProductoOEId,
+  )
+
+  // Construir líneas del resumen
+  const lineas = []
+
+  // OG
+  lineas.push({ icono: '🎯', label: 'OG', valor: ogCodigo })
+
+  // Rama Izquierda
+  if (totalIndOG > 0) lineas.push({ icono: '📊', label: 'Ind.OG', valor: totalIndOG })
+  if (resCodigo) {
+    lineas.push({ icono: '📁', label: 'Res.OG', valor: resCodigo })
+    if (totalIndResOG > 0) lineas.push({ icono: '📈', label: 'Ind.Res', valor: totalIndResOG })
+    if (procCodigo) lineas.push({ icono: '⚙️', label: 'Proc', valor: procCodigo })
+  }
+
+  // Rama Derecha
+  if (oeCodigo) {
+    lineas.push({ icono: '🔷', label: 'OE', valor: oeCodigo })
+    if (totalIndOE > 0) lineas.push({ icono: '📊', label: 'Ind.OE', valor: totalIndOE })
+    if (selecciones.resultadoOEId && resOE) {
+      lineas.push({ icono: '📁', label: 'Res.OE', valor: resOE.codigo || '—' })
+      if (totalIndResOE > 0) lineas.push({ icono: '📈', label: 'Ind.ResOE', valor: totalIndResOE })
+      if (totalProdResOE > 0) lineas.push({ icono: '📦', label: 'Prod.Res', valor: totalProdResOE })
+      if (procResOE) lineas.push({ icono: '⚙️', label: 'Proc.Res', valor: procResOE.codigo || '—' })
+    }
+    if (selecciones.productoOEId && prodOE) {
+      lineas.push({ icono: '📦', label: 'Prod', valor: prodOE.codigo || '—' })
+      if (procProdOE)
+        lineas.push({ icono: '⚙️', label: 'Proc.Prod', valor: procProdOE.codigo || '—' })
+    }
+    if (procEspecificoOE)
+      lineas.push({ icono: '⚙️', label: 'Proc.OE', valor: procEspecificoOE.codigo || '—' })
+  }
+
+  // Info (lado izquierdo)
   const info = document.createElement('div')
   info.style.cssText = 'flex:1;min-width:0;'
-
-  const lineas = [
-    { icono: '🔗', label: 'OG', valor: ogCodigo },
-    { icono: '📊', label: 'Ind.OG', valor: totalIndOG },
-    { icono: '🎯', label: 'Res', valor: resCodigo },
-    { icono: '📈', label: 'Ind.Res', valor: totalIndRes },
-    { icono: '⚙️', label: 'Proc', valor: procCodigo },
-  ]
 
   lineas.forEach((linea) => {
     const div = document.createElement('div')
@@ -364,6 +414,7 @@ export function renderEstructuraProcedencia(instance, td, row, col, prop, value,
 
   container.appendChild(info)
 
+  // Botón Editar (lado derecho)
   const btn = document.createElement('button')
   btn.textContent = 'Editar'
   btn.style.cssText = `
