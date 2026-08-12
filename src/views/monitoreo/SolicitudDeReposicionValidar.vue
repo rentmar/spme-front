@@ -188,6 +188,14 @@
                     Información de la Actividad
                   </h3>
                   <v-textarea
+                    v-model="formData.objetivo_actividad"
+                    label="Objetivo de la Actividad"
+                    variant="outlined"
+                    rows="3"
+                    bg-color="blue-lighten-5"
+                    :readonly="soloLectura"
+                  ></v-textarea>
+                  <v-textarea
                     v-model="formData.descripcion_actividad"
                     label="Descripción de la Actividad"
                     variant="outlined"
@@ -195,7 +203,7 @@
                     bg-color="blue-lighten-5"
                     :readonly="soloLectura"
                   ></v-textarea>
-                  <v-row>
+                  <v-row v-if="false">
                     <v-col cols="12" md="4">
                       <v-text-field
                         v-model="formData.fecha_irealizacion"
@@ -219,22 +227,82 @@
                       ></v-text-field>
                     </v-col>
                   </v-row>
-                  <v-textarea
-                    v-model="formData.objetivo_actividad"
-                    label="Objetivo de la Actividad"
-                    variant="outlined"
-                    rows="3"
-                    bg-color="blue-lighten-5"
-                    :readonly="soloLectura"
-                  ></v-textarea>
-                  <v-text-field
+
+                  <!-- <v-text-field
                     v-model="textoProcedencia"
                     label="Fuente de Financiamiento"
                     variant="outlined"
                     density="compact"
                     bg-color="grey-lighten-4"
                     readonly
-                  ></v-text-field>
+                  ></v-text-field> -->
+                  <!-- Fuentes de Financiamiento -->
+                  <div class="mb-4">
+                    <v-label class="text-subtitle-2 mb-2">Fuentes de Financiamiento</v-label>
+
+                    <!-- Si NO hay fuente_financiamiento -->
+                    <v-alert
+                      v-if="
+                        !formData.fuente_financiamiento ||
+                        formData.fuente_financiamiento === '' ||
+                        formData.fuente_financiamiento.length === 0
+                      "
+                      type="info"
+                      variant="tonal"
+                      class="mb-3"
+                      icon="mdi-information"
+                      density="compact"
+                    >
+                      <strong>No existe Desglose</strong><br />
+                      No se realizó un desglose de fuentes de financiamiento para esta actividad.
+                    </v-alert>
+
+                    <!-- Si hay fuente_financiamiento, mostrarlo -->
+                    <v-text-field
+                      v-else
+                      v-model="textoProcedencia"
+                      label="Fuentes de Financiamiento"
+                      variant="outlined"
+                      density="compact"
+                      bg-color="grey-lighten-4"
+                      readonly
+                    ></v-text-field>
+
+                    <!-- Lista de financiadores disponibles -->
+                    <div
+                      v-if="procedenciaFondosActividad && procedenciaFondosActividad.length > 0"
+                      class="mt-2"
+                    >
+                      <div class="text-caption text-medium-emphasis mb-1">
+                        Financiadores disponibles:
+                      </div>
+                      <div class="d-flex flex-wrap gap-2">
+                        <v-chip
+                          v-for="fuente in procedenciaFondosActividad"
+                          :key="fuente.id"
+                          color="primary"
+                          variant="outlined"
+                          size="small"
+                          class="mr-2 mb-1"
+                        >
+                          <v-icon start size="x-small">mdi-currency-usd</v-icon>
+                          {{ fuente.financiera }} ({{ fuente.sigla }})
+                        </v-chip>
+                      </div>
+                    </div>
+
+                    <!-- Si NO hay financiadores -->
+                    <v-alert
+                      v-else
+                      type="warning"
+                      variant="tonal"
+                      class="mt-2"
+                      icon="mdi-alert"
+                      density="compact"
+                    >
+                      No hay fuentes de financiamiento configuradas para esta actividad.
+                    </v-alert>
+                  </div>
 
                   <v-col cols="12" md="4">
                     <v-text-field
@@ -1205,12 +1273,7 @@ async function submitForm() {
       return
     }
 
-    if (
-      !formData.value.lugar_solicitud ||
-      !formData.value.forma_pago ||
-      !formData.value.idresponsable ||
-      !formData.value.idcoordinador
-    ) {
+    if (!formData.value.lugar_solicitud || !formData.value.forma_pago) {
       throw new Error('Por favor, completa todos los campos obligatorios del formulario.')
     }
     if (totalMontoSolicitado.value <= 0) {
@@ -1274,64 +1337,64 @@ async function submitForm() {
     idSolicitudFondos.value = data.id
     numeroFormularioSF.value = data.numero_formulario
 
-    const urlForm = `${window.location.origin}/monitoreo/formulario033/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
-    const cuerpoMensaje = {
-      destinatario_id: payload.coordinador,
-      asunto: 'Solicitud de Fondos - Coordinado',
-      contenido:
-        'Solicitud de Fondos pediente del formulario ' +
-        numeroFormularioSF.value +
-        '. URL: ' +
-        urlForm,
-      tipo: 'sistema',
-      prioridad: 3,
-    }
-    await enviarMensajeAutomatico(cuerpoMensaje)
+    // const urlForm = `${window.location.origin}/monitoreo/formulario033/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`
+    // const cuerpoMensaje = {
+    //   destinatario_id: payload.coordinador,
+    //   asunto: 'Solicitud de Fondos - Coordinado',
+    //   contenido:
+    //     'Solicitud de Fondos pediente del formulario ' +
+    //     numeroFormularioSF.value +
+    //     '. URL: ' +
+    //     urlForm,
+    //   tipo: 'sistema',
+    //   prioridad: 3,
+    // }
+    //await enviarMensajeAutomatico(cuerpoMensaje)
 
-    const cuerpoMensaje2 = {
-      destinatario_id: payload.responsable,
-      asunto: 'Solicitud de Fondos - Contador',
-      contenido:
-        'Solicitud de Fondos pediente del formulario ' +
-        numeroFormularioSF.value +
-        '. URL: ' +
-        urlForm,
-      tipo: 'sistema',
-      prioridad: 3,
-    }
+    // const cuerpoMensaje2 = {
+    //   destinatario_id: payload.responsable,
+    //   asunto: 'Solicitud de Fondos - Contador',
+    //   contenido:
+    //     'Solicitud de Fondos pediente del formulario ' +
+    //     numeroFormularioSF.value +
+    //     '. URL: ' +
+    //     urlForm,
+    //   tipo: 'sistema',
+    //   prioridad: 3,
+    // }
 
     exportToExcel()
     resetForm()
 
-    await enviarMensajeAutomatico(cuerpoMensaje2)
+    //await enviarMensajeAutomatico(cuerpoMensaje2)
 
-    try {
-      const emailPayload = {
-        emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
-        datos_solicitud: {
-          codigo: numeroFormularioSF.value || 'SOL-PROV',
-          titulo: 'Formulario Sol. Fondos',
-          solicitante: nombreCompletoSolicitante.value,
-          tipo: 'Solicitud de Actividad',
-          prioridad: 'alta',
-          descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
-          url_revision: `${window.location.origin}/monitoreo/formulario033/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
-        },
-      }
-      const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailPayload),
-      })
+    // try {
+    //   const emailPayload = {
+    //     emails: [correoCoordinadorActual, correoContadorActual].filter((email) => email),
+    //     datos_solicitud: {
+    //       codigo: numeroFormularioSF.value || 'SOL-PROV',
+    //       titulo: 'Formulario Sol. Fondos',
+    //       solicitante: nombreCompletoSolicitante.value,
+    //       tipo: 'Solicitud de Actividad',
+    //       prioridad: 'alta',
+    //       descripcion: formData.value.descripcion_actividad || 'Solicitud de fondos para actividad',
+    //       url_revision: `${window.location.origin}/monitoreo/formulario033/${formData.value.id_actividad}?solicitud_id=${data.id}${formData.value.id_tarea ? `&tarea_id=${formData.value.id_tarea}` : ''}`,
+    //     },
+    //   }
+    //   const emailResponse = await fetch(baseurl + 'api-msg/correos/solicitud-pendiente/', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(emailPayload),
+    //   })
 
-      if (emailResponse.ok) {
-        console.log('Correo de notificación enviado exitosamente')
-      } else {
-        console.warn('No se pudo enviar el correo de notificación')
-      }
-    } catch (emailError) {
-      console.error('Error al enviar correo de notificación:', emailError)
-    }
+    //   if (emailResponse.ok) {
+    //     console.log('Correo de notificación enviado exitosamente')
+    //   } else {
+    //     console.warn('No se pudo enviar el correo de notificación')
+    //   }
+    // } catch (emailError) {
+    //   console.error('Error al enviar correo de notificación:', emailError)
+    // }
 
     setTimeout(() => {
       // router.push('/pei/listaactividades?showButton=1')

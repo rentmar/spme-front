@@ -190,6 +190,14 @@
                     Información de la Actividad
                   </h3>
                   <v-textarea
+                    v-model="formData.objetivo_actividad"
+                    label="Objetivo de la Actividad"
+                    variant="outlined"
+                    rows="3"
+                    bg-color="blue-lighten-5"
+                    required
+                  ></v-textarea>
+                  <v-textarea
                     v-model="formData.descripcion_actividad"
                     label="Descripción de la Actividad"
                     variant="outlined"
@@ -197,7 +205,7 @@
                     bg-color="blue-lighten-5"
                     required
                   ></v-textarea>
-                  <v-row>
+                  <v-row v-if="false">
                     <v-col cols="12" md="4">
                       <v-text-field
                         v-model="formData.fecha_irealizacion"
@@ -221,14 +229,7 @@
                       ></v-text-field>
                     </v-col>
                   </v-row>
-                  <v-textarea
-                    v-model="formData.objetivo_actividad"
-                    label="Objetivo de la Actividad"
-                    variant="outlined"
-                    rows="3"
-                    bg-color="blue-lighten-5"
-                    required
-                  ></v-textarea>
+
                   <!--
                   <v-text-field
                     v-model="textoProcedencia"

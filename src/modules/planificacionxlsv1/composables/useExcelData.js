@@ -164,35 +164,48 @@ export function useExcelData() {
       data: 'presupuestoGlobal',
       title: 'Presupuesto Global',
       type: 'numeric',
-      width: 150,
+      width: 140,
       numericFormat: {
         pattern: '0,0.00',
       },
+      tooltip:
+        'Presupuesto Global - Solo editable por admin, dir-admin y contable en estados PLAN, RETR, REPROG, EJEC, REP',
     },
     {
       data: 'totalReportado',
       title: 'Total Reportado',
       type: 'numeric',
       readOnly: true,
-      width: 150,
+      width: 140,
       numericFormat: {
         pattern: '0,0.00',
       },
+      tooltip:
+        'Sumatoria de las Rendiciones de cuentas y Solicitudes de Reposicion de la Actividad y Tareas',
     },
     {
       data: 'totalEjecutado',
       title: 'Total Ejecutado',
       type: 'numeric',
-      width: 110,
+      width: 140,
+      numericFormat: { pattern: '0,0.00' },
+      tooltip: 'Total Ejecutado - Solo editable por administracion y contables',
+    },
+    {
+      data: 'saldo',
+      title: 'Saldo',
+      type: 'numeric',
+      width: 140,
       numericFormat: { pattern: '0,0.00' },
     },
     {
       data: 'saldo',
       title: 'Saldo',
       type: 'numeric',
-      width: 110,
+      width: 140,
       numericFormat: { pattern: '0,0.00' },
     },
+
     {
       data: 'estado',
       type: 'text',

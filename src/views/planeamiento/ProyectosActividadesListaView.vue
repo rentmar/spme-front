@@ -101,7 +101,7 @@
                 </v-list-item-subtitle>
 
                 <template v-slot:append>
-                  <div class="d-flex">
+                  <!-- <div class="d-flex">
                     <v-tooltip text="Proceso de planificación" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
@@ -113,9 +113,9 @@
                         ></v-btn>
                       </template>
                     </v-tooltip>
-                  </div>
+                  </div> -->
                   <div class="d-flex">
-                    <v-tooltip text="Proceso de planificación vista alternativa " location="top">
+                    <v-tooltip text="Proceso de planificación" location="top">
                       <template v-slot:activator="{ props }">
                         <v-btn
                           v-bind="props"
