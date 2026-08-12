@@ -119,7 +119,7 @@ const reglasActividad = {
       'saldo',
       'estado',
     ],
-    bloqueadas: ['presupuesto', 'codigo', 'procedencia_fondos'],
+    bloqueadas: ['presupuesto', 'codigo', 'procedencia_fondos', 'presupuestoGlobal'],
   },
   contable: {
     permitidas: [
@@ -130,6 +130,7 @@ const reglasActividad = {
       'riesgos',
       'tipo_actividad',
       'saldo',
+      'presupuestoGlobal',
     ],
     bloqueadas: ['codigo', 'nombreCorto', 'responsable', 'fecha_inicio', 'fecha_cierre', 'estado'],
   },
@@ -147,7 +148,7 @@ const reglasActividad = {
       'fecha_cierre',
       'responsable',
     ],
-    bloqueadas: ['procedencia_fondos', 'estado'],
+    bloqueadas: ['procedencia_fondos', 'estado', 'presupuestoGlobal'],
   },
 }
 
@@ -183,19 +184,35 @@ const reglasEstadoActividad = {
     todasBloqueadas: true,
   },
   REP: {
-    permitidas: ['presupuesto', 'totalEjecutado', 'riesgos', 'supuestos'],
+    permitidas: ['presupuesto', 'totalEjecutado', 'riesgos', 'supuestos', 'presupuestoGlobal'],
   },
   EJEC: {
-    permitidas: ['presupuesto', 'totalEjecutado', 'riesgos', 'supuestos'],
+    permitidas: ['presupuesto', 'totalEjecutado', 'riesgos', 'supuestos', 'presupuestoGlobal'],
   },
   RETR: {
-    permitidas: ['presupuesto', 'totalEjecutado', 'fecha_cierre', 'riesgos', 'supuestos'],
+    permitidas: [
+      'presupuesto',
+      'totalEjecutado',
+      'fecha_cierre',
+      'riesgos',
+      'supuestos',
+      'presupuestoGlobal',
+    ],
   },
   REPROG: {
-    permitidas: ['presupuesto', 'totalEjecutado', 'fecha_cierre', 'riesgos', 'supuestos'],
+    permitidas: [
+      'presupuesto',
+      'totalEjecutado',
+      'fecha_cierre',
+      'riesgos',
+      'supuestos',
+      'presupuestoGlobal',
+    ],
   },
   PLAN: {
     permitidas: [
+      'codigo',
+      'nombreCorto',
       'presupuesto',
       'totalEjecutado',
       'fecha_cierre',
@@ -204,6 +221,7 @@ const reglasEstadoActividad = {
       'supuestos',
       'tipo_actividad',
       'responsable',
+      'presupuestoGlobal',
     ],
   },
   CRD: {

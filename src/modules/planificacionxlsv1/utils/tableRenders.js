@@ -251,6 +251,197 @@ export function estadoActividad(instance, td, row, col, prop, value, cellPropert
 }
 
 // ═══════════════════════════════════════════════════════════
+// RENDER PARA ESTRUCTURA DE PROCEDENCIA
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// RENDER PARA ESTRUCTURA DE PROCEDENCIA
+// ═══════════════════════════════════════════════════════════
+export function renderEstructuraProcedencia(instance, td, row, col, prop, value, cellProperties) {
+  Handsontable.renderers.TextRenderer.apply(this, arguments)
+
+  // No renderizar en filas placeholder
+  const rowId = instance.getDataAtRowProp(row, 'id')
+  if (rowId === null || rowId === undefined || rowId === '') {
+    td.innerHTML = ''
+    return td
+  }
+
+  td.innerHTML = ''
+  td.style.verticalAlign = 'middle'
+  td.style.textAlign = 'left'
+  td.style.padding = '4px 8px'
+
+  const actividadId = rowId
+
+  let datosParseados = null
+  let tieneDatos = false
+
+  if (value && value !== '' && value !== 'null') {
+    try {
+      datosParseados = typeof value === 'string' ? JSON.parse(value) : value
+      const selecciones = datosParseados?.seleccionesSimples
+      tieneDatos = selecciones && selecciones.objetivoGeneralId
+    } catch {
+      tieneDatos = false
+    }
+  }
+
+  const container = document.createElement('div')
+  container.style.cssText = `
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+  `
+
+  if (!tieneDatos) {
+    const info = document.createElement('div')
+    info.style.cssText = 'flex:1;min-width:0;'
+    info.innerHTML = '<span style="color:#999;font-style:italic;font-size:10px;">Sin asignar</span>'
+    container.appendChild(info)
+
+    const btn = document.createElement('button')
+    btn.textContent = 'Asignar'
+    btn.style.cssText = `
+      padding: 2px 8px;
+      font-size: 10px;
+      cursor: pointer;
+      background: #ff9800;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      flex-shrink: 0;
+    `
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      window.dispatchEvent(
+        new CustomEvent('abrir-asignacion-estructura', {
+          detail: { row, data: null, actividadId },
+        }),
+      )
+    })
+    container.appendChild(btn)
+    td.appendChild(container)
+    return td
+  }
+
+  const selecciones = datosParseados.seleccionesSimples
+  const d = datosParseados.datosProcedencia
+  const ogData = d?.objetivogeneral?.data
+
+  const ogCodigo = ogData?.codigo || '—'
+
+  // Rama Izquierda (OG)
+  const resOG = ogData?.resultados_og?.find((r) => r.id === selecciones.resultadoOGId)
+  const resCodigo = resOG?.codigo || null
+  const procOG = resOG?.proceso_resultado_og?.find((p) => p.id === selecciones.procesoOGId)
+  const procCodigo = procOG?.codigo || null
+
+  const totalIndOG = selecciones.indicadorOGIds?.length || 0
+  const totalIndResOG = selecciones.indicadorResultadoOGIds?.length || 0
+
+  // Rama Derecha (OE)
+  const oe = ogData?.objetivos_especificos_og?.find(
+    (o) => o.id === selecciones.objetivoEspecificoId,
+  )
+  const oeCodigo = oe?.codigo || null
+  const totalIndOE = selecciones.indicadorOEIds?.length || 0
+
+  const resOE = oe?.resultados_oe?.find((r) => r.id === selecciones.resultadoOEId)
+  const prodOE = oe?.productos_oe?.find((p) => p.id === selecciones.productoOEId)
+  const procEspecificoOE = oe?.proceso_oe?.find((p) => p.id === selecciones.procesoEspecificoOEId)
+
+  const totalIndResOE = selecciones.indicadorResultadoOEIds?.length || 0
+  const totalProdResOE = selecciones.productoResultadoOEIds?.length || 0
+  const procResOE = resOE?.proceso_resultado_oe?.find(
+    (p) => p.id === selecciones.procesoResultadoOEId,
+  )
+  const procProdOE = prodOE?.proceso_producto_oe?.find(
+    (p) => p.id === selecciones.procesoProductoOEId,
+  )
+
+  // Construir líneas del resumen
+  const lineas = []
+
+  // OG
+  lineas.push({ icono: '🎯', label: 'OG', valor: ogCodigo })
+
+  // Rama Izquierda
+  if (totalIndOG > 0) lineas.push({ icono: '📊', label: 'Ind.OG', valor: totalIndOG })
+  if (resCodigo) {
+    lineas.push({ icono: '📁', label: 'Res.OG', valor: resCodigo })
+    if (totalIndResOG > 0) lineas.push({ icono: '📈', label: 'Ind.Res', valor: totalIndResOG })
+    if (procCodigo) lineas.push({ icono: '⚙️', label: 'Proc', valor: procCodigo })
+  }
+
+  // Rama Derecha
+  if (oeCodigo) {
+    lineas.push({ icono: '🔷', label: 'OE', valor: oeCodigo })
+    if (totalIndOE > 0) lineas.push({ icono: '📊', label: 'Ind.OE', valor: totalIndOE })
+    if (selecciones.resultadoOEId && resOE) {
+      lineas.push({ icono: '📁', label: 'Res.OE', valor: resOE.codigo || '—' })
+      if (totalIndResOE > 0) lineas.push({ icono: '📈', label: 'Ind.ResOE', valor: totalIndResOE })
+      if (totalProdResOE > 0) lineas.push({ icono: '📦', label: 'Prod.Res', valor: totalProdResOE })
+      if (procResOE) lineas.push({ icono: '⚙️', label: 'Proc.Res', valor: procResOE.codigo || '—' })
+    }
+    if (selecciones.productoOEId && prodOE) {
+      lineas.push({ icono: '📦', label: 'Prod', valor: prodOE.codigo || '—' })
+      if (procProdOE)
+        lineas.push({ icono: '⚙️', label: 'Proc.Prod', valor: procProdOE.codigo || '—' })
+    }
+    if (procEspecificoOE)
+      lineas.push({ icono: '⚙️', label: 'Proc.OE', valor: procEspecificoOE.codigo || '—' })
+  }
+
+  // Info (lado izquierdo)
+  const info = document.createElement('div')
+  info.style.cssText = 'flex:1;min-width:0;'
+
+  lineas.forEach((linea) => {
+    const div = document.createElement('div')
+    div.style.cssText = `
+      font-size: 9px;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.4;
+    `
+    div.textContent = `${linea.icono} ${linea.label}: ${linea.valor}`
+    info.appendChild(div)
+  })
+
+  container.appendChild(info)
+
+  // Botón Editar (lado derecho)
+  const btn = document.createElement('button')
+  btn.textContent = 'Editar'
+  btn.style.cssText = `
+    padding: 2px 8px;
+    font-size: 10px;
+    cursor: pointer;
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    flex-shrink: 0;
+  `
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation()
+    window.dispatchEvent(
+      new CustomEvent('abrir-asignacion-estructura', {
+        detail: { row, data: datosParseados, actividadId },
+      }),
+    )
+  })
+
+  container.appendChild(btn)
+  td.appendChild(container)
+  return td
+}
+
+// ═══════════════════════════════════════════════════════════
 // EXPORTAR TODOS
 // ═══════════════════════════════════════════════════════════
 
@@ -276,4 +467,5 @@ export const tablaRenders = {
   presupuesto: renderPresupuesto,
   desglosePresupuesto: renderDesglosePresupuesto,
   estadoColorActividad: estadoActividad,
+  estructuraProcedencia: renderEstructuraProcedencia,
 }

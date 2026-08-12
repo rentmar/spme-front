@@ -18,6 +18,7 @@
       :contextMenu="contextMenuConfig"
       :afterChange="onChange"
       :afterSelection="onSelect"
+      :afterGetColHeader="afterGetColHeader"
       :hiddenColumns="{
         columns: [3],
         indicators: false,
@@ -29,7 +30,7 @@
 <script setup>
 import { ref } from 'vue'
 import HotTable from '@handsontable/vue3'
-import { puedeEditar } from '../utils'
+import { puedeEditar } from '../utils' // ← Simplificado
 import { useSnackbar } from '@/composables/useSnackbar'
 
 const props = defineProps({
@@ -68,6 +69,19 @@ const beforeChange = (changes, source) => {
   }
 
   return true
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOOLTIPS EN HEADERS DE COLUMNA
+// ═══════════════════════════════════════════════════════════
+const afterGetColHeader = (col, TH) => {
+  const columnDef = props.columns[col]
+  if (!columnDef) return
+
+  if (columnDef.tooltip) {
+    TH.title = columnDef.tooltip
+    TH.style.cursor = 'help'
+  }
 }
 </script>
 
