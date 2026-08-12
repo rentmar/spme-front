@@ -199,7 +199,7 @@
                 :disabled="cargandoUsuarios"
               >
                 <v-icon :icon="rolIcono(rol)" size="small" class="mr-1"></v-icon>
-                {{ rol }}
+                {{ getRolDisplay(rol) }}
               </v-chip>
               <v-chip
                 v-if="filtroRol"
@@ -563,13 +563,18 @@ const cargarUsuarios = async () => {
       usuarioActual.value = response.usuarioActual || null
 
       // Mapear los validadores al formato que necesita el componente
-      usuariosDisponibles.value = (response.validadores || []).map((u) => ({
-        id: u.id,
-        nombre_completo: u.nombre_completo || `Usuario ${u.username}`,
-        email: u.email || '',
-        rol: u.rol?.toLowerCase() || 'usuario',
-        username: u.username,
-      }))
+      usuariosDisponibles.value = (response.validadores || [])
+        .filter((u) => {
+          const rol = u.rol?.toLowerCase()
+          return rol !== 'contable' && rol !== 'tecnico'
+        })
+        .map((u) => ({
+          id: u.id,
+          nombre_completo: u.nombre_completo || `Usuario ${u.username}`,
+          email: u.email || '',
+          rol: u.rol?.toLowerCase() || 'usuario',
+          username: u.username,
+        }))
 
       console.log('Validadores cargados:', usuariosDisponibles.value.length)
     }
@@ -626,6 +631,7 @@ const inicializarDatos = async () => {
     console.error('Error inicializando:', error)
     mostrarNotificacion('Error al cargar datos', 'error')
     emit('error', error.message)
+    cargandoInicial.value = false
   } finally {
     cargandoInicial.value = false
   }
@@ -656,7 +662,7 @@ const limpiarFiltroRol = () => {
 
 const rolIcono = (rol) => {
   const iconos = {
-    admin: 'mdi-crown',
+    admin: 'mdi-calendar',
     coordinador: 'mdi-account-group',
     contable: 'mdi-calculator',
     tecnico: 'mdi-wrench',
@@ -766,6 +772,14 @@ const mostrarNotificacion = (texto, tipo = 'info') => {
     color: config[tipo].color,
     icon: config[tipo].icon,
   }
+}
+
+// ═══════════════════════════════════════════════════════════
+// DISPLAY DE ROLES
+// ═══════════════════════════════════════════════════════════
+const getRolDisplay = (rol) => {
+  if (rol?.toLowerCase() === 'admin') return 'Planificacion y Monitoreo'
+  return rol
 }
 
 // ============================================================
