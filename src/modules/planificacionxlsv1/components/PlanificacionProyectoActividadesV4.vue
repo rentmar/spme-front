@@ -543,16 +543,34 @@ const manejarDesglose = (e) => {
 
 onMounted(async () => {
   if (!userStore.listaUsuarios?.length) await userStore.cargarListaUsuarios()
+  // tablaDataActividades.value = store.actividades.map((a) => {
+  //   const p = +a.presupuesto || 0
+  //   const e = +a.totalEjecutado || 0
+  //   return {
+  //     ...a,
+  //     tipo_actividad: tipoActividadNombrePorId(a.tipo_actividad_id),
+  //     saldo: p - e,
+  //     esNueva: false,
+  //   }
+  // })
+
   tablaDataActividades.value = store.actividades.map((a) => {
-    const p = +a.presupuesto || 0
-    const e = +a.totalEjecutado || 0
+    const totalReportado = +a.totalReportado || 0
+    const totalEjecutado = +a.totalEjecutado || 0
+    const presupuestoGlobal = +a.presupuestoGlobal || 0
+
     return {
       ...a,
       tipo_actividad: tipoActividadNombrePorId(a.tipo_actividad_id),
-      saldo: p - e,
+      totalReportado: totalReportado,
+      totalEjecutado: totalEjecutado,
+      presupuestoGlobal: presupuestoGlobal,
+      // Nueva fórmula de saldo
+      saldo: totalReportado + totalEjecutado - presupuestoGlobal,
       esNueva: false,
     }
   })
+
   tablaDataActividades.value.sort((a, b) => a.id - b.id)
   tablaDataTareas.value = store.tareas
   agregarFilasVacias()

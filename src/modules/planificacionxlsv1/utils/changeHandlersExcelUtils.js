@@ -28,14 +28,18 @@ const snackbar = useSnackbar()
 
 /**
  * Recalcula el saldo de una actividad.
- * Fórmula: saldo = presupuesto - totalEjecutado
- * Se dispara al cambiar presupuesto, totalEjecutado o totalReportado.
+ * Fórmula: saldo = totalReportado + totalEjecutado - presupuestoGlobal
+ * Se dispara cuando cambian: totalEjecutado o presupuestoGlobal
  */
 function recalcularSaldoActividad(row, oldVal, newVal, tableData) {
   const actividad = tableData.value[row]
-  const presupuesto = +actividad.presupuesto || 0
+
+  const totalReportado = +actividad.totalReportado || 0
   const totalEjecutado = +actividad.totalEjecutado || 0
-  actividad.saldo = presupuesto - totalEjecutado
+  const presupuestoGlobal = +actividad.presupuestoGlobal || 0
+
+  //Formula
+  actividad.saldo = totalReportado + totalEjecutado - presupuestoGlobal
 }
 
 /**
@@ -43,12 +47,12 @@ function recalcularSaldoActividad(row, oldVal, newVal, tableData) {
  * Si la actividad no tiene presupuestoGlobal definido (null/undefined),
  * hereda automáticamente el valor de presupuesto.
  */
-function actualizarPresupuestoGlobal(row, oldVal, newVal, tableData) {
-  const actividad = tableData.value[row]
-  if (actividad.presupuestoGlobal === undefined || actividad.presupuestoGlobal === null) {
-    actividad.presupuestoGlobal = +newVal || 0
-  }
-}
+// function actualizarPresupuestoGlobal(row, oldVal, newVal, tableData) {
+//   const actividad = tableData.value[row]
+//   if (actividad.presupuestoGlobal === undefined || actividad.presupuestoGlobal === null) {
+//     actividad.presupuestoGlobal = +newVal || 0
+//   }
+// }
 
 /**
  * Actualiza el grado de ejecución (literal legible) basado en el código de estado.
@@ -214,7 +218,8 @@ function actualizarEstadoPorFechas(row, oldVal, newVal, tableData) {
 }
 // Mapa de handlers para ACTIVIDADES
 const actividadHandlers = {
-  presupuesto: [validarPresupuestoActividad, recalcularSaldoActividad, actualizarPresupuestoGlobal],
+  presupuesto: [validarPresupuestoActividad],
+  presupuestoGlobal: [recalcularSaldoActividad],
   totalEjecutado: [recalcularSaldoActividad],
   totalReportado: [recalcularSaldoActividad],
   estado: [actualizarGradoEjecucionDesdeEstado],

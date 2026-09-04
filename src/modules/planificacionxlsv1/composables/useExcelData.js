@@ -160,6 +160,7 @@ export function useExcelData() {
       width: 110,
       numericFormat: { pattern: '0,0.00' },
       renderer: tablaRenders.presupuesto,
+      readOnly: false,
     },
     {
       data: 'procedencia_fondos',
@@ -209,17 +210,8 @@ export function useExcelData() {
       readOnly: true,
       renderer: tablaRenders.campoSoloLectura,
       numericFormat: { pattern: '0,0.00' },
+      tooltip: 'Saldo, se calcula: Total Reportado + Total Ejecutado - Presupuesto Global',
     },
-    {
-      data: 'saldo',
-      title: 'Saldo',
-      type: 'numeric',
-      width: 140,
-      readOnly: true,
-      renderer: tablaRenders.campoSoloLectura,
-      numericFormat: { pattern: '0,0.00' },
-    },
-
     {
       data: 'estado',
       type: 'text',
@@ -323,6 +315,8 @@ export function useExcelData() {
       fecha_inicio: '',
       fecha_cierre: '',
       presupuesto: 0,
+      presupuestoGlobal: 0,
+      totalReportado: 0,
       totalEjecutado: 0,
       saldo: 0,
       estado: 'CRD',
@@ -400,7 +394,12 @@ export function useExcelData() {
       if (String(oldVal) === String(newVal)) return
 
       // Aplicar valor
-      const val = prop === 'presupuesto' || prop === 'totalEjecutado' ? +newVal || 0 : newVal
+      // const val = prop === 'presupuesto' || prop === 'totalEjecutado' ? +newVal || 0 : newVal
+      const val = ['presupuesto', 'presupuestoGlobal', 'totalEjecutado', 'totalReportado'].includes(
+        prop,
+      )
+        ? +newVal || 0
+        : newVal
       tablaDataActividades.value[row][prop] = val
 
       // Ejecutar handlers
