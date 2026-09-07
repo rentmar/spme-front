@@ -30,6 +30,7 @@
           v-if="storeSolFondos.estadoDocumento === 'SIN_VALIDACIONES'"
           :id-solicitud="storeSolFondos.idSolicitud"
           :contenido-documento="storeSolFondos.solicitudFondosActual"
+          :es-revisor="storeSolFondos.esRedactor"
           @revisores-asignados="handleRevisoresAsignados"
         ></AsignarRevisoresSolicitud>
         <RedactorAccion
@@ -43,6 +44,7 @@
         ></RedactorAccion>
       </div>
     </template>
+    <template #reasignar-content> </template>
   </BaseComponenteRedactorAside>
 </template>
 

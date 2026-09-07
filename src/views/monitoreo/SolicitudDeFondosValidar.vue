@@ -451,6 +451,7 @@
                         :fecha="formData.fecha_solicitud"
                         :forma-pago="formData.forma_pago"
                         :datos-forma-pago="formData.datos_forma_pago"
+                        :readonly="!storeSolFondos.esRedactor"
                       ></InformacionAdicionalEdicion>
                     </v-col>
                   </v-row>
