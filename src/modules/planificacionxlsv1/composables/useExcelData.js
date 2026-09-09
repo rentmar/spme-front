@@ -115,8 +115,8 @@ export function useExcelData() {
     {
       data: 'nombreCorto',
       title: 'Nombre',
-      width: 180,
-      renderer: tablaRenders.campoNombreActividad,
+      width: 200,
+      // renderer: tablaRenders.campoNombreActividad,
     },
     { data: 'tipo_actividad_id', title: 'id TA*', width: 50 },
     {
@@ -124,7 +124,7 @@ export function useExcelData() {
       title: 'Tipo',
       width: 260,
       type: 'dropdown',
-      renderer: tablaRenders.campoTipoDeActividad,
+      // renderer: tablaRenders.campoTipoDeActividad,
       source: tiposActividadNombres,
     },
     {
@@ -132,7 +132,7 @@ export function useExcelData() {
       title: 'Responsable',
       width: 130,
       type: 'dropdown',
-      renderer: tablaRenders.campoResponsable,
+      // renderer: tablaRenders.campoResponsable,
       source: responsablesNombres,
     },
     {
@@ -176,7 +176,7 @@ export function useExcelData() {
       numericFormat: {
         pattern: '0,0.00',
       },
-      renderer: tablaRenders.campoEditableAutorizado,
+      // renderer: tablaRenders.campoEditableAutorizado,
       tooltip:
         'Presupuesto Global - Solo editable por admin, dir-admin y contable en estados PLAN, RETR, REPROG, EJEC, REP',
     },
@@ -199,7 +199,7 @@ export function useExcelData() {
       type: 'numeric',
       width: 140,
       numericFormat: { pattern: '0,0.00' },
-      renderer: tablaRenders.campoEditableAutorizado,
+      // renderer: tablaRenders.campoEditableAutorizado,
       tooltip: 'Total Ejecutado - Solo editable por administracion y contables',
     },
     {
@@ -208,7 +208,7 @@ export function useExcelData() {
       type: 'numeric',
       width: 140,
       readOnly: true,
-      renderer: tablaRenders.campoSoloLectura,
+      // renderer: tablaRenders.campoSoloLectura,
       numericFormat: { pattern: '0,0.00' },
       tooltip: 'Saldo, se calcula: Total Reportado + Total Ejecutado - Presupuesto Global',
     },
