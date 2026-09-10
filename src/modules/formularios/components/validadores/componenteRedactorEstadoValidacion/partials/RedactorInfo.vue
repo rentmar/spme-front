@@ -46,7 +46,7 @@
           <span class="text-caption text-grey-darken-1">Rol:</span>
           <v-chip size="x-small" :color="getColorRol(redactor.rol)" variant="tonal" class="ml-1">
             <v-icon start size="12">{{ getIconoRol(redactor.rol) }}</v-icon>
-            {{ redactor.rol || 'Sin rol' }}
+            {{ redactor.cargo || 'Sin rol' }}
           </v-chip>
         </div>
 

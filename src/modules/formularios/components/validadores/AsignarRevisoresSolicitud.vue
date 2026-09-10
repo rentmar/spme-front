@@ -42,8 +42,17 @@
         </div>
       </div>
 
+      <!-- Aviso si no es revisor -->
+      <v-alert v-if="!esRevisor" type="info" variant="tonal" density="compact" class="mb-3">
+        <template #prepend>
+          <v-icon size="18">mdi-information</v-icon>
+        </template>
+        Solo el redactor del documento puede asignar revisores.
+      </v-alert>
+
       <!-- Botón para abrir diálogo de asignación -->
       <v-btn
+        v-if="esRevisor"
         block
         color="primary"
         variant="tonal"
@@ -123,6 +132,11 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  // Prop para habilitar el botón "Asignar Revisores"
+  esRevisor: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['revisores-asignados'])
@@ -133,6 +147,7 @@ const loadingAsignar = ref(false)
 const datosFormulario = ref(null)
 
 const abrirDialogoAsignacion = () => {
+  if (!props.esRevisor) return
   dialogoAsignacion.value = true
 }
 
@@ -140,19 +155,15 @@ const confirmarAsignacion = () => {
   loadingAsignar.value = true
 
   emit('revisores-asignados', {
-    // Datos
     solicitudId: props.idSolicitud,
     redactorId: datosFormulario.value?.redactorId,
     validadoresIds: datosFormulario.value?.validadoresIds,
-
-    // ⭐ Callbacks
     onSuccess: () => {
       loadingAsignar.value = false
       dialogoAsignacion.value = false
     },
     onError: () => {
       loadingAsignar.value = false
-      // El diálogo se mantiene abierto para reintentar
     },
   })
 }
@@ -187,5 +198,9 @@ const confirmarAsignacion = () => {
 
 .gap-3 {
   gap: 12px;
+}
+
+.mb-3 {
+  margin-bottom: 12px;
 }
 </style>

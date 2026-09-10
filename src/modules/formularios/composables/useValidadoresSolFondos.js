@@ -139,6 +139,42 @@ export function useValidadoresSolFondos() {
     }
   }
 
+  /**
+   * Listar revisores de una solicitud de fondos
+   * @param {number} idSolFondos - ID de la solicitud
+   */
+  async function listarRevisores(idSolFondos) {
+    loading.value = true
+    error.value = null
+    try {
+      const respuesta = await validadoresSolFondosServicio.listarRevisores(idSolFondos)
+      return respuesta
+    } catch (err) {
+      error.value = err
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Actualizar revisores de una solicitud de fondos
+   * @param {number} idSolFondos - ID de la solicitud
+   * @param {object} payload - Payload con cambios (array) y motivo
+   */
+  async function actualizarRevisores(idSolFondos, payload) {
+    loading.value = true
+    error.value = null
+    try {
+      const respuesta = await validadoresSolFondosServicio.actualizaRevisores(idSolFondos, payload)
+      return respuesta
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     //Estados de carga
     loading,
@@ -151,5 +187,7 @@ export function useValidadoresSolFondos() {
     rechazarSolicitudFondos,
     resetearSolicitudFondos,
     estadoSolicitudFondos,
+    listarRevisores,
+    actualizarRevisores,
   }
 }

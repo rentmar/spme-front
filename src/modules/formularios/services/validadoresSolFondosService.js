@@ -141,4 +141,37 @@ export const validadoresSolFondosServicio = {
       throw error
     }
   },
+  /**
+   * Obtener los revisores de una solicitud
+   */
+  listarRevisores: async (idSolFondos) => {
+    try {
+      const respuesta = await apiValid.get('/solicitud-fondos/' + idSolFondos + '/revisores/')
+      return respuesta.data
+    } catch (error) {
+      console.error(
+        'Axios: error al obetener las validaciones de la sol de fondos: ' + idSolFondos,
+        error,
+      )
+      throw error
+    }
+  },
+  /**
+   * Actualizar los revisores de una solicitud
+   */
+  actualizaRevisores: async (idSolFondos, payload) => {
+    try {
+      const respuesta = await apiValid.put(
+        '/solicitud-fondos/' + idSolFondos + '/revisores/actualizar/',
+        payload,
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error(
+        'Axios: error al actualizar los revisores de la sol de fondos: ' + idSolFondos,
+        error,
+      )
+      throw error
+    }
+  },
 }

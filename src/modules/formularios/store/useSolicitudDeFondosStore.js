@@ -93,35 +93,40 @@ export const useSolicitudFondosStore = defineStore('solicitud-fondos', () => {
     return estadoSolicitudFondosActual.value.detalle_validadores
   })
 
-  //Redactor del documento - CORREGIDO
+  //Redactor del documento
   const redactorDocumento = computed(() => {
-    // Verificar que exista el estado y los validadores
-    if (!estadoSolicitudFondosActual.value) {
-      return null
-    }
-
-    const detalle = estadoSolicitudFondosActual.value.detalle_validadores
-
-    // Verificar que detalle_validadores existe y es un array
-    if (!detalle || !Array.isArray(detalle)) {
-      console.warn('redactorDocumento: detalle_validadores no es un array', detalle)
-      return null
-    }
-
-    // Verificar que el array tiene elementos
-    if (detalle.length === 0) {
-      console.warn('redactorDocumento: detalle_validadores está vacío')
-      return null
-    }
-
-    // Verificar que el primer elemento tiene redactor
-    if (!detalle[0].redactor) {
-      console.warn('redactorDocumento: el primer validador no tiene redactor', detalle[0])
-      return null
-    }
-
-    return detalle[0].redactor
+    return solicitudFondosActual.value?.usuario_info || null
   })
+
+  // //Redactor del documento - CORREGIDO
+  // const redactorDocumento = computed(() => {
+  //   // Verificar que exista el estado y los validadores
+  //   if (!estadoSolicitudFondosActual.value) {
+  //     return solicitudFondosActual.value?.usuario_info.id
+  //   }
+
+  //   const detalle = estadoSolicitudFondosActual.value.detalle_validadores
+
+  //   // Verificar que detalle_validadores existe y es un array
+  //   if (!detalle || !Array.isArray(detalle)) {
+  //     console.warn('redactorDocumento: detalle_validadores no es un array', detalle)
+  //     return null
+  //   }
+
+  //   // Verificar que el array tiene elementos
+  //   if (detalle.length === 0) {
+  //     console.warn('redactorDocumento: detalle_validadores está vacío')
+  //     return null
+  //   }
+
+  //   // Verificar que el primer elemento tiene redactor
+  //   if (!detalle[0].redactor) {
+  //     console.warn('redactorDocumento: el primer validador no tiene redactor', detalle[0])
+  //     return null
+  //   }
+
+  //   return detalle[0].redactor
+  // })
 
   //Version del documento
   const versionDocumento = computed(() => {

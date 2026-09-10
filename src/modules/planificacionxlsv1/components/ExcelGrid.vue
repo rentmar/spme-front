@@ -19,6 +19,7 @@
       :afterChange="onChange"
       :afterSelection="onSelect"
       :afterGetColHeader="afterGetColHeader"
+      :afterRenderer="afterRenderer"
       :hiddenColumns="{
         columns: [3],
         indicators: false,
@@ -82,6 +83,24 @@ const afterGetColHeader = (col, TH) => {
     TH.title = columnDef.tooltip
     TH.style.cursor = 'help'
   }
+}
+
+// ═══════════════════════════════════════════════════════════
+// NUEVO: Forzar altura uniforme en todas las celdas
+// ═══════════════════════════════════════════════════════════
+const afterRenderer = (TD, row, col, prop, value, cellProperties) => {
+  // Forzar altura fija en todas las celdas
+  TD.style.height = '30px'
+  TD.style.maxHeight = '30px'
+  TD.style.minHeight = '30px'
+  TD.style.lineHeight = '30px'
+  TD.style.padding = '0 8px'
+  TD.style.boxSizing = 'border-box'
+
+  // Asegurar que el contenido no cambie la altura
+  TD.style.overflow = 'hidden'
+  TD.style.whiteSpace = 'nowrap'
+  TD.style.textOverflow = 'ellipsis'
 }
 </script>
 

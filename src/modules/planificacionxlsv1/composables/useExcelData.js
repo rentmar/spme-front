@@ -98,27 +98,41 @@ export function useExcelData() {
 
   //Definicion de las columnas de la grilla actividades
   const columns = ref([
-    { data: 'id', title: 'ID', type: 'numeric', readOnly: true, width: 40 },
+    {
+      data: 'id',
+      title: 'ID',
+      type: 'numeric',
+      readOnly: true,
+      width: 40,
+      renderer: tablaRenders.campoNeutro,
+    },
     {
       data: 'codigo',
       title: 'Código',
-      width: 120,
-      renderer: tablaRenders.celdaSuccess,
+      width: 150,
+      renderer: tablaRenders.campoCodigoActividad,
     },
-    { data: 'nombreCorto', title: 'Nombre', width: 180 },
+    {
+      data: 'nombreCorto',
+      title: 'Nombre',
+      width: 200,
+      // renderer: tablaRenders.campoNombreActividad,
+    },
     { data: 'tipo_actividad_id', title: 'id TA*', width: 50 },
     {
       data: 'tipo_actividad',
       title: 'Tipo',
-      width: 240,
+      width: 260,
       type: 'dropdown',
+      // renderer: tablaRenders.campoTipoDeActividad,
       source: tiposActividadNombres,
     },
     {
       data: 'responsable',
       title: 'Responsable',
-      width: 110,
+      width: 130,
       type: 'dropdown',
+      // renderer: tablaRenders.campoResponsable,
       source: responsablesNombres,
     },
     {
@@ -127,12 +141,7 @@ export function useExcelData() {
       type: 'date',
       width: 100,
       dateFormat: 'YYYY-MM-DD',
-      datePickerConfig: {
-        container: 'body',
-        preventOverflow: false,
-        showOn: 'focus',
-        appendTo: 'body',
-      },
+      renderer: tablaRenders.campoFecha,
     },
     {
       data: 'fecha_cierre',
@@ -140,12 +149,10 @@ export function useExcelData() {
       type: 'date',
       width: 100,
       dateFormat: 'YYYY-MM-DD',
-      datePickerConfig: {
-        container: 'body',
-      },
+      renderer: tablaRenders.campoFecha,
     },
-    { data: 'supuestos', title: 'Supuestos', width: 100 },
-    { data: 'riesgos', title: 'Riesgos', width: 100 },
+    { data: 'supuestos', title: 'Supuestos', width: 100, renderer: tablaRenders.campoNeutro },
+    { data: 'riesgos', title: 'Riesgos', width: 100, renderer: tablaRenders.campoNeutro },
     {
       data: 'presupuesto',
       title: 'Presupuesto',
@@ -153,6 +160,7 @@ export function useExcelData() {
       width: 110,
       numericFormat: { pattern: '0,0.00' },
       renderer: tablaRenders.presupuesto,
+      readOnly: false,
     },
     {
       data: 'procedencia_fondos',
@@ -168,6 +176,7 @@ export function useExcelData() {
       numericFormat: {
         pattern: '0,0.00',
       },
+      // renderer: tablaRenders.campoEditableAutorizado,
       tooltip:
         'Presupuesto Global - Solo editable por admin, dir-admin y contable en estados PLAN, RETR, REPROG, EJEC, REP',
     },
@@ -180,8 +189,9 @@ export function useExcelData() {
       numericFormat: {
         pattern: '0,0.00',
       },
+      renderer: tablaRenders.campoCalculado,
       tooltip:
-        'Sumatoria de las Rendiciones de cuentas y Solicitudes de Reposicion de la Actividad y Tareas',
+        'Campo calculado no editable. Sumatoria de las Rendiciones de cuentas y Solicitudes de Reposicion Aprobadas de la Actividad mas Subactividades',
     },
     {
       data: 'totalEjecutado',
@@ -189,6 +199,7 @@ export function useExcelData() {
       type: 'numeric',
       width: 140,
       numericFormat: { pattern: '0,0.00' },
+      // renderer: tablaRenders.campoEditableAutorizado,
       tooltip: 'Total Ejecutado - Solo editable por administracion y contables',
     },
     {
@@ -196,16 +207,11 @@ export function useExcelData() {
       title: 'Saldo',
       type: 'numeric',
       width: 140,
+      readOnly: true,
+      // renderer: tablaRenders.campoSoloLectura,
       numericFormat: { pattern: '0,0.00' },
+      tooltip: 'Saldo, se calcula: Total Reportado + Total Ejecutado - Presupuesto Global',
     },
-    {
-      data: 'saldo',
-      title: 'Saldo',
-      type: 'numeric',
-      width: 140,
-      numericFormat: { pattern: '0,0.00' },
-    },
-
     {
       data: 'estado',
       type: 'text',
@@ -228,6 +234,7 @@ export function useExcelData() {
         'EN REPORTE',
         'FINALIZADO',
       ],
+      renderer: tablaRenders.campoNeutro,
     },
     {
       data: 'estructuraProcedencia',
@@ -241,18 +248,21 @@ export function useExcelData() {
       title: 'Objetivo PEI',
       type: 'numeric',
       readOnly: true,
+      renderer: tablaRenders.campoNeutro,
     },
     {
       data: 'indicador_pei',
       title: 'Indicador PEI',
       type: 'numeric',
       readOnly: true,
+      renderer: tablaRenders.campoNeutro,
     },
     {
       data: 'factoresCriticos',
       title: 'Factores criticos',
       readOnly: true,
       width: 150,
+      renderer: tablaRenders.campoNeutro,
     },
   ])
 
@@ -305,6 +315,8 @@ export function useExcelData() {
       fecha_inicio: '',
       fecha_cierre: '',
       presupuesto: 0,
+      presupuestoGlobal: 0,
+      totalReportado: 0,
       totalEjecutado: 0,
       saldo: 0,
       estado: 'CRD',
@@ -382,7 +394,12 @@ export function useExcelData() {
       if (String(oldVal) === String(newVal)) return
 
       // Aplicar valor
-      const val = prop === 'presupuesto' || prop === 'totalEjecutado' ? +newVal || 0 : newVal
+      // const val = prop === 'presupuesto' || prop === 'totalEjecutado' ? +newVal || 0 : newVal
+      const val = ['presupuesto', 'presupuestoGlobal', 'totalEjecutado', 'totalReportado'].includes(
+        prop,
+      )
+        ? +newVal || 0
+        : newVal
       tablaDataActividades.value[row][prop] = val
 
       // Ejecutar handlers
