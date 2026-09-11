@@ -6,6 +6,8 @@ import { ref, computed } from 'vue'
 import { useSolicitudViaje } from '../composables/useSolicitudViaje'
 import { useValidadoresSolViajes } from '../composables/useValidadoresSolViajes'
 import { useUserStore } from '@/stores/user'
+import { solicitudViajeServicio } from '../services/solicitudViajeService'
+import SolicitudDeViaje from '@/views/monitoreo/SolicitudDeViaje.vue'
 
 export const useSolicitudDeViajesStore = defineStore('solicitud-viaje', () => {
   // === ESTADOS ===
@@ -60,6 +62,8 @@ export const useSolicitudDeViajesStore = defineStore('solicitud-viaje', () => {
     const usuarioId = storeUsuario.id
 
     if (!redactor || !usuarioId) return false
+    console.log('Usuario: ', usuarioId)
+    console.log('redactor: ', redactor)
 
     return redactor.id === usuarioId
   })
@@ -94,32 +98,33 @@ export const useSolicitudDeViajesStore = defineStore('solicitud-viaje', () => {
 
   //Redactor del documento - CORREGIDO
   const redactorDocumento = computed(() => {
+    return solicitudViajesActual.value?.usuario_info || null
     // Verificar que exista el estado y los validadores
-    if (!estadoSolicitudViajesActual.value) {
-      return null
-    }
+    // if (!estadoSolicitudViajesActual.value) {
+    //   return null
+    // }
 
-    const detalle = estadoSolicitudViajesActual.value.detalle_validadores
+    // const detalle = estadoSolicitudViajesActual.value.detalle_validadores
 
     // Verificar que detalle_validadores existe y es un array
-    if (!detalle || !Array.isArray(detalle)) {
-      console.warn('redactorDocumento: detalle_validadores no es un array', detalle)
-      return null
-    }
+    // if (!detalle || !Array.isArray(detalle)) {
+    //   console.warn('redactorDocumento: detalle_validadores no es un array', detalle)
+    //   return null
+    // }
 
     // Verificar que el array tiene elementos
-    if (detalle.length === 0) {
-      console.warn('redactorDocumento: detalle_validadores está vacío')
-      return null
-    }
+    // if (detalle.length === 0) {
+    //   console.warn('redactorDocumento: detalle_validadores está vacío')
+    //   return null
+    // }
 
     // Verificar que el primer elemento tiene redactor
-    if (!detalle[0].redactor) {
-      console.warn('redactorDocumento: el primer validador no tiene redactor', detalle[0])
-      return null
-    }
+    // if (!detalle[0].redactor) {
+    //   console.warn('redactorDocumento: el primer validador no tiene redactor', detalle[0])
+    //   return null
+    // }
 
-    return detalle[0].redactor
+    // return detalle[0].redactor
   })
 
   //Version del documento
@@ -155,8 +160,9 @@ export const useSolicitudDeViajesStore = defineStore('solicitud-viaje', () => {
   const cargarSolicitudViajes = async (idSolViajes) => {
     loading.value = true
     try {
-      await obtenerSolicitudViajesPorId(idSolViajes)
-      solicitudViajesActual.value = solicitudViaje.value
+      // await obtenerSolicitudViajesPorId(idSolViajes)
+      const respuesta = await solicitudViajeServicio.solViajeValidarPorId(idSolViajes)
+      solicitudViajesActual.value = respuesta
     } catch (error) {
       console.error('Error al cargar la Solicitud de Viajes', error)
     } finally {

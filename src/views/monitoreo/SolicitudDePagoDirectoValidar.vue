@@ -737,7 +737,6 @@
 
 <script setup>
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
-import axios from 'axios'
 import PaginaTituloIcono from '@/components/layout/partials/PaginaTituloIcono.vue'
 import ProyectoIdHeader from '@/modules/proyecto/components/partials/ProyectoIdHeader.vue'
 import ActividadInformacion from '@/modules/proyecto/components/partials/ActividadInformacion.vue'

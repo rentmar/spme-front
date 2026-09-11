@@ -50,6 +50,15 @@ export const solicitudViajeServicio = {
       throw error
     }
   },
+  solViajeValidarPorId: async (idsolviaje) => {
+    try {
+      const respuesta = await api.get('/solicitud-viaje-form-validar/' + idsolviaje + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al cargar la sol de viaje id ' + idsolviaje, error)
+      throw error
+    }
+  },
 
   /************************ Solicitud de Viaje Actividad *******************************************/
   //Solicitudes de viaje por id Actividad
