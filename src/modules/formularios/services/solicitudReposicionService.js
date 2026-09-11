@@ -50,6 +50,18 @@ export const solicitudReposicionServicio = {
       throw error
     }
   },
+  solReposicionPorIdEditar: async (idSolReposicion) => {
+    try {
+      const respuesta = await api.get('/solicitud-reembolso-form-validar/' + idSolReposicion + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error(
+        'Axios: error al obtener la sol de reposicion con id: ' + idSolReposicion,
+        error,
+      )
+      throw error
+    }
+  },
 
   /************************ Solicitud de Fondos Actividad *******************************************/
   //Solicitudes de fondos por id Actividad

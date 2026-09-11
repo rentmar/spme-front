@@ -23,26 +23,35 @@
           <div class="info-item">
             <span class="text-caption text-grey-darken-1">Número Formulario:</span>
             <span class="text-caption font-weight-medium">
-              {{ props.contenidoDocumento?.numeroFormulario || 'N/A' }}
+              {{ contenidoDocumento?.numeroFormulario || 'N/A' }}
             </span>
           </div>
           <div class="info-item">
             <span class="text-caption text-grey-darken-1">ID Solicitud:</span>
             <span class="text-caption font-weight-medium">
-              {{ props.idSolicitud || 'N/A' }}
+              {{ idSolicitud || 'N/A' }}
             </span>
           </div>
           <div v-if="contenidoDocumento?.montoSolicitado" class="info-item">
             <span class="text-caption text-grey-darken-1">Monto:</span>
             <span class="text-caption font-weight-medium">
-              ${{ props.contenidoDocumento.montoSolicitado }}
+              ${{ contenidoDocumento.montoSolicitado }}
             </span>
           </div>
         </div>
       </div>
 
+      <!-- Aviso si no es revisor -->
+      <v-alert v-if="!esRevisor" type="info" variant="tonal" density="compact" class="mb-3">
+        <template #prepend>
+          <v-icon size="18">mdi-information</v-icon>
+        </template>
+        Solo el redactor del documento puede asignar revisores.
+      </v-alert>
+
       <!-- Botón para abrir diálogo de asignación -->
       <v-btn
+        v-if="esRevisor"
         block
         color="primary"
         variant="tonal"
@@ -123,16 +132,22 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  // Prop para habilitar el botón "Asignar Revisores"
+  esRevisor: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['revisores-asignados'])
 
-const formRef = ref(false)
+const formRef = ref(null)
 const dialogoAsignacion = ref(false)
 const loadingAsignar = ref(false)
-const datosFormulario = ref(false)
+const datosFormulario = ref(null)
 
 const abrirDialogoAsignacion = () => {
+  if (!props.esRevisor) return
   dialogoAsignacion.value = true
 }
 
@@ -157,4 +172,38 @@ const confirmarAsignacion = () => {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.accion-card {
+  padding: 16px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.accion-card:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.info-documento {
+  padding: 12px;
+  background-color: rgba(var(--v-theme-primary), 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-primary), 0.08);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.mb-3 {
+  margin-bottom: 12px;
+}
+</style>

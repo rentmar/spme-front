@@ -50,6 +50,15 @@ export const rendicionCuentasServicio = {
       throw error
     }
   },
+  rendicionCuentasPorIdEditar: async (idRendicionCuentas) => {
+    try {
+      const respuesta = await api.get('/rendicion-cuentas-form-validar/' + idRendicionCuentas + '/')
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: rendicion de cuentas error id: ' + idRendicionCuentas, error)
+      throw error
+    }
+  },
   /************************ Solicitud de Fondos Actividad *******************************************/
   //Solicitudes de fondos por id Actividad
   solRendicionCuentasPorIdActividad: async (idactividad) => {
