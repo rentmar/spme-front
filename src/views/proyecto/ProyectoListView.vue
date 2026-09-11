@@ -925,7 +925,6 @@ const instanciaGestoraRules = [
 const procedenciaFondosRules = [
   (v) => !!v || 'La procedencia de fondos es requerida',
   (v) => (v && v.length > 0) || 'Debe seleccionar al menos una fuente de financiamiento',
-  (v) => (v && v.length <= 3) || 'Máximo 3 fuentes de financiamiento',
 ]
 
 // Métodos
