@@ -5,6 +5,7 @@ import { ref, computed } from 'vue'
 import { useRendicionCuentas } from '../composables/useRendicionCuentas'
 import { useValidadoresRendCuentas } from '../composables/useValidadoresRendicionCuentas'
 import { useUserStore } from '@/stores/user'
+import { rendicionCuentasServicio } from '../services/rendicionCuentasService'
 
 export const useRendicionCuentasStore = defineStore('rendicion-cuentas', () => {
   // === ESTADOS ===
@@ -93,32 +94,33 @@ export const useRendicionCuentasStore = defineStore('rendicion-cuentas', () => {
 
   //Redactor del documento - CORREGIDO
   const redactorDocumento = computed(() => {
+    return rendicionCuentasActual.value?.usuario_info || null
     // Verificar que exista el estado y los validadores
-    if (!estadoRendicionCuentasActual.value) {
-      return null
-    }
+    // if (!estadoRendicionCuentasActual.value) {
+    //   return null
+    // }
 
-    const detalle = estadoRendicionCuentasActual.value.detalle_validadores
+    // const detalle = estadoRendicionCuentasActual.value.detalle_validadores
 
-    // Verificar que detalle_validadores existe y es un array
-    if (!detalle || !Array.isArray(detalle)) {
-      console.warn('redactorDocumento: detalle_validadores no es un array', detalle)
-      return null
-    }
+    // // Verificar que detalle_validadores existe y es un array
+    // if (!detalle || !Array.isArray(detalle)) {
+    //   console.warn('redactorDocumento: detalle_validadores no es un array', detalle)
+    //   return null
+    // }
 
-    // Verificar que el array tiene elementos
-    if (detalle.length === 0) {
-      console.warn('redactorDocumento: detalle_validadores está vacío')
-      return null
-    }
+    // // Verificar que el array tiene elementos
+    // if (detalle.length === 0) {
+    //   console.warn('redactorDocumento: detalle_validadores está vacío')
+    //   return null
+    // }
 
-    // Verificar que el primer elemento tiene redactor
-    if (!detalle[0].redactor) {
-      console.warn('redactorDocumento: el primer validador no tiene redactor', detalle[0])
-      return null
-    }
+    // // Verificar que el primer elemento tiene redactor
+    // if (!detalle[0].redactor) {
+    //   console.warn('redactorDocumento: el primer validador no tiene redactor', detalle[0])
+    //   return null
+    // }
 
-    return detalle[0].redactor
+    // return detalle[0].redactor
   })
 
   //Version del documento
@@ -156,8 +158,9 @@ export const useRendicionCuentasStore = defineStore('rendicion-cuentas', () => {
   const cargarRendicionDeCuentas = async (idRendicion) => {
     loading.value = true
     try {
-      await obtenerRendicionCuentasPorId(idRendicion)
-      rendicionCuentasActual.value = rendicionCuentas.value
+      // await obtenerRendicionCuentasPorId(idRendicion)
+      const respuesta = await rendicionCuentasServicio.rendicionCuentasPorIdEditar(idRendicion)
+      rendicionCuentasActual.value = respuesta
     } catch (error) {
       console.error('Error al cargar la rendicion de cuentas', error)
     } finally {

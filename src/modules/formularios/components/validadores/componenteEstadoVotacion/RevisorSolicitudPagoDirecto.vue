@@ -31,6 +31,7 @@
         "
       >
         <RevisorVoto
+          v-if="storeDocumento.idSolicitud"
           :es-revisor="storeDocumento.esValidador"
           :mi-validacion="storeDocumento.miValidacion"
           :esta-validado="storeDocumento.yaValido"

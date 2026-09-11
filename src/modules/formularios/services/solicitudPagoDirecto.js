@@ -50,6 +50,17 @@ export const solicitudPagoDirectoServicio = {
       throw error
     }
   },
+  solPagoDirectoPorIdEditar: async (idSolPagoDirecto) => {
+    try {
+      const respuesta = await api.get(
+        '/solicitud-pago-directo-form-validar/' + idSolPagoDirecto + '/',
+      )
+      return respuesta.data
+    } catch (error) {
+      console.error('Axios: Error al obtener sol de pago directo id ' + idSolPagoDirecto, error)
+      throw error
+    }
+  },
 
   /************************ Solicitud de Pago directo Actividad *******************************************/
   //Solicitudes de fondos por id Actividad

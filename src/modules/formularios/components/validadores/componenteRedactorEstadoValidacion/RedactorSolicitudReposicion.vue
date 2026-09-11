@@ -37,6 +37,7 @@
         <AsignarRevisoresSolicitud
           v-if="storeDocumento.estadoDocumento === 'SIN_VALIDACIONES'"
           :id-solicitud="storeDocumento.idSolicitud"
+          :es-revisor="storeDocumento.esRedactor"
           :contenido-documento="storeDocumento.solicitudReposicionActual"
           @revisores-asignados="handleRevisoresAsignados"
         ></AsignarRevisoresSolicitud>

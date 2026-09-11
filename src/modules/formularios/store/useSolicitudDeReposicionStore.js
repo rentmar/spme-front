@@ -5,6 +5,7 @@ import { ref, computed } from 'vue'
 import { useSolicitudReposicion } from '../composables/useSolicitudReposicion'
 import { useValidadoresSolReposicion } from '../composables/useValidadoresSolReposicion'
 import { useUserStore } from '@/stores/user'
+import { solicitudReposicionServicio } from '../services/solicitudReposicionService'
 
 export const useSolicitudDeReposicionStore = defineStore('solicitud-reposicion', () => {
   // === ESTADOS ===
@@ -93,32 +94,33 @@ export const useSolicitudDeReposicionStore = defineStore('solicitud-reposicion',
 
   //Redactor del documento - CORREGIDO
   const redactorDocumento = computed(() => {
+    return solicitudReposicionActual.value?.usuario_info || null
     // Verificar que exista el estado y los validadores
-    if (!estadosolicitudReposicionActual.value) {
-      return null
-    }
+    // if (!estadosolicitudReposicionActual.value) {
+    //   return null
+    // }
 
-    const detalle = estadosolicitudReposicionActual.value.detalle_validadores
+    // const detalle = estadosolicitudReposicionActual.value.detalle_validadores
 
-    // Verificar que detalle_validadores existe y es un array
-    if (!detalle || !Array.isArray(detalle)) {
-      console.warn('redactorDocumento: detalle_validadores no es un array', detalle)
-      return null
-    }
+    // // Verificar que detalle_validadores existe y es un array
+    // if (!detalle || !Array.isArray(detalle)) {
+    //   console.warn('redactorDocumento: detalle_validadores no es un array', detalle)
+    //   return null
+    // }
 
-    // Verificar que el array tiene elementos
-    if (detalle.length === 0) {
-      console.warn('redactorDocumento: detalle_validadores está vacío')
-      return null
-    }
+    // // Verificar que el array tiene elementos
+    // if (detalle.length === 0) {
+    //   console.warn('redactorDocumento: detalle_validadores está vacío')
+    //   return null
+    // }
 
-    // Verificar que el primer elemento tiene redactor
-    if (!detalle[0].redactor) {
-      console.warn('redactorDocumento: el primer validador no tiene redactor', detalle[0])
-      return null
-    }
+    // // Verificar que el primer elemento tiene redactor
+    // if (!detalle[0].redactor) {
+    //   console.warn('redactorDocumento: el primer validador no tiene redactor', detalle[0])
+    //   return null
+    // }
 
-    return detalle[0].redactor
+    // return detalle[0].redactor
   })
 
   //Version del documento
@@ -156,8 +158,9 @@ export const useSolicitudDeReposicionStore = defineStore('solicitud-reposicion',
   const cargarSolicitudReposicion = async (idSolReposicion) => {
     loading.value = true
     try {
-      await obtenerSolicitudReposicionPorId(idSolReposicion)
-      solicitudReposicionActual.value = solicitudReposicion.value
+      // await obtenerSolicitudReposicionPorId(idSolReposicion)
+      const respuesta = await solicitudReposicionServicio.solReposicionPorIdEditar(idSolReposicion)
+      solicitudReposicionActual.value = respuesta
     } catch (error) {
       console.error('Error al cargar la Sol de Fondos', error)
     } finally {

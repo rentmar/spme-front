@@ -34,6 +34,7 @@
           v-if="storeDocumento.estadoDocumento === 'SIN_VALIDACIONES'"
           :id-solicitud="storeDocumento.idSolicitud"
           :contenido-documento="storeDocumento.solicitudViajesActual"
+          :es-revisor="storeDocumento.esRedactor"
           @revisores-asignados="handleRevisoresAsignados"
         ></AsignarRevisoresSolicitud>
         <RedactorAccion

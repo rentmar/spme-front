@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useSolicitudPagoDirecto } from '../composables/useSolicitudPagoDirecto'
 import { useValidadoresSolPagoDirecto } from '../composables/useValidadoresSolPagoDirecto'
 import { useUserStore } from '@/stores/user'
+import { solicitudPagoDirectoServicio } from '../services/solicitudPagoDirecto'
 
 export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-directo', () => {
   // === ESTADOS ===
@@ -90,32 +91,34 @@ export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-direct
 
   //Redactor del documento - CORREGIDO
   const redactorDocumento = computed(() => {
+    return solicitudPagoDirectoActual.value?.usuario_info || null
+
     // Verificar que exista el estado y los validadores
-    if (!estadoSolicitudPagoDirectoActual.value) {
-      return null
-    }
+    // if (!estadoSolicitudPagoDirectoActual.value) {
+    //   return null
+    // }
 
-    const detalle = estadoSolicitudPagoDirectoActual.value.detalle_validadores
+    // const detalle = estadoSolicitudPagoDirectoActual.value.detalle_validadores
 
-    // Verificar que detalle_validadores existe y es un array
-    if (!detalle || !Array.isArray(detalle)) {
-      console.warn('redactorDocumento: detalle_validadores no es un array', detalle)
-      return null
-    }
+    // // Verificar que detalle_validadores existe y es un array
+    // if (!detalle || !Array.isArray(detalle)) {
+    //   console.warn('redactorDocumento: detalle_validadores no es un array', detalle)
+    //   return null
+    // }
 
-    // Verificar que el array tiene elementos
-    if (detalle.length === 0) {
-      console.warn('redactorDocumento: detalle_validadores está vacío')
-      return null
-    }
+    // // Verificar que el array tiene elementos
+    // if (detalle.length === 0) {
+    //   console.warn('redactorDocumento: detalle_validadores está vacío')
+    //   return null
+    // }
 
-    // Verificar que el primer elemento tiene redactor
-    if (!detalle[0].redactor) {
-      console.warn('redactorDocumento: el primer validador no tiene redactor', detalle[0])
-      return null
-    }
+    // // Verificar que el primer elemento tiene redactor
+    // if (!detalle[0].redactor) {
+    //   console.warn('redactorDocumento: el primer validador no tiene redactor', detalle[0])
+    //   return null
+    // }
 
-    return detalle[0].redactor
+    // return detalle[0].redactor
   })
 
   //Version del documento
@@ -151,8 +154,10 @@ export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-direct
   const cargarSolicitudPagoDirecto = async (idSolPagoDirecto) => {
     loading.value = true
     try {
-      await obtenerSolicitudDePagoDirectoPorId(idSolPagoDirecto)
-      solicitudPagoDirectoActual.value = solicitudPagoDirecto.value
+      // await obtenerSolicitudDePagoDirectoPorId(idSolPagoDirecto)
+      const respuesta =
+        await solicitudPagoDirectoServicio.solPagoDirectoPorIdEditar(idSolPagoDirecto)
+      solicitudPagoDirectoActual.value = respuesta
     } catch (error) {
       console.error('Error al cargar la Solicitud de Viajes', error)
     } finally {
