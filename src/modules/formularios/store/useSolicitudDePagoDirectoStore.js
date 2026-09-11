@@ -131,7 +131,8 @@ export const useSolicitudDePagoDirectoStore = defineStore('solicitud-pago-direct
 
   // También puedes obtener el ID de la solicitud
   const idSolicitud = computed(() => {
-    return solicitudPagoDirecto.value?.id || null
+    // return solicitudPagoDirecto.value?.id || null
+    return solicitudPagoDirectoActual.value?.id || null
   })
 
   /****************************** Funciones Solicitud de Fondos *******************************************************/
